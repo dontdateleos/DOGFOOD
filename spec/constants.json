@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.13.524",
+ "generatedFrom": "2026.09.13.525",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1039,7 +1039,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.09.13.524",
+  "APP_VERSION": "2026.09.13.525",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1268,7 +1268,8 @@
    "2026.09.13.521": "The score can see your training now, not just your sleep — where your lifts have been sitting is the heaviest thing in it.",
    "2026.09.13.522": "The streak flame is gone. Three bars under the number say when your training is actually going somewhere.",
    "2026.09.13.523": "A week of raised resting heart rate now counts for more than one odd night, which is the right way round.",
-   "2026.09.13.524": "The in-form mark counts the days you have held it, and a day you did not open the app no longer breaks the run."
+   "2026.09.13.524": "The in-form mark counts the days you have held it, and a day you did not open the app no longer breaks the run.",
+   "2026.09.13.525": "Days in form now sits on the mark’s shoulder, the way a notification does."
   },
   "UPDATE_CHECK_INTERVAL_MS": 1800000,
   "UPDATE_VALIDATOR_KEY": "settings:updateValidator",
@@ -1337,6 +1338,7 @@
   "LEARN_FULL_AT": 60,
   "LEARN_MAX_SHIFT": 0.6,
   "LEARN_UNBLINDED_WEIGHT": 0.25,
+  "FORM_BADGE_DX": 21,
   "PLACEBO_MIN_PER_CELL": 4,
   "VALIDITY_MIN": 8,
   "SR_COMPONENT_LABELS": {

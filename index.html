@@ -755,24 +755,31 @@
   #logFab:active{ opacity:0.72; }
   #logFab:focus-visible{ outline:2px solid var(--bg); outline-offset:6px; }
 
-  /* THE FORM MARK. A filled square and the number of days you have held it, at the head of
-     the line under the number. Small and drawn rather than an emoji: this corner is mono
-     capitals and one drawn mark, and the flame it replaces was the only emoji in the app.
+  /* THE FORM MARK, STUCK ON THE MARK'S CORNER.
 
-     The square is 8px against the label's 10.5px capitals so it reads as a bullet rather than
-     as a second glyph competing with the count, and the count is the label's own mono at its
-     own size — the badge joins the line rather than sitting on it. */
-  .form-mark{ display:inline-flex; align-items:center; gap:4px; flex:none; margin-right:8px; }
+     A filled square carrying the number of days you have held form, at the chip's upper right.
+     Square rather than a circle because there is almost no border-radius anywhere else in this
+     app, and a pill there would read as a generic app badge rather than as this one's.
+
+     THE RING IS THE WHOLE TRICK. Without it the lime sits flush on the cream sphere and the
+     edge goes soft, because both are light — mocked side by side, that version reads as a
+     patch ON the mark rather than an object stuck to it. A 2.5px ground-coloured box-shadow
+     cuts it out of the sphere, which is what makes it a badge.
+
+     It is position:absolute against the band and placed by layoutBandColumn, so it travels
+     with the chip when a three-digit score pushes the number's edge right. */
+  .form-mark{ position:absolute; z-index:4; width:15px; height:15px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--band); color:var(--ground);
+    font-family:var(--mono); font-weight:var(--fw-bold); font-size:9px; line-height:1;
+    letter-spacing:0; font-variant-numeric:tabular-nums;
+    box-shadow:0 0 0 2.5px var(--ground); }
   .form-mark[hidden]{ display:none; }
-  .form-mark .fm-sq{ width:8px; height:8px; display:block; fill:var(--band); flex:none; }
-  .form-mark .fm-n{ font-family:var(--mono); font-size:10.5px; font-weight:var(--fw-bold);
-    letter-spacing:0.04em; color:var(--band); font-variant-numeric:tabular-nums; }
-  /* On bone the tab hue is a fill rather than a line colour and comes out too pale against
-     the ground, the same trap --band was in on the week board. The faded hue is the one
-     already mixed for this ground — and the count needs it more than the square does, being
-     thin strokes rather than a solid. */
-  html[data-ground="bone"] .form-mark .fm-sq{ fill:var(--hue-faded); }
-  html[data-ground="bone"] .form-mark .fm-n{ color:var(--hue-faded); }
+  /* On bone the sphere under this is the near-black one, so the badge is sitting on the DARK
+     surface even though the page is light — which is the one place --hue-faded is the wrong
+     answer, since the reason it exists is the pale ground. Full lime, and the cut-out ring
+     follows the page rather than the sphere so it still separates the two. */
+  html[data-ground="bone"] .form-mark{ background:var(--block-lime); color:#0c0d0b; }
   /* Set to match .tab-label, since it is the other thing in this corner of the black. */
   /* Scoped past `.header-brand > *`, which sets position:relative on every direct child
      to lift them over the mark. At equal specificity that rule wins on order,
@@ -4202,10 +4209,6 @@
         <div class="score-num" id="overallScoreOut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.5" y1="4.5" x2="19.5" y2="19.5"/><line x1="19.5" y1="4.5" x2="4.5" y2="19.5"/></svg></div>
       </div>
       <div class="score-label-row" id="scoreToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="baselineStatus">
-        <!-- In form. Sits at the head of the line under the number rather than beside it: the
-             number's left is the suggestion's column and its right is the mark's, and the one
-             slot genuinely next to the figure with nothing already in it is this one. -->
-        <span class="form-mark" id="formMark" hidden></span>
         <div class="score-label" id="overallScoreLabel">Overall</div>
         <span class="conf-chevron" id="scoreChevron">▾</span>
       </div>
@@ -4215,6 +4218,12 @@
     <div id="recLeft" role="button" tabindex="0" style="display:none;"></div>
     <!-- The mark's home on Today: at the number's right edge, tucked behind it. -->
     <div id="todayFaceDock" aria-hidden="true"></div>
+    <!-- In form, stuck on the mark's upper-right like a notification. A SIBLING of the chip
+         rather than a child of it: paintTodayMark rebuilds the chip's contents from scratch on
+         every repaint, so a child would be wiped on the next score render. It is placed from
+         the same numRect the chip is, a few lines apart in layoutBandColumn, so the two cannot
+         drift. -->
+    <span class="form-mark" id="formMark" hidden></span>
     <div id="baselineStatus" class="score-note note-live" style="text-align:left; margin-bottom:4px; font-size:var(--fs-tag);"></div>
     <!-- The block position line used to sit here — "Block 1 · week 1/4 · accumulation". It is
          true and it is not urgent: the same thing is on Weekly, where you go to look at the
@@ -8168,8 +8177,10 @@ function renderFormMark(inForm, days, capped){
     ? `In form for ${days} days or more`
     : `In form for ${days} day${days === 1 ? '' : 's'}`);
   el.title = 'In form';
-  el.innerHTML = '<svg class="fm-sq" viewBox="0 0 9 9" aria-hidden="true"><rect width="9" height="9" rx="1"/></svg>'
-    + '<b class="fm-n">' + shown + '</b>';
+  el.textContent = shown;
+  // The layout owns where it goes, and it only runs while the badge is shown — so ask for a
+  // pass now that it is, or a badge that has just come back sits at wherever it last was.
+  if(typeof relayoutColumn === 'function') relayoutColumn();
 }
 
 async function refreshEyeHistory(){
@@ -10710,7 +10721,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.13.524';
+const APP_VERSION = '2026.09.13.525';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -10958,6 +10969,7 @@ const APP_NOTES = {
   '2026.09.13.522': 'The streak flame is gone. Three bars under the number say when your training is actually going somewhere.',
   '2026.09.13.523': 'A week of raised resting heart rate now counts for more than one odd night, which is the right way round.',
   '2026.09.13.524': 'The in-form mark counts the days you have held it, and a day you did not open the app no longer breaks the run.',
+  '2026.09.13.525': 'Days in form now sits on the mark\u2019s shoulder, the way a notification does.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -12860,6 +12872,8 @@ function paintTodayMark(){
    Everything that branched on `asking` went with the picker: the min-height the band reserved
    for a column taller than its gauge, the words-or-balls fallback for when the score's note
    crowded the five, and the rehoming out into the page before the first morning was logged. */
+// Where the badge sits against the chip's 22px box. See the note at the placement below.
+const FORM_BADGE_DX = 21, FORM_BADGE_DY = -15;
 let dockRelayout = null, lastDockEdge = null;
 function layoutBandColumn(traceShown){
   const host = document.getElementById('scoreTrace');
@@ -12891,6 +12905,16 @@ function layoutBandColumn(traceShown){
        construction rather than by two numbers that have to agree. */
     dock.style.top = Math.round(numRect.top - bandRect.top
       + (numRect.height - DOCK_H) / 2) + 'px';
+    /* The badge rides the chip's upper-right. Offset from the chip's BOX, not its drawing:
+       --mc-scale paints the sphere at 40px inside a 22px box, so the drawing overhangs by 9
+       on every side and the 45-degree point of the sphere is out at about (25, -3) in box
+       coordinates. FORM_BADGE_DX/DY put the badge past that, so it sits at the corner rather
+       than on the cheek. */
+    const badge = document.getElementById('formMark');
+    if(badge && !badge.hidden){
+      badge.style.left = (parseFloat(dock.style.left) + FORM_BADGE_DX) + 'px';
+      badge.style.top  = (parseFloat(dock.style.top) + FORM_BADGE_DY) + 'px';
+    }
   }
 
   // Measured, not computed: the trace's height depends on a font that may not have loaded
