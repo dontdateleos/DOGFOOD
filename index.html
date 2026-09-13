@@ -10702,7 +10702,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.13.522';
+const APP_VERSION = '2026.09.13.523';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -10948,6 +10948,7 @@ const APP_NOTES = {
   '2026.09.13.520': 'The score weights what you did in the last three days above what your heart did last night.',
   '2026.09.13.521': 'The score can see your training now, not just your sleep \u2014 where your lifts have been sitting is the heaviest thing in it.',
   '2026.09.13.522': 'The streak flame is gone. Three bars under the number say when your training is actually going somewhere.',
+  '2026.09.13.523': 'A week of raised resting heart rate now counts for more than one odd night, which is the right way round.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -13263,7 +13264,8 @@ async function renderScoreValidity(tagged){
 /* What the engine has actually concluded, shown rather than applied silently. The whole
    difference between this and a sealed vendor score is that the weights are visible. */
 const SR_COMPONENT_LABELS = {
-  form:'Recent form', hrvTrend:'HRV trend', rhr:'Resting HR', sleep:'Sleep',
+  form:'Recent form', hrvTrend:'HRV trend', rhrTrend:'Resting HR level',
+  rhrAcute:'Resting HR last night', sleep:'Sleep',
   hrvAcute:'HRV last night', sleepDebt:'Sleep debt', regularity:'Sleep regularity',
   illnessCh:'Breathing & temp'
 };
@@ -13961,7 +13963,12 @@ const SR_WEIGHTS = {
      recent work is the most direct thing standing between you and today's session. */
   load:        0.160,
   hrvTrend:    0.136,  // the stable autonomic signal — still the largest recovery term
-  rhr:         0.120,  // better sensor validity than HRV (Oura HR r=0.993 vs rMSSD r=0.915)
+  /* Better sensor validity than HRV (Oura HR r=0.993 vs rMSSD r=0.915), and split in two:
+     the sustained level, which is what the monitoring literature says to read, and the single
+     night, which is what catches a bug or a skinful. Together they are the 0.120 rhr carried
+     as one channel, in the same 2.4:1 the HRV pair uses. */
+  rhrTrend:    0.085,
+  rhrAcute:    0.035,
   /* Van Dongen — debt accrues linearly and does not adapt. Raised above the acute term
      because consecutive short nights are the form of sleep loss that actually moves force
      output; one bad night mostly does not. */
@@ -14029,10 +14036,26 @@ function srComponentsAt(win, i, debtZ){
     // positive: high vagal tone with a heart rate that does not agree is the documented
     // overreaching signature, not freshness.
     hrvTrend:   saturated ? 0 : at(win.channels.hrv, 'zSeries'),
-    // Last night's value, not the smoothed level. Resting HR earns its weight as the most
-    // robust illness and alcohol channel, and both of those are single-night events — an
-    // EWMA of a noisy series sits on its own median and never leaves the two-sided deadband.
-    rhr:        at(win.channels.rhr, 'zAcuteSeries'),
+    /* SPLIT, THE SAME WAY HRV IS, AND FOR THE SAME REASON.
+
+       This was acute only, defended on the grounds that resting HR earns its keep as an
+       illness and alcohol channel and both are single-night events — with the objection that
+       an EWMA of a noisy series sits on its own median and never leaves the two-sided
+       deadband. Half right, and the half that is wrong matters. Measured on seventy nights:
+       the smoothed series is exactly zero on 63 of them, which is the deadband doing its job
+       rather than the channel being dead, and it reaches -1.26 on a week of elevated resting
+       HR while a single bad night moves it -0.05. The acute series does the opposite: -2.50
+       on that one night, and it never goes quiet.
+
+       So they are two instruments, not one read two ways. The trend is the sustained
+       autonomic disturbance — the overreaching signal, and the one the monitoring literature
+       says to read as a weekly mean rather than a daily reading. The acute is the event
+       detector the old comment was protecting, and it keeps doing that.
+
+       The pair carries the same 0.120 rhr always had, divided in HRV's own 2.4:1 ratio. This
+       changes HOW resting HR is read, not how much it is believed. */
+    rhrTrend:   at(win.channels.rhr, 'zSeries'),
+    rhrAcute:   at(win.channels.rhr, 'zAcuteSeries'),
     sleep:      (()=>{
       const dur = at(win.channels.sleep, 'zSeries');
       const frag = at(win.channels.wake, 'zSeries');
@@ -14114,10 +14137,17 @@ function srRawFrom(parts, maturity, weights, budget){
 async function computeSystemicReadiness(asOfDate){
   const win = await buildSignalWindow(asOfDate || todayStr);
   const debtZ = sleepDebtZ(win);
-  const chans = Object.keys(SR_WEIGHTS)
+  /* DISTINCT INSTRUMENTS, NOT WEIGHT KEYS. Maturity is how well this user's baselines are
+     established, so it averages over the things being measured — and two weight keys can read
+     the same one. hrvTrend and hrvAcute are both the HRV channel and always have been, which
+     quietly gave that sensor double the say in this average; splitting rhr the same way in
+     .523 would have done it again. Deduped, so each channel counts once however many ways the
+     weights read it. */
+  const chans = [...new Set(Object.keys(SR_WEIGHTS)
     .map(k=> k === 'hrvTrend' || k === 'hrvAcute' ? win.channels.hrv
+           : k === 'rhrTrend' || k === 'rhrAcute' ? win.channels.rhr
            : k === 'sleepDebt' ? null : win.channels[k])
-    .filter(Boolean);
+    .filter(Boolean))];
   const maturity = chans.length ? chans.reduce((a,c)=>a + (c.M||0), 0) / chans.length : 0;
 
   // Learned weights where they exist, priors otherwise.
