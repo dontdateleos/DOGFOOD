@@ -10688,7 +10688,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.13.520';
+const APP_VERSION = '2026.09.13.521';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -10932,6 +10932,7 @@ const APP_NOTES = {
   '2026.09.13.518': 'The app now asks the browser not to bin your data, says whether it agreed, and tells you when a save fails.',
   '2026.09.13.519': 'No wearable, real score: the reading is now scaled to what you can measure instead of what you cannot.',
   '2026.09.13.520': 'The score weights what you did in the last three days above what your heart did last night.',
+  '2026.09.13.521': 'The score can see your training now, not just your sleep \u2014 where your lifts have been sitting is the heaviest thing in it.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -12477,8 +12478,10 @@ async function buildSignalWindowUncached(asOfDate, days){
      Strength is tonnage; a run is its distance at roughly 90kg-equivalent per kilometre, so
      the two land on one scale rather than the runs reading as rest. */
   const loadByDate = {};
+  let _sessions = [];
+  try{ _sessions = await getAllTrainingSessions(); } catch(err){}
   try{
-    for(const sn of await getAllTrainingSessions()){
+    for(const sn of _sessions){
       if(!sn || !sn.date) continue;
       const vol = sn.type === 'run'
         ? (sn.distanceKm || 0) * 90
@@ -12494,6 +12497,35 @@ async function buildSignalWindowUncached(asOfDate, days){
     let acute = 0;
     SR_LOAD_DECAY.forEach((k, back)=>{ acute += k * (loadByDate[dates[i - 1 - back]] || 0); });
     return acute;
+  });
+  /* FORM — WHERE YOUR LIFTS HAVE ACTUALLY BEEN LATELY.
+
+     Every other channel in this window is a measurement of your body at rest. None of them is
+     a measurement of your training, and training is the thing the score is trying to predict.
+     computeCapacityIndices already builds exactly the number needed — each session's volume
+     against the mean of your own prior five, and each run's pace against your own prior five —
+     and until now it was only read by the capacity model, which the cascade uses as a fallback
+     when Systemic Readiness cannot run. The app measured your form and then scored you without
+     it.
+
+     STRICTLY BEFORE, WHICH IS WHAT KEEPS IT HONEST. The index for day i is the mean of the
+     last FORM_N session indices dated EARLIER than i. Today's session has not happened when
+     the morning score is computed, and a channel that could see it would be a mirror rather
+     than a prediction. Ordinary autocorrelation — what you lifted last week predicts what you
+     lift this week — is not circularity; reading today's outcome would be.
+
+     ONE CONFOUND, STATED. The index is volume against your own recent sessions, so a heavy
+     squat day and an accessory day differ on it for reasons that are the programme's rather
+     than yours. Averaging several sessions damps that without removing it, which is why this
+     is a candidate offered to learnWeights rather than a fact asserted — if it turns out to be
+     schedule noise for a given user, its weight shrinks toward nothing on their own data. */
+  const FORM_N = 5;
+  const capByDate = computeCapacityIndices(_sessions);
+  const capDates = Object.keys(capByDate).sort();
+  const formSeries = dates.map(d=>{
+    const prior = capDates.filter(cd=> cd < d).slice(-FORM_N).map(cd=> capByDate[cd]);
+    if(prior.length < 3) return null;   // fewer than three sessions is not a trend
+    return prior.reduce((a,b)=>a+b,0) / prior.length;
   });
   // Wake time as minutes past midnight, unwrapped around the median so a 00:30 riser and a
   // 23:30 riser are not read as twenty-three hours apart.
@@ -12546,6 +12578,9 @@ async function buildSignalWindowUncached(asOfDate, days){
     // Inverted: carrying more than your usual load into a morning is a reason to be less
     // ready, and carrying less is a reason to be more.
     load:     normaliseChannel(loadSeries, { invert:true, baselineMask }),
+    // Not inverted: more form is more readiness, which is the one channel here where the
+    // obvious direction is the right one.
+    form:     normaliseChannel(formSeries, { baselineMask }),
     sleep:    normaliseChannel(pick(e=>e.durationHrs), { baselineMask }),
     // Minutes awake in the night: more is worse, so the sign flips.
     wake:     normaliseChannel(pick(e=>e.wakeTimeOura ?? e.wakeTimeGarmin), { invert:true }),
@@ -13213,7 +13248,7 @@ async function renderScoreValidity(tagged){
 /* What the engine has actually concluded, shown rather than applied silently. The whole
    difference between this and a sealed vendor score is that the weights are visible. */
 const SR_COMPONENT_LABELS = {
-  hrvTrend:'HRV trend', rhr:'Resting HR', sleep:'Sleep',
+  form:'Recent form', hrvTrend:'HRV trend', rhr:'Resting HR', sleep:'Sleep',
   hrvAcute:'HRV last night', sleepDebt:'Sleep debt', regularity:'Sleep regularity',
   illnessCh:'Breathing & temp'
 };
@@ -13898,22 +13933,30 @@ function cnsWindowLine(cr){
    far. The priors therefore do most of the work for most of the first year, which is exactly
    why getting their ORDER right matters more than getting their values exact. */
 const SR_WEIGHTS = {
+  /* WHERE YOUR TRAINING HAS BEEN SITTING — the one channel here that measures training rather
+     than the body at rest, and on the general ground that the recent level of any series is
+     usually the strongest single predictor of its next value. Given the same weight as load
+     rather than more, because that ground is a statistical regularity rather than a finding
+     about athletes, and because the index carries a schedule confound the comment in
+     buildSignalWindow sets out. The other eight were scaled by 0.800 to make room, so their
+     order and their ratios to each other are exactly what .520 set. */
+  form:        0.200,
   /* What you are carrying into this morning, decayed over the three days behind it, inverted
      so more load reads as less readiness. First now rather than fourth: residual fatigue from
      recent work is the most direct thing standing between you and today's session. */
-  load:        0.200,
-  hrvTrend:    0.170,  // the stable autonomic signal — still the largest physiological term
-  rhr:         0.150,  // better sensor validity than HRV (Oura HR r=0.993 vs rMSSD r=0.915)
+  load:        0.160,
+  hrvTrend:    0.136,  // the stable autonomic signal — still the largest recovery term
+  rhr:         0.120,  // better sensor validity than HRV (Oura HR r=0.993 vs rMSSD r=0.915)
   /* Van Dongen — debt accrues linearly and does not adapt. Raised above the acute term
      because consecutive short nights are the form of sleep loss that actually moves force
      output; one bad night mostly does not. */
-  sleepDebt:   0.150,
+  sleepDebt:   0.120,
   // Duration and fragmentation together for last night alone. Lowered for the same reason
   // sleepDebt was raised: it is the acute half, and the acute half is the weaker one.
-  sleep:       0.130,
-  illnessCh:   0.080,  // respiratory rate and skin temperature, negative-only
-  hrvAcute:    0.070,  // damped, so one catastrophic night registers without noise driving it
-  regularity:  0.050   // Windred 2023 — predicts independently of duration, near-zero cost
+  sleep:       0.104,
+  illnessCh:   0.064,  // respiratory rate and skin temperature, negative-only
+  hrvAcute:    0.056,  // damped, so one catastrophic night registers without noise driving it
+  regularity:  0.040   // Windred 2023 — predicts independently of duration, near-zero cost
 };
 
 
@@ -13954,6 +13997,10 @@ function srComponentsAt(win, i, debtZ){
        EWMA of it would sit on its own median and never say anything. The decay across three
        days is already the smoothing. */
     load: at(win.channels.load, 'zAcuteSeries'),
+    /* The SMOOTHED series here, unlike load. Form is a level rather than an event — the
+       question is where your training has been sitting, not what happened in one session, and
+       the underlying index is already a mean of five. */
+    form: at(win.channels.form, 'zSeries'),
     // The guard does not merely discount a saturated HRV reading, it refuses to read it as
     // positive: high vagal tone with a heart rate that does not agree is the documented
     // overreaching signature, not freshness.

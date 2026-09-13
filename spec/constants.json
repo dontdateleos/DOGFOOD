@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.13.520",
+ "generatedFrom": "2026.09.13.521",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1039,7 +1039,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.09.13.520",
+  "APP_VERSION": "2026.09.13.521",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1264,7 +1264,8 @@
    "2026.09.13.517": "A muscle group that got a fifth more work than last week now gets the warm-up, where it used to take a third.",
    "2026.09.13.518": "The app now asks the browser not to bin your data, says whether it agreed, and tells you when a save fails.",
    "2026.09.13.519": "No wearable, real score: the reading is now scaled to what you can measure instead of what you cannot.",
-   "2026.09.13.520": "The score weights what you did in the last three days above what your heart did last night."
+   "2026.09.13.520": "The score weights what you did in the last three days above what your heart did last night.",
+   "2026.09.13.521": "The score can see your training now, not just your sleep — where your lifts have been sitting is the heaviest thing in it."
   },
   "UPDATE_CHECK_INTERVAL_MS": 1800000,
   "UPDATE_VALIDATOR_KEY": "settings:updateValidator",
@@ -1336,6 +1337,7 @@
   "PLACEBO_MIN_PER_CELL": 4,
   "VALIDITY_MIN": 8,
   "SR_COMPONENT_LABELS": {
+   "form": "Recent form",
    "hrvTrend": "HRV trend",
    "rhr": "Resting HR",
    "sleep": "Sleep",
@@ -1396,14 +1398,15 @@
   "TR_CAPACITY_PCTL": 0.9,
   "TR_MIN_LOADED_DAYS": 5,
   "SR_WEIGHTS": {
-   "load": 0.2,
-   "hrvTrend": 0.17,
-   "rhr": 0.15,
-   "sleepDebt": 0.15,
-   "sleep": 0.13,
-   "illnessCh": 0.08,
-   "hrvAcute": 0.07,
-   "regularity": 0.05
+   "form": 0.2,
+   "load": 0.16,
+   "hrvTrend": 0.136,
+   "rhr": 0.12,
+   "sleepDebt": 0.12,
+   "sleep": 0.104,
+   "illnessCh": 0.064,
+   "hrvAcute": 0.056,
+   "regularity": 0.04
   },
   "SR_HRV_ACUTE_DAMP": 0.5,
   "SR_TANH_K": 0.8,
