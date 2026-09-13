@@ -664,7 +664,43 @@
      instead of one. The colour was orange, inherited from when orange stopped being a tab and
      needed somewhere to go; it is sand now, which is the same idea with a quieter voice — a
      warm off-white against a cream wordmark rather than a second saturated thing beside it. */
-  .tab-label{ font-family:var(--sans); font-size:var(--fs-md); font-weight:var(--fw-bold); color:var(--sand); text-transform:uppercase; letter-spacing:0.02em; margin-bottom:2px; }
+  .tab-label{ font-family:var(--sans); font-size:var(--fs-md); font-weight:var(--fw-bold); color:var(--sand); text-transform:uppercase; letter-spacing:0.02em; margin-bottom:2px;
+    display:flex; align-items:baseline; gap:9px; padding-right:88px; }
+  /* THE LINE BESIDE THE NAME.
+
+     The name is the one piece of chrome in the masthead with nothing to do: the lit tab tick
+     already says which tab you are on, so the word repeats it. Rather than take the word away
+     — which would leave the page unnamed on a strip of five dashes — the slot it sits in gets
+     a second voice, and the row says what the page IS and then one true thing ABOUT it.
+
+     Mono against the label's sans, and not uppercase: the word is a name and this is a
+     reading, and setting the two the same way would make the row one long label rather than
+     two things. Sand at 0.72 rather than a second colour — it is the same voice, quieter.
+
+     THE 88px ON THE LABEL is the date. The date is absolutely positioned into this same band
+     at the right gutter, out of flow, so nothing in the flow knows it is there; the padding is
+     what the flow is told. It is measured off the widest line the date can draw, which is the
+     month spelled out — SEPTEMBER at 13px uppercase is about 75px — and not off the day, which
+     is a third of that. 52 was the day, and it would have let a long line run under DECEMBER.
+
+     ELLIPSIS RATHER THAN WRAP. A wrapped line makes the label two rows tall, which moves the
+     wordmark, the mark's perch and the whole collapse geometry with it. The line is written
+     short enough to fit at 390 and truncates rather than reflows on anything narrower. */
+  .tab-insight{ font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-normal);
+    text-transform:none; letter-spacing:0; color:var(--sand); opacity:0.72;
+    min-width:0; flex:0 1 auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tab-insight:empty{ display:none; }
+  /* 9px of gap plus the 24px the mark occupies when it is perched, plus a hair. The mark is
+     absolutely placed at the word's right edge + 9 and scaled to 0.6 of the 40px header form,
+     so this is that box measured rather than a guess at it. */
+  .tab-label.mark-perched .tab-insight{ margin-left:28px; }
+  /* WHERE THERE IS GENUINELY NO ROOM, THERE IS NO LINE. The slot is what is left after the
+     name, the mark's perch and the 88px the date needs: about 176px at 390, which is roughly
+     26 characters of 11px mono, and every line here is written under that. At 320 the same
+     arithmetic leaves about 134px and the longer lines truncate — and a fact cut off mid-word
+     is worse than the word alone, which still names the page. Measured at 320 rather than
+     assumed: "3 done · no plan" was the one that ran over. */
+  @media (max-width:359px){ .tab-insight{ display:none; } }
   /* THE STREAK, BESIDE THE TAB'S NAME.
 
      In the sticky row because it is the one part of the header that survives the collapse —
@@ -4081,11 +4117,12 @@
     <div class="header-date" id="headerDate" aria-label="Today's date">
       <span class="hd-dow"></span><span class="hd-day"></span><span class="hd-mon"></span>
     </div>
-    <!-- The word is its own span because the streak sits in this box with it, and the tab
-         switch used to write straight over the label's contents. Both children stay inside
-         #currentTabLabel on purpose: eyePerchSpot measures a range across the whole label,
-         so the mark perches after whatever is in here without being told the flame exists. -->
-    <div id="currentTabLabel" class="tab-label"><span id="currentTabWord">Today</span></div>
+    <!-- The word is its own span because the tab switch used to write straight over the
+         label's contents, and there is now a second thing in this box: one true line about
+         the page, beside its name. The two are siblings rather than one string so the perch
+         can measure the word alone — eyePerchSpot ranges over #currentTabWord, not the label,
+         or the mark would fly out past the end of the line and land on the date. -->
+    <div id="currentTabLabel" class="tab-label"><span id="currentTabWord">Today</span><span id="currentTabInsight" class="tab-insight" aria-live="polite"></span></div>
     <h1><div class="logo-line"><span style="margin-right:-0.01em;">D</span><span style="margin-right:-0.03em;">o</span><span>g</span></div><div class="logo-line"><span style="margin-right:-0.04em;">f</span><span style="margin-right:0.005em;">o</span><span style="margin-right:-0.025em;">o</span><span>d</span></div></h1>
     <!-- The mark: a solid, drawn face on, which is the same two capsules on the same square
          it has always been until it turns. The .eye-gaze pair stays in the DOM and stays
@@ -8701,6 +8738,15 @@ function updateEyePerch(){
     const shrunk = window.scrollY / 100;
     want = shrunk > 0.6 ? true : shrunk < 0.4 ? false : eyeCtx.perched;
   }
+  /* The line beside the name has to get out of the mark's way, and the mark does not wait for
+     a scroll to want that spot: with no score on screen — a fresh install, before the first
+     one computes — `want` is true at scrollY 0 and the mark sits perched beside the word from
+     the moment the app opens. Fading the line with the collapse is therefore not enough on
+     its own; the slot is reserved instead, so the line is pushed past the mark rather than
+     drawn under it. Set before the early return below, which only fires when the state has
+     not changed — the class has to be right on the first call as well as on every flip. */
+  const perchLbl = document.getElementById('currentTabLabel');
+  if(perchLbl) perchLbl.classList.toggle('mark-perched', !!want);
   if(want === eyeCtx.perched) return;
   eyeCtx.perched = want;
 
@@ -8877,8 +8923,11 @@ function eyePerchSpot(){
   const lr = lbl.getBoundingClientRect();
   let textRight = lr.left;
   try{
+    /* The WORD, not the label. The label now carries a line of text beside the name, and
+       selecting the whole box would perch the mark past the end of that line — out by the
+       date, or off the edge on a long one. The mark belongs to the name. */
     const range = document.createRange();
-    range.selectNodeContents(lbl);
+    range.selectNodeContents(document.getElementById('currentTabWord') || lbl);
     const rr = range.getBoundingClientRect();
     if(rr.width) textRight = rr.right;
   }catch(e){}
@@ -9718,6 +9767,151 @@ const TAB_BACKDROP_COLOR = {
 // asking for a retired tab hides every panel and leaves a blank screen — the one failure
 // mode of a tab-swap that cannot be recovered from without a reload.
 const RETIRED_TABS = { goals:'training' };
+/* THE LINE BESIDE THE TAB'S NAME.
+
+   One true thing about the page you are on, written into the slot the tab's name already
+   occupies. The name stays: a page that only identifies itself by which of five dashes is
+   lit is a page with no name, and the word is two thirds of a centimetre of chrome. What it
+   gains is a second clause.
+
+   ONE STORAGE SWEEP PER TAB, NOT FOURTEEN GETS. The week's counts want the state of up to
+   fourteen planned slots and every session logged against them, and asking for those one key
+   at a time is twenty-one round trips on a tab switch. Both come out of a single prefix list
+   each, filtered against the week's dates in memory.
+
+   EVERY LINE IS A COUNT OF SOMETHING THE APP ALREADY HAS. Nothing here is derived, estimated
+   or phrased as advice — the masthead is not the place to introduce a new claim, and a line
+   that could be wrong is worse than no line. Where a page has nothing true to say the span
+   is emptied, and `.tab-insight:empty` takes it out of the flow rather than leaving a gap
+   the width of a word. */
+/* Read at call time, not at parse time: both constants are declared thousands of lines
+   below this and a top-level `const` here would hit the temporal dead zone on load. */
+const tabInsightNights = ()=> Math.ceil(SR_MIN_COMPLETENESS * SIG_BASE_DAYS);
+let tabInsightToken = 0;
+/* The nights actually on disk, for the two pages whose line is about how much history there
+   is. Deliberately not read off the readiness object: that object does not exist until the
+   first score computes, and these are exactly the users — a fresh install, an empty week —
+   whose masthead would otherwise be blank on two of five tabs. */
+async function nightsLogged(){
+  try{
+    const r = await window.storage.list('entry:');
+    return r && r.keys ? r.keys.length : 0;
+  } catch(e){ return 0; }
+}
+async function weekSessionCounts(){
+  const week = new Set(getWeekDates());
+  const count = async (prefix)=>{
+    try{
+      const r = await window.storage.list(prefix);
+      if(!r || !r.keys) return 0;
+      /* `weekplan:<date>:<slot>` and `training:<date>:<timestamp>` share a shape, so one
+         splitter serves both. The date is always the second segment. */
+      return r.keys.filter(k=> week.has(String(k).split(':')[1])).length;
+    } catch(e){ return 0; }
+  };
+  return { planned: await count('weekplan:'), done: await count('training:') };
+}
+async function tabInsightFor(tab){
+  const sr = lastReadinessSr;
+  if(tab === 'insights'){
+    /* Before the first score, the line IS the wait: it is the same count the readout under
+       the number gives, in the one place that survives a scroll. */
+    if(!sr || sr.refused){
+      const n = sr && sr.observedNights != null ? sr.observedNights : await nightsLogged();
+      if(!n) return 'no nights logged yet';
+      /* TWO DIFFERENT WAITS, AND THE LINE HAS TO SAY WHICH. Refusal has two independent
+         gates — enough nights in the window, and a baseline mature enough to measure against
+         — and they do not clear together. Counting nights past the point where nights stopped
+         being the blocker produced "34 of 24 nights banked", which is not only wrong-looking
+         but points at the wrong thing to do about it. */
+      if(n < tabInsightNights()) return `night ${n} of ${tabInsightNights()}`;
+      if(sr && sr.maturity != null) return `baseline ${Math.round(sr.maturity * 100)}% formed`;
+      return `${n} nights banked`;
+    }
+    if(sr.inForm && sr.formDays >= 1){
+      const d = sr.formDays;
+      return `in form ${d}${sr.formDaysCapped ? '+' : ''} day${d === 1 && !sr.formDaysCapped ? '' : 's'}`;
+    }
+    const w = await weekSessionCounts();
+    if(w.planned) return `${w.done} of ${w.planned} done this week`;
+    if(w.done) return `${w.done} logged this week`;
+    return `${sr.observedNights} night${sr.observedNights === 1 ? '' : 's'} tracked`;
+  }
+  if(tab === 'training'){
+    const w = await weekSessionCounts();
+    /* "This week", said explicitly, because the empty case is common and is not a failure:
+       the board shows the current seven days, and a plan built on a Saturday starts on the
+       Monday after it. That user's plan is real and simply is not in the week being counted,
+       and a bare "nothing planned" would tell them it had not been built. */
+    if(!w.planned && !w.done) return 'no plan this week';
+    /* Reads backwards when there is nothing planned rather than leading with a zero: "0
+       planned" is the interesting half of nothing, and what was actually done is. */
+    if(!w.planned) return `${w.done} done · no plan`;
+    return `${w.planned} planned · ${w.done} done`;
+  }
+  if(tab === 'injuries'){
+    let live = [];
+    try{ live = await getActiveInjuries(); } catch(e){ return ''; }
+    /* The one line on this page that can be empty, and the one it is most worth writing:
+       "all clear" is the answer you came to the tab for, and a blank slot does not say it. */
+    if(!live.length) return 'all clear';
+    if(live.length === 1){
+      const inj = live[0];
+      const days = inj.date ? Math.max(0, Math.floor((Date.now() - new Date(inj.date + 'T00:00:00').getTime()) / 86400000)) : null;
+      const part = (inj.part || 'one area').toLowerCase();
+      return days == null ? part : `${part} · day ${days}`;
+    }
+    return `${live.length} open`;
+  }
+  if(tab === 'data'){
+    if(!sr || sr.observedNights == null){
+      const n = await nightsLogged();
+      return n ? `${n} night${n === 1 ? '' : 's'} logged` : 'no nights logged yet';
+    }
+    const bits = [`${sr.observedNights} night${sr.observedNights === 1 ? '' : 's'}`];
+    if(sr.weightBudget > 0 && sr.weightPresent != null){
+      bits.push(`${Math.round((sr.weightPresent / sr.weightBudget) * 100)}% of inputs`);
+    }
+    return bits.join(' · ');
+  }
+  if(tab === 'settings'){
+    try{
+      const setup = JSON.parse((await window.storage.get('settings:trainingSetup')).value);
+      const days = (setup.availableDays || []).length;
+      const bits = [];
+      if(days) bits.push(`${days} day${days === 1 ? '' : 's'}`);
+      if(setup.sessionLength) bits.push(`~${setup.sessionLength} min`);
+      return bits.join(' · ');
+    } catch(e){ return 'not set up yet'; }
+  }
+  return '';
+}
+/* The body class is where the active tab lives — there is no variable holding it — so this
+   is how anything outside the switch itself asks which page is on screen. */
+const currentTabName = ()=> (document.body.className.match(/\btab-(\w+)\b/) || [])[1] || 'insights';
+/* Fire and forget: the line is chrome and must never be a reason a tab switch waits. The
+   token drops the answer to a switch that has already been superseded, which is what a
+   double tap between two tabs produces. Cleared first rather than left in place while the
+   new one resolves, so the row never shows the previous page's fact under this page's name. */
+function renderTabInsight(tab){
+  const el = document.getElementById('currentTabInsight');
+  if(!el) return;
+  const mine = ++tabInsightToken;
+  el.textContent = '';
+  Promise.resolve()
+    .then(()=> tabInsightFor(tab))
+    .then(text=>{
+      if(mine !== tabInsightToken) return;
+      el.textContent = text || '';
+      if(typeof updateEyePerch === 'function') updateEyePerch();
+    })
+    .catch(err=>{
+      /* A line that cannot be computed is a line that is not shown — never a broken tab
+         switch. Logged rather than swallowed: this reads five different stores and a silent
+         empty slot would be indistinguishable from a page with nothing to say. */
+      try{ console.error('FACTORS: tab insight failed for', tab, err); } catch(e){}
+    });
+}
 function activateTab(name, opts){
   if(RETIRED_TABS[name]) name = RETIRED_TABS[name];
   if(!document.getElementById('panel-' + name)) name = 'insights';
@@ -9803,6 +9997,7 @@ function activateTab(name, opts){
   backdropEl.style.backgroundColor = TAB_BACKDROP_COLOR[name] || TAB_BACKDROP_COLOR.insights;
   const tabButton = document.querySelector(`.tab[data-tab="${name}"]`);
   if(tabButton) document.getElementById('currentTabWord').textContent = tabButton.textContent;
+  renderTabInsight(name);
   // Ahead of the scroll it is meant to cover, not after it.
   eyeScrollMuteUntil = Date.now() + 900;
   window.scrollTo(0, 0);
@@ -10721,7 +10916,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.13.525';
+const APP_VERSION = '2026.09.13.526';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -10970,6 +11165,7 @@ const APP_NOTES = {
   '2026.09.13.523': 'A week of raised resting heart rate now counts for more than one odd night, which is the right way round.',
   '2026.09.13.524': 'The in-form mark counts the days you have held it, and a day you did not open the app no longer breaks the run.',
   '2026.09.13.525': 'Days in form now sits on the mark\u2019s shoulder, the way a notification does.',
+  '2026.09.13.526': 'The tab\u2019s name has a line beside it now \u2014 one true thing about the page you are on.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -11913,6 +12109,12 @@ function updateHeaderCollapse(){
   // header having lost a line.
   const dateEl = document.getElementById('headerDate');
   if(dateEl) dateEl.style.opacity = (1 - progress).toFixed(3);
+  /* The line goes with the date, on the same progress and for the same reason: collapsed,
+     this row is the label, the tab scale across x120-270 and the mark perched beside the
+     name, and there is no width left for a reading. Fading rather than hiding means the mark
+     never arrives on top of live text — by the time it perches the line is already gone. */
+  const insightEl = document.getElementById('currentTabInsight');
+  if(insightEl) insightEl.style.opacity = (0.72 * (1 - progress)).toFixed(3);
   /* Collapsed, this row was 47px carrying 20px of content: a 15px label and the 20px mark
      perched beside it, inside 30px of padding. Everything else in it is already gone by then
      — the wordmark is at font-size 0 and the date at opacity 0 — so the padding was sized for
@@ -18939,6 +19141,10 @@ let confidenceExpanded = false;
 let lastReadinessSr = null;
 function renderReadinessConfidence(sr){
   lastReadinessSr = sr || null;
+  /* Today's line and Data's are both read off this object, and it arrives after the tab
+     switch that drew them — without this they show the previous day's answer until you
+     leave the tab and come back. */
+  if(typeof renderTabInsight === 'function') renderTabInsight(currentTabName());
   return paintReadinessConfidence();
 }
 function paintReadinessConfidence(){
