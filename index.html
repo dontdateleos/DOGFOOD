@@ -254,6 +254,33 @@
     --block-yellow:#e4be3a;
     --block-purple:#c4acff;
     --block-red:#ff7055;
+    /* THE CHIP'S FIVE BRACKETS. Red, orange, yellow, green, cyan at full strength — five
+       cabinet colours, nothing mixed, one per twenty points of score.
+
+       Deliberately not built from the block colours above. Those are the five TAB hues, and
+       a chip made of them would mean a score of 45 was the Data tab and a score of 85 was
+       the tab you were standing on. The brackets need to be sayable without being furniture.
+
+       FULL SATURATION IS AFFORDABLE BECAUSE THE FILL NO LONGER CARRIES THE CONTRAST. The rim
+       does -- see the dock's rim in mcMounts -- so none of these is darkened to clear 3:1
+       against a ground, which is what made every earlier attempt at this scale muddy.
+
+       Measured, and the trade is real: this is the strongest set for tritanopia of the ten
+       drawn (dE 20.0 between the closest pair) and the second weakest for deuteranopia (8.9,
+       where red and green fold together). It is a chosen cost rather than an oversight. The
+       eye SHAPE carries the same bracket independently -- eyeStateForScore picks one of five
+       silhouettes off the same Math.floor(score/20) -- so a reader who cannot separate the
+       fourth step from the first still has a face that can only mean one of them. */
+    --mark-b1:#ff2b2b;
+    --mark-b2:#ff9c1a;
+    --mark-b3:#ffe825;
+    --mark-b4:#3cf03c;
+    --mark-b5:#25e5ff;
+    /* One knockout for all five. Every bracket above is a bright fill, so the eyes are
+       near-black against each of them -- 5.2:1 on the red, 15.6:1 on the yellow -- and this
+       cannot be --ground, which is bone on the light ground and would put cream eyes at
+       1.2:1 inside the yellow. */
+    --mark-b-ink:#0c0d0b;
     /* The same five hues at 8% over the page's black. The tab colour stops being a
        highlighter the content sits ON TOP of and becomes a field it sits IN — which is what
        lets the section bands below carry the colour at full strength without two saturated
@@ -2985,7 +3012,15 @@
      the dark ground, and the two exchanged on bone. Not --mark-shell: those two are literals
      for the header, which is a dark pocket on both grounds, and #151320 on a #0c0d0b band
      would be a mark you cannot see. */
-  #todayFaceDock{ --mc-shell:var(--bg); color:var(--ground); }
+  /* THE SCORE'S BRACKET, THROUGH A FALLBACK RATHER THAN AN INLINE OVERRIDE.
+
+     paintChipBracket sets --mark-bracket and --mark-knock on this element, and they are read
+     here rather than written straight onto --mc-shell and color. That is what keeps the two
+     rules below working: they are more specific than this one and beat it, where an inline
+     --mc-shell would have beaten THEM and carried the day's colour through the landing the
+     flight is meant to arrive cream in. With no score the two custom properties are absent
+     and the fallbacks are exactly what this rule used to say. */
+  #todayFaceDock{ --mc-shell:var(--mark-bracket, var(--bg)); color:var(--mark-knock, var(--ground)); }
   /* Drained on arrival, then filled. It lands as the cream solid — which is the mark exactly
      as it looked in the wordmark on the way down — rather than as bare eyes, and the answer's
      colour comes up underneath it. The knockout has to stay dark through that: .landing turns
@@ -6092,6 +6127,33 @@ function eyeStateForScore(score){
   if(score == null) return EYE_STATES[0];
   return EYE_STATES[Math.max(0, Math.min(EYE_STATES.length-1, Math.floor(score/20)))];
 }
+/* THE CHIP'S COLOUR, OFF THE SAME BRACKET AS ITS SHAPE.
+
+   Math.floor(score/20), the identical expression eyeStateForScore uses, and deliberately not
+   a second one that happens to agree today: the whole point of colouring the chip is that the
+   silhouette and the fill say one thing, and two independent mappings are how they stop.
+
+   NO SCORE CLEARS RATHER THAN PICKS. A missing score is not a low score, and a chip sitting
+   at the bottom bracket on a day the app has nothing to say would be the app saying something
+   -- the wrong thing, in the loudest register it has. Cleared, the CSS falls back to the ink
+   fill the chip has always worn while it is waiting. */
+const MARK_BRACKETS = ['--mark-b1', '--mark-b2', '--mark-b3', '--mark-b4', '--mark-b5'];
+function paintChipBracket(score){
+  const dock = document.getElementById('todayFaceDock');
+  if(!dock) return;
+  if(score == null || isNaN(score)){
+    dock.style.removeProperty('--mark-bracket');
+    dock.style.removeProperty('--mark-knock');
+  } else {
+    const i = Math.max(0, Math.min(MARK_BRACKETS.length - 1, Math.floor(score / 20)));
+    dock.style.setProperty('--mark-bracket', `var(${MARK_BRACKETS[i]})`);
+    dock.style.setProperty('--mark-knock', 'var(--mark-b-ink)');
+  }
+  /* The solid is an SVG that reads both of those at paint time, so changing them changes
+     nothing until it is redrawn. --mc-shell is a registered @property and transitions on its
+     own; the eye ink is painted, and without this it would keep the previous bracket's. */
+  if(typeof drawMarkCube === 'function') drawMarkCube();
+}
 function applyEyeState(el, st){
   if(!el) return;
   el.style.setProperty('--eye-h', st.h);
@@ -7366,8 +7428,17 @@ function mcMounts(){
      same top-lit sphere whatever the band behind it is doing. There used to be a second
      dress here — an outline, for a chip with no answer in it yet — and no chip is ever
      unanswered now, because none of them asks anything. */
+  /* THE CHIP'S RING IS THE ONE THAT FLIPS. Every other mount defaults to --mark-ink, a fixed
+     near-white, and is right to: the header, the fab and the disc all sit in dark pockets on
+     both grounds. The chip sits on the PAGE, which is near-black on one ground and bone on
+     the other, so a fixed cream ring is an 18.7:1 edge on dark and a 1.1:1 nothing on bone.
+
+     --bg is the ink and already flips -- cream on dark, near-black on bone -- so as a ring it
+     measures 18.7:1 either way. That ring is what carries the chip's contrast against the
+     page, which is what lets the five bracket fills above be fully saturated instead of
+     darkened until they clear 3:1 on their own. */
   if(dsvg) out.push({ host:dock, id:'mcClipD', svg:dsvg, shell:'var(--mc-shell)',
-    ink:'currentColor', lit:'rgba(255,255,255,0.22)' });
+    ink:'currentColor', lit:'rgba(255,255,255,0.22)', rim:'var(--bg)' });
   return out;
 }
 function drawMarkCube(){ for(const m of mcMounts()) mcPaint(m); }
@@ -7662,6 +7733,11 @@ function settleEyes(){
 // the expression just changes under them; if they are up in the logo it is waiting for
 // them when they come down.
 function setEyeScore(score){
+  /* Before the two early returns below, not after. This function bails while a roll is in
+     flight and while the mark is away from the score, and on both of those days the chip is
+     still on screen wearing a colour -- so a bracket applied after them would be the previous
+     day's on exactly the days the mark was busy. */
+  paintChipBracket(score);
   const changed = score !== eyeScore;
   const waking = anim('wakeOnScore') && eyeScore == null && score != null;
   eyeScore = score;
@@ -10916,7 +10992,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.13.526';
+const APP_VERSION = '2026.09.13.527';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11166,6 +11242,7 @@ const APP_NOTES = {
   '2026.09.13.524': 'The in-form mark counts the days you have held it, and a day you did not open the app no longer breaks the run.',
   '2026.09.13.525': 'Days in form now sits on the mark\u2019s shoulder, the way a notification does.',
   '2026.09.13.526': 'The tab\u2019s name has a line beside it now \u2014 one true thing about the page you are on.',
+  '2026.09.13.527': 'The mark takes the score\u2019s colour \u2014 five brackets, red through cyan, the same five its face already had.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
