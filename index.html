@@ -755,17 +755,24 @@
   #logFab:active{ opacity:0.72; }
   #logFab:focus-visible{ outline:2px solid var(--bg); outline-offset:6px; }
 
-  /* THE FORM MARK. Three ascending bars, in the tab's own hue, at the head of the line
-     under the number. Small and drawn rather than an emoji: this corner is mono capitals and
-     one drawn mark, and the flame it replaces was the only emoji in the app.
-     Sized to the label's cap height so it sits on the same line rather than pushing it. */
-  .form-mark{ display:inline-flex; align-items:center; flex:none; margin-right:7px; }
+  /* THE FORM MARK. A filled square and the number of days you have held it, at the head of
+     the line under the number. Small and drawn rather than an emoji: this corner is mono
+     capitals and one drawn mark, and the flame it replaces was the only emoji in the app.
+
+     The square is 8px against the label's 10.5px capitals so it reads as a bullet rather than
+     as a second glyph competing with the count, and the count is the label's own mono at its
+     own size — the badge joins the line rather than sitting on it. */
+  .form-mark{ display:inline-flex; align-items:center; gap:4px; flex:none; margin-right:8px; }
   .form-mark[hidden]{ display:none; }
-  .form-mark svg{ width:12px; height:10px; display:block; fill:var(--band); }
+  .form-mark .fm-sq{ width:8px; height:8px; display:block; fill:var(--band); flex:none; }
+  .form-mark .fm-n{ font-family:var(--mono); font-size:10.5px; font-weight:var(--fw-bold);
+    letter-spacing:0.04em; color:var(--band); font-variant-numeric:tabular-nums; }
   /* On bone the tab hue is a fill rather than a line colour and comes out too pale against
      the ground, the same trap --band was in on the week board. The faded hue is the one
-     already mixed for this ground. */
-  html[data-ground="bone"] .form-mark svg{ fill:var(--hue-faded); }
+     already mixed for this ground — and the count needs it more than the square does, being
+     thin strokes rather than a solid. */
+  html[data-ground="bone"] .form-mark .fm-sq{ fill:var(--hue-faded); }
+  html[data-ground="bone"] .form-mark .fm-n{ color:var(--hue-faded); }
   /* Set to match .tab-label, since it is the other thing in this corner of the black. */
   /* Scoped past `.header-brand > *`, which sets position:relative on every direct child
      to lift them over the mark. At equal specificity that rule wins on order,
@@ -8151,17 +8158,18 @@ let workoutStreak = 0;
    It is deliberately not a count. There is no number to inflate and nothing to protect, so
    it cannot be gamed by turning up; it goes on when the training is going well and off when
    it is not, which is the only honest version of this badge. */
-function renderFormMark(inForm, z){
+function renderFormMark(inForm, days, capped){
   const el = document.getElementById('formMark');
   if(!el) return;
-  if(!inForm){ el.hidden = true; el.innerHTML = ''; el.removeAttribute('aria-label'); return; }
+  if(!inForm || !(days >= 1)){ el.hidden = true; el.innerHTML = ''; el.removeAttribute('aria-label'); return; }
   el.hidden = false;
-  el.setAttribute('aria-label', 'In form \u2014 your recent sessions are above your own baseline');
+  const shown = capped ? days + '+' : String(days);
+  el.setAttribute('aria-label', capped
+    ? `In form for ${days} days or more`
+    : `In form for ${days} day${days === 1 ? '' : 's'}`);
   el.title = 'In form';
-  el.innerHTML = '<svg viewBox="0 0 14 12" aria-hidden="true">'
-    + '<rect x="0"  y="7" width="3.4" height="5"   rx="0.6"/>'
-    + '<rect x="5.3" y="4" width="3.4" height="8"  rx="0.6"/>'
-    + '<rect x="10.6" y="0" width="3.4" height="12" rx="0.6"/></svg>';
+  el.innerHTML = '<svg class="fm-sq" viewBox="0 0 9 9" aria-hidden="true"><rect width="9" height="9" rx="1"/></svg>'
+    + '<b class="fm-n">' + shown + '</b>';
 }
 
 async function refreshEyeHistory(){
@@ -10702,7 +10710,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.13.523';
+const APP_VERSION = '2026.09.13.524';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -10949,6 +10957,7 @@ const APP_NOTES = {
   '2026.09.13.521': 'The score can see your training now, not just your sleep \u2014 where your lifts have been sitting is the heaviest thing in it.',
   '2026.09.13.522': 'The streak flame is gone. Three bars under the number say when your training is actually going somewhere.',
   '2026.09.13.523': 'A week of raised resting heart rate now counts for more than one odd night, which is the right way round.',
+  '2026.09.13.524': 'The in-form mark counts the days you have held it, and a day you did not open the app no longer breaks the run.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -14169,6 +14178,15 @@ async function computeSystemicReadiness(asOfDate){
     if(partsSeries.some(p=> p && p[k] != null && !isNaN(p[k]))) srBudget += SR_WEIGHTS[k];
   });
   const today = srRawFrom(partsToday, maturity, W, srBudget);
+  // Walk back while the form level has stayed above the bar. Breaks on the first day it did
+  // not, or on the first day there was not enough training history to say.
+  const formZs = (win.channels.form && win.channels.form.zSeries) || [];
+  let formDays = 0;
+  for(let i = formZs.length - 1; i >= 0; i--){
+    const v = formZs[i];
+    if(v == null || isNaN(v) || v < FORM_IN_THRESH) break;
+    formDays++;
+  }
 
   // Gates multiply rather than adding another weighted term, because illness and acute injury
   // are not "a bit more fatigue" — they are a reason to stop interpreting training load.
@@ -14265,6 +14283,19 @@ async function computeSystemicReadiness(asOfDate){
        fresh and flat, and a single number cannot say both. */
     inForm: partsToday.form != null && partsToday.form >= FORM_IN_THRESH,
     formZ: partsToday.form,
+    /* HOW LONG YOU HAVE HELD IT, IN DAYS.
+
+       Counted off the form channel's own series rather than off partsSeries, which is null on
+       any day with no morning entry — counting from that would break the run the first time
+       someone did not log a morning, which would quietly turn this back into an attendance
+       streak. Form does not depend on the entry; it depends on the sessions behind the day.
+       So a rest day, or a day you never opened the app, keeps the run if the training either
+       side of it was good, and only the training falling off ends it.
+
+       Capped by the window, which is SIG_BASE_DAYS = 60. Past that the count stops being able
+       to grow, so it says so rather than lying flat: formDaysCapped is what the badge reads to
+       print "60+". */
+    formDays, formDaysCapped: formDays >= win.dates.length,
     /* The headline is the score, not the rank of it.
 
        A percentile ranks you against your own recent days, and those days cluster: measured
@@ -19880,7 +19911,8 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
      can never be reporting different days. Only Systemic Readiness carries a form channel —
      the fallback layers below have never seen one — so anywhere it cannot run, this is off
      rather than guessed at. */
-  renderFormMark(!!(srResult && srResult.inForm), srResult && srResult.formZ);
+  renderFormMark(!!(srResult && srResult.inForm), srResult && srResult.formDays,
+                 !!(srResult && srResult.formDaysCapped));
 
   // Capacity becomes the main number once it has enough data (7+ paired days) — a
   // personalized, correlation-weighted read on today's numbers, not just today's
