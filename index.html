@@ -10992,7 +10992,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.13.527';
+const APP_VERSION = '2026.09.13.528';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11243,6 +11243,7 @@ const APP_NOTES = {
   '2026.09.13.525': 'Days in form now sits on the mark\u2019s shoulder, the way a notification does.',
   '2026.09.13.526': 'The tab\u2019s name has a line beside it now \u2014 one true thing about the page you are on.',
   '2026.09.13.527': 'The mark takes the score\u2019s colour \u2014 five brackets, red through cyan, the same five its face already had.',
+  '2026.09.13.528': 'Power work is judged on what you put out, not on tonnage \u2014 a peaking block no longer reads as losing form.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -14705,6 +14706,119 @@ function hrvSaturated(win){
   return h.z >= 1 && !rhrLow;
 }
 
+/* ---------- POWER IS NOT TONNAGE ----------
+
+   Capacity is defined per session type because the thing that counts as "more" differs by
+   type: for lifting it is volume, for running it is pace. Power is a third definition and
+   not a flavour of the first, and putting it under the first is actively harmful rather than
+   merely imprecise.
+
+   Six sets of three power cleans at 70% is a small fraction of the tonnage of five sets of
+   five squats. Score that session by volume and it reads as a collapse — and since .521 the
+   form channel is computed from capacity, and form is the heaviest input in the readiness
+   model at 0.200. So a power block scored on tonnage would tell you your form was falling
+   apart on exactly the days it was being built. That is the score lying, not rounding.
+
+   The library already carries the classifier: `category:"power"`, on ten entries. No new flag
+   and no new session type is needed for this — a mixed session (cleans, then squats) is
+   split by exercise and contributes to both strands, which is what capacityByDate's
+   array-then-mean shape was already built to do.
+
+   Built lazily rather than at module scope: EXERCISE_LIBRARY is declared some hundreds of
+   lines below this one and a const here would hit the temporal dead zone on load. */
+let _powerNames = null;
+function powerNameSet(){
+  if(_powerNames) return _powerNames;
+  _powerNames = new Set();
+  try{
+    for(const id in EXERCISE_LIBRARY){
+      const ex = EXERCISE_LIBRARY[id];
+      if(!ex || ex.category !== 'power') continue;
+      _powerNames.add(String(ex.name || '').toLowerCase().trim());
+      (ex.aliases || []).forEach(a=> _powerNames.add(String(a).toLowerCase().trim()));
+    }
+  } catch(e){}
+  return _powerNames;
+}
+/* exerciseId first, name second. Sessions logged before the library learned an exercise carry
+   a typed name and no id, and those are exactly the oldest sessions — the ones a baseline is
+   built from — so falling back to the name is not a nicety. Not guessTags: that walks every
+   alias of all 131 entries per call, and this runs once per exercise per session over the
+   whole history. */
+function isPowerExercise(e){
+  if(!e) return false;
+  if(e.exerciseId){
+    try{ const ex = EXERCISE_LIBRARY[e.exerciseId]; if(ex) return ex.category === 'power'; } catch(err){}
+  }
+  return powerNameSet().has(String(e.name || '').toLowerCase().trim());
+}
+/* WHAT MAKES A SET POWER WORK IS HOW IT WAS DONE, NOT WHAT IT IS CALLED.
+
+   Being in category:"power" is necessary and not sufficient. Five sets of twelve kettlebell
+   swings is conditioning: it is tonnage, it belongs in the volume strand, and treating it as
+   a power effort because of the movement's name is how a real session ends up counted as
+   neither. Measured before this rule existed — 5x12 swings at a climbing load produced NO
+   capacity at all, excluded from tonnage as "power" and then rejected by the power strand for
+   being outside the rep range. Worse than the bug it was meant to fix.
+
+   Six reps is the boundary because it is already the boundary: calculateE1RM grades anything
+   longer as less than 'good', so the power strand could not have used those sets anyway.
+   One threshold, stated once, and the two halves cannot drift apart.
+
+   An exercise with mixed sets — 3, 3, 3, 10 — counts as power work on its shortest set. The
+   alternative splits one exercise's volume across both strands for a case that essentially
+   does not occur, and a rule that is easy to state is worth more here than one that is exact
+   about something nobody does. */
+const POWER_REP_MAX = 6;
+function isPowerEffort(e){
+  if(!isPowerExercise(e)) return false;
+  const rs = (e.repsPerSet && e.repsPerSet.length) ? e.repsPerSet : (e.reps != null ? [e.reps] : []);
+  if(!rs.length) return false;
+  const lowest = rs.reduce((a,b)=> (b != null && b < a ? b : a), Infinity);
+  return isFinite(lowest) && lowest >= 1 && lowest <= POWER_REP_MAX;
+}
+/* The tonnage a session did that was NOT power work.
+
+   A session with no power work in it returns its own totalVolume untouched, which makes this
+   a no-op for every session already on disk — nobody's existing capacity, form channel or
+   score moves because this shipped. Only a session that actually contains power work takes
+   the itemised path. */
+function liftVolumeOf(s){
+  const ex = s && s.exercises;
+  if(!Array.isArray(ex) || !ex.length) return (s && s.totalVolume) || 0;
+  let v = 0, sawPower = false;
+  ex.forEach(e=>{
+    if(isPowerEffort(e)){ sawPower = true; return; }
+    v += (e.volume || 0);
+  });
+  return sawPower ? v : ((s.totalVolume != null ? s.totalVolume : v) || 0);
+}
+/* THE BEST SINGLE EFFORT IN A POWER EXERCISE, AS AN INDEX RATHER THAN A 1RM.
+
+   Epley on a triple is not a trustworthy 1RM, and it is not being used as one: the same
+   formula applied to the same exercise across sessions is a consistent index of output, which
+   is all the capacity ratio needs. calculateE1RM's own confidence grade does the gatekeeping
+   — only 'good' (six reps or fewer) counts, which is the power rep range anyway, so a set of
+   twelve swings cannot pose as a power effort.
+
+   An unloaded jump returns null and contributes nothing. That is deliberate and is the honest
+   answer until there is somewhere to record jump height: a box jump's height is the whole
+   measurement and the app cannot see it, so guessing one would be worse than having none. */
+function bestPowerEffort(e){
+  const ws = (e.weightPerSet && e.weightPerSet.length) ? e.weightPerSet : (e.weight != null ? [e.weight] : []);
+  const rs = (e.repsPerSet && e.repsPerSet.length) ? e.repsPerSet : (e.reps != null ? [e.reps] : []);
+  if(!ws.length || !rs.length) return null;
+  let best = null;
+  const n = Math.max(ws.length, rs.length);
+  for(let i = 0; i < n; i++){
+    const w = ws[Math.min(i, ws.length - 1)], r = rs[Math.min(i, rs.length - 1)];
+    if(!(w > 0)) continue;
+    const e1 = calculateE1RM(w, r);
+    if(!e1 || e1.confidence !== 'good') continue;
+    if(best == null || e1.value > best) best = e1.value;
+  }
+  return best;
+}
 function computeCapacityIndices(sessions){
   const byType = { strength: [], run: [] };
   sessions.forEach(s=>{ if(byType[s.type]) byType[s.type].push(s); });
@@ -14712,11 +14826,38 @@ function computeCapacityIndices(sessions){
 
   const capacityByDate = {};
   byType.strength.forEach((s,i)=>{
-    const prior = byType.strength.slice(Math.max(0,i-5), i).map(p=>p.totalVolume).filter(v=>v>0);
-    if(prior.length >= 2 && s.totalVolume > 0){
+    const prior = byType.strength.slice(Math.max(0,i-5), i).map(p=> liftVolumeOf(p)).filter(v=>v>0);
+    const today = liftVolumeOf(s);
+    if(prior.length >= 2 && today > 0){
       const baseline = mean(prior);
-      capacityByDate[s.date] = (capacityByDate[s.date]||[]).concat(s.totalVolume/baseline);
+      capacityByDate[s.date] = (capacityByDate[s.date]||[]).concat(today/baseline);
     }
+  });
+  /* THE POWER STRAND, PER EXERCISE RATHER THAN PER SESSION.
+
+     A power clean's output and a kettlebell swing's are not on one scale, so one pooled
+     "best effort of the day" would read a day of swings after a day of cleans as a 70% drop.
+     Each movement is compared against its own trailing five, and the day's ratios are handed
+     to the same array the tonnage strand writes to — so a session of cleans and squats
+     produces one capacity number that accounts for both. */
+  const powerHist = {};
+  byType.strength.forEach(s=>{
+    const best = {};
+    (s.exercises || []).forEach(e=>{
+      if(!isPowerEffort(e)) return;
+      const v = bestPowerEffort(e);
+      if(v == null) return;
+      const k = e.exerciseId || String(e.name || '').toLowerCase().trim();
+      if(!k) return;
+      if(best[k] == null || v > best[k]) best[k] = v;
+    });
+    Object.keys(best).forEach(k=>{
+      const prior = (powerHist[k] || []).slice(-5);
+      if(prior.length >= 2){
+        capacityByDate[s.date] = (capacityByDate[s.date]||[]).concat(best[k] / mean(prior));
+      }
+      (powerHist[k] = powerHist[k] || []).push(best[k]);
+    });
   });
   byType.run.forEach((s,i)=>{
     const prior = byType.run.slice(Math.max(0,i-5), i).map(p=> p.durationMin/p.distanceKm).filter(p=>isFinite(p)&&p>0);
