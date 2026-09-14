@@ -10950,7 +10950,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.14.537';
+const APP_VERSION = '2026.09.14.538';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11211,6 +11211,7 @@ const APP_NOTES = {
   '2026.09.14.535': 'A power goal is now prescribed like one \u2014 1\u20135 reps, not 8\u201312.',
   '2026.09.14.536': 'Power is a tick on your strength goal now, not a rival to it \u2014 train it explosively, and sessions open with the explosive work.',
   '2026.09.14.537': 'The streak is actually gone \u2014 no toast, no confetti, no line at the end of the week.',
+  '2026.09.14.538': 'A first score in sixteen mornings instead of twenty-four \u2014 the app stopped measuring you against a past you could not have had.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -12896,6 +12897,26 @@ async function buildSignalWindowUncached(asOfDate, days){
     })()
   };
   const observedNights = present.length;
+  /* COMPLETENESS IS DENSITY, AND DENSITY NEEDS A DENOMINATOR YOU COULD HAVE FILLED.
+
+     It was observedNights / 60 — the trailing analysis window — which is 60 on the morning
+     you install the app. So the question "are you logging enough of the window?" was actually
+     being asked as "have you had this app for a month?", and someone logging every night from
+     day one read as 5% complete on day three and waited twenty-four mornings for a first
+     score whatever they did.
+
+     Measured against the days they could actually have logged instead. Someone perfect from
+     day one is complete immediately, which is the truth, and the wait becomes what it should
+     always have been: the baseline gate. SR_MIN_MATURITY is a real statistical requirement —
+     a mean and a variance computed off a handful of nights are not a normal to judge anything
+     against — and it is the honest thing to be waiting for.
+
+     The span still caps it: past sixty days the window is the window, and someone returning
+     after a gap is measured on the window they have been present for rather than on a
+     denominator that shrinks to flatter them. */
+  const firstIdx = entries.findIndex(Boolean);
+  const possible = firstIdx < 0 ? span
+    : Math.min(span, Math.max(1, dates.length - firstIdx));
   return {
     dates, entries, channels,
     hrvSource: hrvRec.source, hrvSourceSince: hrvRec.since,
@@ -12903,8 +12924,8 @@ async function buildSignalWindowUncached(asOfDate, days){
     wakeMedianMin: wakeMedian, wakeMinutes: wakeMin, drinkMask, unwellMask, baselineMask,
     drankLastNight: !!drinkMask[drinkMask.length - 1],
     rhrBaseline: medianOf(rhrSeries.filter(v=>v != null)),
-    observedNights, windowNights: span,
-    completeness: observedNights / span
+    observedNights, windowNights: possible,
+    completeness: Math.min(1, observedNights / possible)
   };
 }
 
