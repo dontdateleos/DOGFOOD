@@ -4538,6 +4538,7 @@
                   <option value="strength">Strength</option>
                   <option value="hypertrophy">Hypertrophy / muscle gain</option>
                   <option value="running">Running performance</option>
+                  <option value="power">Power / explosiveness</option>
                 </select>
               </div>
               <div class="field-row" data-goal-field="exercise"><span class="field-label">Target exercise</span><input type="text" class="goal-target-exercise" placeholder="e.g. Back Squat"></div>
@@ -10992,7 +10993,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.14.530';
+const APP_VERSION = '2026.09.14.531';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11246,6 +11247,7 @@ const APP_NOTES = {
   '2026.09.13.528': 'Power work is judged on what you put out, not on tonnage \u2014 a peaking block no longer reads as losing form.',
   '2026.09.13.529': 'Thirty-one new power movements \u2014 pulls, jumps, throws and sprints \u2014 and every exercise in the library now answers to its own name.',
   '2026.09.14.530': 'Jumps and throws stop eating your growth allowance \u2014 a power set is not a hard set.',
+  '2026.09.14.531': 'Power is a goal you can choose \u2014 it puts one explosive movement at the front of the session, while you are fresh.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -15617,6 +15619,9 @@ const GOAL_TYPE_FIELDS = {
   hypertrophy: ['exercise','weight'],
   running: ['distance','time'],
   hyrox: ['time'],
+  // Same two as strength: a power goal is nearly always named against a lift you want to
+  // move faster or heavier — "Power Clean 100" — rather than against a distance or a clock.
+  power: ['exercise','weight'],
 };
 function updateGoalFieldVisibility(row){
   const type = row.querySelector('.goal-type').value;
@@ -21427,11 +21432,12 @@ const RUN_PLAN_TEMPLATES = {
 
 /* ---------- GOALS ---------- */
 const GOAL_TYPE_LABELS = {
-  strength:'Strength', hypertrophy:'Hypertrophy / muscle gain', running:'Running performance', hyrox:'Hyrox'
+  strength:'Strength', hypertrophy:'Hypertrophy / muscle gain', running:'Running performance', hyrox:'Hyrox',
+  power:'Power / explosiveness'
 };
 // Short forms for the word set across the panel edge, where the full label won't fit.
 const GOAL_TYPE_SHORT = {
-  strength:'Strength', hypertrophy:'Muscle', running:'Running', hyrox:'Hyrox'
+  strength:'Strength', hypertrophy:'Muscle', running:'Running', hyrox:'Hyrox', power:'Power'
 };
 
 /* ---------- ATHLETE LEVEL (calculated, replacing the manual novice/intermediate/advanced toggle) ----------
@@ -23335,7 +23341,11 @@ async function checkVariationDue(exerciseName){
 // abstract goal-suitability score and shouldn't be second-guessed by it.
 function goalTypeToSuitabilityField(goalType){
   const map = { strength:'strength', hypertrophy:'hypertrophy', running:'running', speed:'running',
-                body_composition:'hypertrophy', mobility:'mobility', general_fitness:'strength', hybrid:'strength' };
+                body_composition:'hypertrophy', mobility:'mobility', general_fitness:'strength', hybrid:'strength',
+                // goalSuitability has carried a `power` key since the library was written and
+                // nothing could ever reach it: without this line a power goal falls through
+                // the `|| 'strength'` below and silently picks main lifts on strength merit.
+                power:'power' };
   return map[goalType] || 'strength';
 }
 /* THE EXERCISE YOU NAMED AS THE GOAL, WHICH THE PLAN NEVER CONTAINED.
@@ -23495,7 +23505,9 @@ const GOAL_EMPHASIS_POOLS = {
   // Durability and propulsion for running.
   running:     ['hamstrings','calves','glutes','adductors','hips','core','ankles'],
   // Mixed-demand — grip and trunk matter as much as the legs here.
-  hyrox:       ['quads_knees','hamstrings','glutes','core','forearms','shoulders','calves','thoracic']
+  hyrox:       ['quads_knees','hamstrings','glutes','core','forearms','shoulders','calves','thoracic'],
+  // The triple-extension chain plus what has to survive the landings.
+  power:       ['hips','glutes','hamstrings','quads_knees','calves','core','thoracic','ankles']
 };
 
 // Emphasis must spread across regions. Picking three lower-body areas in one block tilts
@@ -23631,19 +23643,43 @@ const POWER_TIER_RANK = { S:4, A:3, B:2, C:1 };
    Strength is left out deliberately. The ordering evidence says put the priority quality
    where you are freshest; it does not say add plyometrics to a session that did not ask for
    them, and Nunes is about which of the exercises you are ALREADY doing goes first. */
-const POWER_GOAL_TYPES = ['running', 'hyrox'];
+const POWER_GOAL_TYPES = ['power', 'running', 'hyrox'];
 const POWER_PICKS_MAX = 1;      // one jump or throw, not a plyometric block before a lift
+/* RANKED BY TIER, THEN BY HOW MUCH IT ASKS OF YOU.
+
+   Tier alone was the whole sort, and that was safe only while the genuine power movements
+   carried no tier and therefore ranked zero. Once .529 tiered them the sort started working
+   as written and immediately handed a squat day the DEPTH JUMP: S tier, and the single
+   highest landing cost in the library — its own note says the drop height has to be earned
+   through hurdle hops first, not chosen. A regression created by fixing the tiers, and the
+   sort was always the thing that was wrong.
+
+   Difficulty breaks the tie, easiest first. Nothing is excluded: a power clean is "advanced"
+   because it is technical, not because it is dangerous, and someone whose stated goal is
+   power should be able to reach it. What the tie-break buys is that among equally-ranked
+   options the app hands over the one that asks least — squat jump before hurdle hop before
+   depth jump, clean pull before power snatch — which is the order a coach would teach them.
+
+   ISOLATION-PATTERN ENTRIES ARE LOWER-BODY ONLY. The old escape hatch was `category ===
+   'running_drill'`, which let anything filed as a drill through on ANY day: a pull day was
+   being led by Bounding, which has no relationship to a pull at all. Sprints and bounds are
+   lower-body power and belong on a squat or hinge day; on an upper day the honest answer is
+   that this library has no explosive pull, so the lead is simply absent. */
+const POWER_LEAD_DIFFICULTY = { beginner:0, intermediate:1, advanced:2 };
+const POWER_LEAD_LOWER_MOVEMENTS = ['squat', 'hinge', 'lunge'];
 function powerLeadForMovement(movement, opts){
   const o = opts || {};
   const rank = ex => POWER_TIER_RANK[ex.powerTier] || 0;
+  const ask = ex => POWER_LEAD_DIFFICULTY[ex.difficulty] == null ? 1 : POWER_LEAD_DIFFICULTY[ex.difficulty];
   const cands = Object.entries(EXERCISE_LIBRARY)
     .filter(([id, ex]) => ex.category === 'power' || ex.category === 'running_drill')
     .filter(([id, ex]) => !o.bodyweightOnly || isBodyweightExercise(ex))
     .filter(([id, ex]) => !o.usedNames || !o.usedNames.has(ex.name))
     // Same pattern as the lift it precedes where one exists, so it primes that movement
     // rather than being an unrelated jump bolted to the front of the session.
-    .filter(([id, ex]) => !movement || !ex.movement || ex.movement === movement || ex.category === 'running_drill')
-    .sort((a, b) => rank(b[1]) - rank(a[1]));
+    .filter(([id, ex]) => !movement || !ex.movement || ex.movement === movement
+      || (ex.movement === 'isolation' && POWER_LEAD_LOWER_MOVEMENTS.includes(movement)))
+    .sort((a, b) => (rank(b[1]) - rank(a[1])) || (ask(a[1]) - ask(b[1])));
   if(!cands.length) return null;
   const [id, ex] = cands[0];
   return { name: ex.name, area: ex.area, secondaryArea: ex.secondaryArea || '',
@@ -23659,7 +23695,8 @@ const GOAL_TIER_FIELD = {
   hypertrophy: 'hypertrophyTier',
   strength: 'strengthTier',
   running: 'strengthTier',   // running support is about force production and durability
-  hyrox: 'strengthTier'
+  hyrox: 'strengthTier',
+  power: 'powerTier'
 };
 // Tie-break when two exercises rank equally. A loaded multi-joint movement gives more
 // back per slot than a single-joint isolation, so it wins an otherwise equal contest —
@@ -24018,7 +24055,11 @@ function movementFitsTag(movement, tag){
    and the ratio depends on which is the priority emphasis — not an even 3-way split. */
 const GOAL_DOMAIN = {
   strength:'lift', hypertrophy:'lift',
-  running:'run'
+  running:'run',
+  // Power is trained in a gym session, not on a run, so it competes on the lift side of
+  // determineHybridPlan. Sprints are the one part of it that happen on a track and they
+  // arrive as the session's power lead rather than as a run.
+  power:'lift'
 };
 
 /* ---------- REAL PERIODIZATION ----------
