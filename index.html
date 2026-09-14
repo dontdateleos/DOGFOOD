@@ -10992,7 +10992,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.13.529';
+const APP_VERSION = '2026.09.14.530';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11245,6 +11245,7 @@ const APP_NOTES = {
   '2026.09.13.527': 'The mark takes the score\u2019s colour \u2014 five brackets, red through cyan, the same five its face already had.',
   '2026.09.13.528': 'Power work is judged on what you put out, not on tonnage \u2014 a peaking block no longer reads as losing form.',
   '2026.09.13.529': 'Thirty-one new power movements \u2014 pulls, jumps, throws and sprints \u2014 and every exercise in the library now answers to its own name.',
+  '2026.09.14.530': 'Jumps and throws stop eating your growth allowance \u2014 a power set is not a hard set.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -13772,6 +13773,30 @@ function loadSeriesFor(sessions, asOfDate, days){
         // is reported on its own rather than folded into a total, because it ignores load and
         // tonnage ignores intensity — neither substitutes for the other.
         if(!ex.area || !ex.sets) return;
+        /* A POWER SET IS NOT A HARD SET, AND THE LANDMARKS ARE ALL HYPERTROPHY LANDMARKS.
+
+           mev/mav/mrv are dosing figures for sets taken near failure in a growth rep range.
+           Four sets of three box jumps is none of those things — the whole point of the set
+           is that it ends while every rep is still fast — and counting it against a quad MRV
+           of 19 spends a fifth of the week's growth allowance on work that produces almost
+           no growth. The app then reads the quad as approaching its ceiling and cuts squat
+           volume to protect you from jumping.
+
+           The landmarks sit exactly where the power library lives: thirteen jumps land on
+           quads_knees (mrv 19), the two pogo variants on calves (18), the throws and the
+           plyo push-up on chest (20). One plyometric session of five sets of hurdle hops and
+           four of box jumps booked nine of nineteen weekly quad sets.
+
+           Excluded outright rather than counted at a fraction, for the same reason the
+           capacity strand in .528 refuses rather than guesses: a fraction would be a number
+           invented to look careful. isPowerEffort is the same predicate both ledgers use, so
+           what counts as power work cannot differ between them.
+
+           MECHANICAL LOAD ABOVE IS DELIBERATELY LEFT ALONE. Power work under-reads there —
+           tonnage undercounts neural cost — but removing it would take the count to zero,
+           which is further from the truth than a low number. Fixing that properly means a
+           neural-cost term, which is a bigger argument than this one. */
+        if(isPowerEffort(ex)) return;
         slot.hardSets[ex.area] = (slot.hardSets[ex.area] || 0) + ex.sets;
       });
     } else if(s.type === 'run'){
