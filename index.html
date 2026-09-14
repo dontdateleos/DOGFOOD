@@ -4538,7 +4538,6 @@
                   <option value="strength">Strength</option>
                   <option value="hypertrophy">Hypertrophy / muscle gain</option>
                   <option value="running">Running performance</option>
-                  <option value="power">Power / explosiveness</option>
                 </select>
               </div>
               <div class="field-row" data-goal-field="exercise"><span class="field-label">Target exercise</span><input type="text" class="goal-target-exercise" placeholder="e.g. Back Squat"></div>
@@ -4546,6 +4545,12 @@
               <div class="field-row" data-goal-field="distance"><span class="field-label">Target distance (km)</span><input type="number" step="0.1" class="goal-target-distance" placeholder="or leave blank"></div>
               <div class="field-row" data-goal-field="time"><span class="field-label">Target time (min)</span><input type="number" step="0.1" class="goal-target-time" placeholder="or leave blank"></div>
               <div class="field-row" data-goal-field="date"><span class="field-label">Target date</span><input type="date" class="goal-target-date"></div>
+              <!-- POWER IS A PROPERTY OF A STRENGTH GOAL, NOT A RIVAL TO IT. It was briefly a
+                   fourth option in the select above, and that put it in competition with the
+                   thing it is meant to modify: nobody wants to be explosive INSTEAD of
+                   strong. Ticked, the session opens with a jump, a throw or a pull while you
+                   are freshest; everything else about the week is unchanged. -->
+              <div class="field-row" data-goal-field="power"><input type="checkbox" class="goal-power" id="goalPowerCheckbox" style="width:auto; flex:none;"><label for="goalPowerCheckbox" style="font-size:var(--fs-md);">Train it explosively — start sessions with power work</label></div>
               <!-- THE ROLE, WHERE THE ARROWS WERE. Three rows of a form used to be reordered
                    with per-row up/down buttons to express what the generator reads as two
                    bits: which domain leads, and whether the other is only being held. Asked
@@ -10996,7 +11001,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.14.535';
+const APP_VERSION = '2026.09.14.536';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11255,6 +11260,7 @@ const APP_NOTES = {
   '2026.09.14.533': 'Jumps and throws record how far, not how heavy \u2014 the one number that was missing from all of it.',
   '2026.09.14.534': 'Bodyweight training finally counts as training \u2014 pull-ups, jumps and sprints stop reading as a rest day.',
   '2026.09.14.535': 'A power goal is now prescribed like one \u2014 1\u20135 reps, not 8\u201312.',
+  '2026.09.14.536': 'Power is a tick on your strength goal now, not a rival to it \u2014 train it explosively, and sessions open with the explosive work.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -15739,13 +15745,14 @@ const SESSION_FOCUS_INFO = {
 
 
 const GOAL_TYPE_FIELDS = {
-  strength: ['exercise','weight'],
+  // 'power' is the tickbox, and it belongs to strength alone: explosive work serves a
+  // strength goal and has nothing to offer a hypertrophy one — the ordering evidence that
+  // puts a jump first is explicit that exercise order does nothing for size (ES 0.03).
+  strength: ['exercise','weight','power'],
   hypertrophy: ['exercise','weight'],
   running: ['distance','time'],
   hyrox: ['time'],
-  // Same two as strength: a power goal is nearly always named against a lift you want to
-  // move faster or heavier — "Power Clean 100" — rather than against a distance or a clock.
-  power: ['exercise','weight'],
+
 };
 function updateGoalFieldVisibility(row){
   const type = row.querySelector('.goal-type').value;
@@ -15855,6 +15862,7 @@ function openGoalEditor(index){
   row.querySelector('.goal-target-distance').value = g.targetDistance ?? '';
   row.querySelector('.goal-target-time').value = g.targetTime ?? '';
   row.querySelector('.goal-target-date').value = g.targetDate || '';
+  row.querySelector('.goal-power').checked = !!g.power;
   updateGoalFieldVisibility(row);
   paintGoalRoleAsk(g.role);
   document.getElementById('goalEditRemove').style.display = goalDraft.length > 1 ? '' : 'none';
@@ -15895,6 +15903,9 @@ function commitGoalEdit(){
   g.targetDistance = parseFloat(row.querySelector('.goal-target-distance').value) || null;
   g.targetTime = parseFloat(row.querySelector('.goal-target-time').value) || null;
   g.targetDate = row.querySelector('.goal-target-date').value || null;
+  // Only a strength goal can carry it, so a type change away from strength drops it rather
+  // than leaving an invisible flag that still adds a jump to every session.
+  g.power = g.type === 'strength' && !!row.querySelector('.goal-power').checked;
 }
 function addGoalRow(goal){
   if(goalDraft.length >= 3) return;
@@ -21576,12 +21587,11 @@ const RUN_PLAN_TEMPLATES = {
 
 /* ---------- GOALS ---------- */
 const GOAL_TYPE_LABELS = {
-  strength:'Strength', hypertrophy:'Hypertrophy / muscle gain', running:'Running performance', hyrox:'Hyrox',
-  power:'Power / explosiveness'
+  strength:'Strength', hypertrophy:'Hypertrophy / muscle gain', running:'Running performance', hyrox:'Hyrox'
 };
 // Short forms for the word set across the panel edge, where the full label won't fit.
 const GOAL_TYPE_SHORT = {
-  strength:'Strength', hypertrophy:'Muscle', running:'Running', hyrox:'Hyrox', power:'Power'
+  strength:'Strength', hypertrophy:'Muscle', running:'Running', hyrox:'Hyrox'
 };
 
 /* ---------- ATHLETE LEVEL (calculated, replacing the manual novice/intermediate/advanced toggle) ----------
@@ -23485,11 +23495,7 @@ async function checkVariationDue(exerciseName){
 // abstract goal-suitability score and shouldn't be second-guessed by it.
 function goalTypeToSuitabilityField(goalType){
   const map = { strength:'strength', hypertrophy:'hypertrophy', running:'running', speed:'running',
-                body_composition:'hypertrophy', mobility:'mobility', general_fitness:'strength', hybrid:'strength',
-                // goalSuitability has carried a `power` key since the library was written and
-                // nothing could ever reach it: without this line a power goal falls through
-                // the `|| 'strength'` below and silently picks main lifts on strength merit.
-                power:'power' };
+                body_composition:'hypertrophy', mobility:'mobility', general_fitness:'strength', hybrid:'strength' };
   return map[goalType] || 'strength';
 }
 /* THE EXERCISE YOU NAMED AS THE GOAL, WHICH THE PLAN NEVER CONTAINED.
@@ -23649,9 +23655,7 @@ const GOAL_EMPHASIS_POOLS = {
   // Durability and propulsion for running.
   running:     ['hamstrings','calves','glutes','adductors','hips','core','ankles'],
   // Mixed-demand — grip and trunk matter as much as the legs here.
-  hyrox:       ['quads_knees','hamstrings','glutes','core','forearms','shoulders','calves','thoracic'],
-  // The triple-extension chain plus what has to survive the landings.
-  power:       ['hips','glutes','hamstrings','quads_knees','calves','core','thoracic','ankles']
+  hyrox:       ['quads_knees','hamstrings','glutes','core','forearms','shoulders','calves','thoracic']
 };
 
 // Emphasis must spread across regions. Picking three lower-body areas in one block tilts
@@ -23787,7 +23791,14 @@ const POWER_TIER_RANK = { S:4, A:3, B:2, C:1 };
    Strength is left out deliberately. The ordering evidence says put the priority quality
    where you are freshest; it does not say add plyometrics to a session that did not ask for
    them, and Nunes is about which of the exercises you are ALREADY doing goes first. */
-const POWER_GOAL_TYPES = ['power', 'running', 'hyrox'];
+/* Running and Hyrox want explosive quality by their nature -- sprint, jump, change of
+   direction -- and a strength goal wants it when you have asked for it. `power` is no longer
+   among these: it was a goal type for four commits and is a tickbox on strength now, because
+   as a rival option it competed with the very thing it modifies. */
+const POWER_GOAL_TYPES = ['running', 'hyrox'];
+function goalWantsPower(g){
+  return !!g && !g.isMaintenance && (POWER_GOAL_TYPES.includes(g.type) || !!g.power);
+}
 const POWER_PICKS_MAX = 1;      // one jump or throw, not a plyometric block before a lift
 /* RANKED BY TIER, THEN BY HOW MUCH IT ASKS OF YOU.
 
@@ -23854,8 +23865,7 @@ const GOAL_TIER_FIELD = {
   hypertrophy: 'hypertrophyTier',
   strength: 'strengthTier',
   running: 'strengthTier',   // running support is about force production and durability
-  hyrox: 'strengthTier',
-  power: 'powerTier'
+  hyrox: 'strengthTier'
 };
 // Tie-break when two exercises rank equally. A loaded multi-joint movement gives more
 // back per slot than a single-joint isolation, so it wins an otherwise equal contest —
@@ -24214,11 +24224,7 @@ function movementFitsTag(movement, tag){
    and the ratio depends on which is the priority emphasis — not an even 3-way split. */
 const GOAL_DOMAIN = {
   strength:'lift', hypertrophy:'lift',
-  running:'run',
-  // Power is trained in a gym session, not on a run, so it competes on the lift side of
-  // determineHybridPlan. Sprints are the one part of it that happen on a track and they
-  // arrive as the session's power lead rather than as a run.
-  power:'lift'
+  running:'run'
 };
 
 /* ---------- REAL PERIODIZATION ----------
@@ -24236,13 +24242,6 @@ const GOAL_DOMAIN = {
 function liftGoalToFocus(goalType){
   if(goalType==='strength') return 'strength';
   if(goalType==='hypertrophy') return 'hypertrophy';
-  /* SESSION_FOCUS_INFO.power has sat here since the focus table was written -- 1-5 reps,
-     "low reps, high intent, full rest between sets" -- and nothing ever selected it. A power
-     goal fell through to 'general' and got prescribed 8-12, so the app offered the goal,
-     opened the session with a jump, ranked the accessories on powerTier, progressed the
-     lifts on bar speed, and then asked for sets of ten. The one line that made all of that
-     agree was missing. */
-  if(goalType==='power') return 'power';
   if(goalType==='hyrox') return 'general';
   return 'general';
 }
@@ -28045,9 +28044,19 @@ function assignPrescription(ex, plannedFocus, personalSets){
     || WORKOUT_TIME_ESTIMATE.strength.defaultSetsByCategory.default));
   const focusInfo = plannedFocus && SESSION_FOCUS_INFO[plannedFocus];
   const isIsolation = category === 'isolation' || category === 'bulletproofing';
-  const range = isIsolation
-    ? ISOLATION_REP_RANGE
-    : { repLow: focusInfo ? focusInfo.repLow : 8, repHigh: focusInfo ? focusInfo.repHigh : 12 };
+  /* POWER WORK KEEPS ITS OWN REP RANGE WHATEVER THE SESSION IS. The lead is an explosive
+     movement dropped into a strength or hypertrophy week, and the session's focus would
+     otherwise prescribe it: eight to twelve box jumps in a hypertrophy week, which is a
+     conditioning circuit rather than power work. SESSION_FOCUS_INFO.power is where those
+     numbers have always lived — 1-5 reps, "low reps, high intent, full rest between sets" —
+     and this is the first thing to read them. Same argument the isolation branch above makes
+     in the other direction, and the same shape of answer. */
+  const powerRange = (category === 'power' || ex.isPowerLead) ? SESSION_FOCUS_INFO.power : null;
+  const range = powerRange
+    ? { repLow: powerRange.repLow, repHigh: powerRange.repHigh }
+    : isIsolation
+      ? ISOLATION_REP_RANGE
+      : { repLow: focusInfo ? focusInfo.repLow : 8, repHigh: focusInfo ? focusInfo.repHigh : 12 };
   ex.sets = sets;
   ex.repLow = range.repLow;
   ex.repHigh = range.repHigh;
@@ -28101,8 +28110,7 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
   const topGoalType = (goals && goals.list && goals.list[0] && goals.list[0].type) || null;
   // Power leads only for someone who asked for it — and not as a maintenance goal, which is
   // the app's own word for "keep it ticking over", not "put it first while I am fresh".
-  const wantsPowerLead = !!(goals && goals.list && goals.list.some(g =>
-    POWER_GOAL_TYPES.includes(g.type) && !g.isMaintenance));
+  const wantsPowerLead = !!(goals && goals.list && goals.list.some(goalWantsPower));
   const emphasis = await getBlockEmphasisAreas(topGoalType, todayStr);
   const emphasisAreas = emphasis.areas;
   // getBlockPhase returns null on a deload week rather than a phase name, so resolve it
