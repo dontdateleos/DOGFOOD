@@ -10993,7 +10993,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.14.531';
+const APP_VERSION = '2026.09.14.532';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11248,6 +11248,7 @@ const APP_NOTES = {
   '2026.09.13.529': 'Thirty-one new power movements \u2014 pulls, jumps, throws and sprints \u2014 and every exercise in the library now answers to its own name.',
   '2026.09.14.530': 'Jumps and throws stop eating your growth allowance \u2014 a power set is not a hard set.',
   '2026.09.14.531': 'Power is a goal you can choose \u2014 it puts one explosive movement at the front of the session, while you are fresh.',
+  '2026.09.14.532': 'Power work progresses on speed, not on reps \u2014 the app stops telling you to grind two more onto a clean.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -29026,6 +29027,52 @@ async function suggestProgression(ex, focusInfo){
   // Stall: same weight for consecutive sessions without reaching the top of the range.
   const sameWeightRun = history.filter(h=>h.weight === last.weight).length;
   const stalled = !hitTopOnEverySet && sameWeightRun >= PROGRESSION_STALL_LIMIT + 1;
+
+  /* ---------- POWER DOES NOT PROGRESS BY ADDING REPS ----------
+
+     Everything below this is double progression: reach the top of the rep range on every
+     set, then add weight. Applied to a power movement it gives precisely the wrong
+     instruction. The power focus prescribes 1-5 reps, so a lifter who does a clean triple
+     is told to "Add reps toward 5" — and grinding two more reps onto a power clean is the
+     definition of not training power. The set is meant to end while every rep is still
+     fast.
+
+     THE DROP-OFF PROXY ALREADY MEASURES THE RIGHT THING, WITH THE SIGN REVERSED. For a
+     strength set, reps falling away across sets means the load was genuinely heavy and the
+     answer is to repeat it. For a power set it means the bar slowed down, which is the one
+     thing a power set must not do — so the same reading that says "hold" for strength says
+     "too heavy" here. That inversion is the whole rule.
+
+     Judged on what was actually DONE, not on what the movement is called: isPowerEffort is
+     the same predicate the capacity and hard-set ledgers use, so twelve-rep kettlebell
+     swings progress as the conditioning they are, and a triple with the same bell progresses
+     as power. Three ledgers, one definition.
+
+     With no per-set reps there is no speed signal at all, so it falls back to the rule a
+     lifter without a velocity tracker actually uses: if you completed the prescribed reps,
+     add a little; if you did not, repeat. */
+  const lastAsLogged = { exerciseId: ex.exerciseId, name: ex.name,
+                         reps: last.reps, repsPerSet: last.repsPerSet };
+  if(isPowerExercise(ex) && isPowerEffort(lastAsLogged)){
+    const repLow = ex.repLow != null ? ex.repLow : (focusInfo && focusInfo.repLow != null ? focusInfo.repLow : 1);
+    const completed = minReps != null && minReps >= repLow;
+    if(effort && effort.level === 'near_failure'){
+      const down = Math.max(increment, Math.round((last.weight - increment) * 2) / 2);
+      return { action:'reduce', weight: down, fromWeight: last.weight, noteCaps:true,
+               note: `-${increment}kg — reps fell away, too heavy to stay fast` };
+    }
+    if(effort && effort.level === 'moderate'){
+      return { action:'hold', weight: last.weight, noteCaps:true,
+               note: `Repeat — speed held, but only just` };
+    }
+    if(!completed){
+      return { action:'hold', weight: last.weight, noteCaps:true,
+               note: `Repeat — ${repLow} clean reps a set before adding` };
+    }
+    const up = Math.round((last.weight + increment) * 2) / 2;
+    return { action:'add_weight', weight: up, fromWeight: last.weight, noteCaps:true,
+             note: `+${increment}kg — every rep stayed fast` };
+  }
 
   if(hitTopOnEverySet){
     const next = Math.round((last.weight + increment) * 2) / 2;
