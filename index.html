@@ -10996,7 +10996,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.14.534';
+const APP_VERSION = '2026.09.14.535';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11254,6 +11254,7 @@ const APP_NOTES = {
   '2026.09.14.532': 'Power work progresses on speed, not on reps \u2014 the app stops telling you to grind two more onto a clean.',
   '2026.09.14.533': 'Jumps and throws record how far, not how heavy \u2014 the one number that was missing from all of it.',
   '2026.09.14.534': 'Bodyweight training finally counts as training \u2014 pull-ups, jumps and sprints stop reading as a rest day.',
+  '2026.09.14.535': 'A power goal is now prescribed like one \u2014 1\u20135 reps, not 8\u201312.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -24235,6 +24236,13 @@ const GOAL_DOMAIN = {
 function liftGoalToFocus(goalType){
   if(goalType==='strength') return 'strength';
   if(goalType==='hypertrophy') return 'hypertrophy';
+  /* SESSION_FOCUS_INFO.power has sat here since the focus table was written -- 1-5 reps,
+     "low reps, high intent, full rest between sets" -- and nothing ever selected it. A power
+     goal fell through to 'general' and got prescribed 8-12, so the app offered the goal,
+     opened the session with a jump, ranked the accessories on powerTier, progressed the
+     lifts on bar speed, and then asked for sets of ten. The one line that made all of that
+     agree was missing. */
+  if(goalType==='power') return 'power';
   if(goalType==='hyrox') return 'general';
   return 'general';
 }
