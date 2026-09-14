@@ -10993,7 +10993,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.14.532';
+const APP_VERSION = '2026.09.14.533';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11249,6 +11249,7 @@ const APP_NOTES = {
   '2026.09.14.530': 'Jumps and throws stop eating your growth allowance \u2014 a power set is not a hard set.',
   '2026.09.14.531': 'Power is a goal you can choose \u2014 it puts one explosive movement at the front of the session, while you are fresh.',
   '2026.09.14.532': 'Power work progresses on speed, not on reps \u2014 the app stops telling you to grind two more onto a clean.',
+  '2026.09.14.533': 'Jumps and throws record how far, not how heavy \u2014 the one number that was missing from all of it.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -14834,6 +14835,19 @@ function liftVolumeOf(s){
    answer until there is somewhere to record jump height: a box jump's height is the whole
    measurement and the app cannot see it, so guessing one would be worse than having none. */
 function bestPowerEffort(e){
+  /* THE RESULT, WHERE THE RESULT IS THE MEASUREMENT.
+
+     A box jump has no load to put an Epley formula on: the height IS the effort, and until
+     there was somewhere to write it down this function returned null and jumps contributed
+     nothing to capacity at all. Entries carrying resultUnit — fifteen of them, jumps in cm
+     and bounds and throws in m — now store a number per session, and it feeds the same ratio
+     an e1RM does. Nothing downstream needs to know which it got: both are a figure that goes
+     up when you are going better, compared against the same movement's own trailing five.
+
+     Deliberately not sprints. A sprint's result is a time, where LOWER is better, and a ratio
+     that silently inverts for some rows is worse than a row with no ratio. Timed movements
+     want their own handling and do not have it yet. */
+  if(e.result != null && !isNaN(e.result) && e.result > 0) return +e.result;
   const ws = (e.weightPerSet && e.weightPerSet.length) ? e.weightPerSet : (e.weight != null ? [e.weight] : []);
   const rs = (e.repsPerSet && e.repsPerSet.length) ? e.repsPerSet : (e.reps != null ? [e.reps] : []);
   if(!ws.length || !rs.length) return null;
@@ -15354,12 +15368,12 @@ const EXERCISE_LIBRARY = {
   plank: { name:"Plank", aliases:["plank"], category:"bulletproofing", area:"core", secondaryArea:"", movement:"core", difficulty:"beginner", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"C", tierEvidence:"moderate", tierNote:"Isometric anti-extension. Plateaus quickly for trained lifters — Ab Wheel Rollout (A) trains the same pattern through range under far greater demand." },
   hanging_leg_raise: { name:"Hanging Leg Raise", longLengthBias:true, longLengthNote:"abdominals loaded from a hanging, lengthened trunk position", aliases:["hanging leg raise", "leg raise"], category:"calisthenics", area:"core", secondaryArea:"hips", movement:"core", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"B", hypertrophyTier:"B", powerTier:"C", tierEvidence:"moderate", tierNote:"Loaded hip flexion plus anti-extension through a long range, with the abdominals stretched at the bottom. One of the better trainable core movements once a hang is comfortable." },
   pogos: { name:"Pogos", aliases:["pogos", "pogo jumps", "ankle bounces"], category:"power", area:"calves", secondaryArea:"ankles", movement:"isolation", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Ankle stiffness and short ground contact. Almost no muscular growth or strength in it — the value is elastic, which is exactly the quality no barbell movement trains.", warmupSuitable:true, runningRelevance:{economy:2,durability:0,sprint:1,acceleration:1,tendonCapacity:1,singleLegStrength:0,plyometricReactive:3} },
-  box_jump: { name:"Box Jump", aliases:["box jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"intermediate", equipment:["box"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"moderate", tierNote:"Box height measures how high you can TUCK, not how high you jumped, which is why it ranks below a countermovement jump for output despite looking more impressive. Its real use is landing low and soft.", runningRelevance:{economy:2,durability:0,sprint:1,acceleration:1,tendonCapacity:0,singleLegStrength:0,plyometricReactive:3} },
-  depth_jump: { name:"Depth Jump", aliases:["depth jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"advanced", equipment:["box"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate", tierNote:"The highest reactive-strength demand in the library. Also the highest landing cost: drop height should be earned through hurdle hops and depth drops, not chosen." },
-  broad_jump: { name:"Broad Jump", aliases:["broad jump", "standing long jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"moderate", tierNote:"Horizontal output, and a measurement you can take with a tape — one of the few jumps whose result the app could actually record." },
+  box_jump: { name:"Box Jump", resultUnit:"cm", aliases:["box jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"intermediate", equipment:["box"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"moderate", tierNote:"Box height measures how high you can TUCK, not how high you jumped, which is why it ranks below a countermovement jump for output despite looking more impressive. Its real use is landing low and soft.", runningRelevance:{economy:2,durability:0,sprint:1,acceleration:1,tendonCapacity:0,singleLegStrength:0,plyometricReactive:3} },
+  depth_jump: { name:"Depth Jump", resultUnit:"cm", aliases:["depth jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"advanced", equipment:["box"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate", tierNote:"The highest reactive-strength demand in the library. Also the highest landing cost: drop height should be earned through hurdle hops and depth drops, not chosen." },
+  broad_jump: { name:"Broad Jump", resultUnit:"m", aliases:["broad jump", "standing long jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"moderate", tierNote:"Horizontal output, and a measurement you can take with a tape — one of the few jumps whose result the app could actually record." },
   a_skip: { name:"A-Skip", aliases:["a skip", "a-skip"], category:"running_drill", area:"quads_knees", secondaryArea:"hips", movement:"isolation", difficulty:"beginner", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"C", tierEvidence:"limited", tierNote:"A coordination and posture drill, not a power exercise. Tiers are low because it is not trying to be one; it belongs in a warm-up, which is where warmupSuitable puts it.", warmupSuitable:true, runningRelevance:{economy:0,durability:0,sprint:0,acceleration:0,tendonCapacity:0,singleLegStrength:0,plyometricReactive:0} },  // Honest 0s per E.3 point 10 — coaching tradition, no causal RCT links drill practice to race performance
   high_knees: { name:"High Knees", aliases:["high knees"], category:"running_drill", area:"quads_knees", secondaryArea:"hips", movement:"isolation", difficulty:"beginner", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"C", tierEvidence:"limited", tierNote:"Same as the A-skip: rhythm and mechanics at low intensity. Useful before sprinting, no use as a stimulus.", warmupSuitable:true },
-  bounding: { name:"Bounding", aliases:["bounding"], category:"running_drill", area:"quads_knees", secondaryArea:"hips", movement:"isolation", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Horizontal reactive work with real output, sitting in running_drill rather than power because that is where the running plan reaches for it. The single-leg bound is the same quality with the difficulty made explicit.", warmupSuitable:true },
+  bounding: { name:"Bounding", resultUnit:"m", aliases:["bounding"], category:"running_drill", area:"quads_knees", secondaryArea:"hips", movement:"isolation", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Horizontal reactive work with real output, sitting in running_drill rather than power because that is where the running plan reaches for it. The single-leg bound is the same quality with the difficulty made explicit.", warmupSuitable:true },
   hang_clean: { name:"Hang Clean", aliases:["hang clean"], category:"power", area:"hips", secondaryArea:"quads_knees", movement:"hinge", difficulty:"advanced", equipment:["barbell"], evidenceConfidence:"meta_analysis", strengthTier:"B", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate", tierNote:"The clean from mid-thigh. Far less to coordinate than the floor version and nearly all of the same extension, which makes it the barbell power movement to learn first." },
   medicine_ball_throw: { name:"Medicine Ball Throw", aliases:["medicine ball throw", "med ball throw", "med ball slam"], category:"power", area:"chest", secondaryArea:"hips", movement:"push", difficulty:"beginner", equipment:["medicine_ball"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"A generic entry kept for anything logged by that name. The three specific throws — rotational, slam, scoop — say more about what was trained." },
 
@@ -15376,7 +15390,7 @@ const EXERCISE_LIBRARY = {
   chest_supported_row: { name:"Chest-Supported Row", aliases:["chest supported row", "chest-supported row"], category:"secondary_strength", area:"thoracic", secondaryArea:"biceps", movement:"pull", difficulty:"beginner", equipment:["machine", "dumbbell"], evidenceConfidence:"coaching_consensus", strengthTier:"A", hypertrophyTier:"A", powerTier:"C", tierEvidence:"low" },
   kettlebell_swing: { name:"Kettlebell Swing", aliases:["kettlebell swing", "kb swing"], category:"power", area:"hips", secondaryArea:"hamstrings", movement:"hinge", difficulty:"beginner", equipment:["kettlebell"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"low" },
   power_clean: { name:"Power Clean", aliases:["power clean"], category:"power", area:"hips", secondaryArea:"quads_knees", movement:"hinge", difficulty:"advanced", equipment:["barbell"], evidenceConfidence:"meta_analysis", strengthTier:"B", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate" },
-  countermovement_jump: { name:"Countermovement Jump", aliases:["countermovement jump", "cmj"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate" },
+  countermovement_jump: { name:"Countermovement Jump", resultUnit:"cm", aliases:["countermovement jump", "cmj"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate" },
   trap_bar_jump: { name:"Trap Bar Jump", aliases:["trap bar jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"advanced", equipment:["trap_bar"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"low" },
   /* ---------- POWER, THE REST OF IT ----------
 
@@ -15413,24 +15427,24 @@ const EXERCISE_LIBRARY = {
      countermovement jump is elastic, a squat jump is pure concentric rate of force
      development from a dead stop, and a depth jump is reactive strength under an eccentric
      load you did not choose. Three different qualities in three movements that look alike. */
-  squat_jump: { name:"Squat Jump", aliases:["squat jump", "static jump", "concentric jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"beginner", equipment:["bodyweight"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate", tierNote:"Paused at the bottom, so there is no stretch-shortening contribution to borrow — what is left is concentric rate of force development, isolated. The cleanest entry point in the whole category and the one with the lowest landing cost." },
-  tuck_jump: { name:"Tuck Jump", aliases:["tuck jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Repeated and continuous, which makes it a conditioning movement wearing a plyometric's clothes. Kept for that, not for peak output." },
-  seated_box_jump: { name:"Seated Box Jump", aliases:["seated box jump", "seated jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"intermediate", equipment:["box"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"A squat jump with the dead stop enforced by a bench rather than by discipline. Useful when the paused version keeps turning into a countermovement." },
-  single_leg_box_jump: { name:"Single-Leg Box Jump", aliases:["single leg box jump", "one leg box jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"advanced", equipment:["box"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Unilateral vertical output. Box height flatters it — the landing is the risk and the box is what removes most of it, which is why this ranks above a single-leg broad jump." },
+  squat_jump: { name:"Squat Jump", resultUnit:"cm", aliases:["squat jump", "static jump", "concentric jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"beginner", equipment:["bodyweight"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate", tierNote:"Paused at the bottom, so there is no stretch-shortening contribution to borrow — what is left is concentric rate of force development, isolated. The cleanest entry point in the whole category and the one with the lowest landing cost." },
+  tuck_jump: { name:"Tuck Jump", resultUnit:"cm", aliases:["tuck jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Repeated and continuous, which makes it a conditioning movement wearing a plyometric's clothes. Kept for that, not for peak output." },
+  seated_box_jump: { name:"Seated Box Jump", resultUnit:"cm", aliases:["seated box jump", "seated jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"intermediate", equipment:["box"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"A squat jump with the dead stop enforced by a bench rather than by discipline. Useful when the paused version keeps turning into a countermovement." },
+  single_leg_box_jump: { name:"Single-Leg Box Jump", resultUnit:"cm", aliases:["single leg box jump", "one leg box jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"advanced", equipment:["box"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Unilateral vertical output. Box height flatters it — the landing is the risk and the box is what removes most of it, which is why this ranks above a single-leg broad jump." },
   hurdle_hop: { name:"Hurdle Hop", aliases:["hurdle hop", "hurdle jump", "hurdle hops"], category:"power", area:"quads_knees", secondaryArea:"calves", movement:"squat", difficulty:"intermediate", equipment:["other"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate", tierNote:"Repeated reactive contacts with a floor contact time short enough to be elastic rather than muscular. The bridge between a countermovement jump and a depth jump, and the one to spend reps on." },
   depth_drop: { name:"Depth Drop", aliases:["depth drop", "drop landing", "landing drill"], category:"power", area:"quads_knees", secondaryArea:"calves", movement:"squat", difficulty:"beginner", equipment:["box"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"B", tierEvidence:"limited", tierNote:"Step off and absorb; there is no jump. It is not a power exercise and is filed here anyway because it is the prerequisite for the ones that are — landing is the half of plyometrics that hurts people, and it is trainable on its own first." },
   /* HORIZONTAL AND LATERAL. The library had one standing broad jump and nothing in the
      frontal plane at all, which left every change-of-direction quality unrepresented. */
-  triple_broad_jump: { name:"Triple Broad Jump", aliases:["triple broad jump", "standing triple jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Three broad jumps with no pause. Adds the reactive component a single broad jump has none of, and the total distance is a measurement you can take with a tape." },
-  single_leg_bound: { name:"Single-Leg Bound", aliases:["single leg bound", "bound", "single leg bounding"], category:"power", area:"hips", secondaryArea:"hamstrings", movement:"squat", difficulty:"advanced", equipment:["bodyweight"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate", tierNote:"The highest hamstring rate-of-force demand available without a barbell, and the closest thing in the library to sprinting's actual mechanics. Advanced on the landing, not on the take-off." },
-  lateral_bound: { name:"Lateral Bound", aliases:["lateral bound", "skater jump", "skater bound"], category:"power", area:"hips", secondaryArea:"adductors", movement:"squat", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"The only frontal-plane power movement here. Everything else in this category is sagittal, and a lifter who only ever produces force forwards is under-prepared for the one direction that injures ankles and knees." },
+  triple_broad_jump: { name:"Triple Broad Jump", resultUnit:"m", aliases:["triple broad jump", "standing triple jump"], category:"power", area:"quads_knees", secondaryArea:"hips", movement:"squat", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Three broad jumps with no pause. Adds the reactive component a single broad jump has none of, and the total distance is a measurement you can take with a tape." },
+  single_leg_bound: { name:"Single-Leg Bound", resultUnit:"m", aliases:["single leg bound", "bound", "single leg bounding"], category:"power", area:"hips", secondaryArea:"hamstrings", movement:"squat", difficulty:"advanced", equipment:["bodyweight"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate", tierNote:"The highest hamstring rate-of-force demand available without a barbell, and the closest thing in the library to sprinting's actual mechanics. Advanced on the landing, not on the take-off." },
+  lateral_bound: { name:"Lateral Bound", resultUnit:"m", aliases:["lateral bound", "skater jump", "skater bound"], category:"power", area:"hips", secondaryArea:"adductors", movement:"squat", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"The only frontal-plane power movement here. Everything else in this category is sagittal, and a lifter who only ever produces force forwards is under-prepared for the one direction that injures ankles and knees." },
   single_leg_pogo: { name:"Single-Leg Pogo", aliases:["single leg pogo", "single leg hop", "ankle hop"], category:"power", area:"calves", secondaryArea:"ankles", movement:"isolation", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Ankle stiffness on one leg, which is the form it is actually used in when you run. Same quality as pogos with twice the load and a balance demand that is incidental rather than the point." },
   /* THROWS. A whole plane was missing: nothing in the library produced rotational force,
      and rotation is most of what a throw, a swing and a change of direction are made of. */
-  med_ball_chest_pass: { name:"Medicine Ball Chest Pass", aliases:["medicine ball chest pass", "med ball chest pass", "chest pass"], category:"power", area:"chest", secondaryArea:"triceps", movement:"push", difficulty:"beginner", equipment:["medicine_ball"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Upper-body power with no deceleration phase, because the ball leaves your hands. That is the whole reason a throw beats a fast bench press: nothing has to be slowed down at the end." },
-  med_ball_rotational_throw: { name:"Medicine Ball Rotational Throw", aliases:["medicine ball rotational throw", "rotational throw", "med ball rotational throw", "shot put throw"], category:"power", area:"core", secondaryArea:"hips", movement:"core", difficulty:"beginner", equipment:["medicine_ball"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"limited", tierNote:"The only rotational power movement in the library. Core work here has been anti-rotation throughout — pallof presses, planks, carries — which trains the ability to resist a twist and never the ability to produce one." },
+  med_ball_chest_pass: { name:"Medicine Ball Chest Pass", resultUnit:"m", aliases:["medicine ball chest pass", "med ball chest pass", "chest pass"], category:"power", area:"chest", secondaryArea:"triceps", movement:"push", difficulty:"beginner", equipment:["medicine_ball"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Upper-body power with no deceleration phase, because the ball leaves your hands. That is the whole reason a throw beats a fast bench press: nothing has to be slowed down at the end." },
+  med_ball_rotational_throw: { name:"Medicine Ball Rotational Throw", resultUnit:"m", aliases:["medicine ball rotational throw", "rotational throw", "med ball rotational throw", "shot put throw"], category:"power", area:"core", secondaryArea:"hips", movement:"core", difficulty:"beginner", equipment:["medicine_ball"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"limited", tierNote:"The only rotational power movement in the library. Core work here has been anti-rotation throughout — pallof presses, planks, carries — which trains the ability to resist a twist and never the ability to produce one." },
   med_ball_overhead_slam: { name:"Medicine Ball Overhead Slam", aliases:["medicine ball slam", "overhead slam", "ball slam"], category:"power", area:"core", secondaryArea:"thoracic", movement:"core", difficulty:"beginner", equipment:["medicine_ball"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Trunk flexion at speed against a ball that does not bounce back. Lower ceiling than the rotational throw but needs no space to the side and nowhere to aim." },
-  med_ball_scoop_toss: { name:"Medicine Ball Scoop Toss", aliases:["medicine ball scoop toss", "scoop toss", "underhand toss"], category:"power", area:"hips", secondaryArea:"quads_knees", movement:"hinge", difficulty:"beginner", equipment:["medicine_ball"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Triple extension into a throw. The closest thing to a clean that can be taught in one session and missed without consequence." },
+  med_ball_scoop_toss: { name:"Medicine Ball Scoop Toss", resultUnit:"m", aliases:["medicine ball scoop toss", "scoop toss", "underhand toss"], category:"power", area:"hips", secondaryArea:"quads_knees", movement:"hinge", difficulty:"beginner", equipment:["medicine_ball"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Triple extension into a throw. The closest thing to a clean that can be taught in one session and missed without consequence." },
   /* UPPER-BODY BALLISTIC, LOADED. */
   plyo_push_up: { name:"Plyometric Push-up", aliases:["plyo push up", "plyometric push up", "clap push up"], category:"power", area:"chest", secondaryArea:"triceps", movement:"push", difficulty:"advanced", equipment:["bodyweight"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate", tierNote:"Upper-body reactive strength, and the only one of these that needs no equipment at all. Advanced because the landing goes through the wrists and elbows at bodyweight." },
   bench_throw: { name:"Bench Throw", aliases:["bench throw", "ballistic bench press", "smith bench throw"], category:"power", area:"chest", secondaryArea:"triceps", movement:"push", difficulty:"intermediate", equipment:["machine", "barbell"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate", tierNote:"A bench press where the bar is released at the top, which removes the deceleration that makes a normal fast bench press stop being fast for its last third. Needs a Smith machine or a spotter and is genuinely dangerous without one." },
@@ -18777,13 +18791,16 @@ async function openBlockEditor(date, slot, block){
           <input type="number" class="week-ex-sets" placeholder="${ph(ghost && ghost.sets, '')}" title="sets actually done">
           <span class="log-op">×</span>
           <input type="text" inputmode="numeric" class="week-ex-reps" placeholder="${ph(ghostReps, '')}" title="reps actually done — one number for all sets (12), or per-set to track effort (12,10,7)">
-          <span class="log-op">@</span>
+          <!-- "@" means "at this load", which is what the box holds on every normal row. On a
+               jump or a throw the box holds a result and "@ 60 cm" reads as nonsense, so the
+               operator says what the number is instead: 4 x 3 best 60cm. -->
+          <span class="log-op">${resultUnitFor(name) ? 'best' : '@'}</span>
       <!-- step="any" is what makes 62.5 a legal value. Without it the browser's implied
            step is 1, so a half-kilo is a stepMismatch: the field goes invalid and iOS
            offers a keypad with no decimal point. Everything downstream has always used
            parseFloat, so the model handled halves all along — the form was the only
            thing refusing them. -->
-          <input type="text" class="week-ex-weight" placeholder="${ph(ghostWeight, '')}" title="weight actually used \u2014 one number for every set (100), or per-set for a ramp or a drop set (60,80,100)" inputmode="decimal"><span class="log-op log-unit">kg</span>
+          <input type="text" class="week-ex-weight" placeholder="${ph(ghostWeight, '')}" title="${resultUnitFor(name) ? 'how far or how high \u2014 your best of the session' : 'weight actually used \u2014 one number for every set (100), or per-set for a ramp or a drop set (60,80,100)'}" inputmode="decimal"><span class="log-op log-unit">${resultUnitFor(name) || 'kg'}</span>
         </div>
         <div class="set-breakdown" hidden></div>
         <!-- BW and F were two unlabelled letters on the row you touch more than any other in
@@ -19085,7 +19102,9 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         const { reps, repsPerSet } = parseRepsInput(repsRaw);
         const setsRaw = row.querySelector('.week-ex-sets').value;
         const weightRaw = row.querySelector('.week-ex-weight').value;
-        const { weight, weightPerSet } = parseWeightInput(weightRaw);
+        // let, not const: a result-bearing row clears these below — see the note on
+        // `result` further down. Assigning to a const here threw on every jump logged.
+        let { weight, weightPerSet } = parseWeightInput(weightRaw);
         const setsEntered = parseFloat(setsRaw) || 0;
         // Per-set entry implies the set count, so it doesn't need typing twice — but an
         // explicitly entered sets value still wins if the two disagree.
@@ -19098,7 +19117,22 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         if(setsRaw.trim() || repsRaw.trim() || weightRaw.trim()) anyPerformanceEntered = true;
         // With per-set reps the true rep total is known, so volume uses it rather than
         // sets × average, which rounds away the drop-off.
-        const volume = pairedVolume(repsPerSet, reps, sets, weightPerSet, weight);
+        /* A RESULT IS NOT A WEIGHT, AND IT MUST NOT BECOME TONNAGE.
+
+           The number in that box means centimetres or metres for a jump or a throw, and the
+           box is the weight box because relabelling one field is cheaper than adding a second
+           that is blank on every other row. What it cannot do is flow on as a load: a 60cm
+           box jump for 5x3 would otherwise post 900kg of volume into slot.mechanical, which
+           is the one power ledger .528 and .530 deliberately left counting raw tonnage. So
+           the value is routed to `result`, the weight fields are cleared, and the volume is
+           zero — which is the truth, since bodyweight work carries no external load. */
+        const resultUnit = resultUnitFor(name);
+        let result = null;
+        if(resultUnit){
+          result = (weight != null && !isNaN(weight) && weight > 0) ? weight : null;
+          weight = null; weightPerSet = null;
+        }
+        const volume = resultUnit ? 0 : pairedVolume(repsPerSet, reps, sets, weightPerSet, weight);
         const effort = estimateEffortFromDropoff(repsPerSet);
         const primaryVolume = secondaryArea ? volume*VOLUME_SPLIT.primary : volume;
         const secondaryVolume = secondaryArea ? volume*VOLUME_SPLIT.secondary : 0;
@@ -19106,7 +19140,7 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         // from the AMRAP result instead of treating it as a normal set (which would read
         // as a large rep surplus and double-increment the load).
         const toFailure = !!row.querySelector('.week-ex-fail')?.classList.contains('on');
-        exercises.push({ name, sets, reps, repsPerSet, effort, weight, weightPerSet, area, secondaryArea, movement, volume, primaryVolume, secondaryVolume, exerciseId, toFailure, wasReintroSet: _isReintroWeekLog });
+        exercises.push({ name, sets, reps, repsPerSet, effort, weight, weightPerSet, area, secondaryArea, movement, volume, primaryVolume, secondaryVolume, exerciseId, toFailure, wasReintroSet: _isReintroWeekLog, ...(resultUnit ? { result, resultUnit } : {}) });
         totalVolume += volume;
       });
       if(!anyPerformanceEntered){
@@ -23666,6 +23700,21 @@ const POWER_PICKS_MAX = 1;      // one jump or throw, not a plyometric block bef
    being led by Bounding, which has no relationship to a pull at all. Sprints and bounds are
    lower-body power and belong on a squat or hinge day; on an upper day the honest answer is
    that this library has no explosive pull, so the lead is simply absent. */
+/* Whether an exercise reports a result rather than a load, answered from the library so the
+   logging row, the capacity strand and the progression rule cannot disagree about it. */
+/* The template has a typed name and no exercise id, so it asks by name. Same source of
+   truth as powerResultUnit — one library field, three readers. */
+function resultUnitFor(name){ return powerResultUnit({ name: name }); }
+function powerResultUnit(ex){
+  if(!ex) return null;
+  try{
+    const lib = ex.exerciseId ? EXERCISE_LIBRARY[ex.exerciseId] : null;
+    if(lib && lib.resultUnit) return lib.resultUnit;
+    const g = guessTagsFromLibrary(ex.name || '');
+    const lib2 = g && g.exerciseId ? EXERCISE_LIBRARY[g.exerciseId] : null;
+    return (lib2 && lib2.resultUnit) || null;
+  } catch(e){ return null; }
+}
 const POWER_LEAD_DIFFICULTY = { beginner:0, intermediate:1, advanced:2 };
 const POWER_LEAD_LOWER_MOVEMENTS = ['squat', 'hinge', 'lunge'];
 function powerLeadForMovement(movement, opts){
@@ -28994,7 +29043,12 @@ async function suggestProgression(ex, focusInfo){
                note: `First week back — ${reduced}kg, ~${repHigh} reps, ${REINTRO_TARGET_RIR} short of failure` };
     }
   } catch(e){}
-  if(!last || !last.weight){
+  /* A result-bearing row gets past this. A jump has no weight by definition, so the original
+     gate returned baseline for every one of them forever and the result branch below could
+     never be reached — including the case that matters most, a jump logged with reps but no
+     height, where the right answer is to ask for the height rather than to say "add weight". */
+  const exResultUnit = powerResultUnit(ex);
+  if(!last || (!last.weight && last.result == null && !exResultUnit)){
     // No note: "add weight" in the load slot already says it's new, and this line was
     // repeating verbatim under every untrained exercise — six identical sentences in one
     // session is noise, not guidance.
@@ -29056,6 +29110,29 @@ async function suggestProgression(ex, focusInfo){
   if(isPowerExercise(ex) && isPowerEffort(lastAsLogged)){
     const repLow = ex.repLow != null ? ex.repLow : (focusInfo && focusInfo.repLow != null ? focusInfo.repLow : 1);
     const completed = minReps != null && minReps >= repLow;
+    /* AN UNLOADED MOVEMENT PROGRESSES BY BEATING ITSELF.
+
+       There is no weight to add to a broad jump, so the load ladder below has nothing to say
+       about one and used to return 'baseline' forever. What it has instead is a result, and
+       the instruction is the only one that makes sense: go further than last time. The best
+       of the recent history is the number to beat, so a single good day does not become a
+       target you then fail for a month. */
+    const unit = exResultUnit;
+    if(unit){
+      const results = history.map(h=> h && h.result).filter(v=> v != null && !isNaN(v) && v > 0);
+      if(!results.length){
+        return { action:'baseline', weight:null, noteCaps:true,
+                 note: `Record your best in ${unit} to start tracking this` };
+      }
+      const best = Math.max(...results);
+      const lastResult = results[0];
+      if(lastResult >= best){
+        return { action:'add_result', weight:null, result: best, unit, noteCaps:true,
+                 note: `Beat ${best}${unit} — your best so far` };
+      }
+      return { action:'hold', weight:null, result: best, unit, noteCaps:true,
+               note: `${lastResult}${unit} last time — best is ${best}${unit}` };
+    }
     if(effort && effort.level === 'near_failure'){
       const down = Math.max(increment, Math.round((last.weight - increment) * 2) / 2);
       return { action:'reduce', weight: down, fromWeight: last.weight, noteCaps:true,
