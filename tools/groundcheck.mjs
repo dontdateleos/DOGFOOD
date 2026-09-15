@@ -30,9 +30,11 @@ import { chromium } from 'playwright';
    data-ground="--ground=bone", which matches no rule and silently tests the default instead
    of failing. Pass the bare value: `bone`, `washed`.
 
-   An omitted masthead leaves the attribute unset, which is NOT the same as any named
-   theme: the sheet keys its default off :not([data-masthead="deep"]), so unstamped renders
-   as Washed. It prints as (unstamped) rather than being given a name it does not have. */
+   Both DEFAULTS ARE ASYMMETRIC, which is why neither argument can be inferred from the other
+   direction. Unstamped masthead is Deep, because Deep is the base sheet. Unstamped ground is
+   BLACK, but black is not the app's default -- bone is, and the boot script stamps it. So a
+   run with no ground argument tests the ground a user only sees by turning bone off. Pass
+   `bone` to test what ships. */
 const ground = process.argv[2] || '';
 const masthead = process.argv[3] || '';
 const MEASURE = `(()=>{
