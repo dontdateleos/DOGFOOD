@@ -10950,7 +10950,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.14.538';
+const APP_VERSION = '2026.09.14.539';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11212,6 +11212,7 @@ const APP_NOTES = {
   '2026.09.14.536': 'Power is a tick on your strength goal now, not a rival to it \u2014 train it explosively, and sessions open with the explosive work.',
   '2026.09.14.537': 'The streak is actually gone \u2014 no toast, no confetti, no line at the end of the week.',
   '2026.09.14.538': 'A first score in sixteen mornings instead of twenty-four \u2014 the app stopped measuring you against a past you could not have had.',
+  '2026.09.14.539': 'Your early score is marked as early, and reads on the same scale as the real one \u2014 no more ninety on Monday and forty on Tuesday.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -20591,6 +20592,41 @@ async function checkReturnToRunRule(){
   return null;
 }
 
+/* ---------- THE EARLY SCORE, ON THE SAME SCALE AS THE REAL ONE ----------
+
+   The cascade under Systemic Readiness is target/adaptive, and both are ratios against a
+   reference: duration/8 for the absolute one, duration/yourAverage for the relative one. A
+   ratio like that puts a NORMAL night at 100. Systemic Readiness puts a normal day at 50, by
+   construction — it is 50 + 50*tanh(z) around your own baseline.
+
+   So the two answer the same question on two different scales, and the handover was a cliff.
+   Measured on the real render path, phone-only, on identical data:
+
+     16 nights ... 90   "Above typical"          (target/adaptive)
+     17 nights ... 40   "Below 76% of your days" (Systemic Readiness)
+
+   Ninety on Monday and forty on Tuesday, with nothing on screen to explain it. The honest
+   reading of that is that the app broke.
+
+   The same compression is already documented under the trace: "a real week of readings came
+   back 93, 95, 94, 99, 97, 98, 97 — over a fixed 30-100 band that is 2.6px of movement". That
+   is not a narrow week, it is a scale whose whole range sits in its top tenth.
+
+   Mapped through the same shape Systemic Readiness uses, so your own normal is 50 either
+   side of the handover. K is 2 rather than SR_TANH_K because the input is a ratio and not a
+   z-score: a night 10% under your average lands near 40, 10% over near 60, which is the
+   spread those two figures deserve.
+
+   DELIBERATELY NOT APPLIED IN scoresForEntry. targetScore and adaptiveScore are read in six
+   other places -- the two numbers on Data, the weekly volume/recovery correlation, and four
+   recommendation thresholds compared against GOAL_PROFILES -- and rescaling them at source
+   would silently retune all of it. Only the headline and the trace beneath it are converted,
+   which is exactly the pair that has to agree. */
+const PROVISIONAL_K = 2;
+function provisionalScore(raw){
+  if(raw == null || isNaN(raw)) return null;
+  return Math.round(50 + 50 * Math.tanh(PROVISIONAL_K * (raw / 100 - 1)));
+}
 function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, entry, srResult){
   const out = document.getElementById('overallScoreOut');
   const label = document.getElementById('overallScoreLabel');
@@ -20685,7 +20721,7 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
     else label.textContent = 'Not enough to score yet';
     return null;
   }
-  const overall = Math.round(parts.reduce((a,b)=>a+b,0)/parts.length);
+  const overall = provisionalScore(parts.reduce((a,b)=>a+b,0)/parts.length);
   const prevNum = parseInt(out.dataset.value || out.textContent);
   // Arriving on Today counts up from zero every time, whether or not the score has moved.
   // Rolling only on a change meant it never rolled: the number is the same all day, so the
@@ -20697,9 +20733,14 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
   // Set up before setEyeScore, so the roll owns the expression for its duration.
   eyeRollThroughStates(overall, uiArriving(), UI_ANIM.digitRoll.ms);
   setEyeScore(overall);
-  if(overall < goalT.scoreLow){ label.textContent='Below typical'; }
-  else if(overall > goalT.scoreHigh){ label.textContent='Above typical'; }
-  else { label.textContent='Typical'; }
+  /* IT SAYS THAT IT IS EARLY. The words are Systemic Readiness's own three, so nothing has
+     to be relearned when the real score takes over; "early read" is the part that goes away.
+     A number built from one night's sleep should not be presented with the same confidence
+     as one built from sixteen, and every other thin reading in this app says so out loud. */
+  label.textContent = 'Early read — '
+    + (overall < goalT.scoreLow ? 'ease into it'
+     : overall > goalT.scoreHigh ? 'ready to train'
+     : 'on track');
   return overall;
 }
 
@@ -20737,7 +20778,10 @@ async function overallScoreForEntry(entry){
   const trailing = await getTrailingAverages(entry.date);
   const { targetScore, adaptiveScore } = scoresForEntry(entry, trailing);
   const parts = [targetScore, adaptiveScore].filter(v=>v!=null);
-  return parts.length ? Math.round(parts.reduce((a,b)=>a+b,0)/parts.length) : null;
+  // Same conversion the headline makes, for the same reason the comment above this function
+  // gives: a trace drawn on one scale under a number printed on another is worse than no
+  // trace at all.
+  return parts.length ? provisionalScore(parts.reduce((a,b)=>a+b,0)/parts.length) : null;
 }
 
 // The window the trace is drawn in is at least this many points wide, and wider only if the
