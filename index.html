@@ -166,35 +166,31 @@
     --wave-tile-light-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27168%27%20height%3D%2716%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23fbfaf6%27%20stroke-width%3D%270.85%27%3E%3Cpath%20stroke-opacity%3D%27.11%27%20d%3D%27M0%2C8%20C21%2C8%2021%2C3%2042%2C3%20C63%2C3%2063%2C8%2084%2C8%20C105%2C8%20105%2C13%20126%2C13%20C147%2C13%20147%2C8%20168%2C8%27%2F%3E%3Cpath%20stroke-opacity%3D%27.046%27%20d%3D%27M-42%2C8%20C-21%2C8%20-21%2C3%200%2C3%20C21%2C3%2021%2C8%2042%2C8%20C63%2C8%2063%2C13%2084%2C13%20C105%2C13%20105%2C8%20126%2C8%20C147%2C8%20147%2C3%20168%2C3%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
     --wave-tile-dark-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27168%27%20height%3D%2716%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%230c0d0b%27%20stroke-width%3D%270.85%27%3E%3Cpath%20stroke-opacity%3D%27.11%27%20d%3D%27M0%2C8%20C21%2C8%2021%2C3%2042%2C3%20C63%2C3%2063%2C8%2084%2C8%20C105%2C8%20105%2C13%20126%2C13%20C147%2C13%20147%2C8%20168%2C8%27%2F%3E%3Cpath%20stroke-opacity%3D%27.046%27%20d%3D%27M-42%2C8%20C-21%2C8%20-21%2C3%200%2C3%20C21%2C3%2021%2C8%2042%2C8%20C63%2C8%2063%2C13%2084%2C13%20C105%2C13%20105%2C8%20126%2C8%20C147%2C8%20147%2C3%20168%2C3%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
     --wave-tile:var(--wave-tile-light-ink);
-    /* NINE MARKS ON A PAGE, AND YOU SCROLL PAST THEM.
+    /* THE MARKS GO ON THE PANELS, BECAUSE THE GROUND IS NEVER VISIBLE.
 
-       The backpack's empty slots are crosses -- #303036 on black, about a 1.5:1 whisper -- and
-       the menu floor is the same mark scattered on a plane you move across. That last part is
-       the bit this now gets right.
+       This was nine marks placed on #scrollBackdrop, at percentages of the page, scrolling
+       with it. Measured afterwards, which should have been beforehand: on Today, Weekly and
+       Settings alike, NINE OUT OF NINE were behind something opaque -- fields, group-head,
+       header-brand, the colophon, the log button. Not most of them. All of them. The page has
+       essentially no exposed ground, and the version before it only ever showed a mark because
+       a viewport-fixed tile scattered them at enough screen positions that a few fell in gaps.
 
-       NOT A TILE ANY MORE, AND THAT IS THE CHANGE. A repeating tile fixed to the viewport put
-       the same marks in the same places on every screen of every page: scroll a thousand
-       pixels and nothing moved, because nothing was anywhere. These are nine marks placed ONCE
-       on the page, at percentages of its height, on the backdrop that scrolls with it. You
-       pass them.
+       .fields is background:var(--ground) -- the panels are not sitting ON the ground, they
+       ARE it, repainted. So the marks belong on that surface rather than under it, which is
+       also what the reference does: Marathon's cross grid is inside the backpack panel, not
+       behind it.
 
-       NINE PER PAGE HOWEVER LONG THE PAGE IS. Positioned as percentages, so Settings at four
-       thousand pixels spreads its nine over the whole of it and Today at seventeen hundred
-       keeps them closer. That is the right way round: a long page is not more marked, it is
-       more spaced.
-
-       A DIFFERENT NINE ON EACH TAB, from a jittered three-by-three -- one mark per cell of the
-       page, jittered inside it -- so they are spread by construction rather than clustered by
-       luck, and no two tabs share an arrangement.
+       A SPARSE TILE RATHER THAN PLACED MARKS. Panels vary from one row to forty, so nine of
+       anything is wrong for most of them; 164x188 carrying two crosses and a dot puts two to
+       four on a typical panel and scales with the tall ones. Offset per tab below, so no two
+       pages carry the same arrangement -- which is the part of the placed version worth
+       keeping.
 
        .14 is the reference's own weight: #303036 on #000000 is 1.56:1, and cream at .14 on
        this ground measures the same. */
-    --mk-cross-light:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2714%27%20height%3D%2714%27%3E%3Cpath%20d%3D%27M1%2C7h12M7%2C1v12%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
-    --mk-cross-dark:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2714%27%20height%3D%2714%27%3E%3Cpath%20d%3D%27M1%2C7h12M7%2C1v12%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
-    --mk-dot-light:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%274%27%20height%3D%274%27%3E%3Ccircle%20cx%3D%272%27%20cy%3D%272%27%20r%3D%271.5%27%20fill%3D%27%23fbfaf6%27%20fill-opacity%3D%27.14%27%2F%3E%3C%2Fsvg%3E");
-    --mk-dot-dark:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%274%27%20height%3D%274%27%3E%3Ccircle%20cx%3D%272%27%20cy%3D%272%27%20r%3D%271.5%27%20fill%3D%27%230c0d0b%27%20fill-opacity%3D%27.14%27%2F%3E%3C%2Fsvg%3E");
-    --mk-cross:var(--mk-cross-light);
-    --mk-dot:var(--mk-dot-light);
+    --mk-panel-light:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27248%27%20height%3D%27276%27%3E%3Cpath%20d%3D%27M33%2C61h10M38%2C56v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27196%27%20cy%3D%27188%27%20r%3D%271.5%27%20fill%3D%27%23fbfaf6%27%20fill-opacity%3D%27.14%27%2F%3E%3Cpath%20d%3D%27M143%2C24h10M148%2C19v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
+    --mk-panel-dark:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27248%27%20height%3D%27276%27%3E%3Cpath%20d%3D%27M33%2C61h10M38%2C56v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27196%27%20cy%3D%27188%27%20r%3D%271.5%27%20fill%3D%27%230c0d0b%27%20fill-opacity%3D%27.14%27%2F%3E%3Cpath%20d%3D%27M143%2C24h10M148%2C19v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
+    --mk-panel:var(--mk-panel-light);
     --reverse-bg:#0c0d0b;   /* dark fill for buttons/badges — independent of --text */
     --on-light:#0c0d0b;     /* text on any light fill (inputs, tags, outline buttons) */
     --on-light-dim:#191a0e; /* secondary text on a light fill */
@@ -627,38 +623,6 @@
      writes its background-color — and every black block in the app is an opaque element
      painted on top of it. */
   #scrollBackdrop{ position:absolute; inset:0; z-index:-1; }
-  /* THE MARKS LIVE ON THE BACKDROP, WHICH IS THE THING THAT SCROLLS.
-
-     #scrollBackdrop is position:absolute with inset:0 against a body that grows with its
-     content, so it is exactly the height of the page and moves with it. That is what makes
-     these something you pass rather than something that follows you. It is already at
-     z-index -1, behind every real element, and the tab's own ground colour is painted on it
-     by activateTab -- which sets backgroundColor specifically, so the images below are safe.
-
-     no-repeat, nine layers, nine positions. Each layer is its own small svg at its own size,
-     rather than one stretched image: background-size:100% 100% on a single sheet would have
-     scaled a cross into a long thin plus on a four-thousand-pixel page. */
-  #scrollBackdrop{ background-repeat:no-repeat; }
-  body.tab-insights #scrollBackdrop{
-    background-image:var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-dot), var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-dot), var(--mk-dot);
-    background-position:22.9% 20.7%, 47.4% 5.6%, 83.9% 28.5%, 10.1% 43.3%, 60.9% 54.3%, 76.8% 48.8%, 20.6% 89.3%, 48.9% 88.5%, 87.5% 75.6%;
-    background-size:13px 13px, 11px 11px, 11px 11px, 4px 4px, 9px 9px, 13px 13px, 11px 11px, 4px 4px, 4px 4px; }
-  body.tab-training #scrollBackdrop{
-    background-image:var(--mk-dot), var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-dot), var(--mk-cross);
-    background-position:24.7% 24.0%, 42.3% 11.8%, 76.8% 28.4%, 17.8% 48.5%, 55.1% 52.8%, 81.6% 42.0%, 7.8% 93.5%, 58.8% 94.2%, 78.4% 76.3%;
-    background-size:4px 4px, 11px 11px, 11px 11px, 9px 9px, 13px 13px, 13px 13px, 13px 13px, 4px 4px, 13px 13px; }
-  body.tab-injuries #scrollBackdrop{
-    background-image:var(--mk-cross), var(--mk-dot), var(--mk-dot), var(--mk-dot), var(--mk-cross), var(--mk-cross), var(--mk-dot), var(--mk-cross), var(--mk-cross);
-    background-position:16.9% 10.0%, 48.0% 20.9%, 85.9% 15.7%, 16.3% 57.5%, 51.8% 39.9%, 88.9% 55.4%, 16.9% 74.2%, 45.9% 90.0%, 75.9% 76.7%;
-    background-size:13px 13px, 4px 4px, 4px 4px, 4px 4px, 11px 11px, 11px 11px, 4px 4px, 11px 11px, 9px 9px; }
-  body.tab-data #scrollBackdrop{
-    background-image:var(--mk-cross), var(--mk-dot), var(--mk-cross), var(--mk-cross), var(--mk-dot), var(--mk-cross), var(--mk-dot), var(--mk-dot), var(--mk-cross);
-    background-position:17.2% 8.5%, 59.4% 17.4%, 81.5% 14.2%, 7.4% 48.7%, 48.0% 55.3%, 72.1% 53.5%, 27.5% 82.4%, 40.5% 79.4%, 82.1% 81.8%;
-    background-size:11px 11px, 4px 4px, 13px 13px, 11px 11px, 4px 4px, 11px 11px, 4px 4px, 4px 4px, 13px 13px; }
-  body.tab-settings #scrollBackdrop{
-    background-image:var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-dot), var(--mk-cross), var(--mk-cross), var(--mk-dot), var(--mk-cross);
-    background-position:15.6% 13.8%, 56.1% 8.9%, 84.2% 25.2%, 5.6% 54.2%, 58.4% 60.5%, 73.3% 54.5%, 27.3% 93.1%, 46.4% 81.3%, 74.9% 87.6%;
-    background-size:9px 9px, 9px 9px, 13px 13px, 13px 13px, 4px 4px, 9px 9px, 11px 11px, 4px 4px, 9px 9px; }
   /* The deal. The card is a positioned element with a z-index so it makes its own stacking
      context, which is what stops the sticky headings inside it climbing out and painting over
      its leading edge. It stays under the header's z-index 10, so the header is untouched the
@@ -737,8 +701,7 @@
     --field-blue:#e2f5f6;
     --dot-tile:var(--dot-tile-dark-ink);
     --wave-tile:var(--wave-tile-dark-ink);
-    --mk-cross:var(--mk-cross-dark);
-    --mk-dot:var(--mk-dot-dark);
+    --mk-panel:var(--mk-panel-dark);
     --ink-bad:#cb3318;
     --ink-warn:#956104;
     --ink-yellow:#7e6b24;
@@ -811,8 +774,7 @@
        the dark one, whatever the page outside is doing. */
     --dot-tile:var(--dot-tile-light-ink);
     --wave-tile:var(--wave-tile-light-ink);
-    --mk-cross:var(--mk-cross-light);
-    --mk-dot:var(--mk-dot-light);
+    --mk-panel:var(--mk-panel-light);
   }
   /* A .fields inside one of those pockets paints the tab's tint, and the tint does not follow
      the pocket: --field is declared on body as var(--field-<hue>), so it RESOLVES on body and
@@ -4411,6 +4373,39 @@
   }
 
 
+  /* ---- Page marks -------------------------------------------------------------------
+     Last in the sheet on purpose. .fields, .group-head and .app-colophon each set the
+     background SHORTHAND further down, and a shorthand at equal specificity resets
+     background-image to none -- so this block only survives after all three. Written above
+     them first and 2 of 84 panels took it; written here, all of them do.
+
+     The tile is sized for the count, not picked. Three marks per tile, and the marked panels
+     cover 25-72% of a 390x844 screen (measured per tab), so the tile area sets how many are
+     in view: at 164x188 that was ~19, a texture. 248x276 puts it near nine, which is the
+     density that was asked for. Resize the tile to change the count; do not add marks to it.
+
+     The panels carry the marks, because the ground does not. Measured coverage of the bare
+     ground across Today, Weekly and Settings was zero: .fields, .group-head and .app-colophon
+     all repaint it edge to edge, so a mark on the ground is a mark behind a plate. These four
+     are what is actually on screen -- the three repainters plus .today-field, the bare band
+     behind the score. background-image only; the colour each already sets is untouched.
+
+     Three panels opt out on their own, and are meant to. .fields.dot-field (its own dots),
+     .fields:has(> #weekBlockStrip) and .lift-sheet-panel/.morning-panel .fields all set the
+     background SHORTHAND to transparent at two-class specificity, which beats the single
+     .fields here -- so they clear the image without needing an exception written for them. */
+  .fields, .today-field, .group-head, .app-colophon{
+    background-image:var(--mk-panel); background-repeat:repeat; }
+  body.tab-insights .fields, body.tab-insights .today-field,
+  body.tab-insights .group-head, body.tab-insights .app-colophon{ background-position:0 0; }
+  body.tab-training .fields, body.tab-training .today-field,
+  body.tab-training .group-head, body.tab-training .app-colophon{ background-position:54px 31px; }
+  body.tab-injuries .fields, body.tab-injuries .today-field,
+  body.tab-injuries .group-head, body.tab-injuries .app-colophon{ background-position:103px 88px; }
+  body.tab-data .fields, body.tab-data .today-field,
+  body.tab-data .group-head, body.tab-data .app-colophon{ background-position:21px 129px; }
+  body.tab-settings .fields, body.tab-settings .today-field,
+  body.tab-settings .group-head, body.tab-settings .app-colophon{ background-position:77px 62px; }
 </style>
 </head>
 <body>
@@ -11267,7 +11262,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.559';
+const APP_VERSION = '2026.09.15.560';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11549,6 +11544,7 @@ const APP_NOTES = {
   '2026.09.15.557': 'The masthead title is the tab\u2019s colour at full strength \u2014 it was quieter than the little pills underneath it.',
   '2026.09.15.558': 'A couple more marks on the ground \u2014 seven to the tile where there were five.',
   '2026.09.15.559': 'Nine marks on each page, a different nine per tab, and they stay where they are while you scroll past them.',
+  '2026.09.15.560': 'The marks move onto the panels \u2014 on the ground they were invisible, nine times out of nine.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
