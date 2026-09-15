@@ -11466,7 +11466,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.579';
+const APP_VERSION = '2026.09.15.580';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11768,6 +11768,7 @@ const APP_NOTES = {
   '2026.09.15.577': 'The score\u2019s ball stops changing colour \u2014 it is just the page\u2019s ink now.',
   '2026.09.15.578': 'Each page carries its own mark behind the masthead instead of a number.',
   '2026.09.15.579': 'The page mark opens from the centre when you change tabs instead of appearing.',
+  '2026.09.15.580': 'The mark stands beside your score instead of on it, and the two are centred together.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -13956,15 +13957,53 @@ function layoutBandColumn(traceShown){
     band.style.minHeight = '';
     return;
   }
+  /* THE NUMBER AND THE MARK ARE ONE OBJECT, AND THE OBJECT IS WHAT IS CENTRED.
+     .gauge-wrap centres its children, so the NUMERAL used to sit on the band's middle with
+     the mark hanging off its right — the pair's centre landed 26px right of the page's while
+     the read line underneath stayed on the page's, so the label read as slid left of the
+     score it belongs to. Nothing was misaligned; the wrong thing was being aligned.
+
+     Half the mark's footprint, taken off the stack, puts the pair's centre on the band's.
+     The label is left alone and is centred under the pair by the same act, because the two
+     are then centred on the same line. .score-stack is already position:relative and carries
+     the eyes with it, so the gaze stays over the digits it belongs to.
+
+     CAPPED BY WHAT THE LEFT COLUMN CAN SPARE. The 26 comes out of the suggestion block's
+     side, and at 320 there is not 26 to give: the column goes from 96 to 70, the headline
+     runs to six lines, and its two verdict buttons come down across the read line. That is
+     the collision RECLEFT_MIN_W exists to prevent, and the block is the ONLY way into the
+     stack — #cardStackHead is display:none while the stack is shut — so letting it hide is
+     removing suggestions from small phones, not degrading them.
+
+     So the shift takes what the column can spare down to RECLEFT_KEEP_W and no more: all 26
+     from about 375px up, 20 at 360, none at 320. Measured against the viewport and the
+     numeral's own width, never against whether a card happens to be queued — the room is
+     reserved whether or not one is showing, because a score that jumped 26px when you
+     dismissed the last suggestion would be worse than one sitting slightly off centre.
+
+     Written from the constants rather than typed as 26, and written before the measurement
+     below so numRect is the shifted number — which is what puts the mark back at its right
+     edge and what hands paintRecLeft the left column that is actually left. */
+  const stack = num.parentElement && num.parentElement.classList.contains('score-stack')
+    ? num.parentElement : null;
+  if(stack){
+    const applied = parseFloat(stack.style.right) || 0;
+    const bareLeft = num.getBoundingClientRect().left + applied;   // where the numeral centres
+    const want = Math.round((DOCK_GAP + DOCK_DRAW) / 2);
+    const spare = recLeftColumnWidth(band.getBoundingClientRect(), bareLeft) - RECLEFT_KEEP_W;
+    stack.style.right = Math.max(0, Math.min(want, Math.floor(spare))) + 'px';
+  }
+
   const bandRect = band.getBoundingClientRect(), numRect = num.getBoundingClientRect();
   const W = bandColumnWidth(bandRect, numRect);
 
   if(dock){
     dock.style.display = 'flex';
-    /* Into the number's bottom-right corner, back under the last digit rather than clear of
-       it. The digits own a higher stacking context than the chip, so the overlap reads as the
-       mark tucked behind the score rather than laid over it. */
-    dock.style.left = Math.round(numRect.right - bandRect.left - DOCK_OVERLAP
+    /* DOCK_GAP of daylight past the last digit. The chip's BOX is 22 and its DRAWING is
+       DOCK_DRAW, centred in it, so the box has to be pushed a further half-difference right
+       for the drawing's left edge — which is the edge you actually see — to land on the gap
+       rather than the box's. */
+    dock.style.left = Math.round(numRect.right - bandRect.left + DOCK_GAP
       + (DOCK_DRAW - DOCK_W) / 2) + 'px';
     /* CENTRED ON THE NUMBER, not sat on its baseline. The drawing is centred in the box, so
        centring the BOX on the numeral's middle centres the sphere on it — and the trace is
@@ -21640,11 +21679,18 @@ const TRACE_GAP = 16;           // clear space between the score's digits and th
    is still not enough band for both, and the trace hides itself under the rule it already
    had: below TRACE_MIN_W it is a squiggle, not a reading. */
 const DOCK_GAP = 9;             // daylight between the last numeral and the chip
-/* How far the mark tucks back UNDER the digits. It has been 6, then 3 when the chip was a
-   filled square that needed daylight beside it. At 10 the sphere's left edge lands ON the
-   last digit rather than beside it — which is the point: the answer belongs to the number,
-   and a round mark can sit over a numeral without the collision a square made. */
-const DOCK_OVERLAP = 10;
+/* THE MARK STANDS BESIDE THE NUMBER, NOT ON IT.
+   There used to be a DOCK_OVERLAP here — 6, then 3, then 10 — pulling the sphere back under
+   the last digit on the reasoning that the answer belongs to the number and a round mark can
+   sit over a numeral without the collision a square made. It cannot. At 10 the sphere covers
+   the lower right of the last glyph, and a two-digit score with a dark ball hard against it
+   reads as a third digit: "47" photographed as 470. That is a legibility fault, not a matter
+   of taste, and the digits are the one thing on this page that has to be unambiguous.
+
+   So the mark clears the digits by DOCK_GAP — the same constant DOCK_RESERVE is built from,
+   used here rather than a second number, which also makes the reserve exact for the first
+   time: it used to reserve gap + drawing while the drawing sat 10px back inside the number,
+   so the right column was short by 10 that nothing was using. */
 const DOCK_TRACE_GAP = 9;       // and between the chip's word and the week's first tick
 /* The chip's footprint: daylight, the drawing, and clear space before the week's first
    tick. It used to be a negotiation — the chip carried the word of the face you had chosen
@@ -21782,6 +21828,29 @@ async function renderScoreTrace(todayScore){
    start in the same place. Below RECLEFT_MIN_W there is no room for a sentence and it stays
    away rather than wrapping a headline into four lines beside a number. */
 const RECLEFT_MIN_W = 84;
+/* THE LEFT COLUMN, IN ONE PLACE.
+   paintRecLeft sizes the block with this, and layoutBandColumn asks it how much of that
+   column the score is allowed to take before the block drops under its floor. Two copies of
+   the expression would be two things to keep in step; the centring depends on this one being
+   the same arithmetic the block is actually measured by. */
+function recLeftColumnWidth(bandRect, numLeft){
+  return Math.round((numLeft - TRACE_GAP) - (bandRect.left + 14));
+}
+/* AND THE WIDTH THE CENTRING IS ALLOWED TO LEAVE IT, WHICH IS NOT THE SAME NUMBER.
+   RECLEFT_MIN_W is the width below which the block does not appear. It is not the width at
+   which the block still WORKS, because narrowing the column makes the block taller, and the
+   block hangs from the numeral's baseline with a Math.max(8, ...) clamp above it — past
+   about 113px tall it stops rising and starts growing downward instead, across the read
+   line under the score.
+
+   Measured at 320 on the same headline: at 96 the block is 110px and finishes 4px clear of
+   the read line; at 84 — its own floor — it is 125px, hits the clamp, and lands on it. So
+   the centring reserves 96, not 84. It is the narrower number that is the hide threshold and
+   the wider one that is the real fit, and this is the one the score may not eat into.
+
+   The consequence is that a 320 keeps the band it has today, uncentred, rather than taking
+   a collision for it; 360 gets 20 of the 26 and 390 up gets all of it. */
+const RECLEFT_KEEP_W = 96;
 const TICK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"'
   + ' stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5L9.5 17.5L19.5 6.5"/></svg>';
 const CROSS_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"'
@@ -21800,7 +21869,7 @@ function paintRecLeft(){
   const head = cardStackHeadline(cardQueue[cardQueueIndex]);
   if(!head) return hide();
   const bandRect = band.getBoundingClientRect(), numRect = num.getBoundingClientRect();
-  const W = Math.round((numRect.left - TRACE_GAP) - (bandRect.left + 14));
+  const W = recLeftColumnWidth(bandRect, numRect.left);
   if(W < RECLEFT_MIN_W) return hide();
   const waiting = cardQueue.length - cardQueueIndex;
   const item = cardQueue[cardQueueIndex];
