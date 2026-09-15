@@ -9307,6 +9307,8 @@ const UI_ANIM = {
   stickyHeads:  { on:true, note:'A section’s heading sticks to the top while you read it' },
   tabLift:      { on:true, note:'A new page is dealt in from the side you swiped, over the app’s own black',
                   axis:'X', ms:440 },
+  titleScramble:{ on:true, note:'The masthead’s title resolves out of scrambled letters when the tab changes',
+                  ms:364, steps:7 },
   planDeal:     { on:true, note:'A generated week is dealt out day by day rather than appearing whole', ms:200 },
   pillExtend:   { on:true, note:'A section\u2019s title pill extends out as the page lands, rather than arriving whole',
                   ms:400, stagger:80, max:8 },
@@ -11147,7 +11149,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.549';
+const APP_VERSION = '2026.09.15.550';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11420,6 +11422,7 @@ const APP_NOTES = {
   '2026.09.15.547': 'The score counts up again \u2014 it had stopped rolling the moment you had enough nights to earn the real one.',
   '2026.09.15.548': 'The waves on Today are the ones that were actually drawn \u2014 one slow cycle per repeat, not two tight ones.',
   '2026.09.15.549': 'The field behind the score is plain for now \u2014 no dots, no waves, nothing between you and the number.',
+  '2026.09.15.550': 'The masthead title resolves out of scrambled letters when you change tab, a letter at a time from the front.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -12497,10 +12500,77 @@ const TAB_TITLES = {
    difference between the brand and the same six letters typed. Read at parse time, which is
    before anything can have overwritten it. */
 const WORDMARK_HTML = (document.querySelector('header h1') || {}).innerHTML || '';
+/* ONE SPAN PER LETTER, not per word.
+
+   It was per word, and one span per line was all the collapse needed: measureLogoWidth reads
+   the LAST span's right edge, which is the same edge either way. The scramble needs to address
+   letters individually, and the wordmark has been per-letter from the start — its hand-set
+   margins live on those spans — so this makes the two titles the same shape of thing.
+
+   No whitespace between the spans. They are inline, and a newline between two inline elements
+   is a space you would see at 46px. */
 function mastheadTitleHTML(tab){
   const t = TAB_TITLES[tab];
-  return t ? t.map(w => '<div class="logo-line"><span>' + w + '</span></div>').join('')
+  return t ? t.map(w => '<div class="logo-line">'
+      + [...w].map(ch => '<span>' + ch + '</span>').join('')
+      + '</div>').join('')
            : WORDMARK_HTML;
+}
+
+/* THE TITLE RESOLVES OUT OF NOISE.
+
+   WIDTH IS LOCKED BEFORE A SINGLE GLYPH CHANGES, and that is the whole of what makes this
+   shippable. Helvetica is proportional: an M is nearly three times a J. Scrambling the letters
+   of a 46px title without pinning them makes the whole word breathe in and out by tens of
+   pixels for the length of the effect, and the mark — which parks on the end of the longest
+   line — either chases it or sits out in space while the word shrinks away from it. Each span
+   is measured on its FINAL letter, pinned to that width, and centred; nothing moves.
+
+   IT RESOLVES LEFT TO RIGHT, in reading order, rather than settling all at once. That is what
+   keeps the cost of this honest: the word is not unreadable for 364ms, it is readable a letter
+   at a time from the front, and by the halfway point you have the first half of a word you
+   already knew. A random settle would be the same duration and twice the noise.
+
+   THE POOL IS THE APP'S OWN ALPHABET, uppercase only, because the title is uppercase and a
+   scramble that flashes lowercase or punctuation reads as a glitch in the app rather than as
+   the title arriving. A space stays a space — scrambling the gap between two words is the one
+   thing that would change the shape of the line. */
+const SCRAMBLE_POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+let scrambleSeq = 0;
+function scrambleTitle(h1){
+  const seq = ++scrambleSeq;
+  const spans = [...h1.querySelectorAll('.logo-line span')];
+  if(!spans.length) return;
+  const finals = spans.map(sp => sp.textContent);
+  // Measured and pinned first, in one pass, before anything is written back.
+  const widths = spans.map(sp => sp.getBoundingClientRect().width);
+  spans.forEach((sp, i) => {
+    sp.style.display = 'inline-block';
+    sp.style.width = widths[i].toFixed(2) + 'px';
+    sp.style.textAlign = 'center';
+  });
+  const steps = UI_ANIM.titleScramble.steps, per = UI_ANIM.titleScramble.ms / steps;
+  let k = 0;
+  const tick = ()=>{
+    if(seq !== scrambleSeq) return;            // a faster tab switch owns the title now
+    k++;
+    const settled = (k / steps) * spans.length;
+    spans.forEach((sp, i) => {
+      if(finals[i] === ' ' || i < settled) sp.textContent = finals[i];
+      else sp.textContent = SCRAMBLE_POOL[(Math.random() * SCRAMBLE_POOL.length) | 0];
+    });
+    if(k < steps){ setTimeout(tick, per); return; }
+    /* Put back exactly what was there. The wordmark's per-letter margins are inline styles on
+       these same spans and are untouched by this — only display, width and text-align were
+       added, so only those come off. */
+    spans.forEach((sp, i) => {
+      sp.textContent = finals[i];
+      sp.style.removeProperty('display');
+      sp.style.removeProperty('width');
+      sp.style.removeProperty('text-align');
+    });
+  };
+  setTimeout(tick, per);
 }
 
 /* THE ROLL.
@@ -12544,6 +12614,11 @@ function rollMastheadTitle(tab){
   const fromW = logoTextWidth == null ? measureLogoWidth() : logoTextWidth;
   h1.innerHTML = html;
   const toW = measureLogoWidth();
+  /* AFTER the measurement, never before. toW is what the mark travels to, and it has to be the
+     width of the real word — measured while the letters were scrambled it would be the width
+     of whatever noise happened to be on screen that frame. Pinning inside scrambleTitle is
+     what keeps the two agreeing for the rest of the effect. */
+  if(uiAnim('titleScramble')) scrambleTitle(h1);
 
   const rolls = from !== 'insights' && tab !== 'insights';
   const dx = toW - fromW;
