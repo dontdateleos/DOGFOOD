@@ -198,38 +198,13 @@
        .14 WAS the reference's own weight -- #303036 on #000000 is 1.56:1, and cream at .14 on
        this ground measured the same. It ships at .105, three quarters of that, which is a
        deliberate step away from the reference rather than a miss: the reference draws its
-       crosses on a panel with nothing else on it, and these sit over a dot screen and under
-       live text. A cross now paints #252624 against the #0c0d0b ground, where the mesh under
-       it paints #131412 -- the two stay a clear step apart, which is the ratio that matters
-       more than matching the source. */
+       crosses on a panel with nothing else on it, and these sit under live text. A cross
+       paints #252624 against the #0c0d0b ground, and on a ground with nothing else on it that
+       is enough -- there was briefly a dot screen under these and the two weights had to be
+       held apart; there is not now, so the only thing .105 has to clear is the ground. */
     --mk-panel-light:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27404%27%20height%3D%27451%27%3E%3Cpath%20d%3D%27M56%2C99h10M61%2C94v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27320%27%20cy%3D%27307%27%20r%3D%271.5%27%20fill%3D%27%23fbfaf6%27%20fill-opacity%3D%27.105%27%2F%3E%3Cpath%20d%3D%27M235%2C40h10M240%2C35v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
     --mk-panel-dark:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27404%27%20height%3D%27451%27%3E%3Cpath%20d%3D%27M56%2C99h10M61%2C94v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27320%27%20cy%3D%27307%27%20r%3D%271.5%27%20fill%3D%27%230c0d0b%27%20fill-opacity%3D%27.105%27%2F%3E%3Cpath%20d%3D%27M235%2C40h10M240%2C35v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
     --mk-panel:var(--mk-panel-light);
-    /* THE SOFT SCREEN. A 9px dot mesh at .07, under the marks on the same panels.
-
-       It is a gradient rather than a tile because a gradient has no resampling to go wrong:
-       an SVG dot at this pitch lands on fractional device pixels at DPR 2 and 3 and beats
-       against the grid, which is the moire the mesh exists to avoid. .03 is under a quarter
-       of the marks' .14 -- the mesh is the surface, the marks are on it, and the gap between
-       the two weights is what keeps the marks reading as marks rather than as thick mesh.
-
-       At .03 on this ground a dot lands on #131412 against a #0c0d0b ground -- 7 steps of
-       8-bit sRGB in each channel. That is the floor worth having: halve it again and the dot
-       is 3 or 4 steps, inside the range a phone's own dithering moves things anyway, so it
-       would stop being reliably there at all.
-
-       THE PITCH IS THE DENSITY KNOB, and it is the only even one. It shipped at 9px and that
-       was too busy. The tempting fix -- drop a selector, put the mesh on fewer surfaces -- was
-       measured and does not work: the mesh covers a mean 53% of the screen, but .fields-only
-       is 55% on Today and 62% on Weekly while being 0% on Injuries, Data and Settings, and
-       heads-only is the same unevenness reversed. Either one leaves some tabs bare and others
-       untouched; the spread across tabs goes UP, from 46 points to 62 or 53. Pitch is the
-       lever that moves all five together. 9 to 13 is (9/13)^2, so 52% fewer dots everywhere,
-       and the alpha comes down a notch with it because dots that sit further apart assert
-       themselves more individually at the same weight. */
-    --mk-screen-light:radial-gradient(circle at 1px 1px, rgba(251,250,246,.03) 1px, transparent 0);
-    --mk-screen-dark:radial-gradient(circle at 1px 1px, rgba(12,13,11,.03) 1px, transparent 0);
-    --mk-screen:var(--mk-screen-light);
     --reverse-bg:#0c0d0b;   /* dark fill for buttons/badges — independent of --text */
     --on-light:#0c0d0b;     /* text on any light fill (inputs, tags, outline buttons) */
     --on-light-dim:#191a0e; /* secondary text on a light fill */
@@ -768,7 +743,6 @@
     --dot-tile:var(--dot-tile-dark-ink);
     --wave-tile:var(--wave-tile-dark-ink);
     --mk-panel:var(--mk-panel-dark);
-    --mk-screen:var(--mk-screen-dark);
     --ink-bad:#cb3318;
     --ink-warn:#956104;
     --ink-yellow:#7e6b24;
@@ -842,7 +816,6 @@
     --dot-tile:var(--dot-tile-light-ink);
     --wave-tile:var(--wave-tile-light-ink);
     --mk-panel:var(--mk-panel-light);
-    --mk-screen:var(--mk-screen-light);
   }
   /* A .fields inside one of those pockets paints the tab's tint, and the tint does not follow
      the pocket: --field is declared on body as var(--field-<hue>), so it RESOLVES on body and
@@ -4471,12 +4444,6 @@
      factor when you do, or they bunch into one corner of a bigger tile. Do not add marks to
      it -- the count per tile is what makes the arithmetic above hold.
 
-     Two layers, marks over screen. The screen's background-position stays 0 0 on every tab
-     while the marks shift: a uniform 9px mesh looks identical at any offset, so shifting it
-     would cost a repaint and buy nothing. It is listed anyway because background-position
-     takes one value PER LAYER -- a single value would set both and pull the marks back to
-     the origin on all five tabs, which is the whole per-tab difference gone.
-
      The panels carry the marks, because the ground does not. Measured coverage of the bare
      ground across Today, Weekly and Settings was zero: .fields, .group-head and .app-colophon
      all repaint it edge to edge, so a mark on the ground is a mark behind a plate. These four
@@ -4488,19 +4455,17 @@
      background SHORTHAND to transparent at two-class specificity, which beats the single
      .fields here -- so they clear the image without needing an exception written for them. */
   .fields, .today-field, .group-head, .app-colophon{
-    background-image:var(--mk-panel), var(--mk-screen);
-    background-size:auto, 13px 13px;
-    background-repeat:repeat; }
+    background-image:var(--mk-panel); background-repeat:repeat; }
   body.tab-insights .fields, body.tab-insights .today-field,
-  body.tab-insights .group-head, body.tab-insights .app-colophon{ background-position:0 0, 0 0; }
+  body.tab-insights .group-head, body.tab-insights .app-colophon{ background-position:0 0; }
   body.tab-training .fields, body.tab-training .today-field,
-  body.tab-training .group-head, body.tab-training .app-colophon{ background-position:54px 31px, 0 0; }
+  body.tab-training .group-head, body.tab-training .app-colophon{ background-position:54px 31px; }
   body.tab-injuries .fields, body.tab-injuries .today-field,
-  body.tab-injuries .group-head, body.tab-injuries .app-colophon{ background-position:103px 88px, 0 0; }
+  body.tab-injuries .group-head, body.tab-injuries .app-colophon{ background-position:103px 88px; }
   body.tab-data .fields, body.tab-data .today-field,
-  body.tab-data .group-head, body.tab-data .app-colophon{ background-position:21px 129px, 0 0; }
+  body.tab-data .group-head, body.tab-data .app-colophon{ background-position:21px 129px; }
   body.tab-settings .fields, body.tab-settings .today-field,
-  body.tab-settings .group-head, body.tab-settings .app-colophon{ background-position:77px 62px, 0 0; }
+  body.tab-settings .group-head, body.tab-settings .app-colophon{ background-position:77px 62px; }
 </style>
 </head>
 <body>
@@ -11357,7 +11322,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.567';
+const APP_VERSION = '2026.09.15.568';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11647,6 +11612,7 @@ const APP_NOTES = {
   '2026.09.15.565': 'The mark turns its new colour as the title lands, instead of snapping to it.',
   '2026.09.15.566': 'The crosses step back \u2014 three quarters the weight, three quarters as many.',
   '2026.09.15.567': 'Half as many crosses again \u2014 sparse enough that you come across one rather than see a pattern.',
+  '2026.09.15.568': 'The dot screen comes off \u2014 back to a flat ground with just the marks on it.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
