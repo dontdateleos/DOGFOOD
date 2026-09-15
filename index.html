@@ -11122,7 +11122,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.546';
+const APP_VERSION = '2026.09.15.547';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11392,6 +11392,7 @@ const APP_NOTES = {
   '2026.09.15.544': 'The notes on Settings get a heading and a lifted clause \u2014 you can tell which paragraph you came for, and get its point without reading it.',
   '2026.09.15.545': 'The mark runs cyan to plum now, not red to cyan \u2014 a low morning is a different day, not a warning light.',
   '2026.09.15.546': 'Today is woven rather than dotted \u2014 the wave that was hiding the texture is now the texture, edge to edge.',
+  '2026.09.15.547': 'The score counts up again \u2014 it had stopped rolling the moment you had enough nights to earn the real one.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -20951,6 +20952,22 @@ function provisionalScore(raw){
   if(raw == null || isNaN(raw)) return null;
   return Math.round(50 + 50 * Math.tanh(PROVISIONAL_K * (raw / 100 - 1)));
 }
+/* WHERE THE ROLL STARTS, FOR ALL THREE BRANCHES.
+
+   This lived inline in the fallback branch and only there, which is why the counter stopped
+   moving: the number is the same all day, so from the second render onward each branch found
+   its own last value sitting in dataset.value and animated from it to itself. The fallback
+   was fixed in .286. Systemic Readiness and capacity were not, and they are the two that run
+   once you have enough nights for either — so the roll worked for a first week and then
+   quietly stopped, which is exactly how it was reported.
+
+   ARRIVING COUNTS UP FROM ZERO, whether or not the score has moved. A score that changes
+   while you are already on the page still rolls from where it was, because there the distance
+   travelled is the information. NaN is how rollNumber is told there is no previous value. */
+function scoreRollFrom(out){
+  const prev = parseInt(out.dataset.value || out.textContent);
+  return uiArriving() ? NaN : prev;
+}
 function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, entry, srResult){
   const out = document.getElementById('overallScoreOut');
   const label = document.getElementById('overallScoreLabel');
@@ -20987,7 +21004,7 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
   }
   if(srResult && srResult.available){
     setUncertainGaze(srResult.ciLow, srResult.ciHigh);
-    const prevNum = parseInt(out.dataset.value || out.textContent);
+    const prevNum = scoreRollFrom(out);
     /* The number is the score; the rank is what it says about you. The percentile used to be
        the headline on the grounds that it cannot saturate — it does, at both ends, and it sat
        pinned at 98 through most of a day's testing — and that "68" meant something real. The
@@ -21013,7 +21030,7 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
     // Passed through as NaN rather than substituted for the target here: the roll wants to
     // know there is no previous value so it can come up from zero, and substituting the
     // target is what made it animate from its final position to its final position.
-    const prevNum = parseInt(out.dataset.value || out.textContent);
+    const prevNum = scoreRollFrom(out);
     const shown = capacityResult.score;
     if(!rollNumber(out, prevNum, shown)){
       animateNumber(out, isNaN(prevNum) ? 0 : prevNum, shown, 500);
@@ -21046,13 +21063,7 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
     return null;
   }
   const overall = provisionalScore(parts.reduce((a,b)=>a+b,0)/parts.length);
-  const prevNum = parseInt(out.dataset.value || out.textContent);
-  // Arriving on Today counts up from zero every time, whether or not the score has moved.
-  // Rolling only on a change meant it never rolled: the number is the same all day, so the
-  // second visit onward found its own last value sitting in dataset.value and animated from
-  // it to itself. A score that changes while you are already here still rolls from where it
-  // was, because there the distance travelled is the information.
-  const rollFrom = uiArriving() ? NaN : prevNum;
+  const rollFrom = scoreRollFrom(out);
   if(!rollNumber(out, rollFrom, overall)) animateNumber(out, isNaN(rollFrom) ? 0 : rollFrom, overall, 500);
   // Set up before setEyeScore, so the roll owns the expression for its duration.
   eyeRollThroughStates(overall, uiArriving(), UI_ANIM.digitRoll.ms);
