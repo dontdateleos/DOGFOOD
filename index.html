@@ -11154,7 +11154,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.551';
+const APP_VERSION = '2026.09.15.552';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11429,6 +11429,7 @@ const APP_NOTES = {
   '2026.09.15.549': 'The field behind the score is plain for now \u2014 no dots, no waves, nothing between you and the number.',
   '2026.09.15.550': 'The masthead title resolves out of scrambled letters when you change tab, a letter at a time from the front.',
   '2026.09.15.551': 'The title falls away a letter at a time and the new one rises \u2014 cascade, on the one axis the mark is not using.',
+  '2026.09.15.552': 'The cascade actually cascades \u2014 both titles were on screen at once and the letters blinked instead of falling.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -12584,19 +12585,26 @@ function cascadeTitle(h1, prevHTML){
   ghost.innerHTML = prevHTML;
   h1.appendChild(ghost);
   const olds = [...ghost.querySelectorAll('.logo-line span')];
+  /* fill:both, EXPLICITLY, on both halves. uiPlay does not default it — it is built for
+     one-shot flourishes that return an element to rest, where fill:none is right. A staggered
+     pair is the opposite: every letter needs to HOLD its first keyframe through its delay and
+     its last one afterwards. Measured without it: the new title sat at opacity 1 from the
+     first frame, underneath a ghost that was also at 1, and then its letters blinked out and
+     back in one at a time; the ghost meanwhile snapped to fully visible the moment its own
+     animation ended and before it could be removed. Two titles at once, then a flicker. */
   olds.forEach((sp, i) => uiPlay(sp,
     [{ transform:'translateY(0)', opacity:1 }, { transform:'translateY(-42%)', opacity:0 }],
-    { duration:A.outMs, delay:Math.min(i, A.cap) * A.outStagger,
+    { duration:A.outMs, delay:Math.min(i, A.cap) * A.outStagger, fill:'both',
       easing:'cubic-bezier(.6,0,.9,.4)' }));
   const outEnd = A.outMs + A.cap * A.outStagger;
   setTimeout(()=>{ if(ghost.parentNode) ghost.remove(); }, outEnd + 40);
 
-  /* The arriving letters are held down and clear until their turn. fill:both during the delay
-     is what holds them; without it they sit visible for the length of the out and then jump. */
+  /* The arriving letters are held down and clear until their turn — see the note above for
+     what happens when they are not. */
   const news = [...h1.querySelectorAll(':scope > .logo-line span')];
   news.forEach((sp, i) => uiPlay(sp,
     [{ transform:'translateY(58%)', opacity:0 }, { transform:'translateY(0)', opacity:1 }],
-    { duration:A.inMs, delay:outEnd + Math.min(i, A.cap) * A.inStagger }));
+    { duration:A.inMs, delay:outEnd + Math.min(i, A.cap) * A.inStagger, fill:'both' }));
 
   /* A faster switch than the effect takes: drop the ghost on the spot rather than leaving two
      layers of old title stacked over one new one. */
