@@ -166,34 +166,35 @@
     --wave-tile-light-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27168%27%20height%3D%2716%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23fbfaf6%27%20stroke-width%3D%270.85%27%3E%3Cpath%20stroke-opacity%3D%27.11%27%20d%3D%27M0%2C8%20C21%2C8%2021%2C3%2042%2C3%20C63%2C3%2063%2C8%2084%2C8%20C105%2C8%20105%2C13%20126%2C13%20C147%2C13%20147%2C8%20168%2C8%27%2F%3E%3Cpath%20stroke-opacity%3D%27.046%27%20d%3D%27M-42%2C8%20C-21%2C8%20-21%2C3%200%2C3%20C21%2C3%2021%2C8%2042%2C8%20C63%2C8%2063%2C13%2084%2C13%20C105%2C13%20105%2C8%20126%2C8%20C147%2C8%20147%2C3%20168%2C3%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
     --wave-tile-dark-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27168%27%20height%3D%2716%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%230c0d0b%27%20stroke-width%3D%270.85%27%3E%3Cpath%20stroke-opacity%3D%27.11%27%20d%3D%27M0%2C8%20C21%2C8%2021%2C3%2042%2C3%20C63%2C3%2063%2C8%2084%2C8%20C105%2C8%20105%2C13%20126%2C13%20C147%2C13%20147%2C8%20168%2C8%27%2F%3E%3Cpath%20stroke-opacity%3D%27.046%27%20d%3D%27M-42%2C8%20C-21%2C8%20-21%2C3%200%2C3%20C21%2C3%2021%2C8%2042%2C8%20C63%2C8%2063%2C13%2084%2C13%20C105%2C13%20105%2C8%20126%2C8%20C147%2C8%20147%2C3%20168%2C3%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
     --wave-tile:var(--wave-tile-light-ink);
-    /* FIVE MARKS ON A SCREEN, AND NEVER MORE THAN THAT.
+    /* NINE MARKS ON A PAGE, AND YOU SCROLL PAST THEM.
 
        The backpack's empty slots are crosses -- #303036 on black, about a 1.5:1 whisper -- and
-       the menu floor is the same mark scattered in perspective. Not a texture. A few marks on
-       a plane, which is what this is: a 440x560 tile carrying five crosses and two dots at
-       irregular positions.
+       the menu floor is the same mark scattered on a plane you move across. That last part is
+       the bit this now gets right.
 
-       SEVEN, WHERE IT STARTED AT FIVE. One mark per 35,200 square pixels against 49,300, so a
-       390x844 screen holds about nine where it held under seven. Added to the TILE rather than
-       taken out of its size: shrinking it below 440 would put a horizontal repeat on a 390
-       screen and stand the same mark twice at the same height, which is the grid-reading this
-       is built to avoid.
+       NOT A TILE ANY MORE, AND THAT IS THE CHANGE. A repeating tile fixed to the viewport put
+       the same marks in the same places on every screen of every page: scroll a thousand
+       pixels and nothing moved, because nothing was anywhere. These are nine marks placed ONCE
+       on the page, at percentages of its height, on the backdrop that scrolls with it. You
+       pass them.
 
-       WIDER THAN ANY PHONE ON PURPOSE. At 440 across there is no horizontal repeat on a 390
-       screen -- the tile is simply clipped -- so the marks never line up into a grid, which is
-       the thing that made a 24px cross field read as ruling rather than as marks.
+       NINE PER PAGE HOWEVER LONG THE PAGE IS. Positioned as percentages, so Settings at four
+       thousand pixels spreads its nine over the whole of it and Today at seventeen hundred
+       keeps them closer. That is the right way round: a long page is not more marked, it is
+       more spaced.
 
-       AND IT IS FIXED, WHICH IS THE WHOLE REASON THE COUNT HOLDS. Tiled against the document
-       it would scroll, and Settings is four thousand pixels long: sixty marks on one page and
-       five on another is not "sparse", it is a texture that happens to be thin at the top.
-       Fixed to the viewport, a screen holds four or five wherever you are and whatever tab
-       you are on.
+       A DIFFERENT NINE ON EACH TAB, from a jittered three-by-three -- one mark per cell of the
+       page, jittered inside it -- so they are spread by construction rather than clustered by
+       luck, and no two tabs share an arrangement.
 
-       .14 rather than the .3 the dots used. Measured off the reference: #303036 on #000000 is
-       1.56:1, and cream at .14 on this ground is the same whisper. */
-    --mark-tile-light-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27440%27%20height%3D%27560%27%3E%3Cpath%20d%3D%27M52%2C92h12M58%2C86v12%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M240%2C54h8M244%2C50v8%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M307.5%2C196h9.0M312%2C191.5v9.0%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%2730%27%20cy%3D%27268%27%20r%3D%271.4%27%20fill%3D%27%23fbfaf6%27%20fill-opacity%3D%27.14%27%2F%3E%3Ccircle%20cx%3D%27196%27%20cy%3D%27366%27%20r%3D%271.6%27%20fill%3D%27%23fbfaf6%27%20fill-opacity%3D%27.14%27%2F%3E%3Cpath%20d%3D%27M99%2C470h10M104%2C465v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M382%2C412h8M386%2C408v8%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
-    --mark-tile-dark-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27440%27%20height%3D%27560%27%3E%3Cpath%20d%3D%27M52%2C92h12M58%2C86v12%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M240%2C54h8M244%2C50v8%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M307.5%2C196h9.0M312%2C191.5v9.0%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%2730%27%20cy%3D%27268%27%20r%3D%271.4%27%20fill%3D%27%230c0d0b%27%20fill-opacity%3D%27.14%27%2F%3E%3Ccircle%20cx%3D%27196%27%20cy%3D%27366%27%20r%3D%271.6%27%20fill%3D%27%230c0d0b%27%20fill-opacity%3D%27.14%27%2F%3E%3Cpath%20d%3D%27M99%2C470h10M104%2C465v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M382%2C412h8M386%2C408v8%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
-    --mark-tile:var(--mark-tile-light-ink);
+       .14 is the reference's own weight: #303036 on #000000 is 1.56:1, and cream at .14 on
+       this ground measures the same. */
+    --mk-cross-light:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2714%27%20height%3D%2714%27%3E%3Cpath%20d%3D%27M1%2C7h12M7%2C1v12%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
+    --mk-cross-dark:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2714%27%20height%3D%2714%27%3E%3Cpath%20d%3D%27M1%2C7h12M7%2C1v12%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
+    --mk-dot-light:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%274%27%20height%3D%274%27%3E%3Ccircle%20cx%3D%272%27%20cy%3D%272%27%20r%3D%271.5%27%20fill%3D%27%23fbfaf6%27%20fill-opacity%3D%27.14%27%2F%3E%3C%2Fsvg%3E");
+    --mk-dot-dark:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%274%27%20height%3D%274%27%3E%3Ccircle%20cx%3D%272%27%20cy%3D%272%27%20r%3D%271.5%27%20fill%3D%27%230c0d0b%27%20fill-opacity%3D%27.14%27%2F%3E%3C%2Fsvg%3E");
+    --mk-cross:var(--mk-cross-light);
+    --mk-dot:var(--mk-dot-light);
     --reverse-bg:#0c0d0b;   /* dark fill for buttons/badges — independent of --text */
     --on-light:#0c0d0b;     /* text on any light fill (inputs, tags, outline buttons) */
     --on-light-dim:#191a0e; /* secondary text on a light fill */
@@ -626,18 +627,38 @@
      writes its background-color — and every black block in the app is an opaque element
      painted on top of it. */
   #scrollBackdrop{ position:absolute; inset:0; z-index:-1; }
-  /* THE MARKS, ABOVE THE BACKDROP AND BELOW EVERYTHING ELSE.
+  /* THE MARKS LIVE ON THE BACKDROP, WHICH IS THE THING THAT SCROLLS.
 
-     ::after rather than ::before, and that is load-bearing. #scrollBackdrop is the first child
-     of body and paints the tab's ground at z-index -1; a ::before is treated as the FIRST
-     child, so it would paint underneath and never be seen. ::after is the last, so at the same
-     z-index it lands on top of the backdrop by document order -- and the -1 still keeps it
-     behind every real element on the page.
+     #scrollBackdrop is position:absolute with inset:0 against a body that grows with its
+     content, so it is exactly the height of the page and moves with it. That is what makes
+     these something you pass rather than something that follows you. It is already at
+     z-index -1, behind every real element, and the tab's own ground colour is painted on it
+     by activateTab -- which sets backgroundColor specifically, so the images below are safe.
 
-     position:fixed, not absolute: see the tile's own note for why the count has to be bounded
-     by the screen rather than by the length of the page. */
-  body::after{ content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
-    background-image:var(--mark-tile); background-size:440px 560px; }
+     no-repeat, nine layers, nine positions. Each layer is its own small svg at its own size,
+     rather than one stretched image: background-size:100% 100% on a single sheet would have
+     scaled a cross into a long thin plus on a four-thousand-pixel page. */
+  #scrollBackdrop{ background-repeat:no-repeat; }
+  body.tab-insights #scrollBackdrop{
+    background-image:var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-dot), var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-dot), var(--mk-dot);
+    background-position:22.9% 20.7%, 47.4% 5.6%, 83.9% 28.5%, 10.1% 43.3%, 60.9% 54.3%, 76.8% 48.8%, 20.6% 89.3%, 48.9% 88.5%, 87.5% 75.6%;
+    background-size:13px 13px, 11px 11px, 11px 11px, 4px 4px, 9px 9px, 13px 13px, 11px 11px, 4px 4px, 4px 4px; }
+  body.tab-training #scrollBackdrop{
+    background-image:var(--mk-dot), var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-dot), var(--mk-cross);
+    background-position:24.7% 24.0%, 42.3% 11.8%, 76.8% 28.4%, 17.8% 48.5%, 55.1% 52.8%, 81.6% 42.0%, 7.8% 93.5%, 58.8% 94.2%, 78.4% 76.3%;
+    background-size:4px 4px, 11px 11px, 11px 11px, 9px 9px, 13px 13px, 13px 13px, 13px 13px, 4px 4px, 13px 13px; }
+  body.tab-injuries #scrollBackdrop{
+    background-image:var(--mk-cross), var(--mk-dot), var(--mk-dot), var(--mk-dot), var(--mk-cross), var(--mk-cross), var(--mk-dot), var(--mk-cross), var(--mk-cross);
+    background-position:16.9% 10.0%, 48.0% 20.9%, 85.9% 15.7%, 16.3% 57.5%, 51.8% 39.9%, 88.9% 55.4%, 16.9% 74.2%, 45.9% 90.0%, 75.9% 76.7%;
+    background-size:13px 13px, 4px 4px, 4px 4px, 4px 4px, 11px 11px, 11px 11px, 4px 4px, 11px 11px, 9px 9px; }
+  body.tab-data #scrollBackdrop{
+    background-image:var(--mk-cross), var(--mk-dot), var(--mk-cross), var(--mk-cross), var(--mk-dot), var(--mk-cross), var(--mk-dot), var(--mk-dot), var(--mk-cross);
+    background-position:17.2% 8.5%, 59.4% 17.4%, 81.5% 14.2%, 7.4% 48.7%, 48.0% 55.3%, 72.1% 53.5%, 27.5% 82.4%, 40.5% 79.4%, 82.1% 81.8%;
+    background-size:11px 11px, 4px 4px, 13px 13px, 11px 11px, 4px 4px, 11px 11px, 4px 4px, 4px 4px, 13px 13px; }
+  body.tab-settings #scrollBackdrop{
+    background-image:var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-cross), var(--mk-dot), var(--mk-cross), var(--mk-cross), var(--mk-dot), var(--mk-cross);
+    background-position:15.6% 13.8%, 56.1% 8.9%, 84.2% 25.2%, 5.6% 54.2%, 58.4% 60.5%, 73.3% 54.5%, 27.3% 93.1%, 46.4% 81.3%, 74.9% 87.6%;
+    background-size:9px 9px, 9px 9px, 13px 13px, 13px 13px, 4px 4px, 9px 9px, 11px 11px, 4px 4px, 9px 9px; }
   /* The deal. The card is a positioned element with a z-index so it makes its own stacking
      context, which is what stops the sticky headings inside it climbing out and painting over
      its leading edge. It stays under the header's z-index 10, so the header is untouched the
@@ -716,7 +737,8 @@
     --field-blue:#e2f5f6;
     --dot-tile:var(--dot-tile-dark-ink);
     --wave-tile:var(--wave-tile-dark-ink);
-    --mark-tile:var(--mark-tile-dark-ink);
+    --mk-cross:var(--mk-cross-dark);
+    --mk-dot:var(--mk-dot-dark);
     --ink-bad:#cb3318;
     --ink-warn:#956104;
     --ink-yellow:#7e6b24;
@@ -789,7 +811,8 @@
        the dark one, whatever the page outside is doing. */
     --dot-tile:var(--dot-tile-light-ink);
     --wave-tile:var(--wave-tile-light-ink);
-    --mark-tile:var(--mark-tile-light-ink);
+    --mk-cross:var(--mk-cross-light);
+    --mk-dot:var(--mk-dot-light);
   }
   /* A .fields inside one of those pockets paints the tab's tint, and the tint does not follow
      the pocket: --field is declared on body as var(--field-<hue>), so it RESOLVES on body and
@@ -11244,7 +11267,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.558';
+const APP_VERSION = '2026.09.15.559';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11525,6 +11548,7 @@ const APP_NOTES = {
   '2026.09.15.556': 'A few marks on the ground, on every page \u2014 four or five to a screen, and never more however far you scroll.',
   '2026.09.15.557': 'The masthead title is the tab\u2019s colour at full strength \u2014 it was quieter than the little pills underneath it.',
   '2026.09.15.558': 'A couple more marks on the ground \u2014 seven to the tile where there were five.',
+  '2026.09.15.559': 'Nine marks on each page, a different nine per tab, and they stay where they are while you scroll past them.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
