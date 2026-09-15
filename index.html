@@ -4102,9 +4102,24 @@
      rule until the block chart wanted the same surface: everything below here is about dots,
      a wave and a mask, and none of it is about Today. z-index:0 belongs to the field rather
      than the page, because it is what stops the -1 below from dropping through. */
+  /* THE FIELD IS BARE FOR NOW.
+
+     It carried the dots, then watered silk, and carries neither. What is left is the bleed and
+     the gutter, which is all .today-field ever did on its own.
+
+     position and z-index move UP here from .dot-field rather than going with it. That rule
+     supplies the stacking context its own ::before sits behind at z-index -1, and the element
+     keeps children that stack against it -- taking the class off would have taken the context
+     with it and changed what paints over what, which is not what "no texture" should mean.
+
+     PUTTING IT BACK IS ADDING TWO CLASSES. `dot-field` for the dots and their wave mask, plus
+     `wave-field` for the silk over the top of it. Both rules and both tiles are still here and
+     still correct; nothing was deleted, because "for now" was the brief. */
   .today-field{
     margin:0 calc(-1 * var(--gutter));
     padding:0 var(--gutter);
+    position:relative;
+    z-index:0;
   }
   .dot-field{
     position:relative;
@@ -4423,7 +4438,7 @@
          suggestions head, or, before you have logged, the "Log this morning" strip that
          stands in its place. Nothing has to say where the field stops; the first plate on
          the page stops it. -->
-    <div class="today-field dot-field wave-field">
+    <div class="today-field">
     <div class="today-open">
     <div class="gauge-wrap">
       <div class="score-stack">
@@ -11132,7 +11147,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.548';
+const APP_VERSION = '2026.09.15.549';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11404,6 +11419,7 @@ const APP_NOTES = {
   '2026.09.15.546': 'Today is woven rather than dotted \u2014 the wave that was hiding the texture is now the texture, edge to edge.',
   '2026.09.15.547': 'The score counts up again \u2014 it had stopped rolling the moment you had enough nights to earn the real one.',
   '2026.09.15.548': 'The waves on Today are the ones that were actually drawn \u2014 one slow cycle per repeat, not two tight ones.',
+  '2026.09.15.549': 'The field behind the score is plain for now \u2014 no dots, no waves, nothing between you and the number.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
