@@ -289,14 +289,6 @@
        so it clears AA for the small uppercase this is used at with room over. */
     --label:#dfd0a4;
     --label-bone:#665a35;
-    /* THE FORM BADGE'S OTHER TWO STATES.
-
-       The badge is the tab's hue when you are in form, and the hue is the reward — it cannot
-       also be the colour of "typical" without stopping meaning anything. A warm grey at
-       5.69:1 against the near-black bars, against the lime's 11.84: unmistakably the same
-       object, unmistakably quieter. It does not flip with the ground because the badge never
-       sits on the ground; it sits on the chip's own sphere, which is the same colour on both. */
-    --form-quiet:#8d8b80;
     --block-lime:#c3d353;
     --block-orange:#ff984a;
     --block-blue:#52d8f7;
@@ -942,17 +934,11 @@
     letter-spacing:0; font-variant-numeric:tabular-nums;
     box-shadow:0 0 0 2.5px var(--ground); }
   .form-mark[hidden]{ display:none; }
-  /* Typical and below take the quiet fill; in form keeps the hue. The bars inside are
-     currentColor either way, so one rule dresses all three. */
-  .form-mark[data-form="level"], .form-mark[data-form="under"]{ background:var(--form-quiet); }
-  .form-mark svg{ display:block; }
   /* On bone the sphere under this is the near-black one, so the badge is sitting on the DARK
      surface even though the page is light — which is the one place --hue-faded is the wrong
      answer, since the reason it exists is the pale ground. Full lime, and the cut-out ring
      follows the page rather than the sphere so it still separates the two. */
   html[data-ground="bone"] .form-mark{ background:var(--block-lime); color:#0c0d0b; }
-  html[data-ground="bone"] .form-mark[data-form="level"],
-  html[data-ground="bone"] .form-mark[data-form="under"]{ background:var(--form-quiet); }
   /* Set to match .tab-label, since it is the other thing in this corner of the black. */
   /* Scoped past `.header-brand > *`, which sets position:relative on every direct child
      to lift them over the mark. At equal specificity that rule wins on order,
@@ -8437,67 +8423,33 @@ let workoutStreak = 0;
    emoji in the app, in a corner otherwise made of mono capitals and one drawn mark.
 
    This says something the app can now actually measure: the form channel, which is where your
-   last five sessions have sat against your own baseline. Three ascending bars, drawn, in the
-   tab's own hue — a level that is above your middle, which is what being in form is.
+   last five sessions have sat against your own baseline. The badge is on when that channel is
+   above your own middle, in the tab's own hue, and it carries the number of days you have
+   held it.
 
-   It is deliberately not a count. There is no number to inflate and nothing to protect, so
-   it cannot be gamed by turning up; it goes on when the training is going well and off when
-   it is not, which is the only honest version of this badge. */
-/* THREE BARS, AND WHICH WAY THEY LEAN.
+   THE NUMBER IS NOT THE STREAK THE FLAME WAS, and the difference is what it counts. The flame
+   counted turning up, which you control directly and can therefore protect by turning up
+   badly. This counts days your last five sessions have sat above your own baseline — you
+   cannot hold it by showing up, only by training well, and it ends on its own the week the
+   training stops going anywhere. A number you cannot defend is a readout, not a score.
 
-   THE COMMENT ABOVE HAS BEEN RIGHT AND THE CODE WRONG. It has said "three ascending bars,
-   drawn" and "it is deliberately not a count" since the badge was written, while the function
-   set textContent to the number of days. A day count is a streak in everything but name: it
-   goes up for holding on, it is a thing to protect, and it puts the badge back in the company
-   of the flame it replaced. The bars are what was meant.
-
-   THREE STATES OFF ONE NUMBER. srResult.formZ is the form channel's own z — the mean of your
-   last five sessions against your own distribution — and FORM_IN_THRESH is already the line
-   for the top of it. The same 0.75 of an SD, read symmetrically, gives the bottom: above is
-   in form, below is under, and the band between them is where most days live.
-
-   WHY THE LOW END IS NOT RED. A recovery app that colours a flat fortnight as a fault teaches
-   you to stop looking at it. Under and typical share one quiet fill and differ only in which
-   way the bars lean, which says the same thing without the alarm — and the hue stays earned,
-   because it only appears when the training is actually going somewhere.
-
-   ALWAYS SHOWN WHERE THERE IS FORM TO SHOW. Hidden it was a reward that blinked on a few
-   weeks a year; present, it is a readout you can glance at, which is what the corner of a
-   masthead is for. It still disappears entirely when there is no form channel yet. */
-const FORM_BARS = {
-  up:    [4, 7.5, 11],
-  level: [7, 7, 7],
-  down:  [11, 7.5, 4]
-};
-function formBarsSVG(key){
-  const h = FORM_BARS[key];
-  return '<svg width="11" height="11" viewBox="0 0 11 11" aria-hidden="true">'
-    + h.map((v, i) => '<rect x="' + (i * 4.25).toFixed(2) + '" y="' + (11 - v).toFixed(2)
-        + '" width="2.5" height="' + v.toFixed(2) + '" fill="currentColor"/>').join('')
-    + '</svg>';
-}
-const FORM_STATES = {
-  up:    { key:'up',    dress:'in',    label:'In form',                     bars:'up'    },
-  level: { key:'level', dress:'level', label:'Form is typical for you',     bars:'level' },
-  under: { key:'under', dress:'under', label:'Form is below your usual',    bars:'down'  }
-};
-function renderFormMark(sr){
+   THIS COMMENT USED TO SAY THE OPPOSITE, describing three drawn bars and "deliberately not a
+   count", while the code underneath wrote the day count. The bars were built in .553 and
+   taken out again in .554 because they did not look like anything; the number is what ships
+   and this is now what the file says. The three-state version — bars leaning up, level or
+   down off the same formZ, with a quiet fill for the two that are not in form — is in the
+   history if it is ever wanted back. */
+function renderFormMark(inForm, days, capped){
   const el = document.getElementById('formMark');
   if(!el) return;
-  const z = sr && sr.formZ;
-  if(z == null || isNaN(z)){
-    el.hidden = true; el.innerHTML = '';
-    el.removeAttribute('aria-label'); el.removeAttribute('data-form');
-    return;
-  }
-  const st = z >= FORM_IN_THRESH ? FORM_STATES.up
-           : z <= -FORM_IN_THRESH ? FORM_STATES.under
-           : FORM_STATES.level;
+  if(!inForm || !(days >= 1)){ el.hidden = true; el.innerHTML = ''; el.removeAttribute('aria-label'); return; }
   el.hidden = false;
-  el.dataset.form = st.dress;
-  el.setAttribute('aria-label', st.label);
-  el.title = st.label;
-  el.innerHTML = formBarsSVG(st.bars);
+  const shown = capped ? days + '+' : String(days);
+  el.setAttribute('aria-label', capped
+    ? `In form for ${days} days or more`
+    : `In form for ${days} day${days === 1 ? '' : 's'}`);
+  el.title = 'In form';
+  el.textContent = shown;
   // The layout owns where it goes, and it only runs while the badge is shown — so ask for a
   // pass now that it is, or a badge that has just come back sits at wherever it last was.
   if(typeof relayoutColumn === 'function') relayoutColumn();
@@ -11212,7 +11164,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.553';
+const APP_VERSION = '2026.09.15.554';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11488,7 +11440,7 @@ const APP_NOTES = {
   '2026.09.15.550': 'The masthead title resolves out of scrambled letters when you change tab, a letter at a time from the front.',
   '2026.09.15.551': 'The title falls away a letter at a time and the new one rises \u2014 cascade, on the one axis the mark is not using.',
   '2026.09.15.552': 'The cascade actually cascades \u2014 both titles were on screen at once and the letters blinked instead of falling.',
-  '2026.09.15.553': 'The form badge has three faces now \u2014 bars leaning up, level or down, and no day count to protect.',
+  '2026.09.15.554': 'The form badge is the day count again \u2014 the three-bar version did not look like anything.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -15211,7 +15163,7 @@ async function computeSystemicReadiness(asOfDate){
        side of it was good, and only the training falling off ends it.
 
        Capped by the window, which is SIG_BASE_DAYS = 60. Past that the count stops being able
-       to grow, so it says so rather than lying flat: formDaysCapped is what the masthead line reads to
+       to grow, so it says so rather than lying flat: formDaysCapped is what the badge reads to
        print "60+". */
     formDays, formDaysCapped: formDays >= win.dates.length,
     /* The headline is the score, not the rank of it.
@@ -21152,7 +21104,8 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
      can never be reporting different days. Only Systemic Readiness carries a form channel —
      the fallback layers below have never seen one — so anywhere it cannot run, this is off
      rather than guessed at. */
-  renderFormMark(srResult);
+  renderFormMark(!!(srResult && srResult.inForm), srResult && srResult.formDays,
+                 !!(srResult && srResult.formDaysCapped));
 
   // Capacity becomes the main number once it has enough data (7+ paired days) — a
   // personalized, correlation-weighted read on today's numbers, not just today's
