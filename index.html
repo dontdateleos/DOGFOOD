@@ -10950,7 +10950,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.14.539';
+const APP_VERSION = '2026.09.15.540';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11213,6 +11213,7 @@ const APP_NOTES = {
   '2026.09.14.537': 'The streak is actually gone \u2014 no toast, no confetti, no line at the end of the week.',
   '2026.09.14.538': 'A first score in sixteen mornings instead of twenty-four \u2014 the app stopped measuring you against a past you could not have had.',
   '2026.09.14.539': 'Your early score is marked as early, and reads on the same scale as the real one \u2014 no more ninety on Monday and forty on Tuesday.',
+  '2026.09.15.540': '"Log this morning" goes to the morning form again \u2014 it had been pointing at a view that moved, which is why a phone-only score never arrived.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -30268,7 +30269,35 @@ async function generateRecommendations(){
       + '<span>Log this morning</span><span class="cta-strip-arrow" aria-hidden="true">&rarr;</span></div>'
       + (ouraOn ? '' : '<div class="cta-aside" id="insightsRingOffer" role="button" tabindex="0">'
           + 'Wear an Oura ring? Connect it and this fills itself in.</div>');
-    document.getElementById('insightsLogCTA').addEventListener('click', ()=>{ activateTab('data'); activateDataSubView('recovery'); });
+    /* THE ONE DOOR OUT OF THIS STATE HAS TO OPEN.
+
+       It went to activateDataSubView('recovery'), and the recovery view left the Data tab
+       when the morning check-in moved to Settings > Your data > Logging. That function
+       coerces anything but 'history' to 'trends' — so the single action offered to someone
+       with no score dealt them the trends chart, and the form with the sleep field in it
+       stayed collapsed in a tab they were never sent to.
+
+       Nothing else reaches that form. Without a wearable, durationHrs is the only channel
+       scoresForEntry can read (hrv needs a baseline, and wakeTimeOura/Garmin are sensor
+       fields) — so a broken link here is the difference between having a score and never
+       having one. The morning sheet does not close the gap either: it asks about alcohol
+       and illness, neither of which scores.
+
+       Settings, then the section, then the form, on the 420ms the goal-profile link already
+       uses — the tab deal has to land before anything is scrolled, or it is scrolled inside
+       a panel that is still moving. Focus on the sleep field last, because the whole request
+       is "type one number": on a phone that is the keyboard already up on the right input. */
+    document.getElementById('insightsLogCTA').addEventListener('click', ()=>{
+      activateTab('settings');
+      setTimeout(()=>{
+        setCollapsed('logging', false);
+        const el = document.getElementById('durationHrs');
+        const grp = el && el.closest('.group');
+        if(grp) grp.scrollIntoView({ behavior: eyeMotionOff() ? 'auto' : 'smooth', block:'center' });
+        // After the scroll: focusing first is what makes the browser scroll somewhere else.
+        if(el) setTimeout(()=> el.focus({ preventScroll:true }), 260);
+      }, 420);
+    });
     // THE SCORE SLOT SAYS WHAT IT IS WAITING FOR.
     // #overallScoreOut ships with an eight-pointed star in it as a placeholder, and nothing
     // overwrites it on the day's first render — so someone six weeks in opens the app in the
