@@ -18,7 +18,7 @@
      localStorage rather than the app's async storage, because the alternative is the page
      drawing itself black and then flipping to bone on every single launch. The masthead is
      dark on both grounds, which is why theme-color above does not move with it. -->
-<script>try{var g=localStorage.getItem('ground');if(g==='bone')document.documentElement.dataset.ground='bone';}catch(e){}</script>
+<script>try{var g=localStorage.getItem('ground');if(g==='bone')document.documentElement.dataset.ground='bone';var m=localStorage.getItem('masthead');if(m&&m!=='deep')document.documentElement.dataset.masthead=m;}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Dogfood">
@@ -4511,6 +4511,144 @@
   body.tab-data .group-head, body.tab-data .app-colophon{ background-position:21px 129px; }
   body.tab-settings .fields, body.tab-settings .today-field,
   body.tab-settings .group-head, body.tab-settings .app-colophon{ background-position:77px 62px; }
+
+  /* ---- MASTHEAD THEMES -------------------------------------------------------------------
+     Four ways the masthead can carry the tab's colour, chosen in Settings. "deep" is the
+     default and emits NOTHING -- it is the app as it stands, so the untouched path stays the
+     untouched path and the other three are pure addition.
+
+     The inversion is the point. On deep the banner is a dark pocket and the TITLE carries the
+     hue. On the other three the BANNER carries it and the title is knocked out of it, which
+     is why each one also has to re-scope the INK inside the banner rather than just repaint
+     the background. Scoped to .header-brand so it is a pocket, exactly the way
+     html[data-ground="bone"] header already makes one.
+
+     Three inks, not one, and the gate is what found that out. Repainting the banner and
+     flipping --ink-rgb left twelve failures at "washed" and twelve at "bright": the tab label
+     and its insight line read --sand, NOT --ink-rgb, and the date's two spans composite the
+     ink at 0.6. Two of those could not be fixed by colour alone -- on a mid-lightness banner
+     no warm sand reaches 4.6:1 through a 0.72 composite at all -- so the alpha moves with the
+     hue: the insight line goes to 0.88 or 1.0 where it has to, the date to 0.65-0.95. Every
+     themed masthead now clears 4.6:1 on all three, composited, on both grounds.
+
+     Three things are held constant across all four, and each is a number rather than a taste:
+
+       THE MARK STAYS A BODY ON THE BAND. .573 chose L* 24 on a L* 9-14 banner, which is the
+       mark sitting 12.5 L* above what it sits on -- 1.36-1.53:1, lighter than the band rather
+       than darker. Every theme keeps that same 12.5 step off its own banner, so the mark
+       reads the same way at every lightness: 1.38 to 1.59:1 across all four.
+
+       THE CRESCENT KEEPS ITS OFFSET. L* +17.5, C* x1.79, hue +1.4 from its own shell, gamut
+       clamped, as everywhere else the mark is drawn.
+
+       THE EYEBROW STAYS LEGIBLE. --label ships as a fixed sand tuned for a dark banner; at
+       L* 60 it measures 2.06:1 and at full band colour 1.05:1, which is why it is re-derived
+       per theme here rather than left. Every theme's label clears 4.5:1.
+
+     The title pole flips at "bright": below it cream wins on every tab, at L* 60 the ink
+     does. Computed, not chosen -- whichever of the two poles reads better on that banner. */
+
+  /* Lifted -- banner L* 30, C* 20. Title cream at 8.91-8.95:1. */
+  html[data-masthead="lifted"] body.tab-insights{ --banner:#434a2a; --mark-shell:#606840; --mark-lit:#85994b; }
+  html[data-masthead="lifted"] body.tab-training{ --banner:#5c412b; --mark-shell:#7f5d41; --mark-lit:#c0844b; }
+  html[data-masthead="lifted"] body.tab-injuries{ --banner:#643b46; --mark-shell:#8a5564; --mark-lit:#d7718e; }
+  html[data-masthead="lifted"] body.tab-data{ --banner:#53405c; --mark-shell:#745c80; --mark-lit:#b07ec4; }
+  html[data-masthead="lifted"] body.tab-settings{ --banner:#1a4f45; --mark-shell:#2e6f63; --mark-lit:#00a390; }
+  html[data-masthead="lifted"] body.tab-insights .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#c2b4a0; }
+  html[data-masthead="lifted"] body.tab-training .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#c2b4a0; }
+  html[data-masthead="lifted"] body.tab-injuries .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#c2b4a1; }
+  html[data-masthead="lifted"] body.tab-data .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#c2b4a1; }
+  html[data-masthead="lifted"] body.tab-settings .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#c2b4a0; }
+  html[data-masthead="lifted"] header h1{ color:#fbfaf6; -webkit-text-stroke-color:#fbfaf6; }
+
+  /* Washed -- banner L* 45, C* 28. Title cream at 5.13-5.16:1. */
+  html[data-masthead="washed"] body.tab-insights{ --banner:#656f3f; --mark-shell:#868e64; --mark-lit:#aec170; }
+  html[data-masthead="washed"] body.tab-training{ --banner:#8a6241; --mark-shell:#a88365; --mark-lit:#ecab71; }
+  html[data-masthead="washed"] body.tab-injuries{ --banner:#96586a; --mark-shell:#b27b89; --mark-lit:#ff9bb6; }
+  html[data-masthead="washed"] body.tab-data{ --banner:#7d608b; --mark-shell:#9b81a7; --mark-lit:#daa6ef; }
+  html[data-masthead="washed"] body.tab-settings{ --banner:#257769; --mark-shell:#559689; --mark-lit:#3cceb8; }
+  html[data-masthead="washed"] body.tab-insights .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#f7e9d4; }
+  html[data-masthead="washed"] body.tab-training .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#f8e9d4; }
+  html[data-masthead="washed"] body.tab-injuries .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#f7e9d4; }
+  html[data-masthead="washed"] body.tab-data .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#fbecd7; }
+  html[data-masthead="washed"] body.tab-settings .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#fbecd7; }
+  html[data-masthead="washed"] header h1{ color:#fbfaf6; -webkit-text-stroke-color:#fbfaf6; }
+
+  /* Bright -- banner L* 60, C* 34. Title ink at 6.12-6.17:1. */
+  html[data-masthead="bright"] body.tab-insights{ --banner:#8a9759; --mark-shell:#afb78a; --mark-lit:#d8eb98; }
+  html[data-masthead="bright"] body.tab-training{ --banner:#b9865b; --mark-shell:#d2aa8b; --mark-lit:#ffdcc0; }
+  html[data-masthead="bright"] body.tab-injuries{ --banner:#c97990; --mark-shell:#dda2b1; --mark-lit:#ffd9e1; }
+  html[data-masthead="bright"] body.tab-data{ --banner:#a883ba; --mark-shell:#c4a8d0; --mark-lit:#f5d9ff; }
+  html[data-masthead="bright"] body.tab-settings{ --banner:#39a08e; --mark-shell:#7cbeb0; --mark-lit:#6ff8e1; }
+  html[data-masthead="bright"] body.tab-insights .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
+  html[data-masthead="bright"] body.tab-training .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
+  html[data-masthead="bright"] body.tab-injuries .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
+  html[data-masthead="bright"] body.tab-data .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
+  html[data-masthead="bright"] body.tab-settings .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322819; }
+  html[data-masthead="bright"] header h1{ color:#0c0d0b; -webkit-text-stroke-color:#0c0d0b; }
+
+  /* The three inks the banner repaint does not reach on its own — see the note above. */
+  html[data-masthead="lifted"] body.tab-insights .header-brand{ --sand:#ece2c8; }
+  html[data-masthead="lifted"] body.tab-training .header-brand{ --sand:#ece2c8; }
+  html[data-masthead="lifted"] body.tab-injuries .header-brand{ --sand:#ece2c8; }
+  html[data-masthead="lifted"] body.tab-data .header-brand{ --sand:#ece2c8; }
+  html[data-masthead="lifted"] body.tab-settings .header-brand{ --sand:#efe5cb; }
+  html[data-masthead="lifted"] body.tab-insights .tab-insight{ opacity:0.72; }
+  html[data-masthead="lifted"] body.tab-training .tab-insight{ opacity:0.72; }
+  html[data-masthead="lifted"] body.tab-injuries .tab-insight{ opacity:0.72; }
+  html[data-masthead="lifted"] body.tab-data .tab-insight{ opacity:0.72; }
+  html[data-masthead="lifted"] body.tab-settings .tab-insight{ opacity:0.72; }
+  html[data-masthead="lifted"] body.tab-insights .header-date .hd-dow,
+  html[data-masthead="lifted"] body.tab-insights .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.65); }
+  html[data-masthead="lifted"] body.tab-training .header-date .hd-dow,
+  html[data-masthead="lifted"] body.tab-training .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.65); }
+  html[data-masthead="lifted"] body.tab-injuries .header-date .hd-dow,
+  html[data-masthead="lifted"] body.tab-injuries .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.65); }
+  html[data-masthead="lifted"] body.tab-data .header-date .hd-dow,
+  html[data-masthead="lifted"] body.tab-data .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.65); }
+  html[data-masthead="lifted"] body.tab-settings .header-date .hd-dow,
+  html[data-masthead="lifted"] body.tab-settings .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.65); }
+  html[data-masthead="washed"] body.tab-insights .header-brand{ --sand:#fffffe; }
+  html[data-masthead="washed"] body.tab-training .header-brand{ --sand:#f7edd3; }
+  html[data-masthead="washed"] body.tab-injuries .header-brand{ --sand:#f7edd3; }
+  html[data-masthead="washed"] body.tab-data .header-brand{ --sand:#faf0d6; }
+  html[data-masthead="washed"] body.tab-settings .header-brand{ --sand:#f8eed3; }
+  html[data-masthead="washed"] body.tab-insights .tab-insight{ opacity:0.88; }
+  html[data-masthead="washed"] body.tab-training .tab-insight{ opacity:1.0; }
+  html[data-masthead="washed"] body.tab-injuries .tab-insight{ opacity:1.0; }
+  html[data-masthead="washed"] body.tab-data .tab-insight{ opacity:1.0; }
+  html[data-masthead="washed"] body.tab-settings .tab-insight{ opacity:1.0; }
+  html[data-masthead="washed"] body.tab-insights .header-date .hd-dow,
+  html[data-masthead="washed"] body.tab-insights .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
+  html[data-masthead="washed"] body.tab-training .header-date .hd-dow,
+  html[data-masthead="washed"] body.tab-training .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
+  html[data-masthead="washed"] body.tab-injuries .header-date .hd-dow,
+  html[data-masthead="washed"] body.tab-injuries .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
+  html[data-masthead="washed"] body.tab-data .header-date .hd-dow,
+  html[data-masthead="washed"] body.tab-data .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
+  html[data-masthead="washed"] body.tab-settings .header-date .hd-dow,
+  html[data-masthead="washed"] body.tab-settings .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
+  html[data-masthead="bright"] body.tab-insights .header-brand{ --sand:#010000; }
+  html[data-masthead="bright"] body.tab-training .header-brand{ --sand:#130e00; }
+  html[data-masthead="bright"] body.tab-injuries .header-brand{ --sand:#130e00; }
+  html[data-masthead="bright"] body.tab-data .header-brand{ --sand:#130e00; }
+  html[data-masthead="bright"] body.tab-settings .header-brand{ --sand:#120d00; }
+  html[data-masthead="bright"] body.tab-insights .tab-insight{ opacity:0.72; }
+  html[data-masthead="bright"] body.tab-training .tab-insight{ opacity:0.8; }
+  html[data-masthead="bright"] body.tab-injuries .tab-insight{ opacity:0.8; }
+  html[data-masthead="bright"] body.tab-data .tab-insight{ opacity:0.8; }
+  html[data-masthead="bright"] body.tab-settings .tab-insight{ opacity:0.8; }
+  html[data-masthead="bright"] body.tab-insights .header-date .hd-dow,
+  html[data-masthead="bright"] body.tab-insights .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.8); }
+  html[data-masthead="bright"] body.tab-training .header-date .hd-dow,
+  html[data-masthead="bright"] body.tab-training .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.8); }
+  html[data-masthead="bright"] body.tab-injuries .header-date .hd-dow,
+  html[data-masthead="bright"] body.tab-injuries .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.8); }
+  html[data-masthead="bright"] body.tab-data .header-date .hd-dow,
+  html[data-masthead="bright"] body.tab-data .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.8); }
+  html[data-masthead="bright"] body.tab-settings .header-date .hd-dow,
+  html[data-masthead="bright"] body.tab-settings .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.8); }
+
 </style>
 </head>
 <body>
@@ -5643,6 +5781,21 @@
           <span>Bone &mdash; put the pages on paper, keep the header dark</span>
         </label>
         <div class="score-note">The masthead, the blocks and the five tab colours do not move. What changes is the ground under them and the ink on it.</div>
+      </div>
+    </div>
+
+    <div class="group form-panel" id="mastheadGroup">
+      <div class="group-head collapsible" data-collapse="masthead" style="cursor:pointer;"><div class="group-title">Masthead</div><span class="head-est" id="mastheadSummary"></span><span class="collapse-chevron collapsed" data-collapse="masthead">&#9662;</span></div>
+      <div class="fields collapsible-body" data-collapse="masthead" style="display:none;">
+        <div class="field-row"><span class="field-label">Banner</span>
+          <select id="mastheadSelect" aria-label="Masthead treatment">
+            <option value="deep">Deep &mdash; dark, coloured title</option>
+            <option value="lifted">Lifted</option>
+            <option value="washed">Washed</option>
+            <option value="bright">Bright &mdash; dark title</option>
+          </select>
+        </div>
+        <div class="score-note">How the tab&rsquo;s colour sits in the header. On Deep the banner is dark and the title carries the colour; on the other three the banner carries it and the title is knocked out of it. The mark keeps the same footing on the band either way, and the page under the header does not move.</div>
       </div>
     </div>
 
@@ -11367,7 +11520,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.573';
+const APP_VERSION = '2026.09.15.574';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11663,6 +11816,7 @@ const APP_NOTES = {
   '2026.09.15.571': 'Rest days say so on the week board instead of drawing blank \u2014 they were always there, just never named.',
   '2026.09.15.572': 'Each page carries its own number, set huge and faint behind the masthead.',
   '2026.09.15.573': 'The mark lifts out of near-black \u2014 its face now shows the tab\u2019s colour instead of hiding it.',
+  '2026.09.15.574': 'Four masthead themes in Settings \u2014 the banner can carry the tab\u2019s colour instead of the title.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -33933,6 +34087,30 @@ function setGround(bone){
   try{ localStorage.setItem('ground', bone ? 'bone' : 'dark'); }catch(e){}
   const sum = document.getElementById('groundSummary');
   if(sum) sum.textContent = bone ? 'bone' : 'black';
+}
+/* Same shape as setGround above: stamp the root, persist, say what it is in the head. The
+   stamp is on documentElement rather than body because the boot script at the top of the file
+   sets it before body exists — which is what keeps a non-default theme from flashing the
+   default masthead on every load. */
+const MASTHEAD_NAMES = { deep:'deep', lifted:'lifted', washed:'washed', bright:'bright' };
+function setMasthead(name){
+  if(!MASTHEAD_NAMES[name]) name = 'deep';
+  if(name === 'deep') delete document.documentElement.dataset.masthead;
+  else document.documentElement.dataset.masthead = name;
+  try{ localStorage.setItem('masthead', name); }catch(e){}
+  const sum = document.getElementById('mastheadSummary');
+  if(sum) sum.textContent = MASTHEAD_NAMES[name];
+  /* The mark reads --mark-shell at PAINT time, so the running SVG keeps the old theme's
+     colours until it is redrawn. Same call setMarkBracket already makes for the same reason. */
+  if(typeof drawMarkCube === 'function') drawMarkCube();
+}
+const mastheadSelectEl = document.getElementById('mastheadSelect');
+if(mastheadSelectEl){
+  let saved = 'deep';
+  try{ saved = localStorage.getItem('masthead') || 'deep'; }catch(e){}
+  mastheadSelectEl.value = MASTHEAD_NAMES[saved] ? saved : 'deep';
+  setMasthead(mastheadSelectEl.value);
+  mastheadSelectEl.addEventListener('change', ()=> setMasthead(mastheadSelectEl.value));
 }
 const boneGroundToggleEl = document.getElementById('boneGroundToggle');
 if(boneGroundToggleEl){
