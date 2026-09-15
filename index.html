@@ -202,8 +202,8 @@
        live text. A cross now paints #252624 against the #0c0d0b ground, where the mesh under
        it paints #131412 -- the two stay a clear step apart, which is the ratio that matters
        more than matching the source. */
-    --mk-panel-light:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27286%27%20height%3D%27319%27%3E%3Cpath%20d%3D%27M38%2C70h10M43%2C65v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27226%27%20cy%3D%27217%27%20r%3D%271.5%27%20fill%3D%27%23fbfaf6%27%20fill-opacity%3D%27.105%27%2F%3E%3Cpath%20d%3D%27M165%2C28h10M170%2C23v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
-    --mk-panel-dark:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27286%27%20height%3D%27319%27%3E%3Cpath%20d%3D%27M38%2C70h10M43%2C65v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27226%27%20cy%3D%27217%27%20r%3D%271.5%27%20fill%3D%27%230c0d0b%27%20fill-opacity%3D%27.105%27%2F%3E%3Cpath%20d%3D%27M165%2C28h10M170%2C23v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
+    --mk-panel-light:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27404%27%20height%3D%27451%27%3E%3Cpath%20d%3D%27M56%2C99h10M61%2C94v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27320%27%20cy%3D%27307%27%20r%3D%271.5%27%20fill%3D%27%23fbfaf6%27%20fill-opacity%3D%27.105%27%2F%3E%3Cpath%20d%3D%27M235%2C40h10M240%2C35v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
+    --mk-panel-dark:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27404%27%20height%3D%27451%27%3E%3Cpath%20d%3D%27M56%2C99h10M61%2C94v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27320%27%20cy%3D%27307%27%20r%3D%271.5%27%20fill%3D%27%230c0d0b%27%20fill-opacity%3D%27.105%27%2F%3E%3Cpath%20d%3D%27M235%2C40h10M240%2C35v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
     --mk-panel:var(--mk-panel-light);
     /* THE SOFT SCREEN. A 9px dot mesh at .07, under the marks on the same panels.
 
@@ -4451,13 +4451,21 @@
      cover a mean 53% of a 390x844 screen (25-72% depending on the tab), so the tile AREA is
      what sets how many are in view -- inversely, and the only lever that moves every tab by
      the same factor. The history is the arithmetic: 164x188 put ~19 marks on a screen, which
-     is a texture; 248x276 put ~7.7, which was the nine that was asked for; 286x319 puts ~5.8.
-     That last step is area x1.333, which is density x0.75 exactly.
+     is a texture; 248x276 put ~7.7, which was the nine first asked for; 286x319 put ~5.8;
+     404x451 puts ~2.9. Each step is area x(1/density): x1.333 for three quarters, then x2
+     for a half.
 
-     Those are MEANS across the five tabs, and the tabs are not alike: at 286x319 the same
-     tile measures 7.8 marks in view on Weekly and 2.8 on Data, because Data's panels cover a
+     Those are MEANS across the five tabs, and the tabs are not alike: at 404x451 the same
+     tile measures 3.9 marks in view on Weekly and 1.4 on Data, because Data's panels cover a
      quarter of the screen and Weekly's cover seven tenths. A count quoted without a tab is
      always this mean.
+
+     The tile is now WIDER THAN THE PHONE -- 404 against 390 -- and that is the point at which
+     the arithmetic above starts lying a little. Below one tile per screen the count stops
+     being an average anyone sees and becomes a coin toss: one screen catches two marks, the
+     next catches none. That is what sparse looks like at this size, and it is fine, but a
+     further halving would not read as "fewer marks", it would read as "some pages have none".
+     Past here, drop to two marks in the tile instead of growing it again.
 
      So: resize the tile to change the count, and scale the three mark positions by the same
      factor when you do, or they bunch into one corner of a bigger tile. Do not add marks to
@@ -11349,7 +11357,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.566';
+const APP_VERSION = '2026.09.15.567';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11638,6 +11646,7 @@ const APP_NOTES = {
   '2026.09.15.564': 'The dot screen fades to half again \u2014 barely there, which is the point.',
   '2026.09.15.565': 'The mark turns its new colour as the title lands, instead of snapping to it.',
   '2026.09.15.566': 'The crosses step back \u2014 three quarters the weight, three quarters as many.',
+  '2026.09.15.567': 'Half as many crosses again \u2014 sparse enough that you come across one rather than see a pattern.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
