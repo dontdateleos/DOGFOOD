@@ -248,6 +248,18 @@
        separately because a token used for its hue has no business reading as "ok" wherever it
        turns up. The rating scale is gone; the separate name is why nothing had to move. */
     --sand:#dfd0a4;
+    /* THE SECOND VOICE, AND THE REASON IT IS NOT JUST --sand.
+
+       Sand has only ever been used in the masthead, and the masthead is a dark pocket on BOTH
+       grounds — so it has never had to survive the bone ground, and it does not: #dfd0a4 on
+       #fbfaf6 measures 1.47:1, which is nothing at all. The moment it comes down into body
+       copy it needs a counterpart, exactly the way --hue-faded has --hue-faded-dark.
+
+       #665a35 is the same hue turned dark rather than a different colour: 45.3 degrees against
+       sand's 44.7, which is inside the rounding. 6.53:1 on bone and 5.76:1 on a tinted field,
+       so it clears AA for the small uppercase this is used at with room over. */
+    --label:#dfd0a4;
+    --label-bone:#665a35;
     --block-lime:#c3d353;
     --block-orange:#ff984a;
     --block-blue:#52d8f7;
@@ -555,6 +567,7 @@
     --ink-rgb:12,13,11; --ground-rgb:251,250,246;
     --dim:#38332f;
     --hue-faded:#0c0d0b;
+    --label:var(--label-bone);
     --accent-dim:#484e23;
     /* The dark set is 8% of the block over black, which steps 8.4 L* off the ground. Run
        the same 8% over bone and it steps 1.4-3.0 — red reads, the other four vanish. The
@@ -632,6 +645,8 @@
        its domain names in the hue picked to read on cream, at 2.76 to 1 on the sheet's black.
        Read from --hue-faded-dark rather than restated, so there is still one value per tab. */
     --hue-faded:var(--hue-faded-dark);
+    /* And the label, for the reason the hue above is here. */
+    --label:#dfd0a4;
     /* And the tile, for the same reason the hue is here: inside one of these the ground is
        the dark one, whatever the page outside is doing. */
     --dot-tile:var(--dot-tile-light-ink);
@@ -1357,6 +1372,36 @@
   .score-num svg{ width:0.72em; height:0.72em; stroke-width:2.8; }
   .score-label{ font-family:var(--sans); font-size:var(--fs-tag); color:var(--dim);  letter-spacing:0.05em; margin-top:4px; -webkit-text-stroke:0.15px currentColor; }
   .score-note{ font-size:var(--fs-tag); color:var(--dim); margin-top:8px; line-height:1.4; letter-spacing:0.015em; font-weight:var(--fw-medium); }
+  /* ---------- TWO VOICES IN A NOTE ----------
+
+     A .score-note is one flat grey from its first word to its last, and there are ninety-five
+     of them on Settings alone. Nothing in a wall like that tells you which paragraph is the
+     one you came for, or which clause in it is the point — so it is read end to end or not at
+     all, and mostly not at all.
+
+     Two devices, doing two different jobs. The head says whether to read it. The lift says
+     what the answer is if you do not.
+
+     THE HEAD is --label, the masthead's own sand brought down into the body — one voice that
+     does not change with the tab, so it reads as a label rather than as another tab colour.
+     Small and uppercase and tracked, matching .tab-label, because it is the same kind of
+     thing: the name of what you are looking at.
+
+     THE LIFT is --bg at full weight, and it is deliberately NOT a colour. The masthead title
+     is already the tab's hue and so are the section bands; a third coloured thing inside a
+     paragraph turns the hue into decoration instead of a signal. Ink against --dim is a real
+     step in weight and costs no token at all.
+
+     <em> rather than <strong> or a class: it is emphasis in the typographic sense — this
+     clause, not that one — and it carries the meaning for a screen reader without the
+     "importance" <strong> claims. The font-style is turned off because the lift is weight and
+     colour here, not a slant; italics in a 12px interface sans at this size are mush. */
+  .note-head{ font-family:var(--sans); font-size:var(--fs-tag); font-weight:var(--fw-bold);
+    color:var(--label); text-transform:uppercase; letter-spacing:0.09em;
+    margin-top:12px; margin-bottom:3px; }
+  /* The note under a head has already been spaced by it. */
+  .note-head + .score-note{ margin-top:0; }
+  .score-note em, .group-sub em{ font-style:normal; font-weight:var(--fw-bold); color:var(--bg); }
   /* ---- chips -------------------------------------------------------------------------
      A run of independent facts joined with middots reads as one sentence, and a sentence
      gets skimmed. Each fact takes its own outline so a glance can pick out the one it came
@@ -5057,7 +5102,8 @@
         <div class="score-label">Target</div>
       </div>
     </div>
-    <div class="score-note" style="display:none;">Adaptive compares today against your trailing 7-day average. Target compares against fixed goals (8hr sleep, ≤1 wake event, HRV at rolling baseline). Equal-weighted v1 — placeholder until backtested.</div>
+    <div class="note-head">How the two scores differ</div>
+        <div class="score-note" style="display:none;">Adaptive compares today against <em>your trailing 7-day average</em>. Target compares against <em>fixed goals</em> (8hr sleep, ≤1 wake event, HRV at rolling baseline). Equal-weighted v1 — <em>placeholder until backtested</em>.</div>
     <div class="score-note note-live" id="sleepDebtOut">Sleep debt: —</div>
 
     <!-- THE MORNING CHECK-IN. It used to open with eighteen fields, six of which were three
@@ -5166,8 +5212,10 @@
              storage and nowhere else — no account, no server, no copy anywhere. Clearing
              site data, or the browser deciding to reclaim it, takes the lot, and nothing
              else in the app ever mentions that. -->
-        <div class="score-note" style="color:var(--bg);">Your data lives in this browser and nowhere else. There is no account and no server copy — if you clear site data, it is gone. Export now and again.</div>
-        <div class="score-note">Copies everything out. Paste into Bulk Import on another copy to move your data.</div>
+        <div class="note-head">Where your data is</div>
+        <div class="score-note" style="color:var(--bg);">Your data <em>lives in this browser and nowhere else</em>. There is no account and no server copy — <em>if you clear site data, it is gone</em>. Export now and again.</div>
+        <div class="note-head">Export</div>
+        <div class="score-note"><em>Copies everything out</em>. Paste into Bulk Import on another copy to move your data.</div>
         <div class="log-toggle-row" style="gap:6px;">
           <button id="exportAllBtn">Export all data</button>
           <button id="copyExportBtn" class="outline">Copy</button>
@@ -5175,7 +5223,8 @@
         <textarea id="exportOutput" readonly aria-label="Exported data" placeholder="Exported data will appear here — tap to select all, then copy" style="min-height:100px; font-family:var(--mono); font-size:var(--fs-tag);"></textarea>
         <div id="exportResult" class="score-note note-live"></div>
 
-        <div class="score-note" style="margin-top:16px;">Writes exported data back in. For migrations and recovery, not daily use.</div>
+        <div class="note-head">Import</div>
+        <div class="score-note" style="margin-top:16px;">Writes exported data back in. For migrations and recovery, <em>not daily use</em>.</div>
         <textarea id="bulkImportInput" aria-label="Paste data to import" placeholder='{"entry:2026-08-14": {...}, "training:2026-08-14:1234567890": {...}}' style="min-height:100px; font-family:var(--mono); font-size:var(--fs-tag);"></textarea>
         <button id="bulkImportBtn">Import</button>
         <div id="bulkImportResult" class="score-note note-live"></div>
@@ -5188,7 +5237,8 @@
     <div class="group" style="border-color:var(--warn);">
       <div class="group-head"><div class="group-title">Test Scenarios</div><div class="group-sub" style="color:var(--text);">dev only — clears prior test data first</div></div>
       <div class="fields">
-        <div class="score-note">Seeds fake history so you can see how the app responds without waiting weeks. Replaces previous test data; never touches real logs.</div>
+        <div class="note-head">Test data</div>
+        <div class="score-note">Seeds fake history so you can see how the app responds without waiting weeks. Replaces previous test data; <em>never touches real logs</em>.</div>
         <div class="field-row"><span class="field-label">Scenario</span>
           <select id="testScenarioSelect">
             <option value="well_recovered">Well recovered</option>
@@ -5209,7 +5259,8 @@
     <div class="group" style="border-color:var(--bad);">
       <div class="group-head"><div class="group-title">Engine Regression Suite</div><div class="group-sub" style="color:var(--text);">dev only — wipes ALL data between each scenario</div></div>
       <div class="fields">
-        <div class="score-note">Runs the real decision engine and reports PASS/FAIL. Wipes all storage — export a backup first.</div>
+        <div class="note-head">Engine self-test</div>
+        <div class="score-note">Runs the real decision engine and reports PASS/FAIL. <em>Wipes all storage</em> — export a backup first.</div>
         <button id="runScenarioSuiteBtn" class="primary">Run regression suite</button>
         <div id="scenarioSuiteProgress" class="score-note note-live"></div>
         <div id="scenarioSuiteResults"></div>
@@ -5218,7 +5269,8 @@
     <div class="group">
       <div class="group-head"><div class="group-title">Interface sweep</div><div class="group-sub">what a keyboard and a screen reader can reach</div></div>
       <div class="fields">
-        <div class="score-note">Walks every tab, opens every section, and reports controls a keyboard cannot reach or a screen reader cannot name. Reads only — it changes nothing and puts you back where you started.</div>
+        <div class="note-head">Accessibility sweep</div>
+        <div class="score-note">Walks every tab, opens every section, and reports controls a keyboard cannot reach or a screen reader cannot name. <em>Reads only</em> — it changes nothing and puts you back where you started.</div>
         <button id="runInterfaceSweepBtn" class="outline">Run interface sweep</button>
         <div id="interfaceSweepProgress" class="score-note note-live"></div>
         <div id="interfaceSweepResults"></div>
@@ -10984,7 +11036,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.543';
+const APP_VERSION = '2026.09.15.544';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11251,6 +11303,7 @@ const APP_NOTES = {
   '2026.09.15.541': 'Every tab but Today names itself in the masthead, in its own colour \u2014 and the mark rolls along the title to meet its new end.',
   '2026.09.15.542': 'Dogfood takes the lime, the way the other four take theirs \u2014 all five mastheads are the tab\u2019s colour now, not four of them.',
   '2026.09.15.543': 'The field under the trend chart stops rippling on arrival \u2014 the texture stays, the movement goes where a line is being read.',
+  '2026.09.15.544': 'The notes on Settings get a heading and a lifted clause \u2014 you can tell which paragraph you came for, and get its point without reading it.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
