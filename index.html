@@ -139,15 +139,22 @@
     --dot-tile:var(--dot-tile-light-ink);
     /* WATERED SILK, FOR THE TODAY FIELD ONLY.
 
-       THE CURVE IS THE FIELD'S OWN. It is the shape already masking this element -- extremes
-       every 42px, a full period every 84 -- taken out of the stencil and drawn. That is the
-       whole idea: the wave stopped deciding WHERE the dots were allowed to be and became the
-       thing you can see. Two periods in a 168 tile, which is --dot-tile's own repeat, so the
-       84px drift still travels exactly one wavelength.
+       ONE PERIOD ACROSS THE TILE, not two. The first cut of this matched the period of the
+       MASK that used to sit on this element -- extremes every 42px, a full cycle every 84 --
+       on the reasoning that the field's own curve was the honest one to draw. It was twice
+       the frequency of the wave that was actually chosen, and it read as busy where the
+       chosen one reads as slow. The picture is the specification: 168 across, 8 to 3 to 8 to
+       13 to 8, one lazy wave per repeat.
 
-       TWO SETS A HALF-PHASE APART, the second at .046 against the first's .11. Where they
-       cross the field brightens; where they run together it falls away -- which is what
-       watered fabric does, and what a single set of rules cannot do at any opacity.
+       A QUARTER PERIOD APART, not a half. The second path is the first shifted 42px, which
+       at this period is a quarter cycle -- so the two cross twice per repeat at an angle
+       rather than mirroring each other. A half-phase pair is symmetrical and reads as a
+       lattice; a quarter is what gives watered fabric its drift. The second runs at .046
+       against the first's .11: present enough to interfere, quiet enough not to count as a
+       second line.
+
+       The lead-in from x=-42 on the second path is clipped by the tile. It is there so the
+       curve entering x=0 carries the right slope rather than starting flat.
 
        Measured against the dots it replaces here: 28 circles of r0.5 in a 168x8 tile is about
        1.6% coverage, so at .3 the dots put roughly 0.5% ink on the field. These two strokes
@@ -156,8 +163,8 @@
 
        Two inks for the same reason --dot-tile has two: the strokes are drawn INTO the svg and
        cannot read --ink-rgb, so the ground gets one each and the alias picks. */
-    --wave-tile-light-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27168%27%20height%3D%2716%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23fbfaf6%27%20stroke-width%3D%270.85%27%3E%3Cpath%20stroke-opacity%3D%27.11%27%20d%3D%27M0%2C13%20C21%2C13%2021%2C3%2042%2C3%20C63%2C3%2063%2C13%2084%2C13%20C105%2C13%20105%2C3%20126%2C3%20C147%2C3%20147%2C13%20168%2C13%27%2F%3E%3Cpath%20stroke-opacity%3D%27.046%27%20d%3D%27M0%2C3%20C21%2C3%2021%2C13%2042%2C13%20C63%2C13%2063%2C3%2084%2C3%20C105%2C3%20105%2C13%20126%2C13%20C147%2C13%20147%2C3%20168%2C3%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-    --wave-tile-dark-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27168%27%20height%3D%2716%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%230c0d0b%27%20stroke-width%3D%270.85%27%3E%3Cpath%20stroke-opacity%3D%27.11%27%20d%3D%27M0%2C13%20C21%2C13%2021%2C3%2042%2C3%20C63%2C3%2063%2C13%2084%2C13%20C105%2C13%20105%2C3%20126%2C3%20C147%2C3%20147%2C13%20168%2C13%27%2F%3E%3Cpath%20stroke-opacity%3D%27.046%27%20d%3D%27M0%2C3%20C21%2C3%2021%2C13%2042%2C13%20C63%2C13%2063%2C3%2084%2C3%20C105%2C3%20105%2C13%20126%2C13%20C147%2C13%20147%2C3%20168%2C3%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+    --wave-tile-light-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27168%27%20height%3D%2716%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23fbfaf6%27%20stroke-width%3D%270.85%27%3E%3Cpath%20stroke-opacity%3D%27.11%27%20d%3D%27M0%2C8%20C21%2C8%2021%2C3%2042%2C3%20C63%2C3%2063%2C8%2084%2C8%20C105%2C8%20105%2C13%20126%2C13%20C147%2C13%20147%2C8%20168%2C8%27%2F%3E%3Cpath%20stroke-opacity%3D%27.046%27%20d%3D%27M-42%2C8%20C-21%2C8%20-21%2C3%200%2C3%20C21%2C3%2021%2C8%2042%2C8%20C63%2C8%2063%2C13%2084%2C13%20C105%2C13%20105%2C8%20126%2C8%20C147%2C8%20147%2C3%20168%2C3%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+    --wave-tile-dark-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27168%27%20height%3D%2716%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%230c0d0b%27%20stroke-width%3D%270.85%27%3E%3Cpath%20stroke-opacity%3D%27.11%27%20d%3D%27M0%2C8%20C21%2C8%2021%2C3%2042%2C3%20C63%2C3%2063%2C8%2084%2C8%20C105%2C8%20105%2C13%20126%2C13%20C147%2C13%20147%2C8%20168%2C8%27%2F%3E%3Cpath%20stroke-opacity%3D%27.046%27%20d%3D%27M-42%2C8%20C-21%2C8%20-21%2C3%200%2C3%20C21%2C3%2021%2C8%2042%2C8%20C63%2C8%2063%2C13%2084%2C13%20C105%2C13%20105%2C8%20126%2C8%20C147%2C8%20147%2C3%20168%2C3%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
     --wave-tile:var(--wave-tile-light-ink);
     --reverse-bg:#0c0d0b;   /* dark fill for buttons/badges — independent of --text */
     --on-light:#0c0d0b;     /* text on any light fill (inputs, tags, outline buttons) */
@@ -4249,8 +4256,11 @@
      steepest slope is 0.37, so a 6px step throws the line 2.2px sideways-and-down in one
      frame, which on a continuous stroke reads as a judder. Linear, and it slides.
 
-     THE TILE IS 16 TALL, not 8, so the rows sit 16px apart. Same 168 repeat, so the animation
-     below still travels one whole wavelength and lands where it started. */
+     THE TILE IS 16 TALL, not 8, so the rows sit 16px apart. The drift below travels 84px,
+     which on this period is half a wavelength: it starts inverted and slides to rest. That is
+     more travel than the dots get from the same keyframes, and it lands on the tile's own
+     origin either way, because a background-position shift of a repeating tile is seamless at
+     every offset. */
   .dot-field.wave-field::before{
     background-image:var(--wave-tile);
     background-size:168px 16px;
@@ -11122,7 +11132,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.547';
+const APP_VERSION = '2026.09.15.548';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11393,6 +11403,7 @@ const APP_NOTES = {
   '2026.09.15.545': 'The mark runs cyan to plum now, not red to cyan \u2014 a low morning is a different day, not a warning light.',
   '2026.09.15.546': 'Today is woven rather than dotted \u2014 the wave that was hiding the texture is now the texture, edge to edge.',
   '2026.09.15.547': 'The score counts up again \u2014 it had stopped rolling the moment you had enough nights to earn the real one.',
+  '2026.09.15.548': 'The waves on Today are the ones that were actually drawn \u2014 one slow cycle per repeat, not two tight ones.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
