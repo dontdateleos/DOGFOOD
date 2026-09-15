@@ -18,7 +18,7 @@
      localStorage rather than the app's async storage, because the alternative is the page
      drawing itself black and then flipping to bone on every single launch. The masthead is
      dark on both grounds, which is why theme-color above does not move with it. -->
-<script>try{var g=localStorage.getItem('ground');if(g==='bone')document.documentElement.dataset.ground='bone';var m=localStorage.getItem('masthead');if(m&&m!=='deep')document.documentElement.dataset.masthead=m;}catch(e){}</script>
+<script>try{var g=localStorage.getItem('ground');if(g==='bone')document.documentElement.dataset.ground='bone';var m=localStorage.getItem('masthead')||'washed';document.documentElement.dataset.masthead=m;}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Dogfood">
@@ -590,6 +590,8 @@
      The stroke goes with it. It is 0.6px of optical weight, not an outline, so leaving it
      cream would have drawn a pale halo around a coloured word. */
   header h1{ color:var(--band); -webkit-text-stroke-color:var(--band); }
+  /* ...except on Deep, which is now the opt-out rather than the default — see the masthead
+     theme block at the foot of this sheet. The rule above is what Deep restores to. */
   /* THE BANNER TAKES THE TAB'S TINT. It was the ground, which made the masthead the same
      surface as the page under it and left the tab's colour to arrive only once you had
      scrolled to a section band. --field is the tint that already exists for exactly this —
@@ -4513,9 +4515,12 @@
   body.tab-settings .group-head, body.tab-settings .app-colophon{ background-position:77px 62px; }
 
   /* ---- MASTHEAD THEMES -------------------------------------------------------------------
-     Four ways the masthead can carry the tab's colour, chosen in Settings. "deep" is the
-     default and emits NOTHING -- it is the app as it stands, so the untouched path stays the
-     untouched path and the other three are pure addition.
+     Four ways the masthead can carry the tab's colour, chosen in Settings. WASHED IS THE
+     DEFAULT. It is written as html:not([data-masthead="deep"]) rather than as a positive
+     stamp, which is what makes it the real default: it applies when nothing is stamped at
+     all, so a browser with no stored choice -- or one where the boot script failed -- still
+     gets the intended masthead rather than the fallback. "deep" is now the opt-out, and the
+     base body.tab-* lines further up the sheet are what it opts back to.
 
      The inversion is the point. On deep the banner is a dark pocket and the TITLE carries the
      hue. On the other three the BANNER carries it and the title is knocked out of it, which
@@ -4548,6 +4553,24 @@
      The title pole flips at "bright": below it cream wins on every tab, at L* 60 the ink
      does. Computed, not chosen -- whichever of the two poles reads better on that banner. */
 
+  /* THE DEFAULT GOES FIRST, AND HAS TO. html:not([data-masthead="deep"]) body.tab-x and
+     html[data-masthead="lifted"] body.tab-x have the SAME specificity -- one attribute and
+     one class either way, :not() contributing its argument's weight -- so source order is the
+     only thing separating them. Written after the two overrides, the default matched on their
+     stamps as well and painted Lifted and Bright as Washed. It goes above them. */
+  /* Washed, THE DEFAULT -- banner L* 45, C* 28. Title cream at 5.13-5.16:1. */
+  html:not([data-masthead="deep"]) body.tab-insights{ --banner:#656f3f; --mark-shell:#868e64; --mark-lit:#aec170; }
+  html:not([data-masthead="deep"]) body.tab-training{ --banner:#8a6241; --mark-shell:#a88365; --mark-lit:#ecab71; }
+  html:not([data-masthead="deep"]) body.tab-injuries{ --banner:#96586a; --mark-shell:#b27b89; --mark-lit:#ff9bb6; }
+  html:not([data-masthead="deep"]) body.tab-data{ --banner:#7d608b; --mark-shell:#9b81a7; --mark-lit:#daa6ef; }
+  html:not([data-masthead="deep"]) body.tab-settings{ --banner:#257769; --mark-shell:#559689; --mark-lit:#3cceb8; }
+  html:not([data-masthead="deep"]) body.tab-insights .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#f7e9d4; }
+  html:not([data-masthead="deep"]) body.tab-training .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#f8e9d4; }
+  html:not([data-masthead="deep"]) body.tab-injuries .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#f7e9d4; }
+  html:not([data-masthead="deep"]) body.tab-data .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#fbecd7; }
+  html:not([data-masthead="deep"]) body.tab-settings .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#fbecd7; }
+  html:not([data-masthead="deep"]) header h1{ color:#fbfaf6; -webkit-text-stroke-color:#fbfaf6; }
+
   /* Lifted -- banner L* 30, C* 20. Title cream at 8.91-8.95:1. */
   html[data-masthead="lifted"] body.tab-insights{ --banner:#434a2a; --mark-shell:#606840; --mark-lit:#85994b; }
   html[data-masthead="lifted"] body.tab-training{ --banner:#5c412b; --mark-shell:#7f5d41; --mark-lit:#c0844b; }
@@ -4560,19 +4583,6 @@
   html[data-masthead="lifted"] body.tab-data .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#c2b4a1; }
   html[data-masthead="lifted"] body.tab-settings .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#c2b4a0; }
   html[data-masthead="lifted"] header h1{ color:#fbfaf6; -webkit-text-stroke-color:#fbfaf6; }
-
-  /* Washed -- banner L* 45, C* 28. Title cream at 5.13-5.16:1. */
-  html[data-masthead="washed"] body.tab-insights{ --banner:#656f3f; --mark-shell:#868e64; --mark-lit:#aec170; }
-  html[data-masthead="washed"] body.tab-training{ --banner:#8a6241; --mark-shell:#a88365; --mark-lit:#ecab71; }
-  html[data-masthead="washed"] body.tab-injuries{ --banner:#96586a; --mark-shell:#b27b89; --mark-lit:#ff9bb6; }
-  html[data-masthead="washed"] body.tab-data{ --banner:#7d608b; --mark-shell:#9b81a7; --mark-lit:#daa6ef; }
-  html[data-masthead="washed"] body.tab-settings{ --banner:#257769; --mark-shell:#559689; --mark-lit:#3cceb8; }
-  html[data-masthead="washed"] body.tab-insights .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#f7e9d4; }
-  html[data-masthead="washed"] body.tab-training .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#f8e9d4; }
-  html[data-masthead="washed"] body.tab-injuries .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#f7e9d4; }
-  html[data-masthead="washed"] body.tab-data .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#fbecd7; }
-  html[data-masthead="washed"] body.tab-settings .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#fbecd7; }
-  html[data-masthead="washed"] header h1{ color:#fbfaf6; -webkit-text-stroke-color:#fbfaf6; }
 
   /* Bright -- banner L* 60, C* 34. Title ink at 6.12-6.17:1. */
   html[data-masthead="bright"] body.tab-insights{ --banner:#8a9759; --mark-shell:#afb78a; --mark-lit:#d8eb98; }
@@ -4608,26 +4618,26 @@
   html[data-masthead="lifted"] body.tab-data .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.65); }
   html[data-masthead="lifted"] body.tab-settings .header-date .hd-dow,
   html[data-masthead="lifted"] body.tab-settings .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.65); }
-  html[data-masthead="washed"] body.tab-insights .header-brand{ --sand:#fffffe; }
-  html[data-masthead="washed"] body.tab-training .header-brand{ --sand:#f7edd3; }
-  html[data-masthead="washed"] body.tab-injuries .header-brand{ --sand:#f7edd3; }
-  html[data-masthead="washed"] body.tab-data .header-brand{ --sand:#faf0d6; }
-  html[data-masthead="washed"] body.tab-settings .header-brand{ --sand:#f8eed3; }
-  html[data-masthead="washed"] body.tab-insights .tab-insight{ opacity:0.88; }
-  html[data-masthead="washed"] body.tab-training .tab-insight{ opacity:1.0; }
-  html[data-masthead="washed"] body.tab-injuries .tab-insight{ opacity:1.0; }
-  html[data-masthead="washed"] body.tab-data .tab-insight{ opacity:1.0; }
-  html[data-masthead="washed"] body.tab-settings .tab-insight{ opacity:1.0; }
-  html[data-masthead="washed"] body.tab-insights .header-date .hd-dow,
-  html[data-masthead="washed"] body.tab-insights .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
-  html[data-masthead="washed"] body.tab-training .header-date .hd-dow,
-  html[data-masthead="washed"] body.tab-training .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
-  html[data-masthead="washed"] body.tab-injuries .header-date .hd-dow,
-  html[data-masthead="washed"] body.tab-injuries .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
-  html[data-masthead="washed"] body.tab-data .header-date .hd-dow,
-  html[data-masthead="washed"] body.tab-data .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
-  html[data-masthead="washed"] body.tab-settings .header-date .hd-dow,
-  html[data-masthead="washed"] body.tab-settings .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
+  html:not([data-masthead="deep"]) body.tab-insights .header-brand{ --sand:#fffffe; }
+  html:not([data-masthead="deep"]) body.tab-training .header-brand{ --sand:#f7edd3; }
+  html:not([data-masthead="deep"]) body.tab-injuries .header-brand{ --sand:#f7edd3; }
+  html:not([data-masthead="deep"]) body.tab-data .header-brand{ --sand:#faf0d6; }
+  html:not([data-masthead="deep"]) body.tab-settings .header-brand{ --sand:#f8eed3; }
+  html:not([data-masthead="deep"]) body.tab-insights .tab-insight{ opacity:0.88; }
+  html:not([data-masthead="deep"]) body.tab-training .tab-insight{ opacity:1.0; }
+  html:not([data-masthead="deep"]) body.tab-injuries .tab-insight{ opacity:1.0; }
+  html:not([data-masthead="deep"]) body.tab-data .tab-insight{ opacity:1.0; }
+  html:not([data-masthead="deep"]) body.tab-settings .tab-insight{ opacity:1.0; }
+  html:not([data-masthead="deep"]) body.tab-insights .header-date .hd-dow,
+  html:not([data-masthead="deep"]) body.tab-insights .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
+  html:not([data-masthead="deep"]) body.tab-training .header-date .hd-dow,
+  html:not([data-masthead="deep"]) body.tab-training .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
+  html:not([data-masthead="deep"]) body.tab-injuries .header-date .hd-dow,
+  html:not([data-masthead="deep"]) body.tab-injuries .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
+  html:not([data-masthead="deep"]) body.tab-data .header-date .hd-dow,
+  html:not([data-masthead="deep"]) body.tab-data .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
+  html:not([data-masthead="deep"]) body.tab-settings .header-date .hd-dow,
+  html:not([data-masthead="deep"]) body.tab-settings .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
   html[data-masthead="bright"] body.tab-insights .header-brand{ --sand:#010000; }
   html[data-masthead="bright"] body.tab-training .header-brand{ --sand:#130e00; }
   html[data-masthead="bright"] body.tab-injuries .header-brand{ --sand:#130e00; }
@@ -5789,10 +5799,10 @@
       <div class="fields collapsible-body" data-collapse="masthead" style="display:none;">
         <div class="field-row"><span class="field-label">Banner</span>
           <select id="mastheadSelect" aria-label="Masthead treatment">
-            <option value="deep">Deep &mdash; dark, coloured title</option>
+            <option value="washed">Washed &mdash; the default</option>
             <option value="lifted">Lifted</option>
-            <option value="washed">Washed</option>
             <option value="bright">Bright &mdash; dark title</option>
+            <option value="deep">Deep &mdash; dark, coloured title</option>
           </select>
         </div>
         <div class="score-note">How the tab&rsquo;s colour sits in the header. On Deep the banner is dark and the title carries the colour; on the other three the banner carries it and the title is knocked out of it. The mark keeps the same footing on the band either way, and the page under the header does not move.</div>
@@ -11520,7 +11530,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.574';
+const APP_VERSION = '2026.09.15.575';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11817,6 +11827,7 @@ const APP_NOTES = {
   '2026.09.15.572': 'Each page carries its own number, set huge and faint behind the masthead.',
   '2026.09.15.573': 'The mark lifts out of near-black \u2014 its face now shows the tab\u2019s colour instead of hiding it.',
   '2026.09.15.574': 'Four masthead themes in Settings \u2014 the banner can carry the tab\u2019s colour instead of the title.',
+  '2026.09.15.575': 'Washed is the masthead now \u2014 the banner carries the colour by default, and Deep is a choice.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -34094,9 +34105,11 @@ function setGround(bone){
    default masthead on every load. */
 const MASTHEAD_NAMES = { deep:'deep', lifted:'lifted', washed:'washed', bright:'bright' };
 function setMasthead(name){
-  if(!MASTHEAD_NAMES[name]) name = 'deep';
-  if(name === 'deep') delete document.documentElement.dataset.masthead;
-  else document.documentElement.dataset.masthead = name;
+  if(!MASTHEAD_NAMES[name]) name = 'washed';
+  /* Always stamped, including the default. The CSS keys the default off :not([deep]) so it
+     does not NEED the stamp, but carrying it makes the current theme readable from the DOM —
+     which is what groundcheck's second argument sets. */
+  document.documentElement.dataset.masthead = name;
   try{ localStorage.setItem('masthead', name); }catch(e){}
   const sum = document.getElementById('mastheadSummary');
   if(sum) sum.textContent = MASTHEAD_NAMES[name];
@@ -34106,10 +34119,16 @@ function setMasthead(name){
 }
 const mastheadSelectEl = document.getElementById('mastheadSelect');
 if(mastheadSelectEl){
-  let saved = 'deep';
-  try{ saved = localStorage.getItem('masthead') || 'deep'; }catch(e){}
-  mastheadSelectEl.value = MASTHEAD_NAMES[saved] ? saved : 'deep';
-  setMasthead(mastheadSelectEl.value);
+  let saved = 'washed';
+  try{ saved = localStorage.getItem('masthead') || 'washed'; }catch(e){}
+  mastheadSelectEl.value = MASTHEAD_NAMES[saved] ? saved : 'washed';
+  /* Reflect the stored value WITHOUT writing one back. setMasthead persists, and calling it
+     here used to stamp a choice into storage the moment the app opened — which made "never
+     chose" and "chose the old default" the same state, and would have stopped this change
+     reaching anyone who had merely opened the app before. */
+  document.documentElement.dataset.masthead = mastheadSelectEl.value;
+  const mhSum = document.getElementById('mastheadSummary');
+  if(mhSum) mhSum.textContent = mastheadSelectEl.value;
   mastheadSelectEl.addEventListener('change', ()=> setMasthead(mastheadSelectEl.value));
 }
 const boneGroundToggleEl = document.getElementById('boneGroundToggle');

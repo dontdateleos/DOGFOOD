@@ -28,7 +28,11 @@ import { chromium } from 'playwright';
 /* Both are POSITIONAL: `node tools/groundcheck.mjs [ground] [masthead]`. They are stamped on
    documentElement verbatim, so a flag-shaped argument like --ground=bone sets
    data-ground="--ground=bone", which matches no rule and silently tests the default instead
-   of failing. Pass the bare value: `bone`, `washed`. */
+   of failing. Pass the bare value: `bone`, `washed`.
+
+   An omitted masthead leaves the attribute unset, which is NOT the same as any named
+   theme: the sheet keys its default off :not([data-masthead="deep"]), so unstamped renders
+   as Washed. It prints as (unstamped) rather than being given a name it does not have. */
 const ground = process.argv[2] || '';
 const masthead = process.argv[3] || '';
 const MEASURE = `(()=>{
@@ -133,7 +137,7 @@ for(const tab of ['insights','training','injuries','data','settings']){
   }
 }
 const list=[...seen.values()].sort((a,b)=>a.r-b.r);
-console.log(`ground=${ground||'dark'}  masthead=${masthead||'deep'}  failures=${list.length}`);
+console.log(`ground=${ground||'dark'}  masthead=${masthead||'(unstamped)'}  failures=${list.length}`);
 for(const f of list) console.log(`  ${String(f.r).padStart(5)}:1  ${f.fg} on ${f.bg}  ${f.tab.padEnd(9)} ${(f.tag+'.'+f.cls).padEnd(30)} "${f.txt}"`);
 console.log(`states applied: ${stateCount}${stateCount ? '' : '  <- none found; the states pass measured nothing'}`);
 console.log('errors:', errs.length?errs.slice(0,3).join(' | '):'none');
