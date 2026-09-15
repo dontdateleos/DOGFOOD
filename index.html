@@ -548,30 +548,40 @@
      because the masthead is a dark pocket on the bone ground too, so this one tint has to
      stay dark when the rest of the page does not — see the note on the tab lines. */
   .header-brand{ background:var(--banner); margin:-18px calc(-1 * var(--gutter)) 0; padding:18px var(--gutter) 12px; overflow:hidden; }
-  /* THE PAGE'S NUMBER, BEHIND ITS MASTHEAD. A pseudo-element rather than a node, which is what
+  /* THE PAGE'S MARK, BEHIND ITS MASTHEAD. A pseudo-element rather than a node, which is what
      lets it sit UNDER the title: `.header-brand > *` sets position:relative and z-index:1 on
      every direct child, so anything added to the DOM here comes out in front. A ::before is
      not a child, so it can take z-index:0 and stay behind all of them. The banner is already
      position:relative and already clips its own overflow, so it frames this for free.
 
-     Centred rather than flush right, which is the whole reason this position won: the date
-     block lives top-right and every right-aligned version of this overlapped it. Measured
-     across all five tabs, this one overlaps the date by 0px.
+     A MASK, NOT AN IMAGE, and that is the whole reason this works. It was a numeral, painted
+     with color:var(--bg) so it followed the ink -- which flips with the ground AND is
+     re-scoped inside .header-brand by every masthead theme. A background-image cannot do
+     that: an SVG data URI has its fill baked in, and following four themes across two grounds
+     would have meant forty glyphs. As a mask the SVG contributes only its alpha and the
+     colour comes from background-color:var(--bg), so one glyph per tab tracks every theme for
+     free, exactly as the digit did.
 
-     Nothing moves between tabs either. The wordmark is Helvetica, whose digits are tabular,
-     so 1 through 5 share an advance and the numeral occupies the identical 124px box on all
-     five — switching tabs changes the digit without shifting anything.
+     Each glyph is drawn on the SAME 100x100 box, which is what the tabular figures gave for
+     nothing: all five occupy an identical 250px square, so switching tabs changes the mark
+     without shifting anything on screen.
 
-     content takes the `'5' / ''` form so the numeral is decoration to a screen reader rather
-     than a stray digit announced at the top of every page. The stroke is zeroed because body
-     sets a 0.1px one that would otherwise be inherited and thicken this at 250px. */
+     :root declares an EMPTY glyph and each tab overrides it. Without that, a moment with no
+     tab class -- boot, or a state nobody has thought of -- leaves mask-image unset, and an
+     unmasked box is not nothing, it is a solid 250px block of ink at 5%.
+
+     No content string any more, so there is nothing for a screen reader to announce and the
+     `'5' / ''` alternative-text form it used to need is gone with it. */
+  :root{ --page-glyph:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%2F%3E"); }
   .header-brand::before{
-    content:var(--page-num, none);
+    content:'';
     position:absolute; left:50%; top:-24px; transform:translateX(-50%);
-    z-index:0; pointer-events:none;
-    font-family:var(--wordmark); font-weight:800; font-size:250px; line-height:0.78;
-    letter-spacing:-0.06em; -webkit-text-stroke:0;
-    color:var(--bg); opacity:0.055; }
+    width:250px; height:250px; z-index:0; pointer-events:none;
+    background-color:var(--bg); opacity:0.055;
+    -webkit-mask-image:var(--page-glyph); mask-image:var(--page-glyph);
+    -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+    -webkit-mask-size:contain; mask-size:contain;
+    -webkit-mask-position:center; mask-position:center; }
   /* The five tabs share the bar rather than sitting at their natural width with the slack
      left over on the right. The gap goes with it — each tab's own padding is the gap now,
      and an active tab's colour block runs to its neighbours instead of floating. */
@@ -688,11 +698,11 @@
      tint with everything else. So the banner carries its own token, written as a literal,
      and it is the one value on these lines that does not follow the ground. The five are the
      dark --field-* values unchanged: that tint was already solved for exactly this job. */
-  body.tab-insights{ --band:var(--block-lime); --field:var(--field-lime); --banner:#212515; --hue-faded-dark:#d7f37b; --hue-faded:var(--hue-faded-dark); --mark-shell:#343d17; --mark-lit:#55691d; --page-num:'1' / ''; }
-  body.tab-training{ --band:var(--block-amber); --field:var(--field-amber); --banner:#251d15; --hue-faded-dark:#f5b87b; --hue-faded:var(--hue-faded-dark); --mark-shell:#503318; --mark-lit:#8b561f; --page-num:'2' / ''; }
-  body.tab-injuries{ --band:var(--block-red); --field:var(--field-red); --banner:#25151b; --hue-faded-dark:#f396b8; --hue-faded:var(--hue-faded-dark); --mark-shell:#5a2a39; --mark-lit:#a1415f; --page-num:'3' / ''; }
-  body.tab-data{ --band:var(--block-purple); --field:var(--field-purple); --banner:#1f1525; --hue-faded-dark:#e9c7fb; --hue-faded:var(--hue-faded-dark); --mark-shell:#473152; --mark-lit:#7e5092; --page-num:'4' / ''; }
-  body.tab-settings{ --band:var(--block-blue); --field:var(--field-blue); --banner:#152522; --hue-faded-dark:#afeade; --hue-faded:var(--hue-faded-dark); --mark-shell:#004138; --mark-lit:#006f61; --page-num:'5' / ''; }
+  body.tab-insights{ --band:var(--block-lime); --field:var(--field-lime); --banner:#212515; --hue-faded-dark:#d7f37b; --hue-faded:var(--hue-faded-dark); --mark-shell:#343d17; --mark-lit:#55691d; --page-glyph:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20width%3D%27100%27%20height%3D%27100%27%3E%3Cg%20fill%3D%27%23000%27%20stroke%3D%27%23000%27%3E%3Crect%20x%3D%2727%27%20y%3D%2720%27%20width%3D%2718%27%20height%3D%2760%27%20rx%3D%279%27%2F%3E%3Crect%20x%3D%2755%27%20y%3D%2720%27%20width%3D%2718%27%20height%3D%2760%27%20rx%3D%279%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
+  body.tab-training{ --band:var(--block-amber); --field:var(--field-amber); --banner:#251d15; --hue-faded-dark:#f5b87b; --hue-faded:var(--hue-faded-dark); --mark-shell:#503318; --mark-lit:#8b561f; --page-glyph:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20width%3D%27100%27%20height%3D%27100%27%3E%3Cg%20fill%3D%27%23000%27%20stroke%3D%27%23000%27%3E%3Cg%20transform%3D%27translate%288.0%2C56%29%20rotate%28-10%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2717%27%20height%3D%2711%27%20rx%3D%275.5%27%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%27translate%2827.5%2C49%29%20rotate%28-5%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2717%27%20height%3D%2711%27%20rx%3D%275.5%27%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%27translate%2847.0%2C46%29%20rotate%280%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2717%27%20height%3D%2711%27%20rx%3D%275.5%27%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%27translate%2866.5%2C49%29%20rotate%285%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2717%27%20height%3D%2711%27%20rx%3D%275.5%27%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%27translate%2886.0%2C56%29%20rotate%2810%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2717%27%20height%3D%2711%27%20rx%3D%275.5%27%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
+  body.tab-injuries{ --band:var(--block-red); --field:var(--field-red); --banner:#25151b; --hue-faded-dark:#f396b8; --hue-faded:var(--hue-faded-dark); --mark-shell:#5a2a39; --mark-lit:#a1415f; --page-glyph:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20width%3D%27100%27%20height%3D%27100%27%3E%3Cg%20fill%3D%27%23000%27%20stroke%3D%27%23000%27%3E%3Crect%20x%3D%2710%27%20y%3D%2743%27%20width%3D%2780%27%20height%3D%2714%27%20rx%3D%272%27%2F%3E%3Crect%20x%3D%2743%27%20y%3D%2710%27%20width%3D%2714%27%20height%3D%2780%27%20rx%3D%272%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
+  body.tab-data{ --band:var(--block-purple); --field:var(--field-purple); --banner:#1f1525; --hue-faded-dark:#e9c7fb; --hue-faded:var(--hue-faded-dark); --mark-shell:#473152; --mark-lit:#7e5092; --page-glyph:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20width%3D%27100%27%20height%3D%27100%27%3E%3Cg%20fill%3D%27%23000%27%20stroke%3D%27%23000%27%3E%3Cpath%20d%3D%27M8%2C72%20L30%2C54%20L52%2C60%20L74%2C28%20L92%2C16%20L92%2C88%20L8%2C88%20Z%27%20fill-opacity%3D%270.42%27%2F%3E%3Cpolyline%20points%3D%278%2C72%2030%2C54%2052%2C60%2074%2C28%2092%2C16%27%20fill%3D%27none%27%20stroke-width%3D%279%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%2F%3E%3Ccircle%20cx%3D%278%27%20cy%3D%2772%27%20r%3D%277%27%2F%3E%3Ccircle%20cx%3D%2730%27%20cy%3D%2754%27%20r%3D%277%27%2F%3E%3Ccircle%20cx%3D%2752%27%20cy%3D%2760%27%20r%3D%277%27%2F%3E%3Ccircle%20cx%3D%2774%27%20cy%3D%2728%27%20r%3D%277%27%2F%3E%3Ccircle%20cx%3D%2792%27%20cy%3D%2716%27%20r%3D%277%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
+  body.tab-settings{ --band:var(--block-blue); --field:var(--field-blue); --banner:#152522; --hue-faded-dark:#afeade; --hue-faded:var(--hue-faded-dark); --mark-shell:#004138; --mark-lit:#006f61; --page-glyph:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20width%3D%27100%27%20height%3D%27100%27%3E%3Cg%20fill%3D%27%23000%27%20stroke%3D%27%23000%27%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%2731%27%20fill%3D%27none%27%20stroke-width%3D%2710%27%2F%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%2716%27%20fill%3D%27none%27%20stroke-width%3D%2710%27%2F%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%275%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
 
   /* THE GROUND, and the only place it is decided.
      Everything below is derived, not picked. --ground and --bg swap; --ink-rgb and
@@ -11431,7 +11441,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.577';
+const APP_VERSION = '2026.09.15.578';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11731,6 +11741,7 @@ const APP_NOTES = {
   '2026.09.15.575': 'Washed is the masthead now \u2014 the banner carries the colour by default, and Deep is a choice.',
   '2026.09.15.576': 'Paper by default \u2014 the pages open on bone with the dark masthead over them.',
   '2026.09.15.577': 'The score\u2019s ball stops changing colour \u2014 it is just the page\u2019s ink now.',
+  '2026.09.15.578': 'Each page carries its own mark behind the masthead instead of a number.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
