@@ -166,6 +166,28 @@
     --wave-tile-light-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27168%27%20height%3D%2716%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23fbfaf6%27%20stroke-width%3D%270.85%27%3E%3Cpath%20stroke-opacity%3D%27.11%27%20d%3D%27M0%2C8%20C21%2C8%2021%2C3%2042%2C3%20C63%2C3%2063%2C8%2084%2C8%20C105%2C8%20105%2C13%20126%2C13%20C147%2C13%20147%2C8%20168%2C8%27%2F%3E%3Cpath%20stroke-opacity%3D%27.046%27%20d%3D%27M-42%2C8%20C-21%2C8%20-21%2C3%200%2C3%20C21%2C3%2021%2C8%2042%2C8%20C63%2C8%2063%2C13%2084%2C13%20C105%2C13%20105%2C8%20126%2C8%20C147%2C8%20147%2C3%20168%2C3%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
     --wave-tile-dark-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27168%27%20height%3D%2716%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%230c0d0b%27%20stroke-width%3D%270.85%27%3E%3Cpath%20stroke-opacity%3D%27.11%27%20d%3D%27M0%2C8%20C21%2C8%2021%2C3%2042%2C3%20C63%2C3%2063%2C8%2084%2C8%20C105%2C8%20105%2C13%20126%2C13%20C147%2C13%20147%2C8%20168%2C8%27%2F%3E%3Cpath%20stroke-opacity%3D%27.046%27%20d%3D%27M-42%2C8%20C-21%2C8%20-21%2C3%200%2C3%20C21%2C3%2021%2C8%2042%2C8%20C63%2C8%2063%2C13%2084%2C13%20C105%2C13%20105%2C8%20126%2C8%20C147%2C8%20147%2C3%20168%2C3%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
     --wave-tile:var(--wave-tile-light-ink);
+    /* FIVE MARKS ON A SCREEN, AND NEVER MORE THAN THAT.
+
+       The backpack's empty slots are crosses -- #303036 on black, about a 1.5:1 whisper -- and
+       the menu floor is the same mark scattered in perspective. Not a texture. A few marks on
+       a plane, which is what this is: a 440x560 tile carrying four crosses and one dot at
+       irregular positions.
+
+       WIDER THAN ANY PHONE ON PURPOSE. At 440 across there is no horizontal repeat on a 390
+       screen -- the tile is simply clipped -- so the marks never line up into a grid, which is
+       the thing that made a 24px cross field read as ruling rather than as marks.
+
+       AND IT IS FIXED, WHICH IS THE WHOLE REASON THE COUNT HOLDS. Tiled against the document
+       it would scroll, and Settings is four thousand pixels long: sixty marks on one page and
+       five on another is not "sparse", it is a texture that happens to be thin at the top.
+       Fixed to the viewport, a screen holds four or five wherever you are and whatever tab
+       you are on.
+
+       .14 rather than the .3 the dots used. Measured off the reference: #303036 on #000000 is
+       1.56:1, and cream at .14 on this ground is the same whisper. */
+    --mark-tile-light-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27440%27%20height%3D%27560%27%3E%3Cpath%20d%3D%27M52%2C92h12M58%2C86v12%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M307.5%2C196h9.0M312%2C191.5v9.0%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27196%27%20cy%3D%27366%27%20r%3D%271.6%27%20fill%3D%27%23fbfaf6%27%20fill-opacity%3D%27.14%27%2F%3E%3Cpath%20d%3D%27M99%2C470h10M104%2C465v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M382%2C412h8M386%2C408v8%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
+    --mark-tile-dark-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27440%27%20height%3D%27560%27%3E%3Cpath%20d%3D%27M52%2C92h12M58%2C86v12%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M307.5%2C196h9.0M312%2C191.5v9.0%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27196%27%20cy%3D%27366%27%20r%3D%271.6%27%20fill%3D%27%230c0d0b%27%20fill-opacity%3D%27.14%27%2F%3E%3Cpath%20d%3D%27M99%2C470h10M104%2C465v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M382%2C412h8M386%2C408v8%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
+    --mark-tile:var(--mark-tile-light-ink);
     --reverse-bg:#0c0d0b;   /* dark fill for buttons/badges — independent of --text */
     --on-light:#0c0d0b;     /* text on any light fill (inputs, tags, outline buttons) */
     --on-light-dim:#191a0e; /* secondary text on a light fill */
@@ -594,6 +616,18 @@
      writes its background-color — and every black block in the app is an opaque element
      painted on top of it. */
   #scrollBackdrop{ position:absolute; inset:0; z-index:-1; }
+  /* THE MARKS, ABOVE THE BACKDROP AND BELOW EVERYTHING ELSE.
+
+     ::after rather than ::before, and that is load-bearing. #scrollBackdrop is the first child
+     of body and paints the tab's ground at z-index -1; a ::before is treated as the FIRST
+     child, so it would paint underneath and never be seen. ::after is the last, so at the same
+     z-index it lands on top of the backdrop by document order -- and the -1 still keeps it
+     behind every real element on the page.
+
+     position:fixed, not absolute: see the tile's own note for why the count has to be bounded
+     by the screen rather than by the length of the page. */
+  body::after{ content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background-image:var(--mark-tile); background-size:440px 560px; }
   /* The deal. The card is a positioned element with a z-index so it makes its own stacking
      context, which is what stops the sticky headings inside it climbing out and painting over
      its leading edge. It stays under the header's z-index 10, so the header is untouched the
@@ -672,6 +706,7 @@
     --field-blue:#e2f5f6;
     --dot-tile:var(--dot-tile-dark-ink);
     --wave-tile:var(--wave-tile-dark-ink);
+    --mark-tile:var(--mark-tile-dark-ink);
     --ink-bad:#cb3318;
     --ink-warn:#956104;
     --ink-yellow:#7e6b24;
@@ -744,6 +779,7 @@
        the dark one, whatever the page outside is doing. */
     --dot-tile:var(--dot-tile-light-ink);
     --wave-tile:var(--wave-tile-light-ink);
+    --mark-tile:var(--mark-tile-light-ink);
   }
   /* A .fields inside one of those pockets paints the tab's tint, and the tint does not follow
      the pocket: --field is declared on body as var(--field-<hue>), so it RESOLVES on body and
@@ -11198,7 +11234,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.555';
+const APP_VERSION = '2026.09.15.556';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11476,6 +11512,7 @@ const APP_NOTES = {
   '2026.09.15.552': 'The cascade actually cascades \u2014 both titles were on screen at once and the letters blinked instead of falling.',
   '2026.09.15.554': 'The form badge is the day count again \u2014 the three-bar version did not look like anything.',
   '2026.09.15.555': 'A new palette, sampled off Marathon \u2014 acid green and amber lead, and every tab takes a hue from Tau Ceti.',
+  '2026.09.15.556': 'A few marks on the ground, on every page \u2014 four or five to a screen, and never more however far you scroll.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
