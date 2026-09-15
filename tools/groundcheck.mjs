@@ -25,7 +25,12 @@
 // anything whose colours only exist under a class or a timer is covered too. Add to
 // applyStates when you add a state that repaints something.
 import { chromium } from 'playwright';
+/* Both are POSITIONAL: `node tools/groundcheck.mjs [ground] [masthead]`. They are stamped on
+   documentElement verbatim, so a flag-shaped argument like --ground=bone sets
+   data-ground="--ground=bone", which matches no rule and silently tests the default instead
+   of failing. Pass the bare value: `bone`, `washed`. */
 const ground = process.argv[2] || '';
+const masthead = process.argv[3] || '';
 const MEASURE = `(()=>{
   const lin=v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);};
   const lum=c=>{const[r,g,b]=c.map(lin);return 0.2126*r+0.7152*g+0.0722*b;};
@@ -76,6 +81,7 @@ await p.evaluate(async d=>{ await seedTestScenario('well_recovered');
 await p.goto(URL); await p.waitForFunction(()=>!!window.storage,{timeout:20000});
 await p.waitForTimeout(2600);
 if(ground) await p.evaluate(g=>document.documentElement.dataset.ground=g, ground);
+if(masthead) await p.evaluate(m=>document.documentElement.dataset.masthead=m, masthead);
 await p.waitForTimeout(400);
 // Transient dressing, applied on purpose. Arming is the app's own call rather than a
 // hand-painted imitation, so what gets measured is what a finger would actually produce;
@@ -127,7 +133,7 @@ for(const tab of ['insights','training','injuries','data','settings']){
   }
 }
 const list=[...seen.values()].sort((a,b)=>a.r-b.r);
-console.log(`ground=${ground||'dark'}  failures=${list.length}`);
+console.log(`ground=${ground||'dark'}  masthead=${masthead||'deep'}  failures=${list.length}`);
 for(const f of list) console.log(`  ${String(f.r).padStart(5)}:1  ${f.fg} on ${f.bg}  ${f.tab.padEnd(9)} ${(f.tag+'.'+f.cls).padEnd(30)} "${f.txt}"`);
 console.log(`states applied: ${stateCount}${stateCount ? '' : '  <- none found; the states pass measured nothing'}`);
 console.log('errors:', errs.length?errs.slice(0,3).join(' | '):'none');
