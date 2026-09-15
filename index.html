@@ -195,9 +195,14 @@
 
        It is a gradient rather than a tile because a gradient has no resampling to go wrong:
        an SVG dot at this pitch lands on fractional device pixels at DPR 2 and 3 and beats
-       against the grid, which is the moire the mesh exists to avoid. .06 is under half the
-       marks' .14 on purpose -- the mesh is the surface, the marks are on it, and if the two
-       arrive at the same weight the marks stop reading as marks.
+       against the grid, which is the moire the mesh exists to avoid. .03 is under a quarter
+       of the marks' .14 -- the mesh is the surface, the marks are on it, and the gap between
+       the two weights is what keeps the marks reading as marks rather than as thick mesh.
+
+       At .03 on this ground a dot lands on #131412 against a #0c0d0b ground -- 7 steps of
+       8-bit sRGB in each channel. That is the floor worth having: halve it again and the dot
+       is 3 or 4 steps, inside the range a phone's own dithering moves things anyway, so it
+       would stop being reliably there at all.
 
        THE PITCH IS THE DENSITY KNOB, and it is the only even one. It shipped at 9px and that
        was too busy. The tempting fix -- drop a selector, put the mesh on fewer surfaces -- was
@@ -208,8 +213,8 @@
        lever that moves all five together. 9 to 13 is (9/13)^2, so 52% fewer dots everywhere,
        and the alpha comes down a notch with it because dots that sit further apart assert
        themselves more individually at the same weight. */
-    --mk-screen-light:radial-gradient(circle at 1px 1px, rgba(251,250,246,.06) 1px, transparent 0);
-    --mk-screen-dark:radial-gradient(circle at 1px 1px, rgba(12,13,11,.06) 1px, transparent 0);
+    --mk-screen-light:radial-gradient(circle at 1px 1px, rgba(251,250,246,.03) 1px, transparent 0);
+    --mk-screen-dark:radial-gradient(circle at 1px 1px, rgba(12,13,11,.03) 1px, transparent 0);
     --mk-screen:var(--mk-screen-light);
     --reverse-bg:#0c0d0b;   /* dark fill for buttons/badges — independent of --text */
     --on-light:#0c0d0b;     /* text on any light fill (inputs, tags, outline buttons) */
@@ -11307,7 +11312,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.563';
+const APP_VERSION = '2026.09.15.564';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11593,6 +11598,7 @@ const APP_NOTES = {
   '2026.09.15.561': 'A soft dot screen under the marks, on the same panels \u2014 the page has a surface now instead of a flat black.',
   '2026.09.15.562': 'The mark takes each tab\u2019s colour instead of staying violet-black \u2014 same weight, new hue, on all five.',
   '2026.09.15.563': 'The dot screen thins out \u2014 half the dots, a touch fainter, so the page has room to breathe again.',
+  '2026.09.15.564': 'The dot screen fades to half again \u2014 barely there, which is the point.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
