@@ -137,6 +137,28 @@
     --dot-tile-light-ink:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='168' height='8'%3E%3Cg fill='%23fbfaf6' fill-opacity='.3'%3E%3Ccircle cx='0' cy='4' r='0.5'/%3E%3Ccircle cx='6' cy='4.5' r='0.5'/%3E%3Ccircle cx='12' cy='5' r='0.5'/%3E%3Ccircle cx='18' cy='5.5' r='0.5'/%3E%3Ccircle cx='24' cy='6' r='0.5'/%3E%3Ccircle cx='30' cy='6.5' r='0.5'/%3E%3Ccircle cx='36' cy='6.5' r='0.5'/%3E%3Ccircle cx='42' cy='6.5' r='0.5'/%3E%3Ccircle cx='48' cy='6.5' r='0.5'/%3E%3Ccircle cx='54' cy='6.5' r='0.5'/%3E%3Ccircle cx='60' cy='6' r='0.5'/%3E%3Ccircle cx='66' cy='5.5' r='0.5'/%3E%3Ccircle cx='72' cy='5' r='0.5'/%3E%3Ccircle cx='78' cy='4.5' r='0.5'/%3E%3Ccircle cx='84' cy='4' r='0.5'/%3E%3Ccircle cx='90' cy='3.5' r='0.5'/%3E%3Ccircle cx='96' cy='3' r='0.5'/%3E%3Ccircle cx='102' cy='2.5' r='0.5'/%3E%3Ccircle cx='108' cy='2' r='0.5'/%3E%3Ccircle cx='114' cy='1.5' r='0.5'/%3E%3Ccircle cx='120' cy='1.5' r='0.5'/%3E%3Ccircle cx='126' cy='1.5' r='0.5'/%3E%3Ccircle cx='132' cy='1.5' r='0.5'/%3E%3Ccircle cx='138' cy='1.5' r='0.5'/%3E%3Ccircle cx='144' cy='2' r='0.5'/%3E%3Ccircle cx='150' cy='2.5' r='0.5'/%3E%3Ccircle cx='156' cy='3' r='0.5'/%3E%3Ccircle cx='162' cy='3.5' r='0.5'/%3E%3C/g%3E%3C/svg%3E");
     --dot-tile-dark-ink:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='168' height='8'%3E%3Cg fill='%230c0d0b' fill-opacity='.3'%3E%3Ccircle cx='0' cy='4' r='0.5'/%3E%3Ccircle cx='6' cy='4.5' r='0.5'/%3E%3Ccircle cx='12' cy='5' r='0.5'/%3E%3Ccircle cx='18' cy='5.5' r='0.5'/%3E%3Ccircle cx='24' cy='6' r='0.5'/%3E%3Ccircle cx='30' cy='6.5' r='0.5'/%3E%3Ccircle cx='36' cy='6.5' r='0.5'/%3E%3Ccircle cx='42' cy='6.5' r='0.5'/%3E%3Ccircle cx='48' cy='6.5' r='0.5'/%3E%3Ccircle cx='54' cy='6.5' r='0.5'/%3E%3Ccircle cx='60' cy='6' r='0.5'/%3E%3Ccircle cx='66' cy='5.5' r='0.5'/%3E%3Ccircle cx='72' cy='5' r='0.5'/%3E%3Ccircle cx='78' cy='4.5' r='0.5'/%3E%3Ccircle cx='84' cy='4' r='0.5'/%3E%3Ccircle cx='90' cy='3.5' r='0.5'/%3E%3Ccircle cx='96' cy='3' r='0.5'/%3E%3Ccircle cx='102' cy='2.5' r='0.5'/%3E%3Ccircle cx='108' cy='2' r='0.5'/%3E%3Ccircle cx='114' cy='1.5' r='0.5'/%3E%3Ccircle cx='120' cy='1.5' r='0.5'/%3E%3Ccircle cx='126' cy='1.5' r='0.5'/%3E%3Ccircle cx='132' cy='1.5' r='0.5'/%3E%3Ccircle cx='138' cy='1.5' r='0.5'/%3E%3Ccircle cx='144' cy='2' r='0.5'/%3E%3Ccircle cx='150' cy='2.5' r='0.5'/%3E%3Ccircle cx='156' cy='3' r='0.5'/%3E%3Ccircle cx='162' cy='3.5' r='0.5'/%3E%3C/g%3E%3C/svg%3E");
     --dot-tile:var(--dot-tile-light-ink);
+    /* WATERED SILK, FOR THE TODAY FIELD ONLY.
+
+       THE CURVE IS THE FIELD'S OWN. It is the shape already masking this element -- extremes
+       every 42px, a full period every 84 -- taken out of the stencil and drawn. That is the
+       whole idea: the wave stopped deciding WHERE the dots were allowed to be and became the
+       thing you can see. Two periods in a 168 tile, which is --dot-tile's own repeat, so the
+       84px drift still travels exactly one wavelength.
+
+       TWO SETS A HALF-PHASE APART, the second at .046 against the first's .11. Where they
+       cross the field brightens; where they run together it falls away -- which is what
+       watered fabric does, and what a single set of rules cannot do at any opacity.
+
+       Measured against the dots it replaces here: 28 circles of r0.5 in a 168x8 tile is about
+       1.6% coverage, so at .3 the dots put roughly 0.5% ink on the field. These two strokes
+       cover about 5.3% each, so at .11 and .046 they put about 0.82% -- a little over half as
+       much again, which is the "more textured" this was asked for and not more than that.
+
+       Two inks for the same reason --dot-tile has two: the strokes are drawn INTO the svg and
+       cannot read --ink-rgb, so the ground gets one each and the alias picks. */
+    --wave-tile-light-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27168%27%20height%3D%2716%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23fbfaf6%27%20stroke-width%3D%270.85%27%3E%3Cpath%20stroke-opacity%3D%27.11%27%20d%3D%27M0%2C13%20C21%2C13%2021%2C3%2042%2C3%20C63%2C3%2063%2C13%2084%2C13%20C105%2C13%20105%2C3%20126%2C3%20C147%2C3%20147%2C13%20168%2C13%27%2F%3E%3Cpath%20stroke-opacity%3D%27.046%27%20d%3D%27M0%2C3%20C21%2C3%2021%2C13%2042%2C13%20C63%2C13%2063%2C3%2084%2C3%20C105%2C3%20105%2C13%20126%2C13%20C147%2C13%20147%2C3%20168%2C3%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+    --wave-tile-dark-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27168%27%20height%3D%2716%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%230c0d0b%27%20stroke-width%3D%270.85%27%3E%3Cpath%20stroke-opacity%3D%27.11%27%20d%3D%27M0%2C13%20C21%2C13%2021%2C3%2042%2C3%20C63%2C3%2063%2C13%2084%2C13%20C105%2C13%20105%2C3%20126%2C3%20C147%2C3%20147%2C13%20168%2C13%27%2F%3E%3Cpath%20stroke-opacity%3D%27.046%27%20d%3D%27M0%2C3%20C21%2C3%2021%2C13%2042%2C13%20C63%2C13%2063%2C3%2084%2C3%20C105%2C3%20105%2C13%20126%2C13%20C147%2C13%20147%2C3%20168%2C3%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+    --wave-tile:var(--wave-tile-light-ink);
     --reverse-bg:#0c0d0b;   /* dark fill for buttons/badges — independent of --text */
     --on-light:#0c0d0b;     /* text on any light fill (inputs, tags, outline buttons) */
     --on-light-dim:#191a0e; /* secondary text on a light fill */
@@ -605,6 +627,7 @@
     --field-purple:#f4f0f7;
     --field-blue:#e2f5f6;
     --dot-tile:var(--dot-tile-dark-ink);
+    --wave-tile:var(--wave-tile-dark-ink);
     --ink-bad:#cb3318;
     --ink-warn:#956104;
     --ink-yellow:#7e6b24;
@@ -674,6 +697,7 @@
     /* And the tile, for the same reason the hue is here: inside one of these the ground is
        the dark one, whatever the page outside is doing. */
     --dot-tile:var(--dot-tile-light-ink);
+    --wave-tile:var(--wave-tile-light-ink);
   }
   /* A .fields inside one of those pockets paints the tab's tint, and the tint does not follow
      the pocket: --field is declared on body as var(--field-<hue>), so it RESOLVES on body and
@@ -4208,6 +4232,32 @@
      The mask steps with it, still in phase. 6px out of a 168px wavelength barely moves a curve
      that smooth, so the two cut edges undulate rather than slide, which is what the dots
      inside them are doing. */
+  /* ---------- THE TODAY FIELD IS WOVEN, NOT DOTTED ----------
+
+     Everything above stays exactly as it is; this is a modifier over it, so the week strip and
+     the field under the chart keep their dots and their mask and nothing else in the app has
+     to know. Three things change, and each has a reason of its own.
+
+     THE MASK COMES OFF. That is not an extra — it is most of why this was asked for. The
+     stencil pinched the texture into a band that swells and narrows, so the page read as flat
+     WITH A STRIPE OF FUZZ IN IT rather than as a surface. A drawn wave inside a wave-shaped
+     hole is the same mistake twice. Edge to edge, and the texture is the field.
+
+     THE DRIFT STOPS STEPPING. steps(14) is tuned to the dots and says so: 84px over 14 steps
+     is exactly one 6px column, so every dot lands on a column it was drawn for and nothing
+     softens. A curve has no columns. Measured on this wave -- amplitude 5, period 84 -- the
+     steepest slope is 0.37, so a 6px step throws the line 2.2px sideways-and-down in one
+     frame, which on a continuous stroke reads as a judder. Linear, and it slides.
+
+     THE TILE IS 16 TALL, not 8, so the rows sit 16px apart. Same 168 repeat, so the animation
+     below still travels one whole wavelength and lands where it started. */
+  .dot-field.wave-field::before{
+    background-image:var(--wave-tile);
+    background-size:168px 16px;
+    -webkit-mask-image:none; mask-image:none;
+  }
+  .dot-field.wave-field.drift-l::before,
+  .dot-field.wave-field.drift-r::before{ animation-timing-function:linear; }
   .dot-field.drift-l::before{ animation:fieldDriftL var(--field-drift-ms, 900ms) steps(14, end) var(--field-drift-delay, 0ms) both; }
   .dot-field.drift-r::before{ animation:fieldDriftR var(--field-drift-ms, 900ms) steps(14, end) var(--field-drift-delay, 0ms) both; }
   @media (prefers-reduced-motion: reduce){ .dot-field.drift-l::before, .dot-field.drift-r::before{ animation:none; } }
@@ -4363,7 +4413,7 @@
          suggestions head, or, before you have logged, the "Log this morning" strip that
          stands in its place. Nothing has to say where the field stops; the first plate on
          the page stops it. -->
-    <div class="today-field dot-field">
+    <div class="today-field dot-field wave-field">
     <div class="today-open">
     <div class="gauge-wrap">
       <div class="score-stack">
@@ -11072,7 +11122,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.545';
+const APP_VERSION = '2026.09.15.546';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11341,6 +11391,7 @@ const APP_NOTES = {
   '2026.09.15.543': 'The field under the trend chart stops rippling on arrival \u2014 the texture stays, the movement goes where a line is being read.',
   '2026.09.15.544': 'The notes on Settings get a heading and a lifted clause \u2014 you can tell which paragraph you came for, and get its point without reading it.',
   '2026.09.15.545': 'The mark runs cyan to plum now, not red to cyan \u2014 a low morning is a different day, not a warning light.',
+  '2026.09.15.546': 'Today is woven rather than dotted \u2014 the wave that was hiding the texture is now the texture, edge to edge.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
