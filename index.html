@@ -316,11 +316,22 @@
        its own hue -- see the per-tab block. What stays here is what anything OUTSIDE a tab
        context gets, which is the app icon and nothing else, so the icon is unchanged.
 
-       The rotation holds L* and C* exactly: 6.59 and 9.72, the black's own, with only the hue
-       moving to the tab's band. That is not a stylistic choice, it is what keeps the mark's
-       PRESENCE identical -- measured against each tab's banner the five hued shells come out
-       at 1.17, 1.10, 1.05, 1.04 and 1.15:1, which is the black's contrast on those same five
-       banners to two decimal places. The mark reads exactly as heavily as it did.
+       The five sit at L* 24, C* 24, one step for all of them, hue per tab. .562 put them at
+       the black's own 6.59 and 9.72 so the mark's presence would not change; this deliberately
+       changes it, and the number that says how is the shell against its own banner. The banner
+       runs L* 9-14. At 6.59 the shell was DARKER than the band it sits on -- 1.04 to 1.17:1 --
+       so the mark read as a hole in the masthead with two eyes in it, and the hue was there
+       but invisible. At L* 24 it is 1.36 to 1.53:1 the other way: a body sitting ON the band,
+       with a face you can see the colour of.
+
+       L* 12 is the one step that cannot be taken. The banner is L* 9-14, so a shell there
+       lands on the band's own lightness, contrast falls to 1.01 and the disc dissolves --
+       leaving a rim and two eyes floating on nothing. The useful range starts above it.
+
+       Settings is gamut-bound and does not reach C* 24: dark teal runs out at 21.2, and its
+       crescent at x1.44 rather than x1.79. Clamped rather than pulled the other four down to
+       match, because the shortfall is one step of chroma on one tab and levelling for it
+       would cost the other four the colour this change exists to get.
 
        And the crescent moves with the body, because it was never independent of it: #3a3650
        sits at L* +17.5, C* x1.79, hue +1.4 from #151320. Each tab's --mark-lit is that same
@@ -728,11 +739,11 @@
      tint with everything else. So the banner carries its own token, written as a literal,
      and it is the one value on these lines that does not follow the ground. The five are the
      dark --field-* values unchanged: that tint was already solved for exactly this job. */
-  body.tab-insights{ --band:var(--block-lime); --field:var(--field-lime); --banner:#212515; --hue-faded-dark:#d7f37b; --hue-faded:var(--hue-faded-dark); --mark-shell:#141602; --mark-lit:#363c22; --page-num:'1' / ''; }
-  body.tab-training{ --band:var(--block-amber); --field:var(--field-amber); --banner:#251d15; --hue-faded-dark:#f5b87b; --hue-faded:var(--hue-faded-dark); --mark-shell:#1f1203; --mark-lit:#4b3522; --page-num:'2' / ''; }
-  body.tab-injuries{ --band:var(--block-red); --field:var(--field-red); --banner:#25151b; --hue-faded-dark:#f396b8; --hue-faded:var(--hue-faded-dark); --mark-shell:#210f14; --mark-lit:#522f38; --page-num:'3' / ''; }
-  body.tab-data{ --band:var(--block-purple); --field:var(--field-purple); --banner:#1f1525; --hue-faded-dark:#e9c7fb; --hue-faded:var(--hue-faded-dark); --mark-shell:#1a121e; --mark-lit:#44334b; --page-num:'4' / ''; }
-  body.tab-settings{ --band:var(--block-blue); --field:var(--field-blue); --banner:#152522; --hue-faded-dark:#afeade; --hue-faded:var(--hue-faded-dark); --mark-shell:#001914; --mark-lit:#134039; --page-num:'5' / ''; }
+  body.tab-insights{ --band:var(--block-lime); --field:var(--field-lime); --banner:#212515; --hue-faded-dark:#d7f37b; --hue-faded:var(--hue-faded-dark); --mark-shell:#343d17; --mark-lit:#55691d; --page-num:'1' / ''; }
+  body.tab-training{ --band:var(--block-amber); --field:var(--field-amber); --banner:#251d15; --hue-faded-dark:#f5b87b; --hue-faded:var(--hue-faded-dark); --mark-shell:#503318; --mark-lit:#8b561f; --page-num:'2' / ''; }
+  body.tab-injuries{ --band:var(--block-red); --field:var(--field-red); --banner:#25151b; --hue-faded-dark:#f396b8; --hue-faded:var(--hue-faded-dark); --mark-shell:#5a2a39; --mark-lit:#a1415f; --page-num:'3' / ''; }
+  body.tab-data{ --band:var(--block-purple); --field:var(--field-purple); --banner:#1f1525; --hue-faded-dark:#e9c7fb; --hue-faded:var(--hue-faded-dark); --mark-shell:#473152; --mark-lit:#7e5092; --page-num:'4' / ''; }
+  body.tab-settings{ --band:var(--block-blue); --field:var(--field-blue); --banner:#152522; --hue-faded-dark:#afeade; --hue-faded:var(--hue-faded-dark); --mark-shell:#004138; --mark-lit:#006f61; --page-num:'5' / ''; }
 
   /* THE GROUND, and the only place it is decided.
      Everything below is derived, not picked. --ground and --bg swap; --ink-rgb and
@@ -11356,7 +11367,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.572';
+const APP_VERSION = '2026.09.15.573';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11651,6 +11662,7 @@ const APP_NOTES = {
   '2026.09.15.570': 'The mark stretches as it rolls \u2014 it leans into the travel and comes back round on landing.',
   '2026.09.15.571': 'Rest days say so on the week board instead of drawing blank \u2014 they were always there, just never named.',
   '2026.09.15.572': 'Each page carries its own number, set huge and faint behind the masthead.',
+  '2026.09.15.573': 'The mark lifts out of near-black \u2014 its face now shows the tab\u2019s colour instead of hiding it.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
