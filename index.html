@@ -170,8 +170,14 @@
 
        The backpack's empty slots are crosses -- #303036 on black, about a 1.5:1 whisper -- and
        the menu floor is the same mark scattered in perspective. Not a texture. A few marks on
-       a plane, which is what this is: a 440x560 tile carrying four crosses and one dot at
+       a plane, which is what this is: a 440x560 tile carrying five crosses and two dots at
        irregular positions.
+
+       SEVEN, WHERE IT STARTED AT FIVE. One mark per 35,200 square pixels against 49,300, so a
+       390x844 screen holds about nine where it held under seven. Added to the TILE rather than
+       taken out of its size: shrinking it below 440 would put a horizontal repeat on a 390
+       screen and stand the same mark twice at the same height, which is the grid-reading this
+       is built to avoid.
 
        WIDER THAN ANY PHONE ON PURPOSE. At 440 across there is no horizontal repeat on a 390
        screen -- the tile is simply clipped -- so the marks never line up into a grid, which is
@@ -185,8 +191,8 @@
 
        .14 rather than the .3 the dots used. Measured off the reference: #303036 on #000000 is
        1.56:1, and cream at .14 on this ground is the same whisper. */
-    --mark-tile-light-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27440%27%20height%3D%27560%27%3E%3Cpath%20d%3D%27M52%2C92h12M58%2C86v12%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M307.5%2C196h9.0M312%2C191.5v9.0%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27196%27%20cy%3D%27366%27%20r%3D%271.6%27%20fill%3D%27%23fbfaf6%27%20fill-opacity%3D%27.14%27%2F%3E%3Cpath%20d%3D%27M99%2C470h10M104%2C465v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M382%2C412h8M386%2C408v8%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
-    --mark-tile-dark-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27440%27%20height%3D%27560%27%3E%3Cpath%20d%3D%27M52%2C92h12M58%2C86v12%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M307.5%2C196h9.0M312%2C191.5v9.0%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27196%27%20cy%3D%27366%27%20r%3D%271.6%27%20fill%3D%27%230c0d0b%27%20fill-opacity%3D%27.14%27%2F%3E%3Cpath%20d%3D%27M99%2C470h10M104%2C465v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M382%2C412h8M386%2C408v8%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
+    --mark-tile-light-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27440%27%20height%3D%27560%27%3E%3Cpath%20d%3D%27M52%2C92h12M58%2C86v12%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M240%2C54h8M244%2C50v8%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M307.5%2C196h9.0M312%2C191.5v9.0%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%2730%27%20cy%3D%27268%27%20r%3D%271.4%27%20fill%3D%27%23fbfaf6%27%20fill-opacity%3D%27.14%27%2F%3E%3Ccircle%20cx%3D%27196%27%20cy%3D%27366%27%20r%3D%271.6%27%20fill%3D%27%23fbfaf6%27%20fill-opacity%3D%27.14%27%2F%3E%3Cpath%20d%3D%27M99%2C470h10M104%2C465v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M382%2C412h8M386%2C408v8%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
+    --mark-tile-dark-ink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27440%27%20height%3D%27560%27%3E%3Cpath%20d%3D%27M52%2C92h12M58%2C86v12%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M240%2C54h8M244%2C50v8%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M307.5%2C196h9.0M312%2C191.5v9.0%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%2730%27%20cy%3D%27268%27%20r%3D%271.4%27%20fill%3D%27%230c0d0b%27%20fill-opacity%3D%27.14%27%2F%3E%3Ccircle%20cx%3D%27196%27%20cy%3D%27366%27%20r%3D%271.6%27%20fill%3D%27%230c0d0b%27%20fill-opacity%3D%27.14%27%2F%3E%3Cpath%20d%3D%27M99%2C470h10M104%2C465v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Cpath%20d%3D%27M382%2C412h8M386%2C408v8%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
     --mark-tile:var(--mark-tile-light-ink);
     --reverse-bg:#0c0d0b;   /* dark fill for buttons/badges — independent of --text */
     --on-light:#0c0d0b;     /* text on any light fill (inputs, tags, outline buttons) */
@@ -11238,7 +11244,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.557';
+const APP_VERSION = '2026.09.15.558';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11518,6 +11524,7 @@ const APP_NOTES = {
   '2026.09.15.555': 'A new palette, sampled off Marathon \u2014 acid green and amber lead, and every tab takes a hue from Tau Ceti.',
   '2026.09.15.556': 'A few marks on the ground, on every page \u2014 four or five to a screen, and never more however far you scroll.',
   '2026.09.15.557': 'The masthead title is the tab\u2019s colour at full strength \u2014 it was quieter than the little pills underneath it.',
+  '2026.09.15.558': 'A couple more marks on the ground \u2014 seven to the tile where there were five.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
