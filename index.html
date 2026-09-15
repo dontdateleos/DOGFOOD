@@ -382,6 +382,26 @@
      this large wants to. The mark follows: updateHeaderCollapse reads the h1's real left
      rather than assuming the margin. */
   header h1{ color:var(--bg); -webkit-text-stroke:0.6px var(--bg); letter-spacing:-0.045em; margin-left:-9px; }
+  /* EVERY TAB BUT THE FIRST IS A SECTION, NOT THE BRAND.
+
+     Dogfood is a drawn thing — the per-letter margins in the markup are hand-set and the
+     cream is the brand's own. The other four mastheads are not the brand; they are the name
+     of the place you are standing in, and naming them in the brand's cream said "Dogfood"
+     four more times in a row where the tab tick had already said "Body".
+
+     --hue-faded-dark, not --band and not --hue-faded. The band is the hue at FULL strength,
+     which at 46px display size is a shout — it would be the loudest thing on any screen, and
+     the loudest thing in this app is the score. And the masthead is a dark pocket on BOTH
+     grounds (--banner is fixed dark), so the bone ground's darkened hue would be a near-black
+     title on a near-black band; -dark is the value the pocket rule already reaches for, for
+     exactly this reason. Measured on the dark ground against each tab's own banner: yellow
+     on #242010 is 11.9:1, red on #271813 9.4:1, purple on #201e26 11.7:1, blue on #142325
+     10.8:1 — all of them past AAA for large text with room to spare.
+
+     The stroke goes with it. It is 0.6px of optical weight, not an outline, so leaving it
+     cream would have drawn a pale halo around a coloured word. */
+  body:not(.tab-insights) header h1{ color:var(--hue-faded-dark);
+    -webkit-text-stroke-color:var(--hue-faded-dark); }
   /* THE BANNER TAKES THE TAB'S TINT. It was the ground, which made the masthead the same
      surface as the page under it and left the tab's colour to arrive only once you had
      scrolled to a section band. --field is the tint that already exists for exactly this —
@@ -10032,6 +10052,9 @@ function activateTab(name, opts){
   const tabButton = document.querySelector(`.tab[data-tab="${name}"]`);
   if(tabButton) document.getElementById('currentTabWord').textContent = tabButton.textContent;
   renderTabInsight(name);
+  // The masthead names the page too, one size up. After the body class above, since the
+  // title takes the tab's own hue off it.
+  rollMastheadTitle(name);
   // Ahead of the scroll it is meant to cover, not after it.
   eyeScrollMuteUntil = Date.now() + 900;
   window.scrollTo(0, 0);
@@ -10950,7 +10973,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.540';
+const APP_VERSION = '2026.09.15.541';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11214,6 +11237,7 @@ const APP_NOTES = {
   '2026.09.14.538': 'A first score in sixteen mornings instead of twenty-four \u2014 the app stopped measuring you against a past you could not have had.',
   '2026.09.14.539': 'Your early score is marked as early, and reads on the same scale as the real one \u2014 no more ninety on Monday and forty on Tuesday.',
   '2026.09.15.540': '"Log this morning" goes to the morning form again \u2014 it had been pointing at a view that moved, which is why a phone-only score never arrived.',
+  '2026.09.15.541': 'Every tab but Today names itself in the masthead, in its own colour \u2014 and the mark rolls along the title to meet its new end.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -12123,30 +12147,49 @@ let headerCollapseEls = null;
 let logoTextWidth = null;
 let logoOriginX = 14;
 
+function headerCollapseCache(){
+  if(headerCollapseEls) return headerCollapseEls;
+  const header = document.querySelector('header');
+  headerCollapseEls = {
+    h1: header.querySelector('h1'),
+    mark: document.querySelector('.header-mark')
+  };
+  return headerCollapseEls;
+}
+
+/* Measure where the title actually ends — the widest of the two lines, since the mark has
+   to clear "food" as well as "Dog". Taken from the last span's right edge relative to h1's
+   own left edge: .logo-line is display:block and stretches to fill its container regardless
+   of text content, so the span's own rendered position is what reflects real text metrics
+   (which differ slightly between engines) rather than a pixel assumption.
+
+   ALWAYS AT 46. It used to be measured once, on the first call, which was always at scroll 0
+   where the h1 is at full size. A title that changes with the tab can be measured at any
+   scroll position, and at progress 1 the h1 is at font-size 0 — so the width would come back
+   as zero and the mark would park on the T of the title. The size is forced for the
+   measurement and put back before anything can paint; 46 is the same constant the collapse
+   lerps from and divides by below. */
+function measureLogoWidth(){
+  const { h1 } = headerCollapseCache();
+  const header = h1.closest('header');
+  const prev = h1.style.fontSize;
+  h1.style.fontSize = '46px';
+  const h1Rect = h1.getBoundingClientRect();
+  logoOriginX = h1Rect.left - header.querySelector('.header-brand').getBoundingClientRect().left;
+  let w = 0;
+  h1.querySelectorAll('.logo-line').forEach(line=>{
+    const spans = line.querySelectorAll('span');
+    const last = spans[spans.length-1];
+    if(last) w = Math.max(w, last.getBoundingClientRect().right - h1Rect.left);
+  });
+  h1.style.fontSize = prev;
+  return w;
+}
+
 function updateHeaderCollapse(){
   if(window.headerCollapseSuspended) return;
-  if(!headerCollapseEls){
-    const header = document.querySelector('header');
-    headerCollapseEls = {
-      h1: header.querySelector('h1'),
-      mark: document.querySelector('.header-mark')
-    };
-    // Measure where the wordmark actually ends — the widest of the two lines, since the
-    // mark has to clear "food" as well as "Dog". Taken from the last letter's right edge
-    // relative to h1's own left edge, once, before any inline style override is applied:
-    // .logo-line is display:block and stretches to fill its container regardless of text
-    // content, so the letter span's own rendered position is what reflects real text
-    // metrics (which differ slightly between engines) rather than a pixel assumption.
-    const h1Rect = headerCollapseEls.h1.getBoundingClientRect();
-    const brandRect = header.querySelector('.header-brand').getBoundingClientRect();
-    logoOriginX = h1Rect.left - brandRect.left;
-    logoTextWidth = 0;
-    headerCollapseEls.h1.querySelectorAll('.logo-line').forEach(line=>{
-      const spans = line.querySelectorAll('span');
-      const last = spans[spans.length-1];
-      if(last) logoTextWidth = Math.max(logoTextWidth, last.getBoundingClientRect().right - h1Rect.left);
-    });
-  }
+  headerCollapseCache();
+  if(logoTextWidth == null) logoTextWidth = measureLogoWidth();
   const { h1, mark } = headerCollapseEls;
 
   const progress = Math.max(0, Math.min(1, window.scrollY / 100));
@@ -12201,7 +12244,20 @@ function updateHeaderCollapse(){
   // mark used to be; the solid is wider than its box at every angle, so the same number now
   // buried the bowl of FOOD's last D. At -6 the letter reads whole and the mark still
   // overlaps it — any further and the two stop being one lockup.
-  const MARK_GAP = -6;
+  /* THE TUCK IS A WORDMARK CONVENTION, AND ONLY THE WORDMARK GETS IT.
+
+     Measured on the four section titles with -6: the mark landed on the K of WEEK, the P of
+     SET-UP and the G of READING, and WEEK read as WEE-dot. Dogfood survives the same tuck
+     because "food" ends on a d — a vertical stem with almost no ink on its right side, which
+     the sphere passes behind. K and P and G all throw ink to the right, straight into it.
+
+     The deeper reason is what the two things are. In the wordmark the mark is PART of the
+     lockup, a drawn element sitting in drawn type, and the overlap is what makes the two one
+     object. On a section title it is a mark beside a word, and the word is there to be read.
+     So it stands off by 7 — close enough to belong to the title, clear of its last letter.
+     Checked against the date block at its widest title: EVERY READING puts the mark's right
+     edge at 258 and the date starts at 295. */
+  const MARK_GAP = TAB_TITLES[mastheadTab] ? 7 : -6;
   // MARK_TOP centres the mark on the wordmark's ink — the midpoint between the cap line of
   // "Dog" and the baseline of "food", not the middle of the h1's line boxes.
   const MARK_TOP = 57;
@@ -12230,6 +12286,119 @@ function updateHeaderCollapse(){
   const hdrH = h1.closest('header').getBoundingClientRect().height;
   document.documentElement.style.setProperty('--hdr-h', Math.round(hdrH) + 'px');
   h1.closest('header').classList.toggle('scrolled', window.scrollY > 2);
+}
+
+/* ---------- A TITLE PER TAB, AND THE MARK ROLLS TO MEET IT ----------
+
+   The masthead named the app on all five tabs. The app's name belongs on the app's home and
+   nowhere else: on the other four it was the one piece of 46px display type on the screen
+   saying the thing you already knew, above a label and a lit tick both naming the page you
+   had just tapped. So Today keeps the wordmark and the other four say where you are.
+
+   TWO LINES EVERYWHERE, because the header is sticky and the whole collapse geometry hangs
+   off its height — .tab-insight's own note says a wrapped label "moves the wordmark, the
+   mark's perch and the whole collapse geometry with it", and a one-line title would do the
+   same thing on every tab switch instead of at one width.
+
+   And they are the app's own voice rather than section headings: "This week", "Your body",
+   "Every reading", "Your set-up". A masthead reading THE DATA is a filing cabinet. These are
+   written as second lines that complete their first, which is the same two-line shape Dogfood
+   already has, so the lockup is one thing in all five states. */
+const TAB_TITLES = {
+  training: ['This','week'],
+  injuries: ['Your','body'],
+  data:     ['Every','reading'],
+  settings: ['Your','set-up']
+};
+/* Dogfood's own markup, kept whole. The per-letter margins in it are hand-set optical kerning
+   on a drawn wordmark — rebuilding it from a string would throw them away, and they are the
+   difference between the brand and the same six letters typed. Read at parse time, which is
+   before anything can have overwritten it. */
+const WORDMARK_HTML = (document.querySelector('header h1') || {}).innerHTML || '';
+function mastheadTitleHTML(tab){
+  const t = TAB_TITLES[tab];
+  return t ? t.map(w => '<div class="logo-line"><span>' + w + '</span></div>').join('')
+           : WORDMARK_HTML;
+}
+
+/* THE ROLL.
+
+   The mark's home is already width-driven: updateHeaderCollapse puts it at the end of the
+   title's ink, so a title of a different width moves it without anything else being asked.
+   What it would do on its own is teleport. It is a sphere, it is sitting on the end of a
+   word, and the distance it has to cover is the difference between two words — so it rolls.
+
+   ANIMATED THROUGH logoTextWidth RATHER THAN THROUGH mark.style.left. The collapse writes
+   left on every scroll frame from that one number; an animation writing left directly would
+   be overwritten by the first scroll event and would have to re-implement the perch, the sag
+   and the 40-to-24 shrink to stay correct. Lerping the width instead means the mark travels
+   correctly whatever the scroll is doing underneath it, including mid-roll.
+
+   WHOLE TURNS. A 40px ball crossing 70px genuinely turns 200 degrees, and 200 degrees leaves
+   the eyes upside down at the end of it. Two ways out: roll the true angle and then unwind to
+   level, which reads as a mistake being corrected; or round to whole turns, which is a wheel
+   slipping slightly against the floor and which nobody can see. The second one. Distance
+   still sets the count — a long move takes two turns where a short one takes one — and the
+   sign still sets the direction, which is the part that was asked for.
+
+   ONLY BETWEEN TWO SECTIONS. Leaving Today or arriving at it, the mark is already making a
+   much bigger journey: it flies between the masthead and the score disc, and moveEyes owns
+   that flight. A roll underneath it would be fighting for the same element over the same
+   400ms. So those switches just take the new width, and the roll is what happens when the
+   mark stays in the masthead — which is exactly when you can see it. */
+const ROLL_MS = 520;
+const ROLL_R = 20;              // the header mark is 40px across; a roll is distance / radius
+let mastheadTab = 'insights';
+let markRollRaf = null;
+
+function rollMastheadTitle(tab){
+  const { h1 } = headerCollapseCache();
+  const html = mastheadTitleHTML(tab);
+  const from = mastheadTab;
+  mastheadTab = tab;
+  if(h1.innerHTML === html) return;
+
+  if(markRollRaf){ cancelAnimationFrame(markRollRaf); markRollRaf = null; }
+  const fromW = logoTextWidth == null ? measureLogoWidth() : logoTextWidth;
+  h1.innerHTML = html;
+  const toW = measureLogoWidth();
+
+  const rolls = from !== 'insights' && tab !== 'insights';
+  const dx = toW - fromW;
+  if(!rolls || !dx || eyeCalm || eyeMotionOff()){
+    logoTextWidth = toW;
+    updateHeaderCollapse();
+    return;
+  }
+
+  const turns = Math.max(1, Math.round(Math.abs(dx) / (2 * Math.PI * ROLL_R)));
+  const spin = Math.sign(dx) * turns * 360;
+  const rz0 = mcState.rz;
+  /* The idle rig is turning the mark on its own clock, and a queued move lerping rz is the
+     one thing that can fight this. Cleared for the duration, and the next idle move is pushed
+     past the landing so the mark is not picking up a drift on the frame it stops. */
+  mcState.queue = []; mcState.step = null;
+  mcState.nextAt = performance.now() + ROLL_MS + 1400;
+  const t0 = performance.now();
+  const tick = (now)=>{
+    const f = Math.min(1, (now - t0) / ROLL_MS);
+    const e = mcEase(f);
+    logoTextWidth = fromW + dx * e;
+    mcState.rz = rz0 + spin * e;
+    updateHeaderCollapse();
+    drawMarkCube();
+    if(f < 1){ markRollRaf = requestAnimationFrame(tick); return; }
+    /* Put back to the angle it started at rather than left at rz0 + spin. They are the same
+       orientation — spin is a whole number of turns — but rz is a running number that every
+       later move lerps from, and letting it climb by 360 a tab switch means a few minutes of
+       use leaves the idle turns interpolating across thousands of degrees. */
+    markRollRaf = null;
+    logoTextWidth = toW;
+    mcState.rz = rz0;
+    updateHeaderCollapse();
+    drawMarkCube();
+  };
+  markRollRaf = requestAnimationFrame(tick);
 }
 
 let headerScrollTicking = false;
