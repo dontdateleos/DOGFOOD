@@ -381,27 +381,28 @@
      and below it — and the rest hangs the display type off the edge, as display type set
      this large wants to. The mark follows: updateHeaderCollapse reads the h1's real left
      rather than assuming the margin. */
-  header h1{ color:var(--bg); -webkit-text-stroke:0.6px var(--bg); letter-spacing:-0.045em; margin-left:-9px; }
-  /* EVERY TAB BUT THE FIRST IS A SECTION, NOT THE BRAND.
+  header h1{ -webkit-text-stroke-width:0.6px; letter-spacing:-0.045em; margin-left:-9px; }
+  /* THE MASTHEAD IS THE TAB'S COLOUR. ALL FIVE.
 
-     Dogfood is a drawn thing — the per-letter margins in the markup are hand-set and the
-     cream is the brand's own. The other four mastheads are not the brand; they are the name
-     of the place you are standing in, and naming them in the brand's cream said "Dogfood"
-     four more times in a row where the tab tick had already said "Body".
+     The four section titles took their tab's hue and Dogfood was left cream, on the reasoning
+     that the wordmark is the brand and the brand has a colour of its own. That made the one
+     tab you open first the one tab outside the system — five mastheads, four of which tell
+     you where you are by their colour and one of which does not. What is per-tab here is the
+     TITLE, not the word: Today keeps the wordmark, with its hand-set per-letter margins
+     intact, and takes the lime the same way the others take theirs.
 
      --hue-faded-dark, not --band and not --hue-faded. The band is the hue at FULL strength,
      which at 46px display size is a shout — it would be the loudest thing on any screen, and
      the loudest thing in this app is the score. And the masthead is a dark pocket on BOTH
      grounds (--banner is fixed dark), so the bone ground's darkened hue would be a near-black
      title on a near-black band; -dark is the value the pocket rule already reaches for, for
-     exactly this reason. Measured on the dark ground against each tab's own banner: yellow
-     on #242010 is 11.9:1, red on #271813 9.4:1, purple on #201e26 11.7:1, blue on #142325
-     10.8:1 — all of them past AAA for large text with room to spare.
+     exactly this reason. Measured on the dark ground against each tab's own banner: lime on
+     #202313 is 13.0:1, yellow on #242010 11.9:1, red on #271813 9.4:1, purple on #201e26
+     11.7:1, blue on #142325 10.8:1 — all past AAA for large text with room to spare.
 
      The stroke goes with it. It is 0.6px of optical weight, not an outline, so leaving it
      cream would have drawn a pale halo around a coloured word. */
-  body:not(.tab-insights) header h1{ color:var(--hue-faded-dark);
-    -webkit-text-stroke-color:var(--hue-faded-dark); }
+  header h1{ color:var(--hue-faded-dark); -webkit-text-stroke-color:var(--hue-faded-dark); }
   /* THE BANNER TAKES THE TAB'S TINT. It was the ground, which made the masthead the same
      surface as the page under it and left the tab's colour to arrive only once you had
      scrolled to a section band. --field is the tint that already exists for exactly this —
@@ -10973,7 +10974,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.541';
+const APP_VERSION = '2026.09.15.542';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11238,6 +11239,7 @@ const APP_NOTES = {
   '2026.09.14.539': 'Your early score is marked as early, and reads on the same scale as the real one \u2014 no more ninety on Monday and forty on Tuesday.',
   '2026.09.15.540': '"Log this morning" goes to the morning form again \u2014 it had been pointing at a view that moved, which is why a phone-only score never arrived.',
   '2026.09.15.541': 'Every tab but Today names itself in the masthead, in its own colour \u2014 and the mark rolls along the title to meet its new end.',
+  '2026.09.15.542': 'Dogfood takes the lime, the way the other four take theirs \u2014 all five mastheads are the tab\u2019s colour now, not four of them.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
