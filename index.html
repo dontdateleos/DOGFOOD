@@ -266,33 +266,57 @@
     --block-yellow:#e4be3a;
     --block-purple:#c4acff;
     --block-red:#ff7055;
-    /* THE CHIP'S FIVE BRACKETS. Red, orange, yellow, green, cyan at full strength — five
-       cabinet colours, nothing mixed, one per twenty points of score.
+    /* THE CHIP'S FIVE BRACKETS. A diverging pair with a neutral middle: cyan at the bottom,
+       plum at the top, and a warm grey where the day is ordinary. One per twenty points.
+
+       IT IS NOT A TEMPERATURE RAMP AND THAT IS THE POINT. The arcade set this replaces ran
+       red-orange-yellow-green-cyan, which is the colour language of a warning light, and a
+       recovery score is not a warning. Two ends that are simply DIFFERENT, rather than one
+       end that is alarming, lets a low morning read as a low morning instead of as a fault.
 
        Deliberately not built from the block colours above. Those are the five TAB hues, and
        a chip made of them would mean a score of 45 was the Data tab and a score of 85 was
        the tab you were standing on. The brackets need to be sayable without being furniture.
 
-       FULL SATURATION IS AFFORDABLE BECAUSE THE FILL NO LONGER CARRIES THE CONTRAST. The rim
-       does -- see the dock's rim in mcMounts -- so none of these is darkened to clear 3:1
-       against a ground, which is what made every earlier attempt at this scale muddy.
+       THE FILL DOES NOT CARRY THE CONTRAST. The rim does -- see the dock's rim in mcMounts,
+       which is --bg and measures 18.7:1 on both grounds -- so none of these is darkened to
+       clear 3:1 against a ground, which is what made every earlier attempt at this scale
+       muddy.
 
-       Measured, and the trade is real: this is the strongest set for tritanopia of the ten
-       drawn (dE 20.0 between the closest pair) and the second weakest for deuteranopia (8.9,
-       where red and green fold together). It is a chosen cost rather than an oversight. The
-       eye SHAPE carries the same bracket independently -- eyeStateForScore picks one of five
-       silhouettes off the same Math.floor(score/20) -- so a reader who cannot separate the
-       fourth step from the first still has a face that can only mean one of them. */
-    --mark-b1:#ff2b2b;
-    --mark-b2:#ff9c1a;
-    --mark-b3:#ffe825;
-    --mark-b4:#3cf03c;
-    --mark-b5:#25e5ff;
-    /* One knockout for all five. Every bracket above is a bright fill, so the eyes are
-       near-black against each of them -- 5.2:1 on the red, 15.6:1 on the yellow -- and this
-       cannot be --ground, which is bone on the light ground and would put cream eyes at
-       1.2:1 inside the yellow. */
+       MEASURED, AND THE TRADE IS REAL, in both directions. Closest pair is 13.1 dE under
+       normal vision against the arcade set's 44.6, so these five are markedly less separable
+       than a saturated hue ramp; the weak pair is b1 and b2, which are both cyan. Under
+       simulation it holds up better than the headline suggests -- 9.2 protan against arcade's
+       5.0 -- and worse under tritanopia at 4.2, where cyan and grey fold together.
+
+       That is a cost carried on purpose, and the eye SHAPE is why it is affordable:
+       eyeStateForScore picks one of five silhouettes off the same Math.floor(score/20), so a
+       reader who cannot separate two fills still has a face that can only mean one bracket.
+
+       LIGHTNESS IS NOT MONOTONIC HERE, unlike every ramp that was considered beside it:
+       L* runs 63.7, 69.5, 80.6, 60.1, 39.1. The middle is the lightest chip and the best
+       score is the darkest. That is what a diverging scale IS -- the neutral is the pale one
+       -- but it means the top bracket cannot be read as "brightest" and does not try to be. */
+    --mark-b1:#2ea7c9;
+    --mark-b2:#62b6c4;
+    --mark-b3:#cfc7bd;
+    --mark-b4:#c07ab0;
+    --mark-b5:#8e3b8a;
+    /* TWO KNOCKOUTS NOW, WHERE THE ARCADE SET NEEDED ONE.
+
+       That set could use a single near-black for all five because every bracket in it was a
+       bright fill. This one is not: the top bracket is a plum at L* 39, and near-black eyes
+       inside it measure 2.92:1 -- an eye you cannot find, on the one bracket that means the
+       day went well. Cream takes it to 6.29:1.
+
+       So the knockout is chosen per bracket rather than declared once, and MARK_KNOCKS beside
+       MARK_BRACKETS is what does the choosing. The other four keep the near-black: 6.95, 8.36,
+       11.65 and 6.17 to one, all of them past 4.5 with room.
+
+       Neither of these can be --ground or --bg. Those flip with the page, and the chip's fill
+       does not -- a bracket is the same plum on both grounds, so its eyes have to be too. */
     --mark-b-ink:#0c0d0b;
+    --mark-b-ink-lit:#fff7ec;
     /* The same five hues at 8% over the page's black. The tab colour stops being a
        highlighter the content sits ON TOP of and becomes a field it sits IN — which is what
        lets the section bands below carry the colour at full strength without two saturated
@@ -6221,6 +6245,18 @@ function eyeStateForScore(score){
    -- the wrong thing, in the loudest register it has. Cleared, the CSS falls back to the ink
    fill the chip has always worn while it is waiting. */
 const MARK_BRACKETS = ['--mark-b1', '--mark-b2', '--mark-b3', '--mark-b4', '--mark-b5'];
+/* THE EYES ARE CHOSEN WITH THE FILL, NOT DECLARED ONCE.
+
+   Parallel to MARK_BRACKETS and read with the same index, because the knockout is a property
+   of the bracket rather than of the scale: four of these fills are light enough to take
+   near-black eyes and the top one is not. See the tokens for the ratios -- the plum is 2.92:1
+   against near-black and 6.29:1 against cream, which is the whole reason this array exists.
+
+   A parallel array rather than a second field on MARK_BRACKETS: the brackets are dumped into
+   spec/constants.json as a flat list of token names and are read there as the scale itself,
+   which is what they are. */
+const MARK_KNOCKS = ['--mark-b-ink', '--mark-b-ink', '--mark-b-ink',
+                     '--mark-b-ink', '--mark-b-ink-lit'];
 function paintChipBracket(score){
   const dock = document.getElementById('todayFaceDock');
   if(!dock) return;
@@ -6230,7 +6266,7 @@ function paintChipBracket(score){
   } else {
     const i = Math.max(0, Math.min(MARK_BRACKETS.length - 1, Math.floor(score / 20)));
     dock.style.setProperty('--mark-bracket', `var(${MARK_BRACKETS[i]})`);
-    dock.style.setProperty('--mark-knock', 'var(--mark-b-ink)');
+    dock.style.setProperty('--mark-knock', `var(${MARK_KNOCKS[i]})`);
   }
   /* The solid is an SVG that reads both of those at paint time, so changing them changes
      nothing until it is redrawn. --mc-shell is a registered @property and transitions on its
@@ -11036,7 +11072,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.544';
+const APP_VERSION = '2026.09.15.545';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11304,6 +11340,7 @@ const APP_NOTES = {
   '2026.09.15.542': 'Dogfood takes the lime, the way the other four take theirs \u2014 all five mastheads are the tab\u2019s colour now, not four of them.',
   '2026.09.15.543': 'The field under the trend chart stops rippling on arrival \u2014 the texture stays, the movement goes where a line is being read.',
   '2026.09.15.544': 'The notes on Settings get a heading and a lifted clause \u2014 you can tell which paragraph you came for, and get its point without reading it.',
+  '2026.09.15.545': 'The mark runs cyan to plum now, not red to cyan \u2014 a low morning is a different day, not a warning light.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
