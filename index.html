@@ -195,11 +195,21 @@
 
        It is a gradient rather than a tile because a gradient has no resampling to go wrong:
        an SVG dot at this pitch lands on fractional device pixels at DPR 2 and 3 and beats
-       against the grid, which is the moire the mesh exists to avoid. .07 is half the marks'
-       .14 on purpose -- the mesh is the surface, the marks are on it, and if the two arrive
-       at the same weight the marks stop reading as marks. */
-    --mk-screen-light:radial-gradient(circle at 1px 1px, rgba(251,250,246,.07) 1px, transparent 0);
-    --mk-screen-dark:radial-gradient(circle at 1px 1px, rgba(12,13,11,.07) 1px, transparent 0);
+       against the grid, which is the moire the mesh exists to avoid. .06 is under half the
+       marks' .14 on purpose -- the mesh is the surface, the marks are on it, and if the two
+       arrive at the same weight the marks stop reading as marks.
+
+       THE PITCH IS THE DENSITY KNOB, and it is the only even one. It shipped at 9px and that
+       was too busy. The tempting fix -- drop a selector, put the mesh on fewer surfaces -- was
+       measured and does not work: the mesh covers a mean 53% of the screen, but .fields-only
+       is 55% on Today and 62% on Weekly while being 0% on Injuries, Data and Settings, and
+       heads-only is the same unevenness reversed. Either one leaves some tabs bare and others
+       untouched; the spread across tabs goes UP, from 46 points to 62 or 53. Pitch is the
+       lever that moves all five together. 9 to 13 is (9/13)^2, so 52% fewer dots everywhere,
+       and the alpha comes down a notch with it because dots that sit further apart assert
+       themselves more individually at the same weight. */
+    --mk-screen-light:radial-gradient(circle at 1px 1px, rgba(251,250,246,.06) 1px, transparent 0);
+    --mk-screen-dark:radial-gradient(circle at 1px 1px, rgba(12,13,11,.06) 1px, transparent 0);
     --mk-screen:var(--mk-screen-light);
     --reverse-bg:#0c0d0b;   /* dark fill for buttons/badges — independent of --text */
     --on-light:#0c0d0b;     /* text on any light fill (inputs, tags, outline buttons) */
@@ -4429,7 +4439,7 @@
      .fields here -- so they clear the image without needing an exception written for them. */
   .fields, .today-field, .group-head, .app-colophon{
     background-image:var(--mk-panel), var(--mk-screen);
-    background-size:auto, 9px 9px;
+    background-size:auto, 13px 13px;
     background-repeat:repeat; }
   body.tab-insights .fields, body.tab-insights .today-field,
   body.tab-insights .group-head, body.tab-insights .app-colophon{ background-position:0 0, 0 0; }
@@ -11297,7 +11307,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.562';
+const APP_VERSION = '2026.09.15.563';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11582,6 +11592,7 @@ const APP_NOTES = {
   '2026.09.15.560': 'The marks move onto the panels \u2014 on the ground they were invisible, nine times out of nine.',
   '2026.09.15.561': 'A soft dot screen under the marks, on the same panels \u2014 the page has a surface now instead of a flat black.',
   '2026.09.15.562': 'The mark takes each tab\u2019s colour instead of staying violet-black \u2014 same weight, new hue, on all five.',
+  '2026.09.15.563': 'The dot screen thins out \u2014 half the dots, a touch fainter, so the page has room to breathe again.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
