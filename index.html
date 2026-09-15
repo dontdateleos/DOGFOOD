@@ -191,15 +191,19 @@
        behind it.
 
        A SPARSE TILE RATHER THAN PLACED MARKS. Panels vary from one row to forty, so nine of
-       anything is wrong for most of them; 164x188 carrying two crosses and a dot puts two to
-       four on a typical panel and scales with the tall ones. Offset per tab below, so no two
-       pages carry the same arrangement -- which is the part of the placed version worth
-       keeping.
+       anything is wrong for most of them; a tile carrying two crosses and a dot scales with
+       the tall ones on its own. Offset per tab below, so no two pages carry the same
+       arrangement -- which is the part of the placed version worth keeping.
 
-       .14 is the reference's own weight: #303036 on #000000 is 1.56:1, and cream at .14 on
-       this ground measures the same. */
-    --mk-panel-light:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27248%27%20height%3D%27276%27%3E%3Cpath%20d%3D%27M33%2C61h10M38%2C56v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27196%27%20cy%3D%27188%27%20r%3D%271.5%27%20fill%3D%27%23fbfaf6%27%20fill-opacity%3D%27.14%27%2F%3E%3Cpath%20d%3D%27M143%2C24h10M148%2C19v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
-    --mk-panel-dark:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27248%27%20height%3D%27276%27%3E%3Cpath%20d%3D%27M33%2C61h10M38%2C56v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27196%27%20cy%3D%27188%27%20r%3D%271.5%27%20fill%3D%27%230c0d0b%27%20fill-opacity%3D%27.14%27%2F%3E%3Cpath%20d%3D%27M143%2C24h10M148%2C19v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
+       .14 WAS the reference's own weight -- #303036 on #000000 is 1.56:1, and cream at .14 on
+       this ground measured the same. It ships at .105, three quarters of that, which is a
+       deliberate step away from the reference rather than a miss: the reference draws its
+       crosses on a panel with nothing else on it, and these sit over a dot screen and under
+       live text. A cross now paints #252624 against the #0c0d0b ground, where the mesh under
+       it paints #131412 -- the two stay a clear step apart, which is the ratio that matters
+       more than matching the source. */
+    --mk-panel-light:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27286%27%20height%3D%27319%27%3E%3Cpath%20d%3D%27M38%2C70h10M43%2C65v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27226%27%20cy%3D%27217%27%20r%3D%271.5%27%20fill%3D%27%23fbfaf6%27%20fill-opacity%3D%27.105%27%2F%3E%3Cpath%20d%3D%27M165%2C28h10M170%2C23v10%27%20stroke%3D%27%23fbfaf6%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
+    --mk-panel-dark:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27286%27%20height%3D%27319%27%3E%3Cpath%20d%3D%27M38%2C70h10M43%2C65v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3Ccircle%20cx%3D%27226%27%20cy%3D%27217%27%20r%3D%271.5%27%20fill%3D%27%230c0d0b%27%20fill-opacity%3D%27.105%27%2F%3E%3Cpath%20d%3D%27M165%2C28h10M170%2C23v10%27%20stroke%3D%27%230c0d0b%27%20stroke-opacity%3D%27.105%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
     --mk-panel:var(--mk-panel-light);
     /* THE SOFT SCREEN. A 9px dot mesh at .07, under the marks on the same panels.
 
@@ -4444,9 +4448,20 @@
      them first and 2 of 84 panels took it; written here, all of them do.
 
      The tile is sized for the count, not picked. Three marks per tile, and the marked panels
-     cover 25-72% of a 390x844 screen (measured per tab), so the tile area sets how many are
-     in view: at 164x188 that was ~19, a texture. 248x276 puts it near nine, which is the
-     density that was asked for. Resize the tile to change the count; do not add marks to it.
+     cover a mean 53% of a 390x844 screen (25-72% depending on the tab), so the tile AREA is
+     what sets how many are in view -- inversely, and the only lever that moves every tab by
+     the same factor. The history is the arithmetic: 164x188 put ~19 marks on a screen, which
+     is a texture; 248x276 put ~7.7, which was the nine that was asked for; 286x319 puts ~5.8.
+     That last step is area x1.333, which is density x0.75 exactly.
+
+     Those are MEANS across the five tabs, and the tabs are not alike: at 286x319 the same
+     tile measures 7.8 marks in view on Weekly and 2.8 on Data, because Data's panels cover a
+     quarter of the screen and Weekly's cover seven tenths. A count quoted without a tab is
+     always this mean.
+
+     So: resize the tile to change the count, and scale the three mark positions by the same
+     factor when you do, or they bunch into one corner of a bigger tile. Do not add marks to
+     it -- the count per tile is what makes the arithmetic above hold.
 
      Two layers, marks over screen. The screen's background-position stays 0 0 on every tab
      while the marks shift: a uniform 9px mesh looks identical at any offset, so shifting it
@@ -11334,7 +11349,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.565';
+const APP_VERSION = '2026.09.15.566';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11622,6 +11637,7 @@ const APP_NOTES = {
   '2026.09.15.563': 'The dot screen thins out \u2014 half the dots, a touch fainter, so the page has room to breathe again.',
   '2026.09.15.564': 'The dot screen fades to half again \u2014 barely there, which is the point.',
   '2026.09.15.565': 'The mark turns its new colour as the title lands, instead of snapping to it.',
+  '2026.09.15.566': 'The crosses step back \u2014 three quarters the weight, three quarters as many.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
