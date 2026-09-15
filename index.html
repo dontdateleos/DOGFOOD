@@ -102,7 +102,7 @@
        override, so this is the colour AND the fix for the rest of them. Anything that
        matters is --bg; this is for the text explaining it. */
     --dim:#c9c7bc;
-    --accent:#c3d353;
+    --accent:#c6f333;
     --accent-dim:#e8edc4;
     --bad:#e8391a;
     --warn:#d98a00;
@@ -289,12 +289,43 @@
        so it clears AA for the small uppercase this is used at with room over. */
     --label:#dfd0a4;
     --label-bone:#665a35;
-    --block-lime:#c3d353;
+    /* ---------- THE TAU CETI PALETTE ----------
+
+       Every hue below was sampled from Marathon stills rather than picked: the acid green off
+       the faction pill and the rank bar (#b0e018 raw), the amber off the Trakus glyph and the
+       runner's lit skin (#b87038 / #a06008), the crimson off NuCal (#a02050, its card field
+       #881048), the violet off Arachne (#a000f8), the teal off Sekiguchi (#88b0a8).
+
+       MARATHON'S HUE, THIS APP'S LIGHTNESS. The sampled colours are dark and hot -- a game lit
+       from inside, with no small text on any of it. These fills carry near-black type, so each
+       one keeps the LIGHTNESS its slot already had and takes only hue and saturation from the
+       reference. That lightness is what every measured pair in this file depends on.
+
+       The three derived values per hue are computed by the palette's own rules, extracted from
+       the five it replaces rather than invented: faded is L +14.2 and S x0.94, the banner tint
+       is L 11.3 at S 28.8, the bone value is L -25.8 and S x0.53. One exception, marked where
+       it lands: the teal's bone value came out at 4.0:1 on cream, because Sekiguchi is only 23%
+       saturated and the rule removes another 47% of that. It is set by hand.
+
+       THE NAMES ARE SLOTS, NOT PROMISES. --block-lime is a greener lime than it was and
+       --block-red is a crimson; both are still doing the job their name describes. The one
+       that could not stay is yellow -- see --block-amber below. */
+    --block-lime:#c6f333;
     --block-orange:#ff984a;
-    --block-blue:#52d8f7;
+    --block-blue:#73dec9;
+    /* WEEKLY GETS ITS OWN TOKEN RATHER THAN RECOLOURING THIS ONE.
+
+       --block-yellow is the Weekly tab's hue AND the app's semantic caution yellow: the
+       exercise flag, the "learning" dot, PLAN_INK, and difficulty tier 2. Recolouring it to the
+       sampled amber would have taken all of those with it -- and tier 2 (Medium) would have
+       landed on #f69431 with tier 3 (Hard) already on #ff984a, hue 30 against hue 26. Two
+       adjacent difficulty tiers, indistinguishable.
+
+       So the tab slot moves and the semantic yellow stays exactly where it was. */
     --block-yellow:#e4be3a;
-    --block-purple:#c4acff;
-    --block-red:#ff7055;
+    --block-amber:#f69431;
+    --block-purple:#cf80fa;
+    --block-red:#f1508b;
     /* THE CHIP'S FIVE BRACKETS. A diverging pair with a neutral middle: cyan at the bottom,
        plum at the top, and a warm grey where the day is ordinary. One per twenty points.
 
@@ -350,11 +381,12 @@
        highlighter the content sits ON TOP of and becomes a field it sits IN — which is what
        lets the section bands below carry the colour at full strength without two saturated
        surfaces fighting. Derived, not picked: 0.08*block + 0.92*#0c0d0b, rounded. */
-    --field-lime:#202313;
-    --field-purple:#201e26;
+    --field-lime:#212515;
+    --field-purple:#1f1525;
     --field-yellow:#242010;
-    --field-blue:#142325;
-    --field-red:#271813;
+    --field-amber:#251d15;
+    --field-blue:#152522;
+    --field-red:#25151b;
     /* The ground is neutral and the same on every tab. Sampled off the reference: its page
        is #0c0c0b across 48% of its area, with the tint appearing only in the section fields
        (25%) and the blocks lifted off those (14%). Three levels, not one — a tinted ground
@@ -598,11 +630,11 @@
      tint with everything else. So the banner carries its own token, written as a literal,
      and it is the one value on these lines that does not follow the ground. The five are the
      dark --field-* values unchanged: that tint was already solved for exactly this job. */
-  body.tab-insights{ --band:var(--block-lime); --field:var(--field-lime); --banner:#202313; --hue-faded-dark:#dce59c; --hue-faded:var(--hue-faded-dark); }
-  body.tab-training{ --band:var(--block-yellow); --field:var(--field-yellow); --banner:#242010; --hue-faded-dark:#eed98f; --hue-faded:var(--hue-faded-dark); }
-  body.tab-injuries{ --band:var(--block-red); --field:var(--field-red); --banner:#271813; --hue-faded-dark:#fdae9d; --hue-faded:var(--hue-faded-dark); }
-  body.tab-data{ --band:var(--block-purple); --field:var(--field-purple); --banner:#201e26; --hue-faded-dark:#ddcffb; --hue-faded:var(--hue-faded-dark); }
-  body.tab-settings{ --band:var(--block-blue); --field:var(--field-blue); --banner:#142325; --hue-faded-dark:#9ee7f7; --hue-faded:var(--hue-faded-dark); }
+  body.tab-insights{ --band:var(--block-lime); --field:var(--field-lime); --banner:#212515; --hue-faded-dark:#d7f37b; --hue-faded:var(--hue-faded-dark); }
+  body.tab-training{ --band:var(--block-amber); --field:var(--field-amber); --banner:#251d15; --hue-faded-dark:#f5b87b; --hue-faded:var(--hue-faded-dark); }
+  body.tab-injuries{ --band:var(--block-red); --field:var(--field-red); --banner:#25151b; --hue-faded-dark:#f396b8; --hue-faded:var(--hue-faded-dark); }
+  body.tab-data{ --band:var(--block-purple); --field:var(--field-purple); --banner:#1f1525; --hue-faded-dark:#e9c7fb; --hue-faded:var(--hue-faded-dark); }
+  body.tab-settings{ --band:var(--block-blue); --field:var(--field-blue); --banner:#152522; --hue-faded-dark:#afeade; --hue-faded:var(--hue-faded-dark); }
 
   /* THE GROUND, and the only place it is decided.
      Everything below is derived, not picked. --ground and --bg swap; --ink-rgb and
@@ -657,11 +689,13 @@
      to be a token the bone block does not touch, and it has to be READ inside the pocket
      rather than declared on body — a var() in a custom property resolves where it is declared,
      which is the whole reason the tint could not be fixed the same way. */
-  html[data-ground="bone"] body.tab-insights{ --hue-faded:#707a32; }
-  html[data-ground="bone"] body.tab-training{ --hue-faded:#846f25; }
-  html[data-ground="bone"] body.tab-injuries{ --hue-faded:#8e4233; }
-  html[data-ground="bone"] body.tab-data{ --hue-faded:#716591; }
-  html[data-ground="bone"] body.tab-settings{ --hue-faded:#3d9cb1; }
+  html[data-ground="bone"] body.tab-insights{ --hue-faded:#65772b; }
+  html[data-ground="bone"] body.tab-training{ --hue-faded:#7a522a; }
+  html[data-ground="bone"] body.tab-injuries{ --hue-faded:#8a3453; }
+  html[data-ground="bone"] body.tab-data{ --hue-faded:#8d3fb7; }
+  /* Set by hand, not by the rule: derived it came out #45887b and 4.0:1 on cream, the only
+     failure in fifteen. Sekiguchi is 23% saturated and the rule takes another 47% away. 5.3:1. */
+  html[data-ground="bone"] body.tab-settings{ --hue-faded:#3a7568; }
   /* The masthead does not follow the ground. It is the one part of the app that is the
      same on every tab, and on bone it reads as a printed page's header block rather than
      as the top of the screen. It takes the dark tokens back so the date, the tab label,
@@ -9722,7 +9756,7 @@ function slidePanelIn(panel, name, replay){
 // Settings took the blue when Goals retired. These two maps kept saying red, so the sliding
 // indicator and the tab-switch wipe both went pink on the way to a blue page — the colour
 // was gone from the stylesheet and still in the motion.
-const UI_TAB_COLOUR = { insights:'--block-lime', training:'--block-yellow', injuries:'--block-red',
+const UI_TAB_COLOUR = { insights:'--block-lime', training:'--block-amber', injuries:'--block-red',
                         data:'--block-purple', settings:'--block-blue' };
 
 
@@ -11164,7 +11198,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.554';
+const APP_VERSION = '2026.09.15.555';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11441,6 +11475,7 @@ const APP_NOTES = {
   '2026.09.15.551': 'The title falls away a letter at a time and the new one rises \u2014 cascade, on the one axis the mark is not using.',
   '2026.09.15.552': 'The cascade actually cascades \u2014 both titles were on screen at once and the letters blinked instead of falling.',
   '2026.09.15.554': 'The form badge is the day count again \u2014 the three-bar version did not look like anything.',
+  '2026.09.15.555': 'A new palette, sampled off Marathon \u2014 acid green and amber lead, and every tab takes a hue from Tau Ceti.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
