@@ -11326,7 +11326,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.569';
+const APP_VERSION = '2026.09.15.570';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11618,6 +11618,7 @@ const APP_NOTES = {
   '2026.09.15.567': 'Half as many crosses again \u2014 sparse enough that you come across one rather than see a pattern.',
   '2026.09.15.568': 'The dot screen comes off \u2014 back to a flat ground with just the marks on it.',
   '2026.09.15.569': 'The mark takes its time changing colour \u2014 it now finishes after the title, not with it.',
+  '2026.09.15.570': 'The mark stretches as it rolls \u2014 it leans into the travel and comes back round on landing.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -12755,7 +12756,7 @@ function mastheadTitleHTML(tab){
    much bigger journey: it flies between the masthead and the score disc, and moveEyes owns
    that flight. A roll underneath it would be fighting for the same element over the same
    400ms. So those switches just take the new width. */
-const ROLL_MS = 520;
+const ROLL_MS = 560;
 const ROLL_R = 20;              // the header mark is 40px across; a roll is distance / radius
 let mastheadTab = 'insights';
 let markRollRaf = null;
@@ -12832,15 +12833,32 @@ function rollMastheadTitle(tab){
   const rz0 = mcState.rz;
   /* The idle rig is turning the mark on its own clock, and a queued move lerping rz is the
      one thing that can fight this. Cleared for the duration, and the next idle move is pushed
-     past the landing so the mark is not picking up a drift on the frame it stops. */
+     past the landing so the mark is not picking up a drift on the frame it stops.
+
+     .body goes too, and it has to: the squash below writes sx/sy every frame, and the idle
+     rig's own body moves write the same three numbers from MC_BODY on the same frames. One
+     already in flight would fight this one all the way across. Neutralised here rather than
+     left, because dropping .body without resetting its numbers strands whatever deformation
+     it had reached. A NEW one cannot start mid-roll -- nextAt below pushes it past the
+     landing -- so this only has to deal with one already running. */
   mcState.queue = []; mcState.step = null;
+  mcState.body = null; mcState.sx = 1; mcState.sy = 1; mcState.ty = 0;
   mcState.nextAt = performance.now() + ROLL_MS + 1400;
   const t0 = performance.now();
   const tick = (now)=>{
     const f = Math.min(1, (now - t0) / ROLL_MS);
     const e = mcEase(f);
+    /* THE SQUASH. A half-sine, so it is 0 at both ends and peaks mid-flight -- the mark leaves
+       and arrives its own shape and is only deformed while it is actually moving. Stretched
+       along the travel and flattened across it, which is the axis a rolling thing deforms on.
+       .16/.14 rather than a matched pair: the eye reads a stretch as larger than the equal
+       squash that accompanies it, so the vertical comes off slightly less to keep the area
+       looking constant. */
+    const k = Math.sin(Math.PI * f);
     logoTextWidth = fromW + dx * e;
     mcState.rz = rz0 + spin * e;
+    mcState.sx = 1 + 0.16 * k;
+    mcState.sy = 1 - 0.14 * k;
     updateHeaderCollapse();
     drawMarkCube();
     if(f < 1){ markRollRaf = requestAnimationFrame(tick); return; }
@@ -12851,6 +12869,7 @@ function rollMastheadTitle(tab){
     markRollRaf = null;
     logoTextWidth = toW;
     mcState.rz = rz0;
+    mcState.sx = 1; mcState.sy = 1; mcState.ty = 0;
     updateHeaderCollapse();
     drawMarkCube();
   };
