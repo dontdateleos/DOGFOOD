@@ -2555,6 +2555,12 @@
      opacity this had first took it to an effective 0.435 — 4.38 and 3.09, under on both
      grounds. The slant is the whole distinction it needs. */
   .wk-off{ font-style:italic; }
+  /* And a day the generator left clear on purpose. Distinguished by what it HASN'T got --
+     no am/pm marker, no bold type name -- plus a little tracking, which is the whole of it.
+     Deliberately not dimmed and deliberately not italic: opacity would drop it under the same
+     0.58 floor the note above works out, and the slant already means "you marked this off",
+     which is a different statement from "the plan rests here". */
+  .wk-rest{ letter-spacing:0.08em; }
   /* Today, on a board where every day is visible at once. The wheel could put today in the
      focused row and be done; a board has to say which of the seven it is.
      --hue-faded, NOT --band. The band is a FILL everywhere else in the app — a section head
@@ -11326,7 +11332,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.570';
+const APP_VERSION = '2026.09.15.571';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11619,6 +11625,7 @@ const APP_NOTES = {
   '2026.09.15.568': 'The dot screen comes off \u2014 back to a flat ground with just the marks on it.',
   '2026.09.15.569': 'The mark takes its time changing colour \u2014 it now finishes after the title, not with it.',
   '2026.09.15.570': 'The mark stretches as it rolls \u2014 it leans into the travel and comes back round on landing.',
+  '2026.09.15.571': 'Rest days say so on the week board instead of drawing blank \u2014 they were always there, just never named.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -17784,6 +17791,12 @@ function renderWeekBoard(dayBlocks){
   const board = document.getElementById('weekBoard');
   if(!board) return;
   const dates = getWeekDates();
+  /* IS THIS WEEK PROGRAMMED AT ALL? An empty day means two different things and the board
+     could not tell them apart. In a week with sessions in it, a day with nothing on it is a
+     REST DAY -- the generator put the gaps there on purpose, spacing the work. In a week with
+     nothing in it, the same empty day means no plan has been made. One is an answer, the
+     other is an absence, and they were drawn identically. */
+  const programmed = (dayBlocks || []).some(d => d && (d.blocks || []).some(b => b.block));
   board.innerHTML = dates.map((date, i)=>{
     const day = (dayBlocks && dayBlocks[i]) || { blocks:[], off:false };
     const blocks = (day.blocks || []).filter(b=>b.block);
@@ -17800,15 +17813,26 @@ function renderWeekBoard(dayBlocks){
       return `<span class="wk-sess"><i class="wk-slot">${slot}</i><b>${block.type}</b>`
         + (detail ? `<span class="wk-sess-detail">${detail}</span>` : '') + `</span>`;
     }).join('');
-    /* An empty day draws blank, the same call the skill lanes and the domain lanes make:
-       nothing planned is already legible as an empty row, and the words would be printed
-       four times down a light week. A day you have MARKED off is different — that is a
-       decision you took, and it says so. */
+    /* A day you MARKED off says so; that is a decision you took. A rest day is a decision too
+       -- the generator's -- and it used to draw blank, on the reasoning that an empty row is
+       already legible as nothing planned and the word would be printed four times down a
+       light week. It reads the other way round: four blank rows look like a generator that
+       gave up, not like programmed rest, and the label under them said "nothing planned",
+       which is the wrong sentence about a day the plan deliberately left clear.
+
+       So it is named, but quietly -- lowercase, dimmed, no slot marker -- so a light week
+       reads as a column of rest rather than as four announcements. Only when the week is
+       programmed: with no plan at all, an empty day really is nothing planned, and that is
+       still what it says. */
+    const rest = !day.off && !blocks.length && programmed;
     const body = day.off
       ? `<span class="wk-sess wk-off">not training</span>`
+      : rest
+      ? `<span class="wk-sess wk-rest">rest</span>`
       : sessions;
     const said = day.off ? 'not training'
       : blocks.length ? blocks.map(b=>`${b.slot === 'am' ? 'morning' : 'evening'} ${b.block.type}`).join(', ')
+      : rest ? 'rest day'
       : 'nothing planned';
     return `<button type="button" class="skill-lane week-lane${here ? ' here' : ''}${date === todayStr ? ' today' : ''}"
         data-day-at="${i}" aria-label="${WEEK_DAY_FULL[i]}${date === todayStr ? ', today' : ''}, ${said}">
