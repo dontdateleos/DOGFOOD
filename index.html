@@ -446,7 +446,12 @@
      and below it — and the rest hangs the display type off the edge, as display type set
      this large wants to. The mark follows: updateHeaderCollapse reads the h1's real left
      rather than assuming the margin. */
-  header h1{ -webkit-text-stroke-width:0.6px; letter-spacing:-0.045em; margin-left:-9px; }
+  header h1{ -webkit-text-stroke-width:0.6px; letter-spacing:-0.045em; margin-left:-9px;
+    /* The outgoing title is laid over the incoming one during a cascade; this is what it is
+       positioned against. Nothing else in the masthead is positioned from here — the mark
+       hangs off .header-brand — so this costs nothing at rest. */
+    position:relative; }
+  .title-ghost{ position:absolute; left:0; top:0; width:100%; pointer-events:none; }
   /* THE MASTHEAD IS THE TAB'S COLOUR. ALL FIVE.
 
      The four section titles took their tab's hue and Dogfood was left cream, on the reasoning
@@ -9307,8 +9312,8 @@ const UI_ANIM = {
   stickyHeads:  { on:true, note:'A section’s heading sticks to the top while you read it' },
   tabLift:      { on:true, note:'A new page is dealt in from the side you swiped, over the app’s own black',
                   axis:'X', ms:440 },
-  titleScramble:{ on:true, note:'The masthead’s title resolves out of scrambled letters when the tab changes',
-                  ms:364, steps:7 },
+  titleCascade: { on:true, note:'The masthead’s title falls away and the new one rises, a letter at a time',
+                  outMs:120, outStagger:10, inMs:170, inStagger:22, cap:7 },
   planDeal:     { on:true, note:'A generated week is dealt out day by day rather than appearing whole', ms:200 },
   pillExtend:   { on:true, note:'A section\u2019s title pill extends out as the page lands, rather than arriving whole',
                   ms:400, stagger:80, max:8 },
@@ -11149,7 +11154,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.550';
+const APP_VERSION = '2026.09.15.551';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11423,6 +11428,7 @@ const APP_NOTES = {
   '2026.09.15.548': 'The waves on Today are the ones that were actually drawn \u2014 one slow cycle per repeat, not two tight ones.',
   '2026.09.15.549': 'The field behind the score is plain for now \u2014 no dots, no waves, nothing between you and the number.',
   '2026.09.15.550': 'The masthead title resolves out of scrambled letters when you change tab, a letter at a time from the front.',
+  '2026.09.15.551': 'The title falls away a letter at a time and the new one rises \u2014 cascade, on the one axis the mark is not using.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -12517,68 +12523,33 @@ function mastheadTitleHTML(tab){
            : WORDMARK_HTML;
 }
 
-/* THE TITLE RESOLVES OUT OF NOISE.
+/* THE TITLE FALLS AWAY AND THE NEW ONE RISES.
 
-   WIDTH IS LOCKED BEFORE A SINGLE GLYPH CHANGES, and that is the whole of what makes this
-   shippable. Helvetica is proportional: an M is nearly three times a J. Scrambling the letters
-   of a 46px title without pinning them makes the whole word breathe in and out by tens of
-   pixels for the length of the effect, and the mark — which parks on the end of the longest
-   line — either chases it or sits out in space while the word shrinks away from it. Each span
-   is measured on its FINAL letter, pinned to that width, and centred; nothing moves.
+   Letters, staggered, moving on the VERTICAL. That axis is the whole reason this one works
+   where the sideways options do not: the mark is travelling horizontally along the title at
+   the same moment, and two things sliding on the same axis at once read as one thing being
+   dragged. Up and down, and the two never argue.
 
-   IT RESOLVES LEFT TO RIGHT, in reading order, rather than settling all at once. That is what
-   keeps the cost of this honest: the word is not unreadable for 364ms, it is readable a letter
-   at a time from the front, and by the halfway point you have the first half of a word you
-   already knew. A random settle would be the same duration and twice the noise.
+   A GHOST, RATHER THAN DELAYING THE SWAP. rollMastheadTitle writes the new title and measures
+   it in the same breath, because that measurement is what the mark travels to -- so the swap
+   cannot wait for an exit animation to finish. The outgoing title is cloned into a layer over
+   the top instead and falls away there, while the real new one rises underneath it. The
+   measurement path is untouched and the two halves genuinely cross.
 
-   THE POOL IS THE APP'S OWN ALPHABET, uppercase only, because the title is uppercase and a
-   scramble that flashes lowercase or punctuation reads as a glitch in the app rather than as
-   the title arriving. A space stays a space — scrambling the gap between two words is the one
-   thing that would change the shape of the line. */
-const SCRAMBLE_POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-let scrambleSeq = 0;
-function scrambleTitle(h1){
-  const seq = ++scrambleSeq;
-  const spans = [...h1.querySelectorAll('.logo-line span')];
-  if(!spans.length) return;
-  const finals = spans.map(sp => sp.textContent);
-  // Measured and pinned first, in one pass, before anything is written back.
-  const widths = spans.map(sp => sp.getBoundingClientRect().width);
-  spans.forEach((sp, i) => {
-    sp.style.display = 'inline-block';
-    sp.style.width = widths[i].toFixed(2) + 'px';
-    sp.style.textAlign = 'center';
-  });
-  const steps = UI_ANIM.titleScramble.steps, per = UI_ANIM.titleScramble.ms / steps;
-  let k = 0;
-  const tick = ()=>{
-    if(seq !== scrambleSeq) return;            // a faster tab switch owns the title now
-    k++;
-    const settled = (k / steps) * spans.length;
-    spans.forEach((sp, i) => {
-      if(finals[i] === ' ' || i < settled) sp.textContent = finals[i];
-      else sp.textContent = SCRAMBLE_POOL[(Math.random() * SCRAMBLE_POOL.length) | 0];
-    });
-    if(k < steps){ setTimeout(tick, per); return; }
-    /* Put back exactly what was there. The wordmark's per-letter margins are inline styles on
-       these same spans and are untouched by this — only display, width and text-align were
-       added, so only those come off. */
-    spans.forEach((sp, i) => {
-      sp.textContent = finals[i];
-      sp.style.removeProperty('display');
-      sp.style.removeProperty('width');
-      sp.style.removeProperty('text-align');
-    });
-  };
-  setTimeout(tick, per);
-}
+   BUDGET. Out is 120ms on a 10ms stagger, so the last letter has cleared by 190. In starts
+   there at 170ms on a 22ms stagger, landing at 514. The panel deals in 440 and the mark rolls
+   for 520: this finishes inside the mark and a little after the page, which is the right order
+   -- the masthead is still settling when the page has arrived, not the other way round.
 
+   BOTH STAGGERS ARE CAPPED AT SEVEN LETTERS. Without it "Every reading" runs 12 deep and the
+   last letter lands 260ms after the first, which stops reading as a cascade and starts reading
+   as a queue. Past the seventh they all move together. */
 /* THE ROLL.
 
    The mark's home is already width-driven: updateHeaderCollapse puts it at the end of the
    title's ink, so a title of a different width moves it without anything else being asked.
    What it would do on its own is teleport. It is a sphere, it is sitting on the end of a
-   word, and the distance it has to cover is the difference between two words — so it rolls.
+   word, and the distance it has to cover is the difference between two words -- so it rolls.
 
    ANIMATED THROUGH logoTextWidth RATHER THAN THROUGH mark.style.left. The collapse writes
    left on every scroll frame from that one number; an animation writing left directly would
@@ -12586,22 +12557,54 @@ function scrambleTitle(h1){
    and the 40-to-24 shrink to stay correct. Lerping the width instead means the mark travels
    correctly whatever the scroll is doing underneath it, including mid-roll.
 
-   WHOLE TURNS. A 40px ball crossing 70px genuinely turns 200 degrees, and 200 degrees leaves
-   the eyes upside down at the end of it. Two ways out: roll the true angle and then unwind to
-   level, which reads as a mistake being corrected; or round to whole turns, which is a wheel
-   slipping slightly against the floor and which nobody can see. The second one. Distance
-   still sets the count — a long move takes two turns where a short one takes one — and the
-   sign still sets the direction, which is the part that was asked for.
+   WHOLE TURNS. A 40px ball crossing 73px genuinely turns 209 degrees, and 209 degrees leaves
+   the eyes upside down at the end of it. Rounding to whole turns is a wheel slipping slightly
+   against the floor, which nobody can see; unwinding to level afterwards reads as a mistake
+   being corrected. Distance still sets the count and the sign still sets the direction.
 
    ONLY BETWEEN TWO SECTIONS. Leaving Today or arriving at it, the mark is already making a
    much bigger journey: it flies between the masthead and the score disc, and moveEyes owns
    that flight. A roll underneath it would be fighting for the same element over the same
-   400ms. So those switches just take the new width, and the roll is what happens when the
-   mark stays in the masthead — which is exactly when you can see it. */
+   400ms. So those switches just take the new width. */
 const ROLL_MS = 520;
 const ROLL_R = 20;              // the header mark is 40px across; a roll is distance / radius
 let mastheadTab = 'insights';
 let markRollRaf = null;
+
+let cascadeSeq = 0;
+function cascadeTitle(h1, prevHTML){
+  const A = UI_ANIM.titleCascade;
+  const seq = ++cascadeSeq;
+
+  /* The outgoing title, as a layer over the new one. aria-hidden because it is a copy of text
+     that is about to be gone, and the real h1 underneath already says the new name. */
+  const ghost = document.createElement('div');
+  ghost.className = 'title-ghost';
+  ghost.setAttribute('aria-hidden', 'true');
+  ghost.innerHTML = prevHTML;
+  h1.appendChild(ghost);
+  const olds = [...ghost.querySelectorAll('.logo-line span')];
+  olds.forEach((sp, i) => uiPlay(sp,
+    [{ transform:'translateY(0)', opacity:1 }, { transform:'translateY(-42%)', opacity:0 }],
+    { duration:A.outMs, delay:Math.min(i, A.cap) * A.outStagger,
+      easing:'cubic-bezier(.6,0,.9,.4)' }));
+  const outEnd = A.outMs + A.cap * A.outStagger;
+  setTimeout(()=>{ if(ghost.parentNode) ghost.remove(); }, outEnd + 40);
+
+  /* The arriving letters are held down and clear until their turn. fill:both during the delay
+     is what holds them; without it they sit visible for the length of the out and then jump. */
+  const news = [...h1.querySelectorAll(':scope > .logo-line span')];
+  news.forEach((sp, i) => uiPlay(sp,
+    [{ transform:'translateY(58%)', opacity:0 }, { transform:'translateY(0)', opacity:1 }],
+    { duration:A.inMs, delay:outEnd + Math.min(i, A.cap) * A.inStagger }));
+
+  /* A faster switch than the effect takes: drop the ghost on the spot rather than leaving two
+     layers of old title stacked over one new one. */
+  setTimeout(()=>{
+    if(seq === cascadeSeq) return;
+    if(ghost.parentNode) ghost.remove();
+  }, 20);
+}
 
 function rollMastheadTitle(tab){
   const { h1 } = headerCollapseCache();
@@ -12612,13 +12615,13 @@ function rollMastheadTitle(tab){
 
   if(markRollRaf){ cancelAnimationFrame(markRollRaf); markRollRaf = null; }
   const fromW = logoTextWidth == null ? measureLogoWidth() : logoTextWidth;
+  const prevHTML = h1.innerHTML;
   h1.innerHTML = html;
   const toW = measureLogoWidth();
-  /* AFTER the measurement, never before. toW is what the mark travels to, and it has to be the
-     width of the real word — measured while the letters were scrambled it would be the width
-     of whatever noise happened to be on screen that frame. Pinning inside scrambleTitle is
-     what keeps the two agreeing for the rest of the effect. */
-  if(uiAnim('titleScramble')) scrambleTitle(h1);
+  /* AFTER the measurement. toW is what the mark travels to and has to be the width of the real
+     word; the ghost is appended INSIDE h1, so measuring first also keeps it out of the reading
+     of the last span's right edge. */
+  if(uiAnim('titleCascade')) cascadeTitle(h1, prevHTML);
 
   const rolls = from !== 'insights' && tab !== 'insights';
   const dx = toW - fromW;
