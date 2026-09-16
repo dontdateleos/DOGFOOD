@@ -2954,6 +2954,22 @@
   .log-sheet .log-notes-row input::placeholder,
   .log-sheet .log-one input::placeholder{ color:var(--ground); opacity:0.45; }
   .log-sheet #weekStretchRows input::placeholder{ color:var(--ground); opacity:0.45; }
+  /* THE PLAN, SITTING IN THE BOX YOU ARE ABOUT TO TYPE IN. Set by prefillPlanned and dropped
+     by the first keystroke, so a number goes full ink the moment it becomes a reading rather
+     than a proposal.
+     color-mix toward --bg rather than opacity, for two reasons: opacity on the input would
+     take the box's fill and its border down with the digits, and the placeholder beside it is
+     already 45% of --ground over the same fill — mixing to the same 45% makes a prefilled box
+     and an empty one with a ghost in it read as the same kind of thing, which they are.
+     !important and one step more specific than the box rule above, which sets colour that
+     way and would otherwise win on source order.
+     The literal above it is the same mix resolved against the tokens as they stand today,
+     for anything without color-mix; it is the one place in this sheet that hard-codes what
+     the tokens resolve to, and it is only ever reached if the second declaration is dropped
+     wholesale. Without it the fallback is full ink — legible, just not marked as the plan. */
+  .log-sheet .log-fields-row input[data-planned]{
+    color:#908f8c !important;
+    color:color-mix(in srgb, var(--ground) 45%, var(--bg)) !important; }
   .log-sheet .log-fields-row input, .log-sheet .week-ex-name,
   .log-sheet .log-notes-row input, .log-sheet .log-one input,
   .log-sheet #weekStretchRows input{ caret-color:var(--ground); }
@@ -2992,43 +3008,34 @@
      the flags floated up onto the entry line and the rows stopped agreeing with each other.
      A zero-height full-width pseudo-element at order 7 ends the first line whatever is on it. */
   .log-sheet #weekExerciseRows .edit-row::after{ content:''; order:7; flex-basis:100%; height:0; }
-  /* Everything that is context rather than entry wraps under the line, small and quiet.
-     0 0 auto shrink-wrapped this span to the badge inside it, which was invisible while the
-     badge was the only thing in there — and then .evidence-note, which asks for width:100%,
-     resolved that against a box the width of the word META-ANALYSIS and ran off the right
-     edge on one unwrapped line. It takes the row's full width now; the badge is left-aligned
-     in it and looks exactly as it did, and the note it opens has somewhere to wrap. */
-  .log-sheet .week-ex-evidence{ order:9; flex:0 0 100%; min-width:0; }
-  /* ONE QUIET LINE, NOT TWO. Measured on a real five-lift session, the target on its own
-     line and the evidence-and-flags on the next put each row at 70px and the sheet at 875 —
-     still 132 over the 743 it is given, with Save under the fold. Sharing the line takes
-     28px off every row. They fit: the target is about 100px, the evidence badge 90 and the
-     three flags 120, against 358 of content width. */
-  .log-sheet .ex-target-line{ order:8; flex:0 0 auto; margin-right:2px; }
+  /* NOTHING UNDER THE BOXES BUT THE HISTORY. A lift used to carry three more lines below its
+     three boxes — TARGET: 4 × 3-6, then META-ANALYSIS, then BW FAIL EDIT TAGS — every one of
+     them the same small grey mono, so a five-lift session came to fifteen lines of label
+     under fifteen boxes. The target is inside the boxes now (see prefillPlanned) and the
+     rest goes.
+     Hidden rather than deleted, because these nodes are still read: the tag selects are
+     where saveBlockEdit gets an exercise's area and movement from, and .week-ex-fail is
+     still given back its .on class when a logged session is reopened. Taking them out of the
+     markup would quietly drop an exercise's tags on every save.
+     One thing stays under the row — "Last 12 Sep · 60kg · 5,5,4". It is the only item of the
+     four that is a reading rather than a label, it is the way into the lift's full history,
+     and with the boxes now holding the plan it is the only trace of what you actually did
+     last time. */
+  .log-sheet .ex-target-line,
+  .log-sheet .week-ex-evidence,
+  .log-sheet .log-toggle-row,
+  .log-sheet .ex-tags-toggle,
+  .log-sheet .ex-tags-row{ display:none !important; }
+  /* A FORCED BREAK, BECAUSE WHAT IS ON THE ROW VARIES — see the ::after above. The last line
+     and the set breakdown are what is left to fall under it. */
   .log-sheet .ex-last-line,
   .log-sheet .set-breakdown{ order:8; flex-basis:100%; }
-  /* The words "tap to fill" were the line explaining itself. The line is still role=button,
-     and the session has "Fill it in as planned" over the whole lot. */
-  .log-sheet .ex-target-hint{ display:none; }
-  .log-sheet .ex-tags-row{ order:12; flex-basis:100%; }
-  .log-sheet .ex-target-line,
   .log-sheet .ex-last-line{ font-family:var(--mono); font-size:var(--log-note); letter-spacing:0.04em;
     color:rgba(var(--ink-rgb),0.5); margin-top:3px; }
-  .log-sheet .ex-tags-toggle{ order:11; flex:0 0 auto; font-family:var(--mono); font-size:var(--log-note);
-    font-weight:var(--fw-bold); letter-spacing:0.1em; text-transform:uppercase;
-    color:rgba(var(--ink-rgb),0.5); cursor:pointer; margin-top:4px; }
-  .log-sheet .ex-tags-row{ gap:6px; margin-top:6px; }
   .log-sheet .set-breakdown{ font-size:var(--log-note); margin-top:3px; }
-  /* The badge itself is .evidence-badge inside this span, and it carries its own tier fill
-     and border — a plate, which is right in the library where it is the row's subject, and
-     which on the quiet line under a lift is the loudest thing there. Here it is a word. */
-  .log-sheet .week-ex-evidence{ margin-top:4px; }
-  .log-sheet .week-ex-evidence .evidence-badge{ font-family:var(--mono); font-size:var(--log-note);
-    font-weight:var(--fw-bold); letter-spacing:0.1em; background:transparent; border:0;
-    box-shadow:none; padding:0; color:rgba(var(--ink-rgb),0.5); }
 
-  /* Add a lift, and fill the session in — two things you could say, in the voice the rest of
-     the sheet now says things in. */
+  /* Add a lift — something you could say, in the voice the rest of the sheet now says things
+     in. It used to have "Fill it in as planned" beside it; the sheet does that on open. */
   .log-sheet .add-row,
   .log-sheet .ask-a{ text-transform:none; letter-spacing:0; }
   .log-sheet .add-row{ border:0; border-radius:0; text-align:left; padding:7px 0 7px 1.35em;
@@ -3057,7 +3064,6 @@
   .log-sheet .log-foot-a:focus-visible{ outline:2px solid var(--bg); outline-offset:3px; }
   .log-sheet .add-row::before,
   .log-sheet .ask-a::before{ content:'\2192'; display:inline-block; width:1.35em; text-indent:0; }
-  .log-sheet .log-fill{ padding-left:1.35em; text-indent:-1.35em; margin-left:0; }
   .log-sheet .log-step{ display:flex; align-items:baseline; gap:10px; }
   .log-sheet .log-step-pos{ font-family:var(--mono); font-size:var(--log-note); letter-spacing:0.1em;
     text-transform:uppercase; color:rgba(var(--ink-rgb),0.5); margin-left:auto; }
@@ -3606,7 +3612,6 @@
   .log-toggle-row{ flex-basis:100%; display:flex; gap:6px; margin-top:6px; }
   .log-toggle-row button{ height:28px; padding:0 10px; font-size:var(--fs-tag); flex:0 0 auto; }
   .log-step{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-  .log-fill{ margin-left:auto; flex:0 0 auto; }
   /* Every lift is on the page, so the rows need a line between them or a nine-lift session
      reads as one long form rather than nine things. */
   #weekExerciseRows > .edit-row + .edit-row{ border-top:1px solid var(--hair);
@@ -11634,7 +11639,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.16.592';
+const APP_VERSION = '2026.09.16.593';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11948,6 +11953,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.16.593': 'The log opens with the plan already in the boxes, dimmed until you change it.',
   '2026.09.16.592': 'Every box in the log says what it holds — 3 sets, 8 reps, 60 kg — instead of × and @.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
@@ -18866,9 +18872,9 @@ function applyLoggedSession(session){
 function collectLogDraft(panel){
   const rows = [...panel.querySelectorAll('.edit-row')].filter(r=>r.querySelector('.week-ex-name')).map(r=>({
     name: r.querySelector('.week-ex-name').value,
-    sets: r.querySelector('.week-ex-sets')?.value || '',
-    reps: r.querySelector('.week-ex-reps')?.value || '',
-    weight: r.querySelector('.week-ex-weight')?.value || '',
+    sets: typedValue(r.querySelector('.week-ex-sets')),
+    reps: typedValue(r.querySelector('.week-ex-reps')),
+    weight: typedValue(r.querySelector('.week-ex-weight')),
     fail: !!r.querySelector('.week-ex-fail')?.classList.contains('on')
   }));
   const runMin = panel.querySelector('#weekRunActualDuration')?.value || '';
@@ -19112,52 +19118,31 @@ function plannedFillFor(row){
     weightWhy: (h && h.weight != null) ? null : (start ? start.why : null)
   };
 }
-function fillLogRow(row){
+/* THE SHEET OPENS FILLED IN. "Fill it in as planned" was a button under the lifts that put
+   these same numbers in these same boxes; almost every session began by pressing it, so the
+   sheet does it on open instead and the button is gone.
+   The values are REAL — save without touching a row and the plan is what gets recorded —
+   which is the point: a session that went to plan should cost no typing. They are drawn
+   dimmed (input[data-planned]) so the row still reads as a proposal rather than as something
+   you said, and the first keystroke in a box drops the flag and the box goes full ink.
+   Only empty boxes are touched, so a logged session or a draft read back first always wins. */
+function prefillPlanned(row){
   const f = plannedFillFor(row);
-  let touched = false;
   delete row.dataset.weightWhy;
   [['.week-ex-sets', f.sets], ['.week-ex-reps', f.reps], ['.week-ex-weight', f.weight]].forEach(([sel, v])=>{
     const el = row.querySelector(sel);
     if(!el || el.value !== '' || v == null) return;
     el.value = v;
-    // Remembered on the row so the toast can say how many of these loads are a starting
-    // point rather than something you have actually lifted.
+    // The dim is the whole claim being made: this is the plan, not your session yet.
+    el.dataset.planned = '1';
+    // Remembered on the row the way it always was — a weight with no history behind it is a
+    // starting point, and set-breakdown maths downstream still wants to know.
     if(sel === '.week-ex-weight' && f.weightWhy) row.dataset.weightWhy = f.weightWhy;
-    touched = true;
   });
-  if(touched){
-    row.classList.add('row-filled');
-    setTimeout(()=> row.classList.remove('row-filled'), 700);
-  }
-  return touched;
 }
-function fillLogAsPlanned(){
-  const rows = [...document.querySelectorAll('#weekExerciseRows .edit-row')]
-    .filter(r=> r.querySelector('.week-ex-sets'));
-  if(!rows.length) return;
-  let filled = 0, noWeight = 0, started = 0;
-  rows.forEach(r=>{
-    if(fillLogRow(r)) filled++;
-    const w = r.querySelector('.week-ex-weight');
-    if(w && !w.value) noWeight++;
-    else if(r.dataset.weightWhy) started++;
-  });
-  rows.forEach(refreshSetBreakdown);
-  if(!filled){ showToast('Already filled in'); return; }
-  blockEditDirty = true;
-  try{ markLoggingStarted(blockEditDate); } catch(e){}
-  saveLogDraftSoon();
-  // Named rather than counted where something is still missing: a lift with no history has
-  // no weight to borrow, and saying so is the difference between a button that finished the
-  // job and one that looks like it did.
-  // A proposed starting load is not the same claim as "this is what you lifted last time",
-  // so it says which it is rather than letting the box imply the stronger one.
-  showToast(noWeight
-    ? `${filled} filled · ${noWeight} still need a weight`
-    : started
-    ? `${filled} filled · ${started} starting from scratch — change if it is light`
-    : `${filled} lift${filled === 1 ? '' : 's'} filled — change what differed`);
-}
+// A value nobody typed is not a value the draft should carry: writing it back on reopen
+// would restore it as yours, full ink, with the dim lost. The prefill runs again anyway.
+function typedValue(el){ return (el && !el.dataset.planned && el.value) || ''; }
 
 // Rows the exercise stepper hid are still rows. Removing the one on screen has to leave you
 // looking at something rather than at the gap where it was.
@@ -19299,6 +19284,8 @@ function wireBlockEditorClose(panel){
     // Only the performance fields count as "started". Renaming an exercise or retagging it is
     // editing the plan, not doing the session.
     if(e.target && e.target.matches && e.target.matches('.week-ex-sets, .week-ex-reps, .week-ex-weight, #weekRunActualDuration')){
+      // Typing over the plan is what turns it into a reading.
+      delete e.target.dataset.planned;
       markLoggingStarted(blockEditDate);
       const row = e.target.closest('.edit-row');
       if(row) refreshSetBreakdown(row);
@@ -19827,7 +19814,6 @@ async function openBlockEditor(date, slot, block){
         <span class="log-step-pos" id="logPos"></span>
       </div>
       <div id="weekExerciseRows"></div><div class="add-row" id="addWeekExerciseRow">Add a lift</div>
-      <button type="button" class="ask-a log-fill" id="logFillAll">Fill it in as planned</button>
       <!-- The run block has always had one. A strength session did not, so "gym was rammed,
            shoulder twinged on set three" — the context the score cannot see and cannot
            infer — had nowhere to go. session.notes already existed in the record and was
@@ -19911,19 +19897,15 @@ async function openBlockEditor(date, slot, block){
         rowsContainer.appendChild(row);
         return row;
       }
-      // The actual-performance row (sets/reps/kg below) had no visible reminder of what
-      // was PRESCRIBED, so logging meant either remembering the target from memory or
-      // switching tabs to check it. Shown only when the exercise carries a real
-      // prescription (assignPrescription ran on it) — a freshly typed manual row has none.
-      // Tapping the target fills this one row from it — the shortest possible path from
-      // "that is what I did" to it being written down.
-      /* THE GHOST. Last session's actual numbers, sitting in the boxes as placeholders until
-         you type over them. The row already carried a "Last ..." line above, which reports
-         what happened; this puts the same numbers where you are about to type, so the set you
-         are entering is measured against them without reading anything. Placeholders rather
-         than values on purpose — a prefilled field is a claim about what you did, and only
-         you get to make that. Per-set reps come through whole (5,5,4), because the field
-         takes that form and an average of it is a different session. */
+      /* THE TARGET MOVED INTO THE BOXES. It used to be a line of its own under them —
+         "TARGET: 4 × 3-6", tappable to fill this row — which meant the prescription was on
+         screen in one place and the field you were about to type it into was in another. The
+         boxes now open holding it, dimmed (see prefillPlanned), so the row reads as the
+         proposal it is and a session that went to plan is saved by not typing.
+         The ghost below is what remains of the old placeholder scheme: last session's numbers
+         only show where the plan has nothing to say. Per-set reps come through whole
+         (5,5,4), because the field takes that form and an average of it is a different
+         session. */
       const ghost = exerciseHistory[exHistKey(name)] || null;
       const ghostReps = ghost
         ? ((ghost.repsPerSet && ghost.repsPerSet.length) ? ghost.repsPerSet.join(',') : (ghost.reps ?? ''))
@@ -19932,14 +19914,10 @@ async function openBlockEditor(date, slot, block){
         ? ((ghost.weightPerSet && ghost.weightPerSet.length) ? ghost.weightPerSet.join(',') : (ghost.weight ?? ''))
         : '';
       const ph = (v, fallback) => (v === 0 || v) ? String(v) : fallback;
-      const targetLine = (sets!=null && repLow!=null)
-        ? `<div class="ex-target-line ex-target-tap" role="button" tabindex="0">Target: ${sets} × ${repLow}${repHigh && repHigh!==repLow ? '-'+repHigh : ''}<span class="ex-target-hint">tap to fill</span></div>`
-        : '';
       row.innerHTML = `
         <input type="text" class="week-ex-name" placeholder="exercise" value="${name}">
         <span class="week-ex-evidence"></span>
         <span class="remove-row">×</span>
-        ${targetLine}
         ${lastLoggedLine(name)}
         <div class="log-fields-row">
           <input type="number" class="week-ex-sets" placeholder="${ph(ghost && ghost.sets, '')}" title="sets actually done">
@@ -19975,19 +19953,6 @@ async function openBlockEditor(date, slot, block){
           <select class="week-ex-movement">${movementOptionsHtml(movement)}</select>
         </div>`;
       row.querySelector('.remove-row').addEventListener('click', ()=>{ removeRowAnimated(row); afterLogRowRemoved(); });
-      const targetTap = row.querySelector('.ex-target-tap');
-      if(targetTap){
-        const fillOne = ()=>{
-          if(!fillLogRow(row)){ showToast('Already filled in'); return; }
-          blockEditDirty = true;
-          try{ markLoggingStarted(blockEditDate); } catch(e){}
-          saveLogDraftSoon();
-        };
-        targetTap.addEventListener('click', fillOne);
-        targetTap.addEventListener('keydown', e=>{
-          if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); fillOne(); }
-        });
-      }
       // Whether a set was taken to failure is the input the effort estimate has been guessing
       // from the rep drop-off. 5,5,4 because you failed and 5,5,4 because you stopped are
       // different sessions, and only you know which.
@@ -20122,6 +20087,9 @@ async function openBlockEditor(date, slot, block){
     }
   }
   applyLogDraft(panel, await loadLogDraft(date, slot));
+  // Last, so that anything actually logged or drafted is already in the boxes and the plan
+  // only lands where there is nothing.
+  if(block.type === 'strength') logExRows().forEach(prefillPlanned);
   // A session read back from history or from a draft arrives without a keystroke, so the
   // delegated input handler never fires for it.
   panel.querySelectorAll('#weekExerciseRows .edit-row').forEach(refreshSetBreakdown);
@@ -20129,8 +20097,10 @@ async function openBlockEditor(date, slot, block){
   // where the work is, not at the top of a list you have already been through.
   if(block.type === 'strength'){
     const rows = logExRows();
+    // typedValue, not value: every row holds the plan now, and a row you have not touched is
+    // still the row to open on.
     const firstBlank = rows.findIndex(r=> !['sets','reps','weight']
-      .some(k=> (r.querySelector('.week-ex-' + k)?.value || '').trim()));
+      .some(k=> typedValue(r.querySelector('.week-ex-' + k)).trim()));
     showLogExercise(firstBlank < 0 ? 0 : firstBlank);
     // Coming back to a half-done session still puts you where the work is — by scrolling to
     // it now rather than by hiding everything else.
