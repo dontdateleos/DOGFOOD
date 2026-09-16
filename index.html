@@ -6486,7 +6486,7 @@ const EYE_ANIM = {
   // — Sixth.
   chipBlinks:     { on:true, note:'The docked face blinks on its own clock — set by what you told it, not by what the score says' },
   chipAndMark:    { on:true, note:'The pair and the docked face notice each other now and then, and what passes between them depends on whether they agree', chance:0.22, restMs:24000 },
-  tearOnFlight:   { on:true, note:'The mark tears as it lands — flying between the wordmark and the score, perching as you scroll past it, and rolling along the masthead to a new page', px:6 }
+  tearOnFlight:   { on:true, note:'The mark tears as it lands — flying between the wordmark and the score, and perching as you scroll past it', px:6 }
 };
 window.EYE_ANIM = EYE_ANIM;
 /* Calm mode. prefers-reduced-motion is all-or-nothing and lives in iOS Settings rather
@@ -7635,45 +7635,6 @@ function settleSquash(el){
 
    Whether it tears at all stays the eyes' own setting, the same row that governs the tear on
    the flight; it borrows that row's travel too, so the two are one effect with one dial. */
-/* THE MARK ARRIVES FROM A ROLL THE SAME WAY IT ARRIVES FROM A FLIGHT.
-
-   The mark rolls along the masthead to its new position on every switch between two named
-   pages, and used to simply stop. A roll is an arrival, and this app's rule is that the tear
-   is the arrival — so it gets the arrival it already has, the one you see coming back to
-   Today, rather than a second thing that resembles it.
-
-   That means BOTH halves, not just the tear. moveEyes plays the glitch and then books
-   settleSquash for MARK_SETTLE_AT into it, so the mark is still breaking up while it is
-   already coming down; the two overlap by design and the pair is what the gesture is. Taking
-   only the glitch would have been a tear that matched and a landing that did not.
-
-   THE TITLE USED TO GO WITH IT and does not any more. Tearing the masthead title on the same
-   frames made the glitch an event in the header rather than something the mark does, which
-   read as the whole surface faulting every time you changed tab — far more page than the
-   moment is worth, and nothing the arrival on Today does. The mark is the thing that moved,
-   so the mark is the only thing that breaks.
-
-   MARK_BLEED, because inset() measures from the border box: a whole frame with no bleed clips
-   the element to exactly its own box, and the sphere's drawing overflows the box it sits in.
-
-   WHY THERE IS NO NEW SETTINGS ROW. It borrows tearOnFlight's dial and its travel, the way
-   markTearOnSwitch did: one effect, one switch. Turning the tear off in Settings turns off all
-   of it — flight, perch and roll — rather than leaving a third of it running under a row that
-   says it is off. The row's note names the roll now, because it does it. */
-function markTearOnRoll(){
-  if(!uiAnim('markGlitch') || !anim('tearOnFlight')) return;
-  const mark = document.querySelector('.header-mark');
-  if(!mark || !mark.isConnected || mark.style.visibility === 'hidden') return;
-  playGlitch(mark, 'markGlitch', EYE_ANIM.tearOnFlight.px, MARK_BLEED);
-  /* The same booking moveEyes makes, and the same kind of guard on it. There the check is
-     that the destination has not changed inside the wait; here it is that no NEW roll has
-     started — a second tab switch inside 120ms puts the mark back in motion, and a settle
-     landing on a mark that is travelling again is a landing for a journey that is not over. */
-  setTimeout(()=>{
-    if(markRollRaf || !mark.isConnected) return;
-    settleSquash(mark);
-  }, MARK_SETTLE_AT);
-}
 function markTearOnSwitch(){
   if(!uiAnim('markGlitch') || !anim('tearOnFlight')) return;
   const began = performance.now();
@@ -11512,7 +11473,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.16.583';
+const APP_VERSION = '2026.09.16.584';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11818,6 +11779,7 @@ const APP_NOTES = {
   '2026.09.16.581': 'The mark tears back into the masthead when you leave Today, the way it tears in when you arrive.',
   '2026.09.16.582': 'The mark and the page title tear together the moment the mark finishes rolling to a new page.',
   '2026.09.16.583': 'The mark lands from a roll exactly the way it lands coming back to Today, and the title no longer tears with it.',
+  '2026.09.16.584': 'The mark rolls to its new page and simply stops — no tear on the landing.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -13071,11 +13033,15 @@ function rollMastheadTitle(tab){
     mcState.sx = 1; mcState.sy = 1; mcState.ty = 0;
     updateHeaderCollapse();
     drawMarkCube();
-    // After the mark is back to its own shape and size, not during the roll's own squash —
-    // the arriving gesture writes clip, translate and transform, the roll writes rz/sx/sy,
-    // and one landing frame carrying both is the mark deforming and coming apart at once
-    // rather than arriving and then breaking.
-    markTearOnRoll();
+    /* AND NOTHING ON THE LANDING. .582 tore the mark here — and the title with it — and .583
+       narrowed that to the mark alone, landing it exactly the way it lands from a flight.
+       Both are out. The roll already says the mark arrived: it travels, it squashes along the
+       axis it travels on, and it stops. A tear on top of that is a second arrival announcing
+       the same one, on the element the header is supposed to hold still, every time you
+       change tab — which is the same objection that took markTearOnSwitch out below, and it
+       survived the mark starting to move after all.
+       The tear stays where the mark goes somewhere it was not: the flight, the perch, and the
+       occasional idle. */
   };
   markRollRaf = requestAnimationFrame(tick);
 }
