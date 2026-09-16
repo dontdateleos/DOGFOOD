@@ -3117,6 +3117,12 @@
   .log-sheet .log-foot-a:focus-visible{ outline:2px solid var(--bg); outline-offset:3px; }
   .log-sheet .add-row::before,
   .log-sheet .ask-a::before{ content:'\2192'; display:inline-block; width:1.35em; text-indent:0; }
+  /* The one thing about this sheet you cannot work out by looking at it. Quiet — it is a
+     note, not a question — but the examples are in the bone the boxes are, because they are
+     literally what you would type into one. */
+  .log-sheet .log-hint{ font-family:var(--mono); font-size:var(--log-note); line-height:1.5;
+    letter-spacing:0.02em; color:rgba(var(--ink-rgb),0.5); margin:-2px 0 10px; max-width:34em; }
+  .log-sheet .log-hint b{ font-weight:var(--fw-bold); color:var(--bg); }
   .log-sheet .log-step{ display:flex; align-items:baseline; gap:10px; }
   .log-sheet .log-step-pos{ font-family:var(--mono); font-size:var(--log-note); letter-spacing:0.1em;
     text-transform:uppercase; color:rgba(var(--ink-rgb),0.5); margin-left:auto; }
@@ -11715,7 +11721,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.16.596';
+const APP_VERSION = '2026.09.16.597';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12029,6 +12035,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.16.597': 'The log says at the top that a comma is a set — 8,8,6 reps, 60,80,100 kg.',
   '2026.09.16.596': 'The log sheet fills itself in a block at a time as it rises.',
   '2026.09.16.595': 'Hold any box on a lift for edit tags, add a lift and remove this lift.',
   '2026.09.16.594': 'Beat the plan on a lift and a green +5 KG lands next to its name.',
@@ -20066,6 +20073,15 @@ async function openBlockEditor(date, slot, block){
         <span class="ask-q">What did you lift?</span>
         <span class="log-step-pos" id="logPos"></span>
       </div>
+      <!-- A COMMA IS A SET. The reps and weight boxes have always taken a list, and the whole
+           app downstream is built on it — the set breakdown, the volume load, the effort
+           estimate off the rep drop-off, and "5,5,4 and 5,5,5 are different sessions and an
+           average of them is neither", which is written in three places in this file. It was
+           findable only in a title attribute, which a phone never shows, so in practice the
+           boxes looked like they took one number and the feature did not exist.
+           Said once, at the top, where you read before you start typing rather than after. -->
+      <div class="log-hint">A comma is a set. <b>8,8,6</b> reps where they dropped,
+        <b>60,80,100</b> kg for a ramp — one number where every set was the same.</div>
       <div id="weekExerciseRows"></div><div class="add-row" id="addWeekExerciseRow">Add a lift</div>
       <!-- The run block has always had one. A strength session did not, so "gym was rammed,
            shoulder twinged on set three" — the context the score cannot see and cannot
