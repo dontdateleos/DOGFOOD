@@ -11492,7 +11492,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.16.585';
+const APP_VERSION = '2026.09.16.586';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11800,6 +11800,7 @@ const APP_NOTES = {
   '2026.09.16.583': 'The mark lands from a roll exactly the way it lands coming back to Today, and the title no longer tears with it.',
   '2026.09.16.584': 'The mark rolls to its new page and simply stops — no tear on the landing.',
   '2026.09.16.585': 'Body and Data carry new page marks, each taken from something already drawn on that page.',
+  '2026.09.16.586': 'Connecting Oura works from the browser too, not just the home-screen app.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -12034,7 +12035,30 @@ document.querySelectorAll('.group-head.collapsible').forEach(head=>{
 
 const OURA_CLIENT_ID = '62367975-4a6e-445d-a195-1936ce98c7af';
 const OURA_TOKEN_WORKER_URL = 'https://dogfoodoura.jordandf1.workers.dev';
-const OURA_REDIRECT_URI = window.location.origin + window.location.pathname; // must exactly match what's registered with Oura
+/* ONE REDIRECT URI PER ORIGIN, WHICHEVER DOOR YOU CAME IN BY.
+   This was origin + pathname, taken raw, and pathname is not one value: the home-screen
+   install opens at the manifest's start_url and sends /Factors/index.html, while typing the
+   address in a browser lands on /Factors/ and sends that. Oura matches the redirect_uri as an
+   EXACT string against what is registered, so whichever of the two was not registered came
+   back "400 invalid_request" from cloud.ouraring.com before the consent screen was ever
+   drawn — the app looked broken in one place and fine in the other, from one line.
+
+   Normalised to the .html form rather than the directory form, because that is what
+   start_url already produces and so what an install that works today is registered under.
+   A path with no .html is treated as a directory and given index.html, which also covers
+   /Factors with no trailing slash.
+
+   It stays derived rather than hard-coded: localhost and the hosted copy are different
+   origins and need their own registrations either way, and a constant would break the one
+   that is not written down here. What it can no longer do is differ WITHIN an origin.
+
+   The exchange below posts this same constant, and it has to: the token call is checked
+   against the redirect_uri the authorize call used, so both ends move together or neither. */
+const OURA_REDIRECT_URI = (()=>{
+  let path = window.location.pathname;
+  if(!/\.html?$/i.test(path)) path = path.replace(/\/*$/, '/') + 'index.html';
+  return window.location.origin + path;
+})();
 const OURA_SCOPES = 'personal daily heartrate';
 
 function connectOura(){
