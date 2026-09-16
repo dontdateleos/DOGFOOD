@@ -11721,7 +11721,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.16.597';
+const APP_VERSION = '2026.09.16.598';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12035,6 +12035,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.16.598': 'A space, a slash or a dash separate sets as well as a comma, and the box tidies itself.',
   '2026.09.16.597': 'The log says at the top that a comma is a set — 8,8,6 reps, 60,80,100 kg.',
   '2026.09.16.596': 'The log sheet fills itself in a block at a time as it rises.',
   '2026.09.16.595': 'Hold any box on a lift for edit tags, add a lift and remove this lift.',
@@ -19250,11 +19251,29 @@ function recordPlanBaseline(row, f){
   if(repCeiling != null) row.dataset.planReps = repCeiling;
   if(f.weight != null) row.dataset.planWeight = f.weight;
 }
-// A box takes one number or a list of them — 60, or 60,80,100 for a ramp. The top of the
-// list is what "above" is about: one set over the ask is the thing worth saying.
+/* A box takes one number or a list of them — 60, or 60,80,100 for a ramp. The top of the list
+   is what "above" is about: one set over the ask is the thing worth saying.
+   SET_LIST_SEP, not a comma: this shipped splitting on commas alone, so 60/80/100 came back
+   through parseFloat as 60 and the plate under-reported a ramp it should have been loudest
+   about. One separator set, used by everything that reads these two boxes. */
 function logFieldTop(v){
-  const nums = String(v == null ? '' : v).split(',').map(x=> parseFloat(x)).filter(x=> isFinite(x));
+  const nums = String(v == null ? '' : v).trim().split(SET_LIST_SEP)
+    .map(x=> parseFloat(x)).filter(x=> isFinite(x));
   return nums.length ? Math.max(...nums) : null;
+}
+/* SHOW WHAT WAS UNDERSTOOD. A liberal parser that never says how it read something is a
+   parser you find out about from a wrong number weeks later. Leaving the box writes the list
+   back in the one form the hint at the top names, so "8 8 6" and "8-8-6" both come to rest as
+   8,8,6 and a dash meant as a range is visibly two sets while you can still fix it.
+   Strict on the way in even though the parser is liberal: anything that is not wholly plain
+   numbers is left exactly as typed rather than half-rewritten into something else. */
+function normaliseSetList(el){
+  if(!el || !el.value) return;
+  const tokens = String(el.value).trim().split(SET_LIST_SEP).filter(t=> t !== '');
+  if(tokens.length < 2) return;
+  if(!tokens.every(t=> /^\d+(\.\d+)?$/.test(t))) return;
+  const joined = tokens.join(',');
+  if(joined !== el.value) el.value = joined;
 }
 /* THE GREEN PLATE. Beating the plan was recorded and never said — you had to remember what
    the target was, and the target line that used to carry it is gone.
@@ -19533,8 +19552,9 @@ function wireBlockEditorClose(panel){
      row. */
   panel.addEventListener('focusout', e=>{
     if(!(e.target && e.target.matches && e.target.matches('.week-ex-sets, .week-ex-reps, .week-ex-weight'))) return;
+    if(e.target.matches('.week-ex-reps, .week-ex-weight')) normaliseSetList(e.target);
     const row = e.target.closest('.edit-row');
-    if(row) refreshOverPlan(row);
+    if(row){ refreshSetBreakdown(row); refreshOverPlan(row); }
   });
   // Delegated, so rows added after this runs are covered too.
   ['input','change'].forEach(t=> panel.addEventListener(t, e=>{
@@ -20080,8 +20100,9 @@ async function openBlockEditor(date, slot, block){
            findable only in a title attribute, which a phone never shows, so in practice the
            boxes looked like they took one number and the feature did not exist.
            Said once, at the top, where you read before you start typing rather than after. -->
-      <div class="log-hint">A comma is a set. <b>8,8,6</b> reps where they dropped,
-        <b>60,80,100</b> kg for a ramp — one number where every set was the same.</div>
+      <div class="log-hint">A comma is a set — a space, a slash or a dash do the same.
+        <b>8,8,6</b> reps where they dropped, <b>60,80,100</b> kg for a ramp.
+        One number where every set was alike.</div>
       <div id="weekExerciseRows"></div><div class="add-row" id="addWeekExerciseRow">Add a lift</div>
       <!-- The run block has always had one. A strength session did not, so "gym was rammed,
            shoulder twinged on set three" — the context the score cannot see and cannot
@@ -33765,10 +33786,19 @@ async function generateMobility(){
 // Parses the reps field, which accepts either one number ("12" — same for every set) or
 // per-set values ("12,10,7"). Per-set is entirely optional: entering a single number
 // behaves exactly as before, so this adds granularity without adding a required field.
+/* WHATEVER YOU REACH FOR BETWEEN TWO SETS. 8,8,6 and 8 8 6 and 8/8/6 were already the same
+   thing here; 8-8-6 was not, and a dash is what a good many people write. Both dashes iOS
+   can substitute for one are in as well, because a keyboard quietly turning - into – should
+   not change what a row means.
+   The dash is the one with a cost: 8-10 also reads as "somewhere between eight and ten", and
+   here it becomes two sets of 8 and 10. That is why the field normalises itself on the way
+   out (normaliseSetList) — you see 8,10 in the box and can correct it, rather than finding
+   out from a volume figure a fortnight later. */
+const SET_LIST_SEP = /[,\s/\u2013\u2014-]+/;
 function parseRepsInput(raw){
   const text = String(raw==null ? '' : raw).trim();
   if(!text) return { reps: 0, repsPerSet: null };
-  const parts = text.split(/[,\s/]+/).map(s=>parseFloat(s)).filter(n=>!isNaN(n) && n > 0);
+  const parts = text.split(SET_LIST_SEP).map(s=>parseFloat(s)).filter(n=>!isNaN(n) && n > 0);
   if(parts.length === 0) return { reps: 0, repsPerSet: null };
   if(parts.length === 1) return { reps: parts[0], repsPerSet: null };
   return { reps: Math.round((parts.reduce((a,b)=>a+b,0)/parts.length)*10)/10, repsPerSet: parts };
@@ -33784,12 +33814,13 @@ function parseRepsInput(raw){
    load anybody lifted. The array rides alongside for volume and for showing you back what
    you did.
 
-   Kept deliberately liberal about separators, same as parseRepsInput, because the thing being
-   typed is "100 100 90" as often as "100,100,90" and neither is ambiguous. */
+   Kept deliberately liberal about separators, same as parseRepsInput — one SET_LIST_SEP for
+   both, because the thing being typed is "100 100 90" as often as "100,100,90" and the two
+   fields sit next to each other on the same row. */
 function parseWeightInput(raw){
   const text = String(raw == null ? '' : raw).trim();
   if(!text) return { weight: 0, weightPerSet: null };
-  const parts = text.split(/[,\s/]+/).map(x=> parseFloat(x)).filter(n=> !isNaN(n) && n > 0);
+  const parts = text.split(SET_LIST_SEP).map(x=> parseFloat(x)).filter(n=> !isNaN(n) && n > 0);
   if(parts.length === 0) return { weight: 0, weightPerSet: null };
   if(parts.length === 1) return { weight: parts[0], weightPerSet: null };
   return { weight: Math.max(...parts), weightPerSet: parts };
