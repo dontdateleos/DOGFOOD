@@ -3021,6 +3021,29 @@
      four that is a reading rather than a label, it is the way into the lift's full history,
      and with the boxes now holding the plan it is the only trace of what you actually did
      last time. */
+  /* THE SEPARATOR KEY, OVER THE KEYBOARD. Same reasoning as the hold menu below it: fixed and
+     on the body, because the sheet scrolls and the row clips, and restating the pocket's four
+     tokens, because out here var(--bg) is the page's and comes back near-black on the dark
+     ground. left/right rather than a width, so it centres itself at any screen size; `top` is
+     the only thing the script sets, from visualViewport. */
+  #logSepKey{ position:fixed; z-index:90; left:50%; transform:translateX(-50%);
+    display:flex; align-items:center; gap:10px; height:auto; min-height:0; width:auto;
+    padding:11px 20px; margin:0; border:0; border-radius:999px;
+    color-scheme:dark;
+    --ground:#0c0d0b; --bg:#fbfaf6;
+    --ink-rgb:251,250,246; --ground-rgb:12,13,11;
+    background:var(--bg); color:var(--ground);
+    box-shadow:0 12px 34px rgba(12,13,11,0.55); }
+  #logSepKey[hidden]{ display:none; }
+  /* The comma is the key; the words are what it does. Set in the face the boxes are set in,
+     at the size a value in one of them is, so the glyph on the key and the glyph it puts in
+     the box are the same glyph. */
+  #logSepKey .sep-mark{ font-family:var(--wordmark); font-size:var(--log-write);
+    font-weight:var(--fw-bold); line-height:1; min-width:9px; text-align:center;
+    position:relative; top:-0.18em; }
+  #logSepKey .sep-word{ font-family:var(--mono); font-size:var(--log-note);
+    font-weight:var(--fw-bold); letter-spacing:0.1em; text-transform:uppercase; }
+  #logSepKey:active{ background:#e9e7df; }
   /* WHAT A HOLD ON A BOX OPENS. Fixed and appended to the body rather than to the row: the
      sheet scrolls and the row clips, and a menu that scrolls away under the finger that
      opened it is not a menu. 90 sits over the sheet's 70 and under the toast's 100.
@@ -11721,7 +11744,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.16.598';
+const APP_VERSION = '2026.09.16.599';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12035,6 +12058,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.16.599': 'A comma key over the keyboard, for reps and for weight — the pads have no comma of their own.',
   '2026.09.16.598': 'A space, a slash or a dash separate sets as well as a comma, and the box tidies itself.',
   '2026.09.16.597': 'The log says at the top that a comma is a set — 8,8,6 reps, 60,80,100 kg.',
   '2026.09.16.596': 'The log sheet fills itself in a block at a time as it rises.',
@@ -19364,6 +19388,96 @@ function openLogHoldMenu(row, anchorEl){
   setTimeout(()=> document.addEventListener('pointerdown', logHoldOutsideTap, true), 0);
 }
 function cancelLogHold(){ clearTimeout(logHoldTimer); logHoldTimer = null; logHoldFrom = null; }
+
+/* THE SEPARATOR KEY. A comma is how you say "and then another set", and on a phone there is
+   no comma to press: reps carry inputmode=numeric, which iOS draws as a digit-only pad, and
+   weight carries inputmode=decimal, which adds a full stop and nothing else. The full stop is
+   already spoken for on the weight box — 62.5 is a real load — so it cannot double as a
+   separator there either. Both boxes needed a key and neither had one, which made 8,8,6 a
+   thing the sheet told you about at the top and then would not let you type.
+
+   NOT ON THE ROW. Measured: the row is 346 of content, the boxes take a fixed 272 and the
+   three row controls take 63 — eleven pixels left, against about 45 for two keys with tap
+   areas worth having. A key per box does not fit and would not be worth pressing if it did.
+
+   So it goes where the platform puts this kind of thing: a bar over the keyboard, serving
+   whichever of the two boxes has focus. One key, a real target, and no row width at all.
+   Fixed positioning alone would sit UNDER the keyboard on iOS — a fixed element is laid out
+   against the layout viewport, which the keyboard does not shrink. visualViewport is the one
+   that knows, so the bar is placed against it and follows it as it resizes and scrolls.
+   Where there is no visualViewport there is no software keyboard either, and the foot of the
+   window is the right place. */
+let logSepKeyEl = null, logSepField = null;
+function logSepKey(){
+  if(logSepKeyEl) return logSepKeyEl;
+  const el = document.createElement('button');
+  el.type = 'button';
+  el.id = 'logSepKey';
+  el.hidden = true;
+  el.innerHTML = '<span class="sep-mark">,</span><span class="sep-word">another set</span>';
+  // pointerdown, not click, and the default prevented: a button taking focus would close the
+  // keyboard and drop the caret, which is the whole thing this is trying not to do.
+  el.addEventListener('pointerdown', e=>{
+    e.preventDefault();
+    insertSetSeparator(logSepField);
+  });
+  document.body.appendChild(el);
+  logSepKeyEl = el;
+  return el;
+}
+function placeLogSepKey(){
+  const el = logSepKeyEl;
+  if(!el || el.hidden) return;
+  const vv = window.visualViewport;
+  el.style.top = vv ? Math.round(vv.offsetTop + vv.height - el.offsetHeight - 10) + 'px'
+                    : Math.round(window.innerHeight - el.offsetHeight - 10) + 'px';
+}
+function showLogSepKey(field){
+  logSepField = field;
+  const el = logSepKey();
+  el.hidden = false;
+  placeLogSepKey();
+}
+function hideLogSepKey(){
+  logSepField = null;
+  if(logSepKeyEl) logSepKeyEl.hidden = true;
+}
+/* At the caret, not at the end — you are as likely to be fixing the middle set as adding one
+   to the end. A separator against nothing, or against another separator, is not a set, so
+   those two cases do nothing rather than leaving ",," for the parser to shrug at. */
+function insertSetSeparator(field){
+  if(!field) return;
+  const v = field.value || '';
+  let at = field.selectionStart;
+  if(at == null || at > v.length) at = v.length;
+  const before = v.slice(0, at);
+  if(!before.trim() || /[,\s/\u2013\u2014-]$/.test(before)) return;
+  field.value = before + ',' + v.slice(at);
+  try{ field.setSelectionRange(at + 1, at + 1); }catch(e){}
+  field.dispatchEvent(new Event('input', { bubbles:true }));
+}
+(function wireLogSepKey(){
+  const sheet = document.getElementById('logSheet');
+  if(!sheet) return;
+  const LIST_FIELDS = '.week-ex-reps, .week-ex-weight';
+  sheet.addEventListener('focusin', e=>{
+    if(e.target.matches && e.target.matches(LIST_FIELDS)) showLogSepKey(e.target);
+    else hideLogSepKey();
+  });
+  sheet.addEventListener('focusout', e=>{
+    if(!(e.target.matches && e.target.matches(LIST_FIELDS))) return;
+    // After the next field has had its focusin, or moving between the two boxes flickers.
+    setTimeout(()=>{
+      const a = document.activeElement;
+      if(!a || !a.matches || !a.matches(LIST_FIELDS)) hideLogSepKey();
+    }, 0);
+  });
+  if(window.visualViewport){
+    visualViewport.addEventListener('resize', placeLogSepKey);
+    visualViewport.addEventListener('scroll', placeLogSepKey);
+  }
+  window.addEventListener('resize', placeLogSepKey);
+})();
 
 /* Wired once on the sheet rather than per open: #blockEditPanel is the same node every time
    it is filled, so anything bound to it in openBlockEditor stacks a copy per session opened. */
