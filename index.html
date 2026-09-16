@@ -3021,6 +3021,41 @@
      four that is a reading rather than a label, it is the way into the lift's full history,
      and with the boxes now holding the plan it is the only trace of what you actually did
      last time. */
+  /* WHAT A HOLD ON A BOX OPENS. Fixed and appended to the body rather than to the row: the
+     sheet scrolls and the row clips, and a menu that scrolls away under the finger that
+     opened it is not a menu. 90 sits over the sheet's 70 and under the toast's 100.
+     It is a surface, so it takes the surface treatment the boxes take — a bone plate with
+     near-black on it — rather than inventing a third look.
+     It has to RESTATE the pocket's tokens rather than read them. Appended to the body, it is
+     outside #blockEditPanel and outside the sheet, so var(--bg) there is the PAGE's bg, which
+     on the dark ground is the near-black — measured, a black menu on a black sheet with no
+     edge to it. Same four declarations the reverse-ground pocket makes, so the plate matches
+     the boxes it opened over on either ground. */
+  .log-hold-menu{ position:fixed; z-index:90; min-width:172px; padding:5px;
+    color-scheme:dark;
+    --ground:#0c0d0b; --bg:#fbfaf6;
+    --ink-rgb:251,250,246; --ground-rgb:12,13,11;
+    background:var(--bg); color:var(--ground); border-radius:11px;
+    box-shadow:0 12px 34px rgba(12,13,11,0.55); }
+  .log-hold-menu button{ display:block; width:100%; height:auto; min-height:0; text-align:left;
+    background:transparent; border:0; border-radius:7px; padding:9px 10px; margin:0;
+    font-family:var(--wordmark); font-weight:var(--fw-medium); font-size:var(--log-write);
+    letter-spacing:0; text-transform:none; color:var(--ground); }
+  .log-hold-menu button:active{ background:rgba(12,13,11,0.08); }
+  .log-hold-menu button:focus-visible{ outline:2px solid var(--block-lime); outline-offset:-2px; }
+  /* The native callout would take the hold first and offer Select / Paste over the top of it. */
+  .log-sheet #weekExerciseRows input{ -webkit-touch-callout:none; }
+  /* EDIT TAGS, BACK FROM THE HOLD. The selects are display:none above; this is one class more
+     specific and re-states the layout that rule used to carry, so the row they drop onto looks
+     the way it always did. */
+  .log-sheet #weekExerciseRows .edit-row.tags-open .ex-tags-row{ display:flex !important;
+    order:12; flex-basis:100%; min-width:0; gap:6px; margin-top:6px; }
+  /* Three selects with nothing telling them to shrink measured 455 against 358 of row and the
+     third ran off the right edge — "Push" reading as "Pus", at 320 exactly as at 390, because
+     nothing in the chain could shrink. It needs both ends: min-width:0 on the row, or its own
+     min-content keeps it wide whatever its basis says, and a zero basis on the selects so
+     they share what is left evenly. This was true of the old EDIT TAGS row too. */
+  .log-sheet #weekExerciseRows .edit-row.tags-open .ex-tags-row select{ flex:1 1 0; min-width:0; }
   /* +5 KG, NEXT TO THE LIFT THAT EARNED IT. Beating the plan was recorded and never said.
      A plate, the same object .pr-plate is — this is a state the row is in, not a remark —
      in the lime the week ribbon already uses for "ahead", which is the same claim.
@@ -11657,7 +11692,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.16.594';
+const APP_VERSION = '2026.09.16.595';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11971,6 +12006,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.16.595': 'Hold any box on a lift for edit tags, add a lift and remove this lift.',
   '2026.09.16.594': 'Beat the plan on a lift and a green +5 KG lands next to its name.',
   '2026.09.16.593': 'The log opens with the plan already in the boxes, dimmed until you change it.',
   '2026.09.16.592': 'Every box in the log says what it holds — 3 sets, 8 reps, 60 kg — instead of × and @.',
@@ -19223,6 +19259,108 @@ function refreshOverPlan(row){
   plate.hidden = false;
   row.classList.add('has-over');
 }
+
+/* HOLD A BOX. The three things you can do to a lift that are not entering numbers — retag
+   it, add another, take it off — used to be three words under the row: BW FAIL EDIT TAGS and
+   an × on the end. The row is four boxes and an × now, and those words were the clutter that
+   went with the target line.
+   They come back under a hold, on whichever box is under the finger, because the box is
+   already where your hand is and holding is the one gesture the sheet was not using.
+   Every item drives the control it replaces rather than reimplementing it: Add a lift clicks
+   #addWeekExerciseRow, Remove clicks the row's own ×. There is one add-a-lift behaviour and
+   one remove-a-row behaviour, and this is not a second copy of either. */
+const LOG_HOLD_MS = 450;
+const LOG_HOLD_SLOP = 10;            // a scroll that starts on a box is a scroll
+const LOG_HOLD_BOXES = '.week-ex-name, .week-ex-sets, .week-ex-reps, .week-ex-weight';
+let logHoldTimer = null, logHoldFrom = null, logHoldMenu = null, logHoldSwallow = false;
+
+function closeLogHoldMenu(){
+  if(logHoldMenu){ logHoldMenu.remove(); logHoldMenu = null; }
+  document.removeEventListener('pointerdown', logHoldOutsideTap, true);
+}
+function logHoldOutsideTap(e){
+  if(logHoldMenu && !logHoldMenu.contains(e.target)) closeLogHoldMenu();
+}
+function openLogHoldMenu(row, anchorEl){
+  closeLogHoldMenu();
+  const m = document.createElement('div');
+  m.className = 'log-hold-menu';
+  m.setAttribute('role', 'menu');
+  m.innerHTML = [
+    ['tags',   row.classList.contains('tags-open') ? 'Hide tags' : 'Edit tags'],
+    ['add',    'Add a lift'],
+    ['remove', 'Remove this lift']
+  ].map(([k, label])=> `<button type="button" role="menuitem" data-act="${k}">${label}</button>`).join('');
+  document.body.appendChild(m);
+  // Under the box it was held on, flipped above when there is no room below, and never off
+  // either edge — the last box on a row sits close to the right margin.
+  const r = anchorEl.getBoundingClientRect();
+  const mw = m.offsetWidth, mh = m.offsetHeight;
+  let top = Math.round(r.bottom + 6);
+  if(top + mh > window.innerHeight - 8) top = Math.round(r.top - mh - 6);
+  m.style.top  = Math.max(8, top) + 'px';
+  m.style.left = Math.max(8, Math.min(Math.round(r.left), window.innerWidth - mw - 8)) + 'px';
+  logHoldMenu = m;
+  m.addEventListener('click', e=>{
+    const btn = e.target.closest('button[data-act]');
+    if(!btn) return;
+    const act = btn.dataset.act;
+    closeLogHoldMenu();
+    if(act === 'tags') row.classList.toggle('tags-open');
+    else if(act === 'add') document.getElementById('addWeekExerciseRow')?.click();
+    else if(act === 'remove') row.querySelector('.remove-row')?.click();
+  });
+  // Next frame, or the pointerdown that opened this closes it again.
+  setTimeout(()=> document.addEventListener('pointerdown', logHoldOutsideTap, true), 0);
+}
+function cancelLogHold(){ clearTimeout(logHoldTimer); logHoldTimer = null; logHoldFrom = null; }
+
+/* Wired once on the sheet rather than per open: #blockEditPanel is the same node every time
+   it is filled, so anything bound to it in openBlockEditor stacks a copy per session opened. */
+(function wireLogHold(){
+  const sheet = document.getElementById('logSheet');
+  if(!sheet) return;
+  sheet.addEventListener('pointerdown', e=>{
+    logHoldSwallow = false;
+    const el = e.target.closest && e.target.closest(LOG_HOLD_BOXES);
+    if(!el || !el.closest('#weekExerciseRows')) return;
+    const row = el.closest('.edit-row');
+    if(!row) return;
+    cancelLogHold();
+    logHoldFrom = { x:e.clientX, y:e.clientY };
+    logHoldTimer = setTimeout(()=>{
+      cancelLogHold();
+      // The tap that follows the hold would otherwise land in the box and, on a phone, bring
+      // the keyboard up behind the menu.
+      logHoldSwallow = true;
+      el.blur();
+      openLogHoldMenu(row, el);
+    }, LOG_HOLD_MS);
+  }, true);
+  sheet.addEventListener('pointermove', e=>{
+    if(!logHoldFrom) return;
+    if(Math.abs(e.clientX - logHoldFrom.x) > LOG_HOLD_SLOP
+    || Math.abs(e.clientY - logHoldFrom.y) > LOG_HOLD_SLOP) cancelLogHold();
+  }, true);
+  ['pointerup','pointercancel'].forEach(t=> sheet.addEventListener(t, cancelLogHold, true));
+  sheet.addEventListener('scroll', ()=>{ cancelLogHold(); closeLogHoldMenu(); }, true);
+  sheet.addEventListener('click', e=>{
+    if(!logHoldSwallow) return;
+    logHoldSwallow = false;
+    e.preventDefault(); e.stopPropagation();
+  }, true);
+  // The same gesture on a desktop, and what Android fires for a long press anyway — opening
+  // twice costs nothing, because opening closes whatever is already up.
+  sheet.addEventListener('contextmenu', e=>{
+    const el = e.target.closest && e.target.closest(LOG_HOLD_BOXES);
+    if(!el || !el.closest('#weekExerciseRows')) return;
+    e.preventDefault();
+    cancelLogHold();
+    const row = el.closest('.edit-row');
+    if(row){ el.blur(); openLogHoldMenu(row, el); }
+  });
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape') closeLogHoldMenu(); });
+})();
 
 // Rows the exercise stepper hid are still rows. Removing the one on screen has to leave you
 // looking at something rather than at the gap where it was.
