@@ -7695,24 +7695,32 @@ function moveEyes(dest, from, snap){
     else scheduleIdle(2600);
   };
 
-  /* LEAVING TODAY IS A CUT, NOT A GESTURE.
+  /* THE ARRIVAL IS THE GESTURE, IN BOTH DIRECTIONS.
 
-     The tear is worth watching on the way IN, because you are arriving somewhere and it is
-     the thing that says the mark got there. On the way out you are already going somewhere
-     else: the panel is wiping, the tab is lifting, and a 496ms performance about a mark
-     leaving a screen you are no longer looking at is 496ms of the app admiring itself. It
-     also meant the chip sat there tearing in your colour while the page underneath it had
-     already changed.
+     Leaving Today used to be a cut. The argument was that a tear on the way OUT is 496ms of
+     the app admiring itself — you are already going somewhere else, the panel is wiping, the
+     tab is lifting — and that the chip sat there tearing in your colour while the page under
+     it had already changed. Both of those were about tearing the thing being LEFT.
 
-     So it is simply back in the wordmark, in the wordmark's own lime, on the frame you tap.
-     applyEyeForm below is what restores that -- the two are separate elements and the chip's
-     colour was never on the header mark, but the form it wears is written fresh either way.
+     They do not apply to the thing being ARRIVED AT, which is what this path actually tears:
+     `arriving` is the chip on the way in and the header mark on the way out, and it is torn
+     after whenHeaderSettled, in the masthead, on the page you just opened. That is the same
+     gesture the way in already gets and for the same reason — it is the thing that says the
+     mark got here. The colour objection is dead twice over: it went with the brackets in
+     .577, and the chip is not what tears on this leg anyway.
 
-     Everything else that cannot tear lands the same way: no motion, no chip to tear from, or
-     the tear switched off in Settings. The handover still has to happen in all of them, or
-     the mark ends up in neither place. */
-  if(snap || dest === 'header' || eyeMotionOff() || (from && from.offscreen)
-     || !chip || !anim('tearOnFlight')){
+     AND THE CHIP IS NOT A CONDITION OF LEAVING. There used to be a `!chip` here as well, and
+     it — not the dest test above it — is what actually cut the outbound leg: todayChipEl()
+     reads offsetParent, activateTab has already hidden the Today panel by the time moveEyes
+     runs, and a dock inside a display:none panel has no offsetParent. So `!chip` was true on
+     every single trip back to the masthead. It could never be true on the way IN either,
+     because `dest === 'score' && !chip` returns outright at the top of this function — which
+     leaves it a test that fired only where it was wrong. Gone.
+
+     Everything that still cannot tear lands the same way: a snap, no motion, an offscreen
+     origin, or the tear switched off in Settings. The handover has to happen in all of them,
+     or the mark ends up in neither place. */
+  if(snap || eyeMotionOff() || (from && from.offscreen) || !anim('tearOnFlight')){
     land();
     return;
   }
@@ -7743,9 +7751,8 @@ function moveEyes(dest, from, snap){
        header mark on Today, four times out of four tab returns.
 
        It read as a gesture in the code and as a glitch on screen, because the staging half
-       of the tear only ever ran in ONE direction. Leaving Today is a cut (dest === 'header'
-       returns above), so `away` here was always the header and `back` always the chip: the
-       branch existed solely to light the masthead on the way in.
+       of the tear only ever ran in ONE direction: the branch existed solely to light the
+       masthead on the way IN, which is the one leg that does not want it lit.
 
        So the arrival is now the whole gesture. The chip comes up on the first frame and
        tears there, which is the half that was ever worth watching — it says the mark got
@@ -11466,7 +11473,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.15.580';
+const APP_VERSION = '2026.09.16.581';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11769,6 +11776,7 @@ const APP_NOTES = {
   '2026.09.15.578': 'Each page carries its own mark behind the masthead instead of a number.',
   '2026.09.15.579': 'The page mark opens from the centre when you change tabs instead of appearing.',
   '2026.09.15.580': 'The mark stands beside your score instead of on it, and the two are centred together.',
+  '2026.09.16.581': 'The mark tears back into the masthead when you leave Today, the way it tears in when you arrive.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
