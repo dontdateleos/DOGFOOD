@@ -1015,8 +1015,14 @@
        a full stop dropped in the paragraph. The relationship to the mark is kept where it
        actually matters \u2014 in flight, below \u2014 rather than in the resting size. */
     width:56px; height:56px; min-height:0; margin:0; flex:none;
-    border-radius:50%; padding:0 0 3px; line-height:1;
-    font-family:var(--mono); font-size:33px; font-weight:var(--fw-medium); letter-spacing:0;
+    /* THE BOX STOPPED BEING BUILT AROUND A TYPED GLYPH.
+       It was `padding:0 0 3px` with font-size 33 and line-height 1: three pixels of optical
+       correction for a mono "+", whose ink sits high in its em box. The mark is drawn now, on
+       a viewBox the same size as the button, so it is centred by its own geometry — and the
+       old 3px would push it off by exactly that much. The type properties go with it; the
+       button has carried no text since, and the name a screen reader announces has always
+       come from aria-label rather than from the glyph. */
+    border-radius:50%; padding:0; align-items:center; justify-content:center;
     background:var(--bg); color:var(--ground); border:0; box-shadow:none; cursor:pointer;
     transition:background-color 200ms cubic-bezier(0.2,0.7,0.2,1); }
   /* The flight is a transition on an inline transform, not a WAAPI animation with fill:both.
@@ -1038,8 +1044,12 @@
   #logFab .fab-sphere{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
     opacity:0; pointer-events:none; overflow:visible;
     transition:opacity 200ms cubic-bezier(0.2,0.7,0.2,1); }
-  #logFab .fab-plus{ position:relative; opacity:1;
+  #logFab .fab-plus{ position:relative; opacity:1; display:block;
     transition:opacity 200ms cubic-bezier(0.2,0.7,0.2,1); }
+  /* 56 on a 56 viewBox, so a unit in the path is a pixel on the button and the stroke is the
+     weight it was drawn at. display:block because an inline SVG sits on a text baseline and
+     leaves a descender's worth of space under it inside a box centring on content height. */
+  #logFab .fab-plus svg{ display:block; width:56px; height:56px; }
   /* THE MARK DOES NOT GROW ON THE WAY DOWN.
 
      mcPaint sizes the drawing off the host's own width, so at 56 the sphere would be drawn
@@ -6244,7 +6254,7 @@
      bar below this, on every tab, with its own name and rest clock. All this does is START
      one, and that is something you do from Today. A disc floating over Data's charts or
      Settings' forms would be cost without benefit. -->
-<button type="button" class="log-fab is-away" id="logFab" aria-label="Log a workout"><svg class="mark-cube fab-sphere" id="fabMarkCube" aria-hidden="true"></svg><span class="fab-plus">+</span></button>
+<button type="button" class="log-fab is-away" id="logFab" aria-label="Log a workout"><svg class="mark-cube fab-sphere" id="fabMarkCube" aria-hidden="true"></svg><span class="fab-plus"><svg viewBox="0 0 56 56" aria-hidden="true"><path d="M14,34L28,20L42,34" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
 
 <div class="log-bar" id="logBar" style="display:none;">
   <button type="button" class="log-bar-open" id="logBarOpen">
@@ -11492,7 +11502,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.16.586';
+const APP_VERSION = '2026.09.16.587';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11801,6 +11811,7 @@ const APP_NOTES = {
   '2026.09.16.584': 'The mark rolls to its new page and simply stops — no tear on the landing.',
   '2026.09.16.585': 'Body and Data carry new page marks, each taken from something already drawn on that page.',
   '2026.09.16.586': 'Connecting Oura works from the browser too, not just the home-screen app.',
+  '2026.09.16.587': 'The log button wears a caret instead of a plus.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
