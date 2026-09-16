@@ -2187,6 +2187,18 @@
      out ragged; a third is a third at every width. */
   #trendMetricPills{ flex-wrap:wrap; }
   #trendMetricPills .type-btn{ flex:0 1 calc((100% - 16px) / 3); min-width:0; }
+  /* THE SECOND LEGEND, THE WAY A KEYCAP CARRIES ONE.
+     A key that says 7 and Home says two true things at two weights, and these buttons each
+     already had a second true thing nobody was told: what the number underneath is measured
+     in. The unit was only ever on the chart's own axis, a scroll away from the control that
+     chooses it.
+     Sized and dimmed hard rather than a little, because it must not compete: at 9px and 45%
+     it is legible when you look for it and invisible when you are just picking a metric.
+     display:block so it takes its own line rather than running on after the name — which is
+     what makes it a legend rather than a suffix. */
+  #trendMetricPills .type-btn{ line-height:1.15; }
+  .btn-legend{ display:block; font-style:normal; font-size:9px; letter-spacing:0.14em;
+    text-transform:uppercase; opacity:0.45; margin-top:3px; }
   /* ============ SIX AND THREE, NOT NINE ============
 
      Two controls sat here in one 3x3 block of identical bordered boxes: six METRICS to
@@ -5355,12 +5367,12 @@
       <div class="group-head"><div class="group-title">Over time</div><div class="group-sub">the whole history, not a trailing window</div></div>
     </div>
     <div class="session-type" id="trendMetricPills">
-      <div class="type-btn active" data-metric="hrv">HRV</div>
-      <div class="type-btn" data-metric="sleepScore">Sleep</div>
-      <div class="type-btn" data-metric="loadRatio">Load</div>
-      <div class="type-btn" data-metric="sleepDebt">Debt</div>
-      <div class="type-btn" data-metric="weight">Weight</div>
-      <div class="type-btn" data-metric="bodyFat">Body Fat</div>
+      <div class="type-btn active" data-metric="hrv">HRV<i class="btn-legend">ms</i></div>
+      <div class="type-btn" data-metric="sleepScore">Sleep<i class="btn-legend">score</i></div>
+      <div class="type-btn" data-metric="loadRatio">Load<i class="btn-legend">ratio</i></div>
+      <div class="type-btn" data-metric="sleepDebt">Debt<i class="btn-legend">hrs</i></div>
+      <div class="type-btn" data-metric="weight">Weight<i class="btn-legend">kg</i></div>
+      <div class="type-btn" data-metric="bodyFat">Body Fat<i class="btn-legend">%</i></div>
     </div>
     <div class="session-type" id="trendPeriodPills" style="margin-top:8px;">
       <div class="type-btn active" data-period="daily">Daily</div>
@@ -11540,7 +11552,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.16.588';
+const APP_VERSION = '2026.09.16.589';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11851,6 +11863,7 @@ const APP_NOTES = {
   '2026.09.16.586': 'Connecting Oura works from the browser too, not just the home-screen app.',
   '2026.09.16.587': 'The log button wears a caret instead of a plus.',
   '2026.09.16.588': 'Your score sits in the shadow of the digits it is not — the way a calculator display does.',
+  '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
