@@ -3021,6 +3021,24 @@
      four that is a reading rather than a label, it is the way into the lift's full history,
      and with the boxes now holding the plan it is the only trace of what you actually did
      last time. */
+  /* +5 KG, NEXT TO THE LIFT THAT EARNED IT. Beating the plan was recorded and never said.
+     A plate, the same object .pr-plate is — this is a state the row is in, not a remark —
+     in the lime the week ribbon already uses for "ahead", which is the same claim.
+     --block-lime is a :root token and is NOT re-scoped by this pocket, so the ink on it is
+     the literal near-black rather than a token that would follow the ground and put the lime
+     under cream on one of them. */
+  .log-sheet .ex-over{ order:-2; flex:0 0 auto; display:inline-block;
+    font-family:var(--mono); font-size:var(--log-note); font-weight:var(--fw-bold);
+    letter-spacing:0.1em; text-transform:uppercase; white-space:nowrap;
+    background:var(--block-lime); color:#0c0d0b;
+    border-radius:9px; padding:3px 8px; margin-bottom:6px; }
+  .log-sheet .ex-over[hidden]{ display:none; }
+  /* The name is flex:1 1 100% so that it takes its own line. A 100% basis wraps anything
+     beside it onto the next line before shrinking is ever considered, so the plate would sit
+     alone under the name rather than next to it. auto basis resolves to the input's own
+     width, which leaves both on one line, and grow:1 gives the name everything the plate
+     does not take. Only while there is a plate — the plain row keeps its full line. */
+  .log-sheet #weekExerciseRows .edit-row.has-over .week-ex-name{ flex:1 1 auto !important; }
   .log-sheet .ex-target-line,
   .log-sheet .week-ex-evidence,
   .log-sheet .log-toggle-row,
@@ -11639,7 +11657,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.16.593';
+const APP_VERSION = '2026.09.16.594';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11953,6 +11971,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.16.594': 'Beat the plan on a lift and a green +5 KG lands next to its name.',
   '2026.09.16.593': 'The log opens with the plan already in the boxes, dimmed until you change it.',
   '2026.09.16.592': 'Every box in the log says what it holds — 3 sets, 8 reps, 60 kg — instead of × and @.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
@@ -19129,6 +19148,7 @@ function plannedFillFor(row){
 function prefillPlanned(row){
   const f = plannedFillFor(row);
   delete row.dataset.weightWhy;
+  recordPlanBaseline(row, f);
   [['.week-ex-sets', f.sets], ['.week-ex-reps', f.reps], ['.week-ex-weight', f.weight]].forEach(([sel, v])=>{
     const el = row.querySelector(sel);
     if(!el || el.value !== '' || v == null) return;
@@ -19143,6 +19163,66 @@ function prefillPlanned(row){
 // A value nobody typed is not a value the draft should carry: writing it back on reopen
 // would restore it as yours, full ink, with the dim lost. The prefill runs again anyway.
 function typedValue(el){ return (el && !el.dataset.planned && el.value) || ''; }
+
+/* WHAT THE ROW WAS ASKED FOR, KEPT ON THE ROW. Written where the prefill already has it, so
+   the boxes can be typed over and there is still something to measure against.
+   Only a row carrying a real prescription gets one — the same test the old TARGET line used.
+   A lift you typed in yourself has no plan to be above, and calling last session's weight
+   "the plan" would be the app inventing an instruction it never gave.
+   Sets and weight are measured against what the box opened holding, which is what you saw.
+   Reps are measured against the TOP of the prescribed range, not the bottom the box opened
+   at: 4 × 3-6 asks for anything up to six, so a set of five is the plan being met, not beaten.
+   Ranges are why this is a separate number rather than just the prefill. */
+function recordPlanBaseline(row, f){
+  const src = row._srcExercise;
+  const has = src && src.sets != null && src.repLow != null;
+  ['planSets','planReps','planWeight'].forEach(k=> delete row.dataset[k]);
+  if(!has) return;
+  if(f.sets != null) row.dataset.planSets = f.sets;
+  const repCeiling = src.repHigh != null ? src.repHigh : src.repLow;
+  if(repCeiling != null) row.dataset.planReps = repCeiling;
+  if(f.weight != null) row.dataset.planWeight = f.weight;
+}
+// A box takes one number or a list of them — 60, or 60,80,100 for a ramp. The top of the
+// list is what "above" is about: one set over the ask is the thing worth saying.
+function logFieldTop(v){
+  const nums = String(v == null ? '' : v).split(',').map(x=> parseFloat(x)).filter(x=> isFinite(x));
+  return nums.length ? Math.max(...nums) : null;
+}
+/* THE GREEN PLATE. Beating the plan was recorded and never said — you had to remember what
+   the target was, and the target line that used to carry it is gone.
+   Weight first, then reps, then sets: one plate, because two would be a row of badges next
+   to a name that already has to fit. Everything that is up shows in the title.
+   Recomputed on change and on focusout rather than on every keystroke, so typing 120 into a
+   box does not flash "+60 KG" on its way past 1 and 12. */
+function refreshOverPlan(row){
+  const plate = row.querySelector('.ex-over');
+  if(!plate) return;
+  const nameEl = row.querySelector('.week-ex-name');
+  const unit = (nameEl && resultUnitFor(nameEl.value)) || 'kg';
+  const up = [];
+  const over = (key, sel, label)=>{
+    const want = parseFloat(row.dataset[key]);
+    const el = row.querySelector(sel);
+    if(!isFinite(want) || !el || el.dataset.planned) return;
+    const got = logFieldTop(el.value);
+    if(got == null || !(got > want)) return;
+    // Rounded to one place: a half-kilo over is real, 0.30000000000000004 is float noise.
+    up.push({ d: Math.round((got - want) * 10) / 10, label });
+  };
+  over('planWeight', '.week-ex-weight', unit.toUpperCase());
+  over('planReps',   '.week-ex-reps',   'REPS');
+  over('planSets',   '.week-ex-sets',   'SETS');
+  if(!up.length){
+    plate.hidden = true; plate.textContent = ''; plate.removeAttribute('title');
+    row.classList.remove('has-over');
+    return;
+  }
+  plate.textContent = '+' + up[0].d + ' ' + up[0].label;
+  plate.title = 'Above plan: ' + up.map(u=> '+' + u.d + ' ' + u.label.toLowerCase()).join(', ');
+  plate.hidden = false;
+  row.classList.add('has-over');
+}
 
 // Rows the exercise stepper hid are still rows. Removing the one on screen has to leave you
 // looking at something rather than at the gap where it was.
@@ -19277,6 +19357,16 @@ function wireBlockEditorClose(panel){
     if(blockEditMinimisable) minimiseBlockEditor();
     else closeBlockEditor({ keepDraft:true });
   });
+  /* SOFT SAVE. Leaving a box is the moment the number in it becomes a claim — the plate is
+     recomputed then rather than on every keystroke, so it never flashes "+60 KG" while 120
+     is being typed past 1 and 12. focusout as well as change, because change only fires on a
+     value that actually differs and tabbing out of an untouched box should still settle the
+     row. */
+  panel.addEventListener('focusout', e=>{
+    if(!(e.target && e.target.matches && e.target.matches('.week-ex-sets, .week-ex-reps, .week-ex-weight'))) return;
+    const row = e.target.closest('.edit-row');
+    if(row) refreshOverPlan(row);
+  });
   // Delegated, so rows added after this runs are covered too.
   ['input','change'].forEach(t=> panel.addEventListener(t, e=>{
     blockEditDirty = true;
@@ -19289,6 +19379,7 @@ function wireBlockEditorClose(panel){
       markLoggingStarted(blockEditDate);
       const row = e.target.closest('.edit-row');
       if(row) refreshSetBreakdown(row);
+      if(row && e.type === 'change') refreshOverPlan(row);
     }
   }));
 }
@@ -19916,6 +20007,7 @@ async function openBlockEditor(date, slot, block){
       const ph = (v, fallback) => (v === 0 || v) ? String(v) : fallback;
       row.innerHTML = `
         <input type="text" class="week-ex-name" placeholder="exercise" value="${name}">
+        <span class="ex-over" hidden></span>
         <span class="week-ex-evidence"></span>
         <span class="remove-row">×</span>
         ${lastLoggedLine(name)}
@@ -20089,7 +20181,7 @@ async function openBlockEditor(date, slot, block){
   applyLogDraft(panel, await loadLogDraft(date, slot));
   // Last, so that anything actually logged or drafted is already in the boxes and the plan
   // only lands where there is nothing.
-  if(block.type === 'strength') logExRows().forEach(prefillPlanned);
+  if(block.type === 'strength') logExRows().forEach(row=>{ prefillPlanned(row); refreshOverPlan(row); });
   // A session read back from history or from a draft arrives without a keystroke, so the
   // delegated input handler never fires for it.
   panel.querySelectorAll('#weekExerciseRows .edit-row').forEach(refreshSetBreakdown);
