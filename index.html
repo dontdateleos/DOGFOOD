@@ -1536,7 +1536,31 @@
      cell too, though, and the widest figures ("1" and "3") already reach 33 of the 34.81px
      advance, so at -0.02em the box would start shaving them down the right-hand side. Padding
      widens the clip box without widening the cell. */
-  .digit-well{ display:inline-block; overflow:hidden; height:1em; height:1lh; vertical-align:top;
+  /* ONE GHOST PER WELL, NOT ONE BEHIND THE LOT.
+     The first attempt was a single "88" absolutely positioned at the element's origin, and it
+     did not line up: measured, each well is a 49.7px box sitting on a 33.7px advance — they
+     OVERLAP, because the well is shrink-to-fit around a strip whose glyphs are wider than
+     their own advance — and the first one starts 8px outside the element it is inside. No
+     offset put a plain text run onto digits laid out like that, and any number that did would
+     have been a constant to maintain against the font.
+     So the 8 goes INSIDE each well, at the same origin its strip uses. The two cannot
+     disagree: they are positioned by the same box, and a digit and its ghost land together at
+     any size, any tracking, any digit count. The well already clips to one line, so the 8
+     shows exactly where the lit digit shows and nowhere else.
+     Both children are positioned so source order decides which is on top — ghost first,
+     strip over it.
+
+     STRETCHED ACROSS THE WELL RATHER THAN PINNED TO ITS LEFT, and that is the whole of the
+     alignment. The well is 49.7px around a 33.7px glyph, and the strip's digit is CENTRED in
+     it by the text-align this block inherits — so a ghost at left:0 lands exactly (49.7-33.7)/2
+     = 8px out. Giving it both edges lets the same inherited centring place it, which is why
+     there is no 8 written anywhere here: the number would have been a constant to maintain
+     against the font, and the two would drift apart the first time the face or the size
+     changed. text-align is deliberately NOT re-declared — inherited, the digit and its ghost
+     cannot be aligned differently. */
+  .well-ghost{ position:absolute; left:0; right:0; top:0; opacity:0.13; pointer-events:none; }
+  .digit-strip{ position:relative; }
+  .digit-well{ position:relative; display:inline-block; overflow:hidden; height:1em; height:1lh; vertical-align:top;
     padding:0 8px; margin:0 -8px; }
   .digit-strip{ display:block; will-change:transform; }
   /* The wordmark's treatment, not the interface face: --wordmark at its own -0.035em, and no
@@ -9907,8 +9931,22 @@ function rollNumber(el, from, to, ms){
   // The strips are 0-9 ten times over, so the element's own text is no longer the number.
   // Two things read it: a screen reader, and the next roll looking for where to start from.
   // The label answers the first and dataset.value the second.
+  /* THE UNLIT SEGMENTS, WITHOUT THE SEGMENTS.
+     What makes a calculator display read as one is not the segment shapes, it is that the
+     dark segments are still THERE — a 47 sits in the shadow of an 88. The same trick works
+     on a typeface, and better here than drawing segments would: the score is already set in
+     tabular figures on one 34.81px advance, so an 8 lands exactly over whatever digit is in
+     that place, at any digit count, for free. This is the reference's idea in the app's own
+     face rather than in the reference's.
+
+     Built HERE, in the same statement as the wells, rather than written to a data attribute
+     and drawn by CSS. dataset.value is set in one place and deleted in three — a first
+     paint, a held score, a cleared one — and a ghost on its own attribute would have been a
+     fourth thing to keep in step with those, with "88" left hanging over an empty block the
+     first time one of them was missed. Made and destroyed with the digits, it cannot be. */
   el.innerHTML = target.split('').map(()=>
-    `<span class="digit-well" aria-hidden="true"><span class="digit-strip">0<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9</span></span>`
+    `<span class="digit-well" aria-hidden="true"><span class="well-ghost">8</span>`
+    + `<span class="digit-strip">0<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9</span></span>`
   ).join('');
   el.setAttribute('aria-label', target);
   el.dataset.value = target;
@@ -11502,7 +11540,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.16.587';
+const APP_VERSION = '2026.09.16.588';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11812,6 +11850,7 @@ const APP_NOTES = {
   '2026.09.16.585': 'Body and Data carry new page marks, each taken from something already drawn on that page.',
   '2026.09.16.586': 'Connecting Oura works from the browser too, not just the home-screen app.',
   '2026.09.16.587': 'The log button wears a caret instead of a plus.',
+  '2026.09.16.588': 'Your score sits in the shadow of the digits it is not — the way a calculator display does.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
