@@ -2880,15 +2880,23 @@
   /* ONE LINE A LIFT. Name takes the room, the numbers take what they need, and everything
      else on the row wraps under it. order rather than moving the markup: the rows are wired
      by class in a dozen places and none of that wants to know about a layout change. */
-  .log-sheet #weekExerciseRows .edit-row{ display:flex; flex-wrap:wrap; align-items:baseline;
-    gap:0 6px; margin:0; padding:8px 0 7px;
-    border-bottom:1px solid rgba(var(--ink-rgb),0.22); }
+  /* NO RULE UNDER THE ROW. Each lift is a line of boxes now, and a box already says where it
+     starts and stops — a rule under it is a second separator doing the first one's job. The
+     padding goes up to carry the separation the line used to. */
+  .log-sheet #weekExerciseRows .edit-row{ display:flex; flex-wrap:wrap; align-items:center;
+    gap:0 6px; margin:0; padding:10px 0 9px; }
   .log-sheet #weekExerciseRows > .edit-row + .edit-row{ border-top:0; padding-top:8px; }
   /* 60, not 90. The numbers and their units are about 185px and the remove control 14, so
      at 320 a 90px basis left the row 25px short and the x wrapped to a line of its own —
      which cost a whole line on every row, 58px to 90. It shrinks; the numbers do not. */
-  .log-sheet .week-ex-name{ order:-3; flex:1 1 60px !important; min-width:0 !important;
-    border:0 !important; border-radius:0; padding:0 !important;
+  /* THE NAME TAKES ITS OWN LINE NOW, AND HAS TO.
+     It was flex:1 1 60px, sharing a line with the numbers — a basis chosen when those numbers
+     were bare underlines. Boxing them added 18px each, 54 across the three, and the name gave
+     up exactly that: measured at 70.6px, which truncates "Bulgarian split squat" to "exer…".
+     A full basis puts it on its own line and the numbers wrap under it, which is also the
+     better read: what you did, then how much of it. */
+  .log-sheet .week-ex-name{ order:-3; flex:1 1 100% !important; min-width:0 !important;
+    margin-bottom:6px;
     font-family:var(--wordmark) !important; font-size:var(--log-write) !important;
     text-overflow:ellipsis; }
   /* They sit on the wrapped line with the tags rather than on the entry line. Reserving room
@@ -2908,16 +2916,44 @@
   .log-sheet .week-ex-fail{ font-size:0 !important; }
   .log-sheet .week-ex-fail::before{ content:'FAIL'; font-size:var(--log-note); }
   .log-sheet .week-ex-fail.on{ background:transparent; border-color:transparent; color:var(--block-lime); }
-  .log-sheet .log-fields-row{ order:-1; flex:0 0 auto; display:flex; align-items:baseline;
-    gap:2px; margin:0; font-variant-numeric:tabular-nums; }
+  .log-sheet .log-fields-row{ order:-1; flex:0 0 auto; display:flex; align-items:center;
+    gap:5px; margin:0; font-variant-numeric:tabular-nums; }
   .log-sheet .log-fields-row input{ flex:0 0 auto !important; min-width:0 !important;
-    text-align:center; border:0 !important;
-    border-bottom:1px solid rgba(var(--ink-rgb),0.45) !important;
-    padding:0 2px !important; font-family:var(--wordmark) !important;
+    text-align:center; font-family:var(--wordmark) !important;
     font-size:var(--log-write) !important; font-variant-numeric:tabular-nums; }
-  .log-sheet .week-ex-sets{ width:2em; }
-  .log-sheet .week-ex-reps{ width:2.4em; }
-  .log-sheet .week-ex-weight{ width:3.2em; }
+  /* EVERY VARIABLE IN ITS OWN BOX, IN THE TAG'S IDIOM.
+     Underlines were doing two jobs badly: they said "type here", and they were the only thing
+     separating one number from the next, so a row of them read as a fill-in-the-blank form
+     rather than as a lift. The tag treatment the app already uses — a hairline edge at 0.3 of
+     the ink, the same padding, rounded — says "this is a value" instead, and makes each of
+     the four a discrete thing you can point at.
+     Borrowed from .chip-row span rather than invented, with a radius added: that rule is
+     square, and these are the only boxes on the page you put something INTO. */
+  .log-sheet .log-fields-row input,
+  .log-sheet .week-ex-name,
+  .log-sheet .log-notes-row input,
+  .log-sheet .log-one input,
+  .log-sheet .log-one select{
+    border:1px solid rgba(var(--ink-rgb),0.30) !important;
+    border-radius:9px !important;
+    padding:5px 8px !important;
+    background:transparent !important; }
+  /* NO SPINNERS, NOW THAT THERE IS A BOX TO SEE THEM IN.
+     The app suppresses these nowhere — a bare number input was drawing its stepper all along,
+     but against a borderless field clipped to 2em there was nothing to notice. Give the field
+     an edge and 8px of padding and the arrows arrive inside it, centred in the run's "min"
+     box and reading as a control the row does not have.
+     Scoped to the sheet rather than set globally: the morning form is full of number inputs
+     and its steppers are not this change's business. */
+  .log-sheet input[type=number]::-webkit-outer-spin-button,
+  .log-sheet input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  .log-sheet input[type=number]{ -moz-appearance:textfield; appearance:textfield; }
+  /* box-sizing is border-box everywhere, so the em widths above are now the OUTSIDE of the
+     box and the digits would lose 18px of room to the padding and edge. Given back exactly:
+     8+8 of padding and 1+1 of border. */
+  .log-sheet .week-ex-sets{ width:calc(2em + 18px); }
+  .log-sheet .week-ex-reps{ width:calc(2.4em + 18px); }
+  .log-sheet .week-ex-weight{ width:calc(3.2em + 18px); }
   .log-sheet .log-op{ font-family:var(--wordmark); font-size:var(--log-write); color:rgba(var(--ink-rgb),0.5); }
   .log-sheet .log-unit{ padding-left:1px; }
   /* It sits inline with the name and the numbers, so it takes their face. The family is the
@@ -2982,8 +3018,7 @@
 
      width:100%, not align-self:stretch, which reported as applied and still left the box at
      its own content width inside the column. A divider that stops short is not a divider. */
-  .log-sheet .log-foot{ margin-top:var(--sp-3); padding-top:13px;
-    border-top:1px solid rgba(var(--ink-rgb),0.22); }
+  .log-sheet .log-foot{ margin-top:var(--sp-3); padding-top:13px; }
   /* The panel's own ink at the weight of a control rather than of an answer: it sits under
      whatever you came here to do, and it is not one of the things you came to do. */
   .log-sheet .log-foot-a{ width:100%; height:auto; min-height:0; padding:4px 0;
@@ -3004,40 +3039,47 @@
      one line the way a lift's do. The select stays a select — eight kinds of run is a list,
      not three things you could say — but it loses the box. */
   .log-sheet .log-one select,
-  .log-sheet .log-one input{ flex:1 1 auto; border:0 !important;
-    border-bottom:1px solid rgba(var(--ink-rgb),0.45) !important;
-    border-radius:0; padding:3px 0 5px !important; font-family:var(--wordmark) !important;
-    font-size:var(--log-write) !important; background:transparent; }
-  .log-sheet .log-run-row{ gap:2px; align-items:baseline; margin-bottom:0; }
-  .log-sheet .log-run-row input{ flex:0 0 auto !important; min-width:0 !important; width:3.4em;
-    text-align:center; border:0 !important;
-    border-bottom:1px solid rgba(var(--ink-rgb),0.45) !important;
-    padding:0 2px !important; font-family:var(--wordmark) !important;
+  .log-sheet .log-one input{ flex:1 1 auto; font-family:var(--wordmark) !important;
+    font-size:var(--log-write) !important; }
+  .log-sheet .log-run-row{ gap:5px; align-items:center; margin-bottom:0; }
+  /* Boxed like the lift's numbers, and widened by the same 18 the padding and edge take. */
+  .log-sheet .log-run-row input{ flex:0 0 auto !important; min-width:0 !important;
+    width:calc(3.4em + 18px);
+    text-align:center; border:1px solid rgba(var(--ink-rgb),0.30) !important;
+    border-radius:9px !important;
+    padding:5px 8px !important; font-family:var(--wordmark) !important;
     font-size:var(--log-write) !important; font-variant-numeric:tabular-nums; }
-  .log-sheet #weekStretchRows .edit-row{ display:flex; flex-wrap:wrap; align-items:baseline;
-    gap:0 8px; margin:0; padding:8px 0 7px;
-    border-bottom:1px solid rgba(var(--ink-rgb),0.22); }
-  .log-sheet #weekStretchRows input[type=text]{ flex:1 1 90px !important; min-width:0 !important;
-    border:0 !important; padding:0 !important; font-family:var(--wordmark) !important;
-    font-size:var(--log-write) !important; }
+  /* The stretch rows get what the lift rows got: no rule under the row, every field a box.
+     They are a separate block with their own selectors, which is why the first pass at this
+     left them untouched — caught by walking all four log kinds rather than the one I opened. */
+  .log-sheet #weekStretchRows .edit-row{ display:flex; flex-wrap:wrap; align-items:center;
+    gap:6px 8px; margin:0; padding:10px 0 9px; }
+  .log-sheet #weekStretchRows input[type=text],
+  .log-sheet #weekStretchRows select{ flex:1 1 90px !important; min-width:0 !important;
+    border:1px solid rgba(var(--ink-rgb),0.30) !important; border-radius:9px !important;
+    padding:5px 8px !important; background:transparent !important;
+    font-family:var(--wordmark) !important; font-size:var(--log-write) !important; }
   .log-sheet #weekStretchRows input[type=number]{ flex:0 0 auto !important; min-width:0 !important;
-    width:2.6em; text-align:center; border:0 !important;
-    border-bottom:1px solid rgba(var(--ink-rgb),0.45) !important;
-    padding:0 2px !important; font-family:var(--wordmark) !important;
-    font-size:var(--log-write) !important; }
+    width:calc(2.6em + 18px); text-align:center;
+    border:1px solid rgba(var(--ink-rgb),0.30) !important; border-radius:9px !important;
+    padding:5px 8px !important; background:transparent !important;
+    font-family:var(--wordmark) !important; font-size:var(--log-write) !important; }
   .log-sheet .run-pace{ font-family:var(--mono); font-size:9.5px; letter-spacing:0.06em;
     color:rgba(var(--ink-rgb),0.5); margin-top:4px; }
   .log-sheet .log-notes-row{ margin-bottom:0; }
-  .log-sheet .log-notes-row input{ border:0 !important;
-    border-bottom:1px solid rgba(var(--ink-rgb),0.28) !important;
-    padding:4px 0 6px !important; font-family:var(--wordmark) !important;
+  /* The note is a box like the rest. This rule and the boxing rule above share a selector
+     exactly — .log-sheet .log-notes-row input, 0-2-1 both — so this one won on source order
+     and the underline survived a change that had already caught every other field. Beaten by
+     editing it rather than by out-specifying it; a third rule to defeat the second would
+     leave two contradictions in the sheet instead of one. */
+  .log-sheet .log-notes-row input{ font-family:var(--wordmark) !important;
     font-size:var(--log-write) !important; }
 
   /* The four filled buttons at the foot were four decisions of equal weight. Save keeps the
      one colour; the rest stop asking to be pressed. */
   /* 12, not 16. Measured: the row's bottom edge landed 2px past the fold at 390. */
   .log-sheet .log-acts{ display:flex; align-items:baseline; gap:16px; margin-top:12px;
-    padding-top:10px; border-top:1px solid rgba(var(--ink-rgb),0.16); }
+    padding-top:10px; }
   .log-sheet .log-act{ height:auto; min-height:0; padding:0; background:transparent; border:0;
     border-radius:0; font-family:var(--mono); font-size:var(--log-note); font-weight:var(--fw-bold);
     letter-spacing:0.1em; text-transform:uppercase; color:rgba(var(--ink-rgb),0.58);
@@ -11552,7 +11594,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.16.589';
+const APP_VERSION = '2026.09.16.590';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11864,6 +11906,7 @@ const APP_NOTES = {
   '2026.09.16.587': 'The log button wears a caret instead of a plus.',
   '2026.09.16.588': 'Your score sits in the shadow of the digits it is not — the way a calculator display does.',
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
+  '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
