@@ -2934,10 +2934,29 @@
   .log-sheet .log-notes-row input,
   .log-sheet .log-one input,
   .log-sheet .log-one select{
-    border:1px solid rgba(var(--ink-rgb),0.30) !important;
+    border:1px solid var(--bg) !important;
     border-radius:9px !important;
     padding:5px 8px !important;
-    background:transparent !important; }
+    background:var(--bg) !important; color:var(--ground) !important; }
+  /* FILLED, AND THE FILL IS THE SURFACE'S OWN INK.
+     var(--bg) rather than a literal white, because the sheet re-scopes its tokens the way the
+     masthead does: measured, --ink-rgb inside #blockEditPanel is 251,250,246 and --bg is
+     #fbfaf6 on BOTH grounds, since the sheet is a dark pocket either way. So --bg is cream
+     here and would be near-black on any light version of the panel, with --ground knocking
+     the text out the other way — one pair of tokens, two appearances, and nothing to keep in
+     step if the sheet ever flips.
+     The border stays, set to the fill: it is invisible now, and it keeps the box the size the
+     widths above were computed against rather than shrinking every field by 2px.
+     The placeholder has to come off --ground too. It defaults to a dimmed version of the
+     INHERITED colour, which was cream — cream on a cream box is an empty-looking field. */
+  .log-sheet .log-fields-row input::placeholder,
+  .log-sheet .week-ex-name::placeholder,
+  .log-sheet .log-notes-row input::placeholder,
+  .log-sheet .log-one input::placeholder{ color:var(--ground); opacity:0.45; }
+  .log-sheet #weekStretchRows input::placeholder{ color:var(--ground); opacity:0.45; }
+  .log-sheet .log-fields-row input, .log-sheet .week-ex-name,
+  .log-sheet .log-notes-row input, .log-sheet .log-one input,
+  .log-sheet #weekStretchRows input{ caret-color:var(--ground); }
   /* NO SPINNERS, NOW THAT THERE IS A BOX TO SEE THEM IN.
      The app suppresses these nowhere — a bare number input was drawing its stepper all along,
      but against a borderless field clipped to 2em there was nothing to notice. Give the field
@@ -3045,8 +3064,8 @@
   /* Boxed like the lift's numbers, and widened by the same 18 the padding and edge take. */
   .log-sheet .log-run-row input{ flex:0 0 auto !important; min-width:0 !important;
     width:calc(3.4em + 18px);
-    text-align:center; border:1px solid rgba(var(--ink-rgb),0.30) !important;
-    border-radius:9px !important;
+    text-align:center; border:1px solid var(--bg) !important;
+    border-radius:9px !important; background:var(--bg) !important; color:var(--ground) !important;
     padding:5px 8px !important; font-family:var(--wordmark) !important;
     font-size:var(--log-write) !important; font-variant-numeric:tabular-nums; }
   /* The stretch rows get what the lift rows got: no rule under the row, every field a box.
@@ -3056,13 +3075,13 @@
     gap:6px 8px; margin:0; padding:10px 0 9px; }
   .log-sheet #weekStretchRows input[type=text],
   .log-sheet #weekStretchRows select{ flex:1 1 90px !important; min-width:0 !important;
-    border:1px solid rgba(var(--ink-rgb),0.30) !important; border-radius:9px !important;
-    padding:5px 8px !important; background:transparent !important;
+    border:1px solid var(--bg) !important; border-radius:9px !important;
+    padding:5px 8px !important; background:var(--bg) !important; color:var(--ground) !important;
     font-family:var(--wordmark) !important; font-size:var(--log-write) !important; }
   .log-sheet #weekStretchRows input[type=number]{ flex:0 0 auto !important; min-width:0 !important;
     width:calc(2.6em + 18px); text-align:center;
-    border:1px solid rgba(var(--ink-rgb),0.30) !important; border-radius:9px !important;
-    padding:5px 8px !important; background:transparent !important;
+    border:1px solid var(--bg) !important; border-radius:9px !important;
+    padding:5px 8px !important; background:var(--bg) !important; color:var(--ground) !important;
     font-family:var(--wordmark) !important; font-size:var(--log-write) !important; }
   .log-sheet .run-pace{ font-family:var(--mono); font-size:9.5px; letter-spacing:0.06em;
     color:rgba(var(--ink-rgb),0.5); margin-top:4px; }
@@ -11594,7 +11613,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.16.590';
+const APP_VERSION = '2026.09.16.591';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11907,6 +11926,7 @@ const APP_NOTES = {
   '2026.09.16.588': 'Your score sits in the shadow of the digits it is not — the way a calculator display does.',
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
+  '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
