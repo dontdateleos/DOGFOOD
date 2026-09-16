@@ -2973,7 +2973,15 @@
   .log-sheet .week-ex-sets{ width:calc(2em + 18px); }
   .log-sheet .week-ex-reps{ width:calc(2.4em + 18px); }
   .log-sheet .week-ex-weight{ width:calc(3.2em + 18px); }
-  .log-sheet .log-op{ font-family:var(--wordmark); font-size:var(--log-write); color:rgba(var(--ink-rgb),0.5); }
+  /* A NAME IS NOT A VALUE, AND MUST NOT BE SET LIKE ONE.
+     These were operators — one glyph each — so they could carry the writing size without
+     costing anything. As words they cannot: "sets" and "reps" at --log-write are about 40px
+     apiece, and three of them would take 120px off a row that has to hold three boxes at 320.
+     Dropped to the size the BW and FAIL flags use and dimmed further, which is also the right
+     hierarchy: you read the number, and the word is there when you need to check which. */
+  .log-sheet .log-op{ font-family:var(--mono); font-size:var(--log-note);
+    font-weight:var(--fw-bold); letter-spacing:0.08em; text-transform:uppercase;
+    color:rgba(var(--ink-rgb),0.45); }
   .log-sheet .log-unit{ padding-left:1px; }
   /* It sits inline with the name and the numbers, so it takes their face. The family is the
      role, and on this line the role is the lift. */
@@ -3073,6 +3081,19 @@
      left them untouched — caught by walking all four log kinds rather than the one I opened. */
   .log-sheet #weekStretchRows .edit-row{ display:flex; flex-wrap:wrap; align-items:center;
     gap:6px 8px; margin:0; padding:10px 0 9px; }
+  /* The name takes the line, as it does on a lift. With SETS and SECS now written out, the
+     row is name + area + two boxes + two words, and measured at 390 the last word wrapped to
+     a line of its own — an orphaned SECS under an otherwise full row. The name going full
+     width puts area and the numbers together on the line below, where they fit at 320.
+
+     THE SELECTOR CARRIES [type=text] ON PURPOSE. Written as
+     `.log-sheet #weekStretchRows .week-st-name` it loses: an attribute selector counts at
+     class level, so the input[type=text] rule below is (1,2,1) against that rule's (1,2,0)
+     and keeps its 90px basis whatever !important says. Measured — the field reported
+     flex "1 1 90px" with the shorter selector in place. Matching the attribute and adding the
+     class makes this (1,3,1), which wins on its own rather than on source order. */
+  .log-sheet #weekStretchRows input[type=text].week-st-name{ flex:1 1 100% !important;
+    margin-bottom:2px; }
   .log-sheet #weekStretchRows input[type=text],
   .log-sheet #weekStretchRows select{ flex:1 1 90px !important; min-width:0 !important;
     border:1px solid var(--bg) !important; border-radius:9px !important;
@@ -11613,7 +11634,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.16.591';
+const APP_VERSION = '2026.09.16.592';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11927,6 +11948,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.16.592': 'Every box in the log says what it holds — 3 sets, 8 reps, 60 kg — instead of × and @.',
   '2026.09.10.479': 'Type different reps and weights per set and the row says back what it read, set by set.',
 };
 
@@ -19921,18 +19943,22 @@ async function openBlockEditor(date, slot, block){
         ${lastLoggedLine(name)}
         <div class="log-fields-row">
           <input type="number" class="week-ex-sets" placeholder="${ph(ghost && ghost.sets, '')}" title="sets actually done">
-          <span class="log-op">×</span>
+          <span class="log-op log-unit">sets</span>
           <input type="text" inputmode="numeric" class="week-ex-reps" placeholder="${ph(ghostReps, '')}" title="reps actually done — one number for all sets (12), or per-set to track effort (12,10,7)">
-          <!-- "@" means "at this load", which is what the box holds on every normal row. On a
-               jump or a throw the box holds a result and "@ 60 cm" reads as nonsense, so the
-               operator says what the number is instead: 4 x 3 best 60cm. -->
-          <span class="log-op">${resultUnitFor(name) ? 'best' : '@'}</span>
+          <!-- THE OPERATORS BECAME THE NAMES. It was [sets] x [reps] @ [weight] kg, and the
+               only thing telling sets from reps was which side of the x they sat on. Each box
+               now says what it holds, in the slot the operator used to occupy, so the row
+               reads as a sentence: 3 sets 8 reps 60 kg.
+               "best" survives on the weight below rather than here. It exists because on a
+               jump or a throw the box holds a result, not a load, and "@ 60 cm" reads as
+               nonsense — moving it in front of the unit keeps that: 4 sets 3 reps best 60cm. -->
+          <span class="log-op log-unit">reps</span>
       <!-- step="any" is what makes 62.5 a legal value. Without it the browser's implied
            step is 1, so a half-kilo is a stepMismatch: the field goes invalid and iOS
            offers a keypad with no decimal point. Everything downstream has always used
            parseFloat, so the model handled halves all along — the form was the only
            thing refusing them. -->
-          <input type="text" class="week-ex-weight" placeholder="${ph(ghostWeight, '')}" title="${resultUnitFor(name) ? 'how far or how high \u2014 your best of the session' : 'weight actually used \u2014 one number for every set (100), or per-set for a ramp or a drop set (60,80,100)'}" inputmode="decimal"><span class="log-op log-unit">${resultUnitFor(name) || 'kg'}</span>
+          <input type="text" class="week-ex-weight" placeholder="${ph(ghostWeight, '')}" title="${resultUnitFor(name) ? 'how far or how high \u2014 your best of the session' : 'weight actually used \u2014 one number for every set (100), or per-set for a ramp or a drop set (60,80,100)'}" inputmode="decimal"><span class="log-op log-unit">${resultUnitFor(name) ? 'best ' + resultUnitFor(name) : 'kg'}</span>
         </div>
         <div class="set-breakdown" hidden></div>
         <!-- BW and F were two unlabelled letters on the row you touch more than any other in
@@ -20057,8 +20083,8 @@ async function openBlockEditor(date, slot, block){
           <div class="edit-row">
             <input type="text" class="week-st-name" placeholder="stretch" value="${st.name||''}">
             <select class="week-st-area">${areaOptionsHtml(st.area||'')}</select>
-            <input type="number" class="week-st-sets" value="${st.sets!=null?st.sets:2}" style="max-width:44px;" title="sets">
-            <input type="number" class="week-st-hold" value="${st.reps!=null?st.reps:(st.holdSeconds!=null?st.holdSeconds:30)}" style="max-width:50px;" title="${st.reps!=null?'reps':'hold seconds'}" data-unit="${st.reps!=null?'reps':'secs'}">
+            <input type="number" class="week-st-sets" value="${st.sets!=null?st.sets:2}" style="max-width:44px;" title="sets"><span class="log-op log-unit">sets</span>
+            <input type="number" class="week-st-hold" value="${st.reps!=null?st.reps:(st.holdSeconds!=null?st.holdSeconds:30)}" style="max-width:50px;" title="${st.reps!=null?'reps':'hold seconds'}" data-unit="${st.reps!=null?'reps':'secs'}"><span class="log-op log-unit">${st.reps!=null?'reps':'secs'}</span>
             <span class="remove-row">×</span>
           </div>`;
       }
