@@ -9823,6 +9823,7 @@ const UI_ANIM = {
   budgetBar:    { on:true, note:'Today\u2019s session carries a bar showing its length against your setting', ms:620 },
   weightsDrift: { on:true, note:'Each channel\u2019s bar travels from its starting weight to the one your data learned', ms:760, stagger:55 },
   staggerIn:    { on:true, note:'List entries arrive one after another rather than all at once', ms:260, stagger:32, max:12 },
+  logCascade:   { on:true, note:'The log sheet fills in a block at a time as it arrives', ms:208, stagger:31, px:14, max:5 },
   toastFrom:    { on:true, note:'The toast comes from wherever you just tapped', px:22 },
   panelDirection:{ on:true, note:'A panel arrives from the side its tab sits on — what runs when the deal is off, since both write the same transform', ms:280, px:26 },
   tabIndicator: { on:true, note:'The light runs along the tab bar to where you tapped, rather than jumping there', ms:300 },
@@ -10202,6 +10203,28 @@ function staggerIn(root, selector){
   items.forEach((el, i)=>{
     uiPlay(el, [{ opacity:0, transform:'translateY(6px)' }, { opacity:1, transform:'translateY(0)' }],
       { duration: UI_ANIM.staggerIn.ms, delay: i * UI_ANIM.staggerIn.stagger, easing:'ease-out' });
+  });
+}
+
+/* 9b — THE LOG SHEET FILLS IN AS IT ARRIVES. The panel slid up with its contents already
+   drawn on it, which reads as a picture of a form being moved rather than as a form being
+   put in front of you. Its top-level blocks — the ask, the lifts, add a lift, the note, the
+   actions — come in one after another instead, 31ms apart, while the panel itself is still
+   travelling.
+   staggerIn next door does the same shape for a list inside a page; this is a different
+   distance (14px against 6) and a different unit (a block of the sheet, not a row of a list),
+   and giving it its own row is what lets one be turned down without the other.
+   The delay is CAPPED rather than the list: stopping after five would leave the sixth block
+   visible from the first frame while the second was still on its way in. Everything past the
+   fifth arrives with it. backwards, not both — the end state is the element's own, and an
+   animation left filling forwards on a panel that gets rebuilt is a style nothing can undo. */
+function logSheetCascade(panel){
+  if(!uiAnim('logCascade') || !panel || uiArriving()) return;
+  const c = UI_ANIM.logCascade;
+  [...panel.children].forEach((el, i)=>{
+    uiPlay(el, [{ opacity:0, transform:`translateY(${c.px}px)` }, { opacity:1, transform:'none' }],
+      { duration:c.ms, delay:Math.min(i, c.max) * c.stagger,
+        easing:'cubic-bezier(.2,.8,.2,1)', fill:'backwards' });
   });
 }
 
@@ -11692,7 +11715,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.16.595';
+const APP_VERSION = '2026.09.16.596';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12006,6 +12029,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.16.596': 'The log sheet fills itself in a block at a time as it rises.',
   '2026.09.16.595': 'Hold any box on a lift for edit tags, add a lift and remove this lift.',
   '2026.09.16.594': 'Beat the plan on a lift and a green +5 KG lands next to its name.',
   '2026.09.16.593': 'The log opens with the plan already in the boxes, dimmed until you change it.',
@@ -20323,6 +20347,8 @@ async function openBlockEditor(date, slot, block){
   // A session read back from history or from a draft arrives without a keystroke, so the
   // delegated input handler never fires for it.
   panel.querySelectorAll('#weekExerciseRows .edit-row').forEach(refreshSetBreakdown);
+  // Last thing the contents do before you see them, and while the panel is still rising.
+  logSheetCascade(panel);
   // Open on the first lift with nothing entered — coming back to a session should put you
   // where the work is, not at the top of a list you have already been through.
   if(block.type === 'strength'){
