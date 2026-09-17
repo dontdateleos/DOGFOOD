@@ -11582,7 +11582,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.606';
+const APP_VERSION = '2026.09.17.607';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11896,6 +11896,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.607': 'Fixes a crash in the weight learning left behind when blind days came out.',
   '2026.09.17.606': 'Blind days are gone — the score is never withheld, and every session counts the same.',
   '2026.09.17.605': 'The morning sheet asks for last night — hours, woke, resting HR — so a phone can feed the score.',
   '2026.09.17.604': 'The LOG button waits until there is a week to log against.',
@@ -14000,7 +14001,7 @@ async function learnWeights(asOfDate){
   const paired = outcomes.map(o=>{
     const i = idxOf[o.date];
     if(i == null || !win.entries[i]) return null;
-    return { y:o.y, w:o.w, parts: srComponentsAt(win, i, debtZ) };
+    return { y:o.y, parts: srComponentsAt(win, i, debtZ) };
   }).filter(Boolean);
   if(paired.length < LEARN_MIN_SESSIONS){
     _learnedCache = { date, at:Date.now(), value:null };
@@ -14015,12 +14016,14 @@ async function learnWeights(asOfDate){
     // Unweighted now that every label carries the same weight. It used to pass a per-session
     // weight here; with blinding gone there is nothing to tell the sessions apart.
     let r = pearson(xs, ys);
-    // n_eff, not n, and twice over. Weighting the correlation means the sample is smaller
-    // than its count — Kish's formula says how much smaller — and the daily series is
-    // autocorrelated on top of that, which makes a naive interval far too narrow. Both
-    // discounts apply, because the whole point of this is not to be confidently wrong.
+    /* n_eff, not n. The daily series is autocorrelated, which makes a naive interval far too
+       narrow, so the count is discounted before it is believed.
+       It used to be discounted twice: Kish's formula first, because a weighted correlation
+       has a smaller effective sample than its count, and then the autocorrelation. The
+       weights went with blinding and Kish's term went with them — every session counts one
+       now, and the Kish n of a uniform weighting is just the count. */
     const rho = lag1Autocorr(xs);
-    const nEff = Math.max(2, effectiveN(kishN(ws) || pts.length, rho));
+    const nEff = Math.max(2, effectiveN(pts.length, rho));
     // Only the part of the correlation bigger than its own error bar counts.
     const se = (1 - r * r) / Math.sqrt(nEff - 1);
     const shrunk = Math.sign(r) * Math.max(0, Math.abs(r) - se);
