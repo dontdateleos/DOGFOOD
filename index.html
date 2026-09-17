@@ -3060,6 +3060,15 @@
     background:var(--block-lime); color:#0c0d0b;
     border-radius:9px; padding:3px 8px; margin-bottom:6px; }
   .log-sheet .ex-over[hidden]{ display:none; }
+  /* WHERE A DIMMED WEIGHT CAME FROM. Same plate geometry as .ex-over and deliberately not
+     its colour: lime is reserved for beating the plan, and this is the quietest statement in
+     the row — an outline, dim ink, saying only what the number is. */
+  .log-sheet .ex-why{ order:-1; flex:0 0 auto; display:inline-block;
+    font-family:var(--mono); font-size:var(--log-note); font-weight:var(--fw-medium);
+    letter-spacing:0.1em; text-transform:uppercase; white-space:nowrap;
+    border:1px solid rgba(var(--ink-rgb),0.3); color:var(--dim);
+    border-radius:9px; padding:2px 7px; margin-bottom:6px; margin-left:6px; }
+  .log-sheet .ex-why[hidden]{ display:none; }
   /* The name is flex:1 1 100% so that it takes its own line. A 100% basis wraps anything
      beside it onto the next line before shrinking is ever considered, so the plate would sit
      alone under the name rather than next to it. auto basis resolves to the input's own
@@ -11561,7 +11570,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.619';
+const APP_VERSION = '2026.09.17.620';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11875,6 +11884,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.620': 'A suggested weight says where it came from, and an empty bar is no longer a plan you can beat.',
   '2026.09.17.619': 'No change you can see — two injury-rehab tables moved so the engine spec can read them.',
   '2026.09.17.618': 'A stretch filed under an unfamiliar category is shown and kept, instead of vanishing when you save.',
   '2026.09.17.617': 'Reopening a logged run brings back what you ran — duration, pace and your note — instead of the plan.',
@@ -19060,7 +19070,13 @@ function recordPlanBaseline(row, f){
   if(f.sets != null) row.dataset.planSets = f.sets;
   const repCeiling = src.repHigh != null ? src.repHigh : src.repLow;
   if(repCeiling != null) row.dataset.planReps = repCeiling;
-  if(f.weight != null) row.dataset.planWeight = f.weight;
+  /* NOT THE BAR. A generated lift carries sets and a rep range and never a weight — the
+     number in the box for an untrained lift is the bare implement, which plannedFillFor
+     marks as such. Recording it here made it the thing "above plan" is measured against, so
+     a first-ever bench at 100kg lit the lime plate with "+80 KG", claiming you had beaten a
+     prescription the plan never made. A weight the plan did not give is not a weight you can
+     be above; sets and reps, which it did give, still are. */
+  if(f.weight != null && f.weightWhy !== 'the bar') row.dataset.planWeight = f.weight;
 }
 /* A box takes one number or a list of them — 60, or 60,80,100 for a ramp. The top of the list
    is what "above" is about: one set over the ask is the thing worth saying.
@@ -19092,6 +19108,37 @@ function normaliseSetList(el){
    to a name that already has to fit. Everything that is up shows in the title.
    Recomputed on change and on focusout rather than on every keystroke, so typing 120 into a
    box does not flash "+60 KG" on its way past 1 and 12. */
+/* SAY WHAT THE DIMMED WEIGHT IS, because for a first session it is not a prescription.
+
+   startingLoadFor already works this out — your own last weight for the lift, or failing
+   that the bare implement, 20kg for a barbell — and prefillPlanned already writes the reason
+   onto the row as dataset.weightWhy. Nothing read it: no CSS rule, no other function, in a
+   comment claiming "set-breakdown maths downstream still wants to know". So a first-ever
+   Bench Press opened showing a dimmed 20 with nothing to distinguish "the app has planned
+   20kg for you" from "this is an empty bar, tell it what you actually lift" — which is the
+   whole question a new lifter has, and the app knew the answer and kept it.
+
+   Shown only while the box is still untouched, on the same test .ex-over uses: type your own
+   number and the reason for the suggestion stops being true. */
+function refreshWeightWhy(row){
+  const plate = row.querySelector('.ex-why');
+  if(!plate) return;
+  const el = row.querySelector('.week-ex-weight');
+  const why = row.dataset.weightWhy;
+  if(!why || !el || !el.dataset.planned || el.value === ''){
+    plate.hidden = true; plate.textContent = ''; plate.removeAttribute('title');
+    return;
+  }
+  /* 'the bar' is the only reason that reaches here. startingLoadFor's other answer, 'last
+     time', is gated on the same exerciseHistory weight that plannedFillFor checks first, so
+     a lift with history takes that branch and arrives with no reason at all. Written as a
+     lookup rather than a two-way test so a third answer does not silently become "the bar". */
+  plate.textContent = why;
+  const WHY_TITLE = { 'the bar': 'No history for this lift yet — this is the empty bar. Put in what you actually lift.',
+                      'last time': 'What you lifted last time.' };
+  if(WHY_TITLE[why]) plate.title = WHY_TITLE[why]; else plate.removeAttribute('title');
+  plate.hidden = false;
+}
 function refreshOverPlan(row){
   const plate = row.querySelector('.ex-over');
   if(!plate) return;
@@ -19354,7 +19401,7 @@ function wireBlockEditorClose(panel){
     if(!(e.target && e.target.matches && e.target.matches('.week-ex-sets, .week-ex-reps, .week-ex-weight'))) return;
     if(e.target.matches('.week-ex-reps, .week-ex-weight')) normaliseSetList(e.target);
     const row = e.target.closest('.edit-row');
-    if(row){ refreshSetBreakdown(row); refreshOverPlan(row); }
+    if(row){ refreshSetBreakdown(row); refreshOverPlan(row); refreshWeightWhy(row); }
   });
   // Delegated, so rows added after this runs are covered too.
   ['input','change'].forEach(t=> panel.addEventListener(t, e=>{
@@ -19368,7 +19415,7 @@ function wireBlockEditorClose(panel){
       markLoggingStarted(blockEditDate);
       const row = e.target.closest('.edit-row');
       if(row) refreshSetBreakdown(row);
-      if(row && e.type === 'change') refreshOverPlan(row);
+      if(row && e.type === 'change'){ refreshOverPlan(row); refreshWeightWhy(row); }
     }
   }));
 }
@@ -20024,6 +20071,7 @@ async function openBlockEditor(date, slot, block){
       row.innerHTML = `
         <input type="text" class="week-ex-name" placeholder="exercise" value="${name}">
         <span class="ex-over" hidden></span>
+        <span class="ex-why" hidden></span>
         <span class="week-ex-evidence"></span>
         <!-- THREE THINGS, ONE CONTROL. The × used to be the only thing you could do to a row
              that was not typing in it; retagging and adding a lift were words underneath,
@@ -20231,7 +20279,7 @@ async function openBlockEditor(date, slot, block){
   applyLogDraft(panel, await loadLogDraft(date, slot));
   // Last, so that anything actually logged or drafted is already in the boxes and the plan
   // only lands where there is nothing.
-  if(block.type === 'strength') logExRows().forEach(row=>{ prefillPlanned(row); refreshOverPlan(row); });
+  if(block.type === 'strength') logExRows().forEach(row=>{ prefillPlanned(row); refreshOverPlan(row); refreshWeightWhy(row); });
   // A session read back from history or from a draft arrives without a keystroke, so the
   // delegated input handler never fires for it.
   panel.querySelectorAll('#weekExerciseRows .edit-row').forEach(refreshSetBreakdown);
