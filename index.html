@@ -10612,6 +10612,19 @@ function activateTab(name, opts){
   const tabButton = document.querySelector(`.tab[data-tab="${name}"]`);
   if(tabButton) document.getElementById('currentTabWord').textContent = tabButton.textContent;
   renderTabInsight(name);
+  /* THE PERCH IS FORGOTTEN BEFORE THE TITLE ROLLS, not after.
+
+     This reset used to sit at the foot of the function, thirty lines below rollMastheadTitle.
+     Leave Today on a fresh install — no score yet, so the mark is perched beside TODAY — and
+     the roll placed the mark against the new title while `perched` was still true: at the
+     perch spot, beside THIS WEEK, at 0.6. The reset then cleared the flag without moving
+     anything, and the next updateEyePerch found want (false) equal to the flag (false) and
+     returned before it could reposition. The mark sat on top of "2 planned · 0 done" until a
+     roll between two other tabs happened to redraw it. Cleared here, the roll below draws the
+     mark where the title's own geometry puts it, and updateEyePerch is free to perch it again
+     if this tab wants that. The class goes with the flag for the same reason the flag does. */
+  eyeCtx.perched = false;
+  document.getElementById('currentTabLabel')?.classList.remove('mark-perched');
   // The masthead names the page too, one size up. After the body class above, since the
   // title takes the tab's own hue off it.
   rollMastheadTitle(name);
@@ -10640,7 +10653,6 @@ function activateTab(name, opts){
   eyeTabName = name;
   eyeGlanceAtTabSoon(name, eyesFlying);
   markCubeTurn();
-  eyeCtx.perched = false;
   eyeFormSettled();
   eyeNoteTabForWander();
   growBarsSoon();
@@ -11533,7 +11545,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.610';
+const APP_VERSION = '2026.09.17.611';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11847,6 +11859,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.611': 'Leaving Today before the first score no longer parks the mark on top of the next page\'s masthead line.',
   '2026.09.17.610': 'Settings stops leaking onto every other tab — a stray closing tag left by .606.',
   '2026.09.17.609': 'The three developer panels leave Settings; their engines stay reachable from the console.',
   '2026.09.17.608': 'The weights now learn from how your body absorbed each session — next morning’s HRV and resting HR, given the load — not from whether you finished the plan.',
