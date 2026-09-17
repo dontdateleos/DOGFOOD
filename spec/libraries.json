@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.17.618",
+ "generatedFrom": "2026.09.17.619",
  "generatedBy": "tools/spec-dump.mjs",
  "libraries": {
   "EXERCISE_LIBRARY": {
@@ -5367,6 +5367,28 @@
    "Bear crawl to downward dog flow",
    "Crab walk to bridge"
   ],
+  "INJURY_PROTOCOLS": {
+   "lower_back": {
+    "high": "Acute phase: pain-guided movement, walking, gentle motor control (bird-dog, dead-bug, bracing). Daily, low load, short bouts — avoid prolonged bed rest.",
+    "mid": "Sub-acute: motor control progressions + directional-preference work. 2-3x/week, 2-3 sets of 8-12 reps.",
+    "low": "Return to load: hip-hinge pattern training (RDL, trap-bar deadlift), general strength work. Consistent loading matters more than the specific exercise chosen."
+   },
+   "shoulders": {
+    "high": "Early/pain-dominant: isometric external/internal rotation, scapular setting, pain-free active ROM. Daily, sub-maximal isometrics (~5x30-45s).",
+    "mid": "Progressive loading: external rotation, scaption, prone Y/T/W, serratus punch, rows. 2-3x/week, 2-3 sets of 10-15 reps.",
+    "low": "Return to activity: overhead loading progressions, criteria-based (pain ≤3/10, full ROM) — not purely time-based."
+   },
+   "quads_knees": {
+    "high": "Early: closed-kinetic-chain work — quad sets, mini-squats, leg press. Daily submaximal, ROM- and swelling-guided.",
+    "mid": "Progressive: CKC progression (squats, step-downs). 3x/week, 2-3 sets of 8-12 reps. Persistent quad strength deficits are one of the strongest predictors of poor long-term outcomes.",
+    "low": "Return to sport: combined CKC + full-ROM work, criteria-based (limb symmetry ≥90%) rather than purely time-based."
+   },
+   "ankles": {
+    "high": "Acute: pain-free ROM, isometric eversion/dorsiflexion, protected weight-bearing. Daily, low intensity.",
+    "mid": "Sub-acute: single-leg balance (firm → unstable surface), wobble board, resisted band eversion. 3-5x/week — proprioceptive training is one of the more robust injury-prevention effects in the literature.",
+    "low": "Return to sport: multi-directional hop/landing drills, reactive balance, criteria-based progression."
+   }
+  },
   "WARMUP_LIBRARY": {
    "hips": [
     "90/90 switches",

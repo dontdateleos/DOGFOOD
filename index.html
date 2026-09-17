@@ -11561,7 +11561,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.618';
+const APP_VERSION = '2026.09.17.619';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11875,6 +11875,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.619': 'No change you can see — two injury-rehab tables moved so the engine spec can read them.',
   '2026.09.17.618': 'A stretch filed under an unfamiliar category is shown and kept, instead of vanishing when you save.',
   '2026.09.17.617': 'Reopening a logged run brings back what you ran — duration, pace and your note — instead of the plan.',
   '2026.09.17.616': 'A plan built mid-week says how many sessions start on Monday, instead of only counting the days that are left.',
@@ -31520,6 +31521,51 @@ async function buildWeekReviewCard(){
   return { type:'week_review', title, signals, confidence:null, meta:{} };
 }
 
+/* THESE TWO LIVE AT TOP LEVEL, not inside generateRecommendations.
+
+   They were written at column 0 in the middle of that function, which reads as module scope
+   and is not: they were function-scoped, rebuilt on every call, and invisible to anything
+   outside. tools/spec-dump.mjs reported them on every run as "INJURY_PROTOCOLS is not
+   defined" — two rehab libraries a port needs and could not get. They are pure data with no
+   dependency on the call, so they belong out here beside the other libraries. */
+// Phase-appropriate exercise focus by area, condensed from Cowork's research (JOSPT,
+// Frontiers, APTA, and sports-medicine systematic reviews). Severity tier stands in for
+// rehab phase since it already decays over time the way a real phase would progress —
+// high severity ≈ acute/early, mid ≈ progressive loading, low ≈ return-to-activity.
+// Only areas with a confident literature mapping are included.
+const INJURY_PROTOCOLS = {
+  lower_back: {
+    high: 'Acute phase: pain-guided movement, walking, gentle motor control (bird-dog, dead-bug, bracing). Daily, low load, short bouts — avoid prolonged bed rest.',
+    mid: 'Sub-acute: motor control progressions + directional-preference work. 2-3x/week, 2-3 sets of 8-12 reps.',
+    low: 'Return to load: hip-hinge pattern training (RDL, trap-bar deadlift), general strength work. Consistent loading matters more than the specific exercise chosen.'
+  },
+  shoulders: {
+    high: 'Early/pain-dominant: isometric external/internal rotation, scapular setting, pain-free active ROM. Daily, sub-maximal isometrics (~5x30-45s).',
+    mid: 'Progressive loading: external rotation, scaption, prone Y/T/W, serratus punch, rows. 2-3x/week, 2-3 sets of 10-15 reps.',
+    low: 'Return to activity: overhead loading progressions, criteria-based (pain ≤3/10, full ROM) — not purely time-based.'
+  },
+  quads_knees: {
+    high: 'Early: closed-kinetic-chain work — quad sets, mini-squats, leg press. Daily submaximal, ROM- and swelling-guided.',
+    mid: 'Progressive: CKC progression (squats, step-downs). 3x/week, 2-3 sets of 8-12 reps. Persistent quad strength deficits are one of the strongest predictors of poor long-term outcomes.',
+    low: 'Return to sport: combined CKC + full-ROM work, criteria-based (limb symmetry ≥90%) rather than purely time-based.'
+  },
+  ankles: {
+    high: 'Acute: pain-free ROM, isometric eversion/dorsiflexion, protected weight-bearing. Daily, low intensity.',
+    mid: 'Sub-acute: single-leg balance (firm → unstable surface), wobble board, resisted band eversion. 3-5x/week — proprioceptive training is one of the more robust injury-prevention effects in the literature.',
+    low: 'Return to sport: multi-directional hop/landing drills, reactive balance, criteria-based progression.'
+  }
+};
+function severityTier(sev){ return sev >= 6 ? 'high' : sev >= 3 ? 'mid' : 'low'; }
+
+// Tendinopathy uses different loading philosophy (isometric → HSR/eccentric → plyometric)
+// rather than the generic progressive-loading tables above — Cook & Purdam's
+// reactive-to-degenerative continuum model. Achilles/patellar sub-mapped via area.
+const TENDINOPATHY_PROTOCOL = {
+  high: 'Reactive/painful phase: isometric loading for immediate analgesic effect — wall sit or leg press hold (patellar) / heel-raise hold (Achilles), 5×30-45s at ~70% effort, daily.',
+  mid: 'Progressive loading: heavy-slow-resistance (3-4s tempo up/down), 3x/week, 3-4 sets of 6-15 reps — or an eccentric heel-drop program, 3×15 reps, 2×/day. HSR and eccentric show comparable long-term efficacy; HSR is often better tolerated (less session pain).',
+  low: 'Return to sport: plyometric and energy-storage loading (hopping, bounding) reintroduced progressively, criteria-based on pain ≤3/10 next-day — not purely time-based.'
+};
+
 async function generateRecommendations(){
   const container = document.getElementById('recommendationCards');
   container.innerHTML = '<div class="skeleton tall"></div><div class="skeleton"></div><div class="skeleton short"></div>';
@@ -31780,43 +31826,6 @@ async function generateRecommendations(){
       signals:[remainingDemand.reason], confidence:'medium', meta:{} });
   }
 
-// Phase-appropriate exercise focus by area, condensed from Cowork's research (JOSPT,
-// Frontiers, APTA, and sports-medicine systematic reviews). Severity tier stands in for
-// rehab phase since it already decays over time the way a real phase would progress —
-// high severity ≈ acute/early, mid ≈ progressive loading, low ≈ return-to-activity.
-// Only areas with a confident literature mapping are included.
-const INJURY_PROTOCOLS = {
-  lower_back: {
-    high: 'Acute phase: pain-guided movement, walking, gentle motor control (bird-dog, dead-bug, bracing). Daily, low load, short bouts — avoid prolonged bed rest.',
-    mid: 'Sub-acute: motor control progressions + directional-preference work. 2-3x/week, 2-3 sets of 8-12 reps.',
-    low: 'Return to load: hip-hinge pattern training (RDL, trap-bar deadlift), general strength work. Consistent loading matters more than the specific exercise chosen.'
-  },
-  shoulders: {
-    high: 'Early/pain-dominant: isometric external/internal rotation, scapular setting, pain-free active ROM. Daily, sub-maximal isometrics (~5x30-45s).',
-    mid: 'Progressive loading: external rotation, scaption, prone Y/T/W, serratus punch, rows. 2-3x/week, 2-3 sets of 10-15 reps.',
-    low: 'Return to activity: overhead loading progressions, criteria-based (pain ≤3/10, full ROM) — not purely time-based.'
-  },
-  quads_knees: {
-    high: 'Early: closed-kinetic-chain work — quad sets, mini-squats, leg press. Daily submaximal, ROM- and swelling-guided.',
-    mid: 'Progressive: CKC progression (squats, step-downs). 3x/week, 2-3 sets of 8-12 reps. Persistent quad strength deficits are one of the strongest predictors of poor long-term outcomes.',
-    low: 'Return to sport: combined CKC + full-ROM work, criteria-based (limb symmetry ≥90%) rather than purely time-based.'
-  },
-  ankles: {
-    high: 'Acute: pain-free ROM, isometric eversion/dorsiflexion, protected weight-bearing. Daily, low intensity.',
-    mid: 'Sub-acute: single-leg balance (firm → unstable surface), wobble board, resisted band eversion. 3-5x/week — proprioceptive training is one of the more robust injury-prevention effects in the literature.',
-    low: 'Return to sport: multi-directional hop/landing drills, reactive balance, criteria-based progression.'
-  }
-};
-function severityTier(sev){ return sev >= 6 ? 'high' : sev >= 3 ? 'mid' : 'low'; }
-
-// Tendinopathy uses different loading philosophy (isometric → HSR/eccentric → plyometric)
-// rather than the generic progressive-loading tables above — Cook & Purdam's
-// reactive-to-degenerative continuum model. Achilles/patellar sub-mapped via area.
-const TENDINOPATHY_PROTOCOL = {
-  high: 'Reactive/painful phase: isometric loading for immediate analgesic effect — wall sit or leg press hold (patellar) / heel-raise hold (Achilles), 5×30-45s at ~70% effort, daily.',
-  mid: 'Progressive loading: heavy-slow-resistance (3-4s tempo up/down), 3x/week, 3-4 sets of 6-15 reps — or an eccentric heel-drop program, 3×15 reps, 2×/day. HSR and eccentric show comparable long-term efficacy; HSR is often better tolerated (less session pain).',
-  low: 'Return to sport: plyometric and energy-storage loading (hopping, bounding) reintroduced progressively, criteria-based on pain ≤3/10 next-day — not purely time-based.'
-};
 
   injuries.forEach(inj=>{
     const p = inj.part.toLowerCase();
