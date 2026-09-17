@@ -11545,7 +11545,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.611';
+const APP_VERSION = '2026.09.17.612';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11859,6 +11859,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.612': 'On narrow screens the masthead title sets a size smaller rather than running the mark into the date.',
   '2026.09.17.611': 'Leaving Today before the first score no longer parks the mark on top of the next page\'s masthead line.',
   '2026.09.17.610': 'Settings stops leaking onto every other tab — a stray closing tag left by .606.',
   '2026.09.17.609': 'The three developer panels leave Settings; their engines stay reachable from the console.',
@@ -12850,6 +12851,23 @@ function measureLogoWidth(){
   return w;
 }
 
+/* How much of 46px the title can have before it, the mark's stand-off and the mark itself run
+   into the date block. 1 wherever the lockup already fits; never below 0.6, where the title
+   would stop reading as display type — below that the width is the phone's problem. */
+function headerTitleFit(){
+  const dateEl = document.getElementById('headerDate');
+  const brand = document.querySelector('.header-brand');
+  if(!dateEl || !brand || logoTextWidth == null) return 1;
+  const dateLeft = dateEl.getBoundingClientRect().left - brand.getBoundingClientRect().left;
+  if(!(dateLeft > 0)) return 1;
+  const gap = TAB_TITLES[mastheadTab] ? 7 : -6;
+  // The title and its stand-off scale with the font; the mark stays 40 wide, so it comes
+  // off the room first rather than being shrunk with the rest.
+  const need = logoTextWidth + gap;
+  const room = dateLeft - 10 - logoOriginX - 40;
+  return need > room ? Math.max(0.6, room / need) : 1;
+}
+
 function updateHeaderCollapse(){
   if(window.headerCollapseSuspended) return;
   headerCollapseCache();
@@ -12884,7 +12902,24 @@ function updateHeaderCollapse(){
     brandEl.style.paddingTop = lerp(18, 8, progress).toFixed(2) + 'px';
     brandEl.style.paddingBottom = lerp(12, 6, progress).toFixed(2) + 'px';
   }
-  const fontSize = lerp(46, 0, progress);
+  /* THE LOCKUP FITS BEFORE THE DATE, AT EVERY WIDTH.
+
+     "EVERY READING puts the mark's right edge at 258 and the date starts at 295" — at 390.
+     The header is fluid and the date block is pinned to the right gutter, so at 320 the date
+     starts at 225 and the same title put the mark straight through THURSDAY. Nothing here was
+     measured below 390 until it was.
+
+     Fitted rather than clamped: pulling the mark back on its own would bury it in the last
+     letter, and dropping it a row would break the lockup. The title takes a smaller size
+     instead, by exactly the factor that gets the title, its stand-off and the 40px mark clear
+     of the date with 10px to spare — 46 stays 46 wherever it already fits (every title at 390,
+     four of five at 320) and Every reading sets at about 38 on a 320 screen. The factor rides
+     the same lerp as the collapse, so the geometry below is unchanged: fontSize is what the
+     mark's left is scaled by, and a fitted title scales its own width with it. Read every
+     call because logoTextWidth is lerped during a roll, and the fit follows it frame by
+     frame. */
+  const fit = headerTitleFit();
+  const fontSize = lerp(46 * fit, 0, progress);
   /* TWO POSITIONS, NOT ONE, for the same reason the mark has two.
 
      In the corner it read as a corner utility \u2014 a settings cog, something you press once a
