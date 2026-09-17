@@ -11540,7 +11540,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.614';
+const APP_VERSION = '2026.09.17.615';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11854,6 +11854,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.615': 'The long run gets a distance and a target pace, sized from your weekly running volume.',
   '2026.09.17.614': 'Ground, Masthead and Motion are one Appearance section under its own band, with one summary line.',
   '2026.09.17.613': 'Weekly no longer scrolls sideways on a 320px screen before the first session is logged.',
   '2026.09.17.612': 'On narrow screens the masthead title sets a size smaller rather than running the mark into the date.',
@@ -22723,6 +22724,55 @@ function estimateSessionDuration(block, personalPace, personalSets, sessionLengt
   return null;
 }
 
+/* ---------- HOW FAR THE LONG RUN IS ----------
+
+   The long run had no distance at all. Every other type got one back-solved from the session
+   length, and the long run was excluded on the grounds — correct as far as it goes — that a
+   long run exists to exceed a typical session's time budget, and is "governed by weekly
+   volume, not single-session length". What that argument establishes is that session length
+   is the wrong input. It does not establish that there should be no number: the week had an
+   easy run reading 6km and a long run reading nothing, which is the one session where the
+   distance IS the prescription.
+
+   So it is sized from the thing the exclusion named. The long run is 30% of the week's
+   running volume — the standard coaching share, and the top of the usual 25-30% band rather
+   than the middle because this is the session the band exists to size. Above about a third
+   is where the advice consistently stops.
+
+   WHOSE WEEKLY VOLUME. Their own, averaged over the last four weeks that had any running in
+   them, floored at the tier's minimum weekly volume and capped at its maximum. The tier is
+   already volume-capped upstream (suggestRunTier resolves goal ambition down to what logged
+   volume supports), so taking the larger of the two cannot inflate a beginner: with no
+   logged running the average is nothing and the tier's own floor governs, which is the same
+   conservative number the easy runs are capped to.
+
+   It lands above the easy runs at every tier without being told to, because every tier runs
+   more than 3.3 times a week: base is 7.2km long against 6km easy, advanced 19.2 against
+   10.7. And it is a starting point like every other generated number — the note says so, and
+   deload weeks cut it with everything else. */
+const LONG_RUN_WEEKLY_SHARE = 0.30;
+async function recentWeeklyRunKm(){
+  const thisWeekDates = getWeekDates();
+  let sum = 0, weeks = 0;
+  for(let w=1; w<=4; w++){
+    const totals = await getWeekVolumeTotals(shiftWeek(thisWeekDates, w));
+    if(totals.runDistance > 0){ sum += totals.runDistance; weeks++; }
+  }
+  return weeks ? sum / weeks : null;
+}
+async function longRunDistanceFor(tierKey){
+  const tpl = RUN_PLAN_TEMPLATES[tierKey];
+  let weeklyKm = tpl ? tpl.minKm : 0;
+  let fromOwn = false;
+  try{
+    const recent = await recentWeeklyRunKm();
+    if(recent && recent > weeklyKm){ weeklyKm = recent; fromOwn = true; }
+  } catch(e){}
+  if(tpl && tpl.maxKm) weeklyKm = Math.min(weeklyKm, tpl.maxKm);
+  if(!(weeklyKm > 0)) return null;
+  return { km: Math.round(weeklyKm * LONG_RUN_WEEKLY_SHARE * 10) / 10, weeklyKm, fromOwn };
+}
+
 const RUN_PLAN_TEMPLATES = {
   beginner:     { label: 'Beginner / run-walk', runsPerWeek: 3, longCount: 0, qualityCount: 0, minKm: 0, maxKm: 12,
                   walkRun: true, sessionMinutes: 22, runIntervalSec: 60, walkIntervalSec: 90, intervalReps: 8 },
@@ -30153,7 +30203,19 @@ async function generateRunPlan(tierKey, maxSessions, forcedDates, runSlotByDate,
       await placeRunCompanionMobility(item);
       continue;
     }
-    if(item.runType!=='long' && item.runType!=='race'){
+    /* A race is the only type still left without a number, and for the opposite reason: its
+       distance is not something to estimate. You know what you entered. (Nothing on this
+       path generates one — race is a choice in the block editor — so this is the manual
+       case being left alone rather than a gap.) */
+    if(item.runType === 'long'){
+      const L = await longRunDistanceFor(tierKey);
+      if(L){
+        distanceKm = L.km;
+        note = L.fromOwn
+          ? `Auto-generated — ${Math.round(LONG_RUN_WEEKLY_SHARE*100)}% of the ${Math.round(L.weeklyKm)}km week you have been running, adjust freely`
+          : `Auto-generated — ${Math.round(LONG_RUN_WEEKLY_SHARE*100)}% of a ${Math.round(L.weeklyKm)}km week at ${tierKey} level, adjust freely`;
+      }
+    } else if(item.runType!=='race'){
       const R = WORKOUT_TIME_ESTIMATE.running;
       const usingPersonalPace = personalPace[item.runType] != null;
       const pace = personalPace[item.runType] || R.defaultPaceMinPerKm[item.runType] || R.defaultPaceMinPerKm.easy;
@@ -30200,7 +30262,7 @@ async function generateRunPlan(tierKey, maxSessions, forcedDates, runSlotByDate,
     const runWarmup = RUN_WARMUP_BY_TYPE[item.runType] || RUN_WARMUP_BY_TYPE.easy;
     await window.storage.set(`weekplan:${item.date}:${slot}`, JSON.stringify({
       type: 'run',
-      details: { runType: item.runType, distanceKm, warmup: runWarmup, targetPace: (item.runType!=='long' && item.runType!=='race') ? (personalPace[item.runType] || WORKOUT_TIME_ESTIMATE.running.defaultPaceMinPerKm[item.runType] || WORKOUT_TIME_ESTIMATE.running.defaultPaceMinPerKm.easy) : null, notes: note + comboNote }
+      details: { runType: item.runType, distanceKm, warmup: runWarmup, targetPace: (item.runType!=='race') ? (personalPace[item.runType] || WORKOUT_TIME_ESTIMATE.running.defaultPaceMinPerKm[item.runType] || WORKOUT_TIME_ESTIMATE.running.defaultPaceMinPerKm.easy) : null, notes: note + comboNote }
     }));
 
     await placeRunCompanionMobility(item);
