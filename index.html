@@ -5900,7 +5900,6 @@
         <div id="scoreSamples"></div>
       </div>
     </div>
-    </div>
 
     <div class="group form-panel">
       <div class="group-head collapsible" data-collapse="weights" style="cursor:pointer;"><div class="group-title">What the score is made of</div><span class="head-est" id="weightsSummary"></span><div class="group-sub">the weights, and how they have moved for you</div><span class="collapse-chevron" data-collapse="weights">&#9662;</span></div>
@@ -11534,7 +11533,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.609';
+const APP_VERSION = '2026.09.17.610';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11848,6 +11847,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.610': 'Settings stops leaking onto every other tab — a stray closing tag left by .606.',
   '2026.09.17.609': 'The three developer panels leave Settings; their engines stay reachable from the console.',
   '2026.09.17.608': 'The weights now learn from how your body absorbed each session — next morning’s HRV and resting HR, given the load — not from whether you finished the plan.',
   '2026.09.17.607': 'Fixes a crash in the weight learning left behind when blind days came out.',
