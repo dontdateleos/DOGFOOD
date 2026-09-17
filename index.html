@@ -5913,21 +5913,25 @@
          distracting, without turning it off across their whole phone, had no way to say so:
          the toggle existed and sat inside a section with display:none. It comes out; the
          per-animation list it used to sit above stays behind the dev flag. -->
-    <div class="group form-panel" id="groundGroup">
-      <div class="group-head collapsible" data-collapse="ground" style="cursor:pointer;"><div class="group-title">Ground</div><span class="head-est" id="groundSummary"></span><span class="collapse-chevron collapsed" data-collapse="ground">&#9662;</span></div>
-      <div class="fields collapsible-body" data-collapse="ground" style="display:none;">
+    <!-- ONE GROUP FOR HOW IT LOOKS.
+
+         Ground, Masthead, Motion and (dev only) The mark were four sections in a row under
+         "The engine", each a head, a chevron and a one-line body, each one tap to find out
+         it held one control. None of them is the engine. They are the same decision seen
+         from four sides — what the app looks like — so they are one section under their own
+         band, with one summary that reads all three choices at a glance: BONE · DEEP · FULL.
+         The controls, their ids and their notes are unchanged; only the walls between them
+         are gone. -->
+    <div class="set-band">How it looks</div>
+    <div class="group form-panel" id="appearanceGroup">
+      <div class="group-head collapsible" data-collapse="appearance" style="cursor:pointer;"><div class="group-title">Appearance</div><span class="head-est" id="appearanceSummary"></span><span class="collapse-chevron collapsed" data-collapse="appearance">&#9662;</span></div>
+      <div class="fields collapsible-body" data-collapse="appearance" style="display:none;">
         <label class="week-deload" for="boneGroundToggle">
           <input type="checkbox" id="boneGroundToggle">
           <span>Bone &mdash; put the pages on paper, keep the header dark. On by default; turn it off for black.</span>
         </label>
         <div class="score-note">The masthead, the blocks and the five tab colours do not move. What changes is the ground under them and the ink on it.</div>
-      </div>
-    </div>
-
-    <div class="group form-panel" id="mastheadGroup">
-      <div class="group-head collapsible" data-collapse="masthead" style="cursor:pointer;"><div class="group-title">Masthead</div><span class="head-est" id="mastheadSummary"></span><span class="collapse-chevron collapsed" data-collapse="masthead">&#9662;</span></div>
-      <div class="fields collapsible-body" data-collapse="masthead" style="display:none;">
-        <div class="field-row"><span class="field-label">Banner</span>
+        <div class="field-row" style="margin-top:14px;"><span class="field-label">Banner</span>
           <select id="mastheadSelect" aria-label="Masthead treatment">
             <option value="deep">Deep &mdash; the default</option>
             <option value="lifted">Lifted</option>
@@ -5936,25 +5940,16 @@
           </select>
         </div>
         <div class="score-note">How the tab&rsquo;s colour sits in the header. On Deep the banner is dark and the title carries the colour; on the other three the banner carries it and the title is knocked out of it. The mark keeps the same footing on the band either way, and the page under the header does not move.</div>
-      </div>
-    </div>
-
-    <div class="group form-panel" id="calmGroup">
-      <div class="group-head collapsible" data-collapse="calm" style="cursor:pointer;"><div class="group-title">Motion</div><span class="head-est" id="calmSummary"></span><span class="collapse-chevron collapsed" data-collapse="calm">&#9662;</span></div>
-      <div class="fields collapsible-body" data-collapse="calm" style="display:none;">
-        <label class="week-deload" for="eyeCalmToggle">
+        <label class="week-deload" for="eyeCalmToggle" style="margin-top:8px;">
           <input type="checkbox" id="eyeCalmToggle">
-          <span>Calm mode — keep the useful ones, drop the character</span>
+          <span>Calm mode &mdash; keep the useful ones, drop the character</span>
         </label>
         <div class="score-note">The mark still blinks to say something is loading and still moves to the header when you scroll. What goes is everything that was only ever character.</div>
-      </div>
-    </div>
-
-    <div class="group form-panel dev-only" id="eyesDevGroup">
-      <div class="group-head collapsible" data-collapse="eyes" style="cursor:pointer;"><div class="group-title">The mark</div><span class="head-est" id="eyesSummary"></span><div class="group-sub">what the eyes do, and how much of it</div><span class="collapse-chevron" data-collapse="eyes">&#9662;</span></div>
-      <div class="fields collapsible-body" data-collapse="eyes" style="display:none;">
-        <div class="score-note" style="margin-bottom:10px;">Dev only. Tap any row to see it. Untick to switch it off; it takes effect straight away and is remembered.</div>
-        <div id="eyeAnimList"></div>
+        <div class="dev-only" id="eyesDevGroup" style="margin-top:14px;">
+          <div class="field-row"><span class="field-label">The mark</span><span class="head-est" id="eyesSummary"></span></div>
+          <div class="score-note" style="margin-bottom:10px;">Dev only. What the eyes do, and how much of it. Tap any row to see it. Untick to switch it off; it takes effect straight away and is remembered.</div>
+          <div id="eyeAnimList"></div>
+        </div>
       </div>
     </div>
 
@@ -11545,7 +11540,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.613';
+const APP_VERSION = '2026.09.17.614';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11859,6 +11854,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.614': 'Ground, Masthead and Motion are one Appearance section under its own band, with one summary line.',
   '2026.09.17.613': 'Weekly no longer scrolls sideways on a 320px screen before the first session is logged.',
   '2026.09.17.612': 'On narrow screens the masthead title sets a size smaller rather than running the mark into the date.',
   '2026.09.17.611': 'Leaving Today before the first score no longer parks the mark on top of the next page\'s masthead line.',
@@ -12062,7 +12058,7 @@ async function checkForUpdate(){
 // re-renders like that, and re-opening the same section on every visit is a tap you already
 // paid for.
 const COLLAPSE_REMEMBERED = ['devices', 'goalprofile', 'trainingsetup', 'backupampr',
-                             'bodymetrics', 'scorelog', 'weights', 'version', 'legal', 'calm',
+                             'bodymetrics', 'scorelog', 'weights', 'version', 'legal', 'appearance',
                              'strengthskills', 'mobilityskills', 'reportproblem', 'datagoes'];
 // One-time cleanup of the keys the Today sections used to write.
 try{
@@ -16935,10 +16931,7 @@ async function renderSettingsSummaries(){
     const n = SCORE_SAMPLES.length;
     put('scoreSamplesSummary', n < 2 ? 'steady' : (n - 1) + ' change' + (n === 2 ? '' : 's'));
   } catch(e){}
-  try{
-    const calm = document.getElementById('eyeCalmToggle');
-    put('calmSummary', calm && calm.checked ? 'calm' : 'full');
-  } catch(e){}
+  try{ renderAppearanceSummary(); } catch(e){}
   // Whether anything is actually connected, rather than how many things could be.
   try{
     let connected = false;
@@ -34291,22 +34284,32 @@ function setGround(bone){
   document.documentElement.dataset.ground = bone ? 'bone' : '';
   if(!bone) delete document.documentElement.dataset.ground;
   try{ localStorage.setItem('ground', bone ? 'bone' : 'dark'); }catch(e){}
-  const sum = document.getElementById('groundSummary');
-  if(sum) sum.textContent = bone ? 'bone' : 'black';
+  renderAppearanceSummary();
 }
 /* Same shape as setGround above: stamp the root, persist, say what it is in the head. The
    stamp is on documentElement rather than body because the boot script at the top of the file
    sets it before body exists — which is what keeps a non-default theme from flashing the
    default masthead on every load. */
 const MASTHEAD_NAMES = { deep:'deep', lifted:'lifted', washed:'washed', bright:'bright' };
+/* The one head-line for the one Appearance section: ground, banner, motion, in the order the
+   controls sit in. Read from the same places the controls are reflected from, so it is right
+   before any of them has been touched and after any of them has. */
+function renderAppearanceSummary(){
+  const sum = document.getElementById('appearanceSummary');
+  if(!sum) return;
+  const bone = document.documentElement.dataset.ground === 'bone';
+  const sel = document.getElementById('mastheadSelect');
+  const mh = sel && MASTHEAD_NAMES[sel.value] ? sel.value : 'deep';
+  const calm = document.getElementById('eyeCalmToggle');
+  sum.textContent = `${bone ? 'bone' : 'black'} \u00b7 ${mh} \u00b7 ${calm && calm.checked ? 'calm' : 'full'}`;
+}
 function setMasthead(name){
   if(!MASTHEAD_NAMES[name]) name = 'deep';
   /* Deep is the absence of a stamp, because Deep is the base sheet. */
   if(name === 'deep') delete document.documentElement.dataset.masthead;
   else document.documentElement.dataset.masthead = name;
   try{ localStorage.setItem('masthead', name); }catch(e){}
-  const sum = document.getElementById('mastheadSummary');
-  if(sum) sum.textContent = MASTHEAD_NAMES[name];
+  renderAppearanceSummary();
   /* The mark reads --mark-shell at PAINT time, so the running SVG keeps the old theme's
      colours until it is redrawn. Same call setMarkBracket already makes for the same reason. */
   if(typeof drawMarkCube === 'function') drawMarkCube();
@@ -34322,8 +34325,6 @@ if(mastheadSelectEl){
      reaching anyone who had merely opened the app before. */
   if(mastheadSelectEl.value === 'deep') delete document.documentElement.dataset.masthead;
   else document.documentElement.dataset.masthead = mastheadSelectEl.value;
-  const mhSum = document.getElementById('mastheadSummary');
-  if(mhSum) mhSum.textContent = mastheadSelectEl.value;
   mastheadSelectEl.addEventListener('change', ()=> setMasthead(mastheadSelectEl.value));
 }
 const boneGroundToggleEl = document.getElementById('boneGroundToggle');
@@ -34333,15 +34334,15 @@ if(boneGroundToggleEl){
      opened, which made "never chose" and "chose whatever the default was at the time" into the
      same stored state -- and meant a later change of default could not reach anyone who had
      merely opened the app. Storage stays empty until the toggle is actually used. */
-  const gSum = document.getElementById('groundSummary');
-  if(gSum) gSum.textContent = boneGroundToggleEl.checked ? 'bone' : 'black';
   boneGroundToggleEl.addEventListener('change', ()=> setGround(boneGroundToggleEl.checked));
 }
 const eyeCalmToggleEl = document.getElementById('eyeCalmToggle');
 if(eyeCalmToggleEl){
   eyeCalmToggleEl.checked = eyeCalm;
-  eyeCalmToggleEl.addEventListener('change', ()=>{ setEyeCalm(eyeCalmToggleEl.checked); renderEyeAnimList(); });
+  eyeCalmToggleEl.addEventListener('change', ()=>{ setEyeCalm(eyeCalmToggleEl.checked); renderEyeAnimList(); renderAppearanceSummary(); });
 }
+// After all three controls above are reflected, so the line reads the stored state.
+renderAppearanceSummary();
 const checkUpdateBtnEl = document.getElementById('checkUpdateBtn');
 if(checkUpdateBtnEl) checkUpdateBtnEl.addEventListener('click', checkForUpdate);
 renderAppVersion();
