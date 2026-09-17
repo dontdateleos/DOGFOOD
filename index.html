@@ -11561,7 +11561,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.616';
+const APP_VERSION = '2026.09.17.617';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11875,6 +11875,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.617': 'Reopening a logged run brings back what you ran — duration, pace and your note — instead of the plan.',
   '2026.09.17.616': 'A plan built mid-week says how many sessions start on Monday, instead of only counting the days that are left.',
   '2026.09.17.615': 'The long run gets a distance and a target pace, sized from your weekly running volume.',
   '2026.09.17.614': 'Ground, Masthead and Motion are one Appearance section under its own band, with one summary line.',
@@ -18702,8 +18703,43 @@ async function findLoggedSession(date, slot, type){
 // Onto the rows by name, because the rows are built from the PLAN and the plan is what you
 // logged against. Anything logged that the plan does not have — a lift you added and then
 // removed from the plan — is left out rather than invented back in.
+/* THE GENERATOR'S OWN SENTENCES, so the box that asks how it went does not open with them.
+
+   A planned run carries a prescription in details.notes — "Auto-generated — 30% of a 24km
+   week at base level, adjust freely", or the walk-run tier's "Level 3/9 — 5 min walk to warm
+   up ...". Both were being poured into an input labelled "how it actually went", which is a
+   machine's plan wearing your handwriting. There is no flag on the stored details to tell
+   the two apart and old plans would not carry one anyway, so they are recognised by the
+   openings this file writes them with — both are strings under this app's control. */
+function isGeneratedRunNote(text){
+  const t = String(text || '').trim();
+  return /^Auto-generated\b/.test(t) || /^Level \d+\/\d+ —/.test(t);
+}
+function applyLoggedRun(session){
+  const type = document.getElementById('weekRunType');
+  const dist = document.getElementById('weekRunDistance');
+  const dur  = document.getElementById('weekRunActualDuration');
+  const note = document.getElementById('weekRunNotes');
+  if(type && session.runType) type.value = session.runType;
+  if(dist && session.distanceKm != null) dist.value = session.distanceKm;
+  if(dur && session.durationMin != null) dur.value = session.durationMin;
+  if(note && session.notes) note.value = session.notes;
+  // The pace line is painted by an input handler, and nothing reading a session back types.
+  const pace = document.getElementById('weekRunPace');
+  if(pace){
+    const p2 = paceLabel(parseFloat(dist && dist.value), parseFloat(dur && dur.value));
+    pace.textContent = p2 || '';
+    pace.style.display = p2 ? 'block' : 'none';
+  }
+}
+/* ONE ENTRY POINT, DISPATCHING ON THE SESSION'S OWN TYPE. It was strength-only — the caller
+   guarded on the block type and this guarded again on session.exercises — so a logged run
+   was found, its key kept for the overwrite, and then nothing of it was put back on the
+   form. */
 function applyLoggedSession(session){
-  if(!session || !Array.isArray(session.exercises)) return;
+  if(!session) return;
+  if(session.type === 'run') return applyLoggedRun(session);
+  if(!Array.isArray(session.exercises)) return;
   const rows = logExRows();
   session.exercises.forEach(ex=>{
     const row = rows.find(r=>{
@@ -19911,7 +19947,7 @@ async function openBlockEditor(date, slot, block){
       </div>
       <div class="run-pace" id="weekRunPace"></div>
       <div class="ask-q">Anything worth noting?</div>
-      <div class="edit-row log-notes-row"><input type="text" id="weekRunNotes" placeholder="how it actually went" value="${block.details.notes||''}"></div>
+      <div class="edit-row log-notes-row"><input type="text" id="weekRunNotes" placeholder="how it actually went" value="${isGeneratedRunNote(block.details.notes) ? '' : (block.details.notes||'')}"></div>
       <div id="weekRunHistory"></div>`;
   } else if(block.type === 'mobility'){
     fieldsHtml = `<div class="ask-q">What did you stretch?</div>
@@ -20167,14 +20203,14 @@ async function openBlockEditor(date, slot, block){
   // always the more recent of the two.
   /* EVERY TYPE, NOT JUST STRENGTH. The key this finds is what the save writes back to, and
      a save with no key to write back to invents a new one — which is how a run logged twice
-     became two runs. Only strength has its numbers put back on the form (applyLoggedSession
-     reads exercises); for the other two this is here purely so the save overwrites. */
+     became two runs. Strength and runs both put their numbers back on the form;
+     mobility still only takes the key, so its save overwrites rather than duplicates. */
   blockEditLoggedKey = null; blockEditLoggedTs = null;
   const already = await findLoggedSession(date, slot, block.type);
   if(already){
     blockEditLoggedKey = already.key;
     blockEditLoggedTs = already.session.timestamp || null;
-    if(block.type === 'strength') applyLoggedSession(already.session);
+    applyLoggedSession(already.session);
   }
   applyLogDraft(panel, await loadLogDraft(date, slot));
   // Last, so that anything actually logged or drafted is already in the boxes and the plan
@@ -20426,13 +20462,24 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
       const distanceKm = parseFloat(document.getElementById('weekRunDistance').value) || null;
       const durationMin = parseFloat(document.getElementById('weekRunActualDuration').value) || null;
       if(!distanceKm || !durationMin){
-        showToast('Saved — add distance and duration to also log it to history');
+        // Already in history and now missing a number: the plan is saved either way, but
+        // "add them to also log it" would be telling you to do something you have done.
+        showToast(blockEditLoggedKey
+          ? 'Plan saved — the logged run is unchanged while a number is missing'
+          : 'Saved — add distance and duration to also log it to history');
         closeBlockEditor();
         return;
       }
       const session = {
-        date, type:'run', timestamp: Date.now(),
+        /* The timestamp reused, like strength's, not stamped afresh. The key already
+           survives a second save (see below) but the field inside it did not, so an edited
+           run's record disagreed with the key holding it. */
+        date, type:'run', timestamp: blockEditLoggedTs || Date.now(),
         runType: runType || 'easy', distanceKm, durationMin,
+        /* THE NOTE GOES INTO THE RECORD. It was written to the plan and never to the
+           session, so "legs heavy, humid" lived on a weekplan entry that regenerating the
+           week deletes, and nothing reading training history could ever see it. */
+        notes: (document.getElementById('weekRunNotes') || {}).value || '',
         pace: durationMin && distanceKm ? `${(durationMin/distanceKm).toFixed(2)} min/km` : ''
       };
       /* THE KEY IS THE SESSION'S IDENTITY, AND IT HAS TO SURVIVE A SECOND SAVE.
