@@ -11561,7 +11561,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.617';
+const APP_VERSION = '2026.09.17.618';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11875,6 +11875,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.618': 'A stretch filed under an unfamiliar category is shown and kept, instead of vanishing when you save.',
   '2026.09.17.617': 'Reopening a logged run brings back what you ran — duration, pace and your note — instead of the plan.',
   '2026.09.17.616': 'A plan built mid-week says how many sessions start on Monday, instead of only counting the days that are left.',
   '2026.09.17.615': 'The long run gets a distance and a target pace, sized from your weekly running volume.',
@@ -20185,13 +20186,27 @@ async function openBlockEditor(date, slot, block){
     const categoryLabels = { access:'ACCESS', control:'CONTROL', load:'LOAD', integrate:'INTEGRATE', goal:'GOAL' };
     const groupedByCat = {};
     stretchList.forEach(st=>{ const c = st.category||'goal'; (groupedByCat[c]=groupedByCat[c]||[]).push(st); });
-    categoryOrder.forEach(cat=>{
+    /* A CATEGORY THIS LIST HAS NOT HEARD OF STILL GETS ITS STRETCHES ON SCREEN.
+
+       The loop walked the five known categories, so a stretch filed under anything else was
+       never given a row. That is not a display gap: saveBlockPlanEdits rebuilds
+       details.stretches from the rows in this container, so opening the block and pressing
+       Save DELETED every stretch that had no row. Measured on a four-stretch block with two
+       unrecognised categories — two rows drawn, and the plan came back with two stretches.
+
+       The generator only emits these five today, so what this catches is a plan written by a
+       build that knew a sixth, and any future one: a category is a grouping, and not
+       recognising the name of a group is never a reason to throw away what is in it. The
+       known five keep their order and their hand-written labels; anything else follows them,
+       in the order the data presents it, labelled with its own name. */
+    const extraCats = Object.keys(groupedByCat).filter(c=> !categoryOrder.includes(c));
+    [...categoryOrder, ...extraCats].forEach(cat=>{
       const items = groupedByCat[cat];
       if(!items || !items.length) return;
       const header = document.createElement('div');
       header.className = 'mobility-cat-label';
       header.style.marginTop = '10px';
-      header.textContent = categoryLabels[cat];
+      header.textContent = categoryLabels[cat] || String(cat).toUpperCase();
       rowsContainer.appendChild(header);
       items.forEach(st=>addWeekStretchRow(st));
     });
