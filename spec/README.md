@@ -1,7 +1,7 @@
 # The engine, pinned
 
 This directory exists so the scoring and planning engine can be rebuilt in another language
-without anybody re-deriving it by reading 17,700 lines of JavaScript and hoping.
+without anybody re-deriving it by reading 34,500 lines of JavaScript and hoping.
 
 Everything here is **generated from the running app**, never typed by hand:
 
@@ -17,7 +17,7 @@ so that anything else that moves still fails loudly.
 
 | file | what it is |
 |---|---|
-| `constants.json` | 315 engine parameters, **evaluated** — so `SIG_ALPHA` is `0.1331`, not `1 - Math.exp(-1/SIG_TAU)` |
+| `constants.json` | 312 engine parameters, **evaluated** — so `SIG_ALPHA` is `0.1331`, not `1 - Math.exp(-1/SIG_TAU)` |
 | `libraries.json` | 13 content libraries — exercises, mobility, warm-ups, progressions, templates |
 | `golden.json` | inputs → outputs for the pure scoring functions |
 | `scenarios.json` | the 22 behavioural scenarios and their current verdicts |
@@ -47,8 +47,6 @@ sleepDebt .080, illnessCh .070, regularity .050. `hrvAcute` is damped by
 
 Two gates refuse to composite rather than show a thin number:
 `SR_MIN_COMPLETENESS = 0.40` (fraction of weight present) and `SR_MIN_MATURITY = 0.30`.
-
-On a blinded day SR reports `held` and the number is computed and deliberately not shown.
 
 **2. Capacity** — the fallback once 7+ paired days exist. Correlation-weighted: Pearson r of
 each predictor against observed capacity, applied to today's z-scores.
@@ -91,8 +89,15 @@ Everything above consumes z-scores produced by one shared pipeline (`SIG_*`):
 
 Weights move with your data (`LEARN_*`): untouched below `LEARN_MIN_SESSIONS = 12`, full
 movement at `LEARN_FULL_AT = 60`, and **no weight can ever move more than
-`LEARN_MAX_SHIFT = 0.6` from its prior**. Unblinded days count at
-`LEARN_UNBLINDED_WEIGHT = 0.25`.
+`LEARN_MAX_SHIFT = 0.6` from its prior**. Learning never inverts a weight's sign and shrinks
+each shift by its own error bar.
+
+**What a channel is scored against.** The label is the next morning's autonomic response to
+the session — the mean of the following day's acute HRV and RHR z-scores — residualised on
+that session's load by ordinary least squares, so a channel cannot earn weight merely by
+tracking how hard the session was. The residual is what each channel is correlated with.
+A port needs this exactly: correlating against the session itself instead makes load a
+self-fulfilling predictor of load.
 
 ---
 

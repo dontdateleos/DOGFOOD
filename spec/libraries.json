@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.13.525",
+ "generatedFrom": "2026.09.17.618",
  "generatedBy": "tools/spec-dump.mjs",
  "libraries": {
   "EXERCISE_LIBRARY": {
@@ -127,6 +127,7 @@
    },
    "cossack_squat": {
     "name": "Cossack Squat",
+    "loadFactor": 0.7,
     "longLengthBias": true,
     "longLengthNote": "deep lateral squat position loads the working hip at end range",
     "aliases": [
@@ -171,6 +172,7 @@
    },
    "bulgarian_split_squat": {
     "name": "Bulgarian Split Squat",
+    "loadFactor": 0.85,
     "longLengthBias": true,
     "longLengthNote": "rear leg hip flexors and front quad at length",
     "aliases": [
@@ -205,6 +207,7 @@
    },
    "walking_lunge": {
     "name": "Walking Lunge",
+    "loadFactor": 0.75,
     "longLengthBias": true,
     "longLengthNote": "deep bottom position loads the trail-leg hip flexor and lead-leg glute at length",
     "aliases": [
@@ -281,6 +284,7 @@
    },
    "pistol_squat": {
     "name": "Pistol Squat",
+    "loadFactor": 0.85,
     "aliases": [
      "pistol squat",
      "one leg squat",
@@ -417,6 +421,7 @@
    },
    "hip_thrust": {
     "name": "Hip Thrust",
+    "loadFactor": 0.35,
     "aliases": [
      "hip thrust",
      "barbell hip thrust",
@@ -450,6 +455,7 @@
    },
    "glute_bridge": {
     "name": "Glute Bridge",
+    "loadFactor": 0.3,
     "aliases": [
      "glute bridge"
     ],
@@ -480,6 +486,7 @@
    },
    "back_extension": {
     "name": "Back Extension",
+    "loadFactor": 0.45,
     "aliases": [
      "back extension",
      "hyperextension"
@@ -502,6 +509,7 @@
    },
    "superman": {
     "name": "Superman",
+    "loadFactor": 0.15,
     "aliases": [
      "superman"
     ],
@@ -545,6 +553,7 @@
    },
    "nordic_curl": {
     "name": "Nordic Hamstring Curl",
+    "loadFactor": 0.7,
     "longLengthBias": true,
     "longLengthNote": "eccentric through the lengthened range",
     "aliases": [
@@ -828,6 +837,7 @@
    },
    "push_up": {
     "name": "Push-up",
+    "loadFactor": 0.65,
     "aliases": [
      "push up",
      "pushup"
@@ -849,6 +859,7 @@
    },
    "dip": {
     "name": "Dip",
+    "loadFactor": 1,
     "longLengthBias": true,
     "longLengthNote": "deep bottom position stretches the pec",
     "aliases": [
@@ -873,6 +884,7 @@
    },
    "handstand_pushup": {
     "name": "Handstand Push-up",
+    "loadFactor": 0.9,
     "aliases": [
      "handstand push up",
      "hspu"
@@ -885,7 +897,12 @@
     "equipment": [
      "bodyweight"
     ],
-    "evidenceConfidence": "coaching_consensus"
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "S",
+    "hypertrophyTier": "A",
+    "powerTier": "B",
+    "tierEvidence": "limited",
+    "tierNote": "The hardest vertical press available without a barbell, at a bodyweight that cannot be reduced except by changing the angle. Strength tier is about the skill more than the muscle."
    },
    "planche": {
     "name": "Planche",
@@ -900,14 +917,19 @@
     "equipment": [
      "bodyweight"
     ],
-    "evidenceConfidence": "coaching_consensus"
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "S",
+    "hypertrophyTier": "B",
+    "powerTier": "C",
+    "tierEvidence": "limited",
+    "tierNote": "A straight-arm hold whose difficulty is almost entirely in the shoulder lever and the anterior core. Nothing about it is fast, which is why the power tier is low."
    },
    "pull_up": {
     "name": "Pull-up",
+    "loadFactor": 1,
     "aliases": [
      "pull up",
-     "pullup",
-     "chin up"
+     "pullup"
     ],
     "category": "calisthenics",
     "area": "thoracic",
@@ -934,6 +956,7 @@
    },
    "one_arm_pull_up": {
     "name": "One-Arm Pull-up",
+    "loadFactor": 1,
     "aliases": [
      "one arm pull up",
      "oapu"
@@ -946,7 +969,12 @@
     "equipment": [
      "bodyweight"
     ],
-    "evidenceConfidence": "coaching_consensus"
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "S",
+    "hypertrophyTier": "B",
+    "powerTier": "C",
+    "tierEvidence": "limited",
+    "tierNote": "The endpoint of the pulling tree. Years, not months — the strength tier reflects a genuine one-arm feat, the hypertrophy tier reflects how few total reps anyone ever does."
    },
    "lat_pulldown": {
     "name": "Lat Pulldown",
@@ -1146,7 +1174,12 @@
     "equipment": [
      "bodyweight"
     ],
-    "evidenceConfidence": "coaching_consensus"
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "S",
+    "hypertrophyTier": "B",
+    "powerTier": "C",
+    "tierEvidence": "limited",
+    "tierNote": "Straight-arm horizontal pull against a long lever. Enormous lat and anterior-core demand at a rep count too low to be a growth stimulus."
    },
    "back_lever": {
     "name": "Back Lever",
@@ -1161,10 +1194,16 @@
     "equipment": [
      "bodyweight"
     ],
-    "evidenceConfidence": "coaching_consensus"
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "A",
+    "hypertrophyTier": "C",
+    "powerTier": "C",
+    "tierEvidence": "limited",
+    "tierNote": "Easier than the front lever and harder on the elbows and biceps tendon than anything else in the library. Progress it slowly and from a tucked position."
    },
    "muscle_up": {
     "name": "Muscle-up",
+    "loadFactor": 1.2,
     "aliases": [
      "muscle up",
      "muscleup"
@@ -1177,10 +1216,16 @@
     "equipment": [
      "bodyweight"
     ],
-    "evidenceConfidence": "coaching_consensus"
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "A",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "The only calisthenics skill that is genuinely explosive — the transition is a fast pull, which is why it carries a power tier the rest of the tree does not."
    },
    "calf_raise": {
     "name": "Calf Raise",
+    "loadFactor": 1,
     "aliases": [
      "calf raise"
     ],
@@ -1214,6 +1259,7 @@
    },
    "tibialis_raise": {
     "name": "Tibialis Raise",
+    "loadFactor": 0.1,
     "aliases": [
      "tibialis raise",
      "tib raise"
@@ -1245,6 +1291,7 @@
    },
    "atg_split_squat": {
     "name": "ATG Split Squat",
+    "loadFactor": 0.8,
     "longLengthBias": true,
     "longLengthNote": "deep knee and hip flexion under load",
     "aliases": [
@@ -1270,6 +1317,7 @@
    },
    "sissy_squat": {
     "name": "Sissy Squat",
+    "loadFactor": 0.6,
     "longLengthBias": true,
     "longLengthNote": "rectus femoris loaded in a lengthened position",
     "aliases": [
@@ -1398,7 +1446,12 @@
     "equipment": [
      "bodyweight"
     ],
-    "evidenceConfidence": "coaching_consensus"
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "B",
+    "hypertrophyTier": "C",
+    "powerTier": "C",
+    "tierEvidence": "limited",
+    "tierNote": "A compression and hip-flexor hold. Reads as a core exercise and is closer to a hamstring flexibility test for most people."
    },
    "plank": {
     "name": "Plank",
@@ -1422,6 +1475,7 @@
    },
    "hanging_leg_raise": {
     "name": "Hanging Leg Raise",
+    "loadFactor": 0.5,
     "longLengthBias": true,
     "longLengthNote": "abdominals loaded from a hanging, lengthened trunk position",
     "aliases": [
@@ -1445,6 +1499,7 @@
    },
    "pogos": {
     "name": "Pogos",
+    "loadFactor": 0.8,
     "aliases": [
      "pogos",
      "pogo jumps",
@@ -1459,6 +1514,11 @@
      "bodyweight"
     ],
     "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "Ankle stiffness and short ground contact. Almost no muscular growth or strength in it — the value is elastic, which is exactly the quality no barbell movement trains.",
     "warmupSuitable": true,
     "runningRelevance": {
      "economy": 2,
@@ -1472,6 +1532,8 @@
    },
    "box_jump": {
     "name": "Box Jump",
+    "loadFactor": 1.2,
+    "resultUnit": "cm",
     "aliases": [
      "box jump"
     ],
@@ -1484,6 +1546,11 @@
      "box"
     ],
     "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "moderate",
+    "tierNote": "Box height measures how high you can TUCK, not how high you jumped, which is why it ranks below a countermovement jump for output despite looking more impressive. Its real use is landing low and soft.",
     "runningRelevance": {
      "economy": 2,
      "durability": 0,
@@ -1496,6 +1563,8 @@
    },
    "depth_jump": {
     "name": "Depth Jump",
+    "loadFactor": 1.8,
+    "resultUnit": "cm",
     "aliases": [
      "depth jump"
     ],
@@ -1507,10 +1576,17 @@
     "equipment": [
      "box"
     ],
-    "evidenceConfidence": "meta_analysis"
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "moderate",
+    "tierNote": "The highest reactive-strength demand in the library. Also the highest landing cost: drop height should be earned through hurdle hops and depth drops, not chosen."
    },
    "broad_jump": {
     "name": "Broad Jump",
+    "loadFactor": 1.4,
+    "resultUnit": "m",
     "aliases": [
      "broad jump",
      "standing long jump"
@@ -1523,10 +1599,16 @@
     "equipment": [
      "bodyweight"
     ],
-    "evidenceConfidence": "meta_analysis"
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "moderate",
+    "tierNote": "Horizontal output, and a measurement you can take with a tape — one of the few jumps whose result the app could actually record."
    },
    "a_skip": {
     "name": "A-Skip",
+    "loadFactor": 0.8,
     "aliases": [
      "a skip",
      "a-skip"
@@ -1540,6 +1622,11 @@
      "bodyweight"
     ],
     "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "C",
+    "tierEvidence": "limited",
+    "tierNote": "A coordination and posture drill, not a power exercise. Tiers are low because it is not trying to be one; it belongs in a warm-up, which is where warmupSuitable puts it.",
     "warmupSuitable": true,
     "runningRelevance": {
      "economy": 0,
@@ -1553,6 +1640,7 @@
    },
    "high_knees": {
     "name": "High Knees",
+    "loadFactor": 0.8,
     "aliases": [
      "high knees"
     ],
@@ -1565,10 +1653,17 @@
      "bodyweight"
     ],
     "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "C",
+    "tierEvidence": "limited",
+    "tierNote": "Same as the A-skip: rhythm and mechanics at low intensity. Useful before sprinting, no use as a stimulus.",
     "warmupSuitable": true
    },
    "bounding": {
     "name": "Bounding",
+    "loadFactor": 1.6,
+    "resultUnit": "m",
     "aliases": [
      "bounding"
     ],
@@ -1581,6 +1676,11 @@
      "bodyweight"
     ],
     "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "Horizontal reactive work with real output, sitting in running_drill rather than power because that is where the running plan reaches for it. The single-leg bound is the same quality with the difficulty made explicit.",
     "warmupSuitable": true
    },
    "hang_clean": {
@@ -1596,7 +1696,12 @@
     "equipment": [
      "barbell"
     ],
-    "evidenceConfidence": "meta_analysis"
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "B",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "moderate",
+    "tierNote": "The clean from mid-thigh. Far less to coordinate than the floor version and nearly all of the same extension, which makes it the barbell power movement to learn first."
    },
    "medicine_ball_throw": {
     "name": "Medicine Ball Throw",
@@ -1613,7 +1718,12 @@
     "equipment": [
      "medicine_ball"
     ],
-    "evidenceConfidence": "coaching_consensus"
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "A generic entry kept for anything logged by that name. The three specific throws — rotational, slam, scoop — say more about what was trained."
    },
    "hack_squat": {
     "name": "Hack Squat",
@@ -1887,6 +1997,8 @@
    },
    "countermovement_jump": {
     "name": "Countermovement Jump",
+    "loadFactor": 1.2,
+    "resultUnit": "cm",
     "aliases": [
      "countermovement jump",
      "cmj"
@@ -1924,8 +2036,741 @@
     "powerTier": "A",
     "tierEvidence": "low"
    },
+   "clean_pull": {
+    "name": "Clean Pull",
+    "aliases": [
+     "clean pull",
+     "clean high pull"
+    ],
+    "category": "power",
+    "area": "hips",
+    "secondaryArea": "hamstrings",
+    "movement": "hinge",
+    "difficulty": "intermediate",
+    "equipment": [
+     "barbell"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "B",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "moderate",
+    "tierNote": "The clean without the catch. Loadable above a full clean because nothing has to be received, and it keeps the triple extension that is the point of the lift — the best ratio of force output to coaching requirement in the library."
+   },
+   "snatch_pull": {
+    "name": "Snatch Pull",
+    "aliases": [
+     "snatch pull"
+    ],
+    "category": "power",
+    "area": "hips",
+    "secondaryArea": "thoracic",
+    "movement": "hinge",
+    "difficulty": "intermediate",
+    "equipment": [
+     "barbell"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "B",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "limited",
+    "tierNote": "Wider grip than the clean pull, so a longer pull and more upper-back involvement at a lower absolute load. Same argument as the clean pull: all of the extension, none of the catch."
+   },
+   "high_pull": {
+    "name": "High Pull",
+    "aliases": [
+     "high pull",
+     "barbell high pull",
+     "muscle snatch"
+    ],
+    "category": "power",
+    "area": "thoracic",
+    "secondaryArea": "hips",
+    "movement": "hinge",
+    "difficulty": "intermediate",
+    "equipment": [
+     "barbell"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "B",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "Finishes with an upper-back pull the two pulls above stop short of. Ranked below them for power because the arm pull caps the load well under what the hips could move."
+   },
+   "hang_power_snatch": {
+    "name": "Hang Power Snatch",
+    "aliases": [
+     "hang power snatch"
+    ],
+    "category": "power",
+    "area": "hips",
+    "secondaryArea": "shoulders",
+    "movement": "hinge",
+    "difficulty": "advanced",
+    "equipment": [
+     "barbell"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "B",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "moderate",
+    "tierNote": "Highest bar velocity of anything in the library — the snatch family moves faster than the clean family at every load. Caught above parallel, so it avoids the deep overhead receiving position that keeps the full snatch off this list."
+   },
+   "power_snatch": {
+    "name": "Power Snatch",
+    "aliases": [
+     "power snatch"
+    ],
+    "category": "power",
+    "area": "hips",
+    "secondaryArea": "shoulders",
+    "movement": "hinge",
+    "difficulty": "advanced",
+    "equipment": [
+     "barbell"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "B",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "moderate",
+    "tierNote": "The hang version from the floor. Longer pull, more to coordinate, same catch height — take the hang variant first."
+   },
+   "push_press": {
+    "name": "Push Press",
+    "aliases": [
+     "push press"
+    ],
+    "category": "power",
+    "area": "shoulders",
+    "secondaryArea": "triceps",
+    "movement": "push",
+    "difficulty": "intermediate",
+    "equipment": [
+     "barbell",
+     "dumbbell"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "A",
+    "hypertrophyTier": "B",
+    "powerTier": "S",
+    "tierEvidence": "moderate",
+    "tierNote": "A leg drive under a press, which is the only way most people will ever move a bar overhead fast. Overloads the top half of the press for strength as a side effect."
+   },
+   "push_jerk": {
+    "name": "Push Jerk",
+    "aliases": [
+     "push jerk"
+    ],
+    "category": "power",
+    "area": "shoulders",
+    "secondaryArea": "triceps",
+    "movement": "push",
+    "difficulty": "advanced",
+    "equipment": [
+     "barbell"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "A",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "limited",
+    "tierNote": "Adds a second dip to receive the bar, which is what lets it carry more than a push press and is also the part that needs teaching."
+   },
+   "dumbbell_snatch": {
+    "name": "Dumbbell Snatch",
+    "aliases": [
+     "dumbbell snatch",
+     "db snatch",
+     "single arm snatch"
+    ],
+    "category": "power",
+    "area": "hips",
+    "secondaryArea": "shoulders",
+    "movement": "hinge",
+    "difficulty": "intermediate",
+    "equipment": [
+     "dumbbell"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "The olympic lift most people can actually learn alone: one arm, one implement, and a miss you can simply drop. The way into this category without a barbell or a coach."
+   },
+   "squat_jump": {
+    "name": "Squat Jump",
+    "loadFactor": 1.2,
+    "resultUnit": "cm",
+    "aliases": [
+     "squat jump",
+     "static jump",
+     "concentric jump"
+    ],
+    "category": "power",
+    "area": "quads_knees",
+    "secondaryArea": "hips",
+    "movement": "squat",
+    "difficulty": "beginner",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "moderate",
+    "tierNote": "Paused at the bottom, so there is no stretch-shortening contribution to borrow — what is left is concentric rate of force development, isolated. The cleanest entry point in the whole category and the one with the lowest landing cost."
+   },
+   "tuck_jump": {
+    "name": "Tuck Jump",
+    "loadFactor": 1.2,
+    "resultUnit": "cm",
+    "aliases": [
+     "tuck jump"
+    ],
+    "category": "power",
+    "area": "quads_knees",
+    "secondaryArea": "hips",
+    "movement": "squat",
+    "difficulty": "intermediate",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "Repeated and continuous, which makes it a conditioning movement wearing a plyometric's clothes. Kept for that, not for peak output."
+   },
+   "seated_box_jump": {
+    "name": "Seated Box Jump",
+    "loadFactor": 1,
+    "resultUnit": "cm",
+    "aliases": [
+     "seated box jump",
+     "seated jump"
+    ],
+    "category": "power",
+    "area": "quads_knees",
+    "secondaryArea": "hips",
+    "movement": "squat",
+    "difficulty": "intermediate",
+    "equipment": [
+     "box"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "A squat jump with the dead stop enforced by a bench rather than by discipline. Useful when the paused version keeps turning into a countermovement."
+   },
+   "single_leg_box_jump": {
+    "name": "Single-Leg Box Jump",
+    "loadFactor": 1.3,
+    "resultUnit": "cm",
+    "aliases": [
+     "single leg box jump",
+     "one leg box jump"
+    ],
+    "category": "power",
+    "area": "quads_knees",
+    "secondaryArea": "hips",
+    "movement": "squat",
+    "difficulty": "advanced",
+    "equipment": [
+     "box"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "Unilateral vertical output. Box height flatters it — the landing is the risk and the box is what removes most of it, which is why this ranks above a single-leg broad jump."
+   },
+   "hurdle_hop": {
+    "name": "Hurdle Hop",
+    "loadFactor": 1.4,
+    "aliases": [
+     "hurdle hop",
+     "hurdle jump",
+     "hurdle hops"
+    ],
+    "category": "power",
+    "area": "quads_knees",
+    "secondaryArea": "calves",
+    "movement": "squat",
+    "difficulty": "intermediate",
+    "equipment": [
+     "other"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "moderate",
+    "tierNote": "Repeated reactive contacts with a floor contact time short enough to be elastic rather than muscular. The bridge between a countermovement jump and a depth jump, and the one to spend reps on."
+   },
+   "depth_drop": {
+    "name": "Depth Drop",
+    "loadFactor": 1.5,
+    "aliases": [
+     "depth drop",
+     "drop landing",
+     "landing drill"
+    ],
+    "category": "power",
+    "area": "quads_knees",
+    "secondaryArea": "calves",
+    "movement": "squat",
+    "difficulty": "beginner",
+    "equipment": [
+     "box"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "B",
+    "tierEvidence": "limited",
+    "tierNote": "Step off and absorb; there is no jump. It is not a power exercise and is filed here anyway because it is the prerequisite for the ones that are — landing is the half of plyometrics that hurts people, and it is trainable on its own first."
+   },
+   "triple_broad_jump": {
+    "name": "Triple Broad Jump",
+    "loadFactor": 1.4,
+    "resultUnit": "m",
+    "aliases": [
+     "triple broad jump",
+     "standing triple jump"
+    ],
+    "category": "power",
+    "area": "quads_knees",
+    "secondaryArea": "hips",
+    "movement": "squat",
+    "difficulty": "intermediate",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "Three broad jumps with no pause. Adds the reactive component a single broad jump has none of, and the total distance is a measurement you can take with a tape."
+   },
+   "single_leg_bound": {
+    "name": "Single-Leg Bound",
+    "loadFactor": 1.6,
+    "resultUnit": "m",
+    "aliases": [
+     "single leg bound",
+     "bound",
+     "single leg bounding"
+    ],
+    "category": "power",
+    "area": "hips",
+    "secondaryArea": "hamstrings",
+    "movement": "squat",
+    "difficulty": "advanced",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "moderate",
+    "tierNote": "The highest hamstring rate-of-force demand available without a barbell, and the closest thing in the library to sprinting's actual mechanics. Advanced on the landing, not on the take-off."
+   },
+   "lateral_bound": {
+    "name": "Lateral Bound",
+    "loadFactor": 1.4,
+    "resultUnit": "m",
+    "aliases": [
+     "lateral bound",
+     "skater jump",
+     "skater bound"
+    ],
+    "category": "power",
+    "area": "hips",
+    "secondaryArea": "adductors",
+    "movement": "squat",
+    "difficulty": "intermediate",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "The only frontal-plane power movement here. Everything else in this category is sagittal, and a lifter who only ever produces force forwards is under-prepared for the one direction that injures ankles and knees."
+   },
+   "single_leg_pogo": {
+    "name": "Single-Leg Pogo",
+    "loadFactor": 1.1,
+    "aliases": [
+     "single leg pogo",
+     "single leg hop",
+     "ankle hop"
+    ],
+    "category": "power",
+    "area": "calves",
+    "secondaryArea": "ankles",
+    "movement": "isolation",
+    "difficulty": "intermediate",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "Ankle stiffness on one leg, which is the form it is actually used in when you run. Same quality as pogos with twice the load and a balance demand that is incidental rather than the point."
+   },
+   "med_ball_chest_pass": {
+    "name": "Medicine Ball Chest Pass",
+    "resultUnit": "m",
+    "aliases": [
+     "medicine ball chest pass",
+     "med ball chest pass",
+     "chest pass"
+    ],
+    "category": "power",
+    "area": "chest",
+    "secondaryArea": "triceps",
+    "movement": "push",
+    "difficulty": "beginner",
+    "equipment": [
+     "medicine_ball"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "Upper-body power with no deceleration phase, because the ball leaves your hands. That is the whole reason a throw beats a fast bench press: nothing has to be slowed down at the end."
+   },
+   "med_ball_rotational_throw": {
+    "name": "Medicine Ball Rotational Throw",
+    "resultUnit": "m",
+    "aliases": [
+     "medicine ball rotational throw",
+     "rotational throw",
+     "med ball rotational throw",
+     "shot put throw"
+    ],
+    "category": "power",
+    "area": "core",
+    "secondaryArea": "hips",
+    "movement": "core",
+    "difficulty": "beginner",
+    "equipment": [
+     "medicine_ball"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "limited",
+    "tierNote": "The only rotational power movement in the library. Core work here has been anti-rotation throughout — pallof presses, planks, carries — which trains the ability to resist a twist and never the ability to produce one."
+   },
+   "med_ball_overhead_slam": {
+    "name": "Medicine Ball Overhead Slam",
+    "aliases": [
+     "medicine ball slam",
+     "overhead slam",
+     "ball slam"
+    ],
+    "category": "power",
+    "area": "core",
+    "secondaryArea": "thoracic",
+    "movement": "core",
+    "difficulty": "beginner",
+    "equipment": [
+     "medicine_ball"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "Trunk flexion at speed against a ball that does not bounce back. Lower ceiling than the rotational throw but needs no space to the side and nowhere to aim."
+   },
+   "med_ball_scoop_toss": {
+    "name": "Medicine Ball Scoop Toss",
+    "resultUnit": "m",
+    "aliases": [
+     "medicine ball scoop toss",
+     "scoop toss",
+     "underhand toss"
+    ],
+    "category": "power",
+    "area": "hips",
+    "secondaryArea": "quads_knees",
+    "movement": "hinge",
+    "difficulty": "beginner",
+    "equipment": [
+     "medicine_ball"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "Triple extension into a throw. The closest thing to a clean that can be taught in one session and missed without consequence."
+   },
+   "plyo_push_up": {
+    "name": "Plyometric Push-up",
+    "loadFactor": 1,
+    "aliases": [
+     "plyo push up",
+     "plyometric push up",
+     "clap push up"
+    ],
+    "category": "power",
+    "area": "chest",
+    "secondaryArea": "triceps",
+    "movement": "push",
+    "difficulty": "advanced",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "moderate",
+    "tierNote": "Upper-body reactive strength, and the only one of these that needs no equipment at all. Advanced because the landing goes through the wrists and elbows at bodyweight."
+   },
+   "bench_throw": {
+    "name": "Bench Throw",
+    "aliases": [
+     "bench throw",
+     "ballistic bench press",
+     "smith bench throw"
+    ],
+    "category": "power",
+    "area": "chest",
+    "secondaryArea": "triceps",
+    "movement": "push",
+    "difficulty": "intermediate",
+    "equipment": [
+     "machine",
+     "barbell"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "moderate",
+    "tierNote": "A bench press where the bar is released at the top, which removes the deceleration that makes a normal fast bench press stop being fast for its last third. Needs a Smith machine or a spotter and is genuinely dangerous without one."
+   },
+   "jump_squat": {
+    "name": "Jump Squat",
+    "aliases": [
+     "jump squat",
+     "loaded jump squat",
+     "weighted jump squat"
+    ],
+    "category": "power",
+    "area": "quads_knees",
+    "secondaryArea": "hips",
+    "movement": "squat",
+    "difficulty": "intermediate",
+    "equipment": [
+     "dumbbell",
+     "barbell"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "high",
+    "tierNote": "Peak power output across the whole force-velocity curve sits near 30-40% of squat 1RM for most people, and this is the movement that loads that point. Light — a heavy jump squat is a slow squat."
+   },
+   "kettlebell_snatch": {
+    "name": "Kettlebell Snatch",
+    "aliases": [
+     "kettlebell snatch",
+     "kb snatch"
+    ],
+    "category": "power",
+    "area": "hips",
+    "secondaryArea": "shoulders",
+    "movement": "hinge",
+    "difficulty": "advanced",
+    "equipment": [
+     "kettlebell"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "A swing that finishes overhead. Repeatable for far longer than a barbell equivalent, which makes it as much a conditioning movement as a power one — watch the rep count before calling it power work."
+   },
+   "sprint_acceleration": {
+    "name": "Sprint Acceleration",
+    "loadFactor": 3,
+    "aliases": [
+     "sprint acceleration",
+     "acceleration sprint",
+     "10m sprint",
+     "20m sprint",
+     "30m sprint"
+    ],
+    "category": "power",
+    "area": "hips",
+    "secondaryArea": "hamstrings",
+    "movement": "isolation",
+    "difficulty": "intermediate",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "high",
+    "tierNote": "Ten to thirty metres from a standstill. The highest whole-body power output a human produces without an implement, and the single best transfer target for everything else in this category.",
+    "runningRelevance": {
+     "economy": 1,
+     "durability": 0,
+     "sprint": 3,
+     "acceleration": 3,
+     "tendonCapacity": 1,
+     "singleLegStrength": 1,
+     "plyometricReactive": 2
+    }
+   },
+   "flying_sprint": {
+    "name": "Flying Sprint",
+    "loadFactor": 3.5,
+    "aliases": [
+     "flying sprint",
+     "flying 20",
+     "float sprint",
+     "max velocity sprint"
+    ],
+    "category": "power",
+    "area": "hamstrings",
+    "secondaryArea": "hips",
+    "movement": "isolation",
+    "difficulty": "advanced",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "moderate",
+    "tierNote": "A run-in then a maximal stretch at top speed. The most effective hamstring injury exposure there is and the most likely to cause one — this belongs to people already running fast weekly, not to anyone starting a power block.",
+    "runningRelevance": {
+     "economy": 1,
+     "durability": 1,
+     "sprint": 3,
+     "acceleration": 1,
+     "tendonCapacity": 2,
+     "singleLegStrength": 1,
+     "plyometricReactive": 2
+    }
+   },
+   "hill_sprint": {
+    "name": "Hill Sprint",
+    "loadFactor": 2.5,
+    "aliases": [
+     "hill sprint",
+     "incline sprint",
+     "hill repeat"
+    ],
+    "category": "power",
+    "area": "hips",
+    "secondaryArea": "quads_knees",
+    "movement": "isolation",
+    "difficulty": "beginner",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "The gradient caps top speed, which caps the hamstring stretch, which is exactly what makes it the safe way into sprinting. Lower peak output than a flat sprint and a fraction of the risk.",
+    "runningRelevance": {
+     "economy": 1,
+     "durability": 2,
+     "sprint": 2,
+     "acceleration": 2,
+     "tendonCapacity": 1,
+     "singleLegStrength": 1,
+     "plyometricReactive": 1
+    }
+   },
+   "resisted_sprint": {
+    "name": "Resisted Sprint",
+    "aliases": [
+     "resisted sprint",
+     "sled sprint",
+     "band resisted sprint"
+    ],
+    "category": "power",
+    "area": "hips",
+    "secondaryArea": "hamstrings",
+    "movement": "isolation",
+    "difficulty": "intermediate",
+    "equipment": [
+     "sled",
+     "band"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "moderate",
+    "tierNote": "Heavy sled sprints shift the force-velocity curve toward force without wrecking sprint mechanics, which the literature was expected to show the opposite of. Loads around half bodyweight are where the acceleration effect is clearest.",
+    "runningRelevance": {
+     "economy": 0,
+     "durability": 1,
+     "sprint": 2,
+     "acceleration": 3,
+     "tendonCapacity": 1,
+     "singleLegStrength": 1,
+     "plyometricReactive": 0
+    }
+   },
+   "sled_push": {
+    "name": "Sled Push",
+    "aliases": [
+     "sled push",
+     "prowler push"
+    ],
+    "category": "power",
+    "area": "quads_knees",
+    "secondaryArea": "hips",
+    "movement": "isolation",
+    "difficulty": "beginner",
+    "equipment": [
+     "sled"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "B",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "Concentric only — there is no lowering phase and therefore almost no soreness, which makes it the one high-effort lower-body movement that costs nothing the next day. Best value in the library for a day that has to be hard and cannot be expensive."
+   },
    "lateral_step_up": {
     "name": "Lateral Step-Up",
+    "loadFactor": 0.8,
     "aliases": [
      "lateral step up",
      "lateral step-up"
@@ -1970,6 +2815,7 @@
    },
    "single_leg_calf_raise": {
     "name": "Single-Leg Calf Raise",
+    "loadFactor": 1,
     "longLengthBias": true,
     "longLengthNote": "deficit position allows full dorsiflexion stretch",
     "aliases": [
@@ -1994,6 +2840,7 @@
    "tibialis_raise_weighted": {
     "name": "Weighted Tibialis Raise",
     "aliases": [
+     "weighted tibialis raise",
      "weighted tib raise"
     ],
     "category": "isolation",
@@ -2013,6 +2860,7 @@
    },
    "heel_elevated_ankle_rocker": {
     "name": "Loaded Ankle Rocker",
+    "loadFactor": 0.3,
     "aliases": [
      "ankle rocker",
      "weighted ankle rock"
@@ -2035,6 +2883,7 @@
    "reverse_hyper": {
     "name": "Reverse Hyperextension",
     "aliases": [
+     "reverse hyperextension",
      "reverse hyper"
     ],
     "category": "isolation",
@@ -2054,6 +2903,7 @@
    },
    "bird_dog": {
     "name": "Bird Dog",
+    "loadFactor": 0.15,
     "aliases": [
      "bird dog"
     ],
@@ -2220,6 +3070,7 @@
    },
    "chin_up": {
     "name": "Chin-Up",
+    "loadFactor": 1,
     "aliases": [
      "chin up",
      "chinup"
@@ -2244,7 +3095,7 @@
     "longLengthNote": "shoulder flexed — triceps long head under stretch",
     "aliases": [
      "overhead dumbbell extension",
-     "overhead tricep extension"
+     "overhead db extension"
     ],
     "category": "isolation",
     "area": "triceps",
@@ -2309,6 +3160,7 @@
    },
    "sissy_squat_assisted": {
     "name": "Assisted Sissy Squat",
+    "loadFactor": 0.45,
     "aliases": [
      "assisted sissy squat"
     ],
@@ -2433,6 +3285,7 @@
    },
    "dragon_flag": {
     "name": "Dragon Flag",
+    "loadFactor": 0.7,
     "longLengthBias": true,
     "longLengthNote": "body held long, abdominals loaded at extended length",
     "aliases": [
@@ -2502,7 +3355,9 @@
    },
    "hollow_body_rock": {
     "name": "Hollow Body Rock",
+    "loadFactor": 0.25,
     "aliases": [
+     "hollow body rock",
      "hollow rock",
      "hollow body hold"
     ],
@@ -2583,6 +3438,7 @@
    },
    "step_up": {
     "name": "Step-Up",
+    "loadFactor": 0.8,
     "aliases": [
      "step up",
      "box step up"
@@ -2674,6 +3530,7 @@
    },
    "lateral_lunge": {
     "name": "Lateral Lunge",
+    "loadFactor": 0.7,
     "longLengthBias": true,
     "longLengthNote": "adductor lengthening under load",
     "aliases": [
@@ -2742,6 +3599,7 @@
    },
    "diamond_pushup": {
     "name": "Diamond Push-up",
+    "loadFactor": 0.7,
     "aliases": [
      "diamond push up",
      "close grip push up"
@@ -2762,6 +3620,7 @@
    },
    "bench_dip": {
     "name": "Bench Dip",
+    "loadFactor": 0.4,
     "aliases": [
      "bench dip",
      "tricep dip"
@@ -2783,6 +3642,7 @@
    },
    "bodyweight_skullcrusher": {
     "name": "Bodyweight Skullcrusher",
+    "loadFactor": 0.5,
     "aliases": [
      "bodyweight skullcrusher",
      "bar skullcrusher"
@@ -2805,6 +3665,7 @@
    },
    "inverted_row": {
     "name": "Inverted Row",
+    "loadFactor": 0.55,
     "aliases": [
      "inverted row",
      "australian pull up"
@@ -2845,6 +3706,7 @@
    },
    "sliding_leg_curl": {
     "name": "Sliding Leg Curl",
+    "loadFactor": 0.5,
     "aliases": [
      "sliding leg curl",
      "towel leg curl"
@@ -2867,6 +3729,7 @@
    },
    "single_leg_glute_bridge_bw": {
     "name": "Single-Leg Glute Bridge",
+    "loadFactor": 0.5,
     "aliases": [
      "single leg glute bridge"
     ],
@@ -2906,6 +3769,7 @@
    },
    "pike_pushup": {
     "name": "Pike Push-up",
+    "loadFactor": 0.75,
     "aliases": [
      "pike push up"
     ],
@@ -2925,7 +3789,9 @@
    },
    "wall_calf_raise_bw": {
     "name": "Wall-Supported Calf Raise",
+    "loadFactor": 0.5,
     "aliases": [
+     "wall supported calf raise",
      "wall calf raise"
     ],
     "category": "calisthenics",

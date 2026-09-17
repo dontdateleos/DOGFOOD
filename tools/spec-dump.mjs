@@ -88,12 +88,14 @@ const golden = await p.evaluate(() => {
   const rows = cases.map(([name, entry, trailing]) => ({
     name, entry, trailing, out: scoresForEntry(entry, trailing)
   }));
-  /* One more pure one worth pinning: the band split the score log uses, which is a decision
-     a port has to make identically. scoreLadderLabel used to be pinned beside it; it existed
-     only to relabel a figure the morning rating had been blended into, and went with the
-     rating in .508. */
-  const bands = [0, 19, 20, 39, 40, 69, 70, 100].map(n => ({ n, band: bandOf(n, 40, 70) }));
-  return { scoresForEntry: rows, bandOf: bands };
+  /* TWO PURE HELPERS USED TO BE PINNED HERE AND BOTH ARE GONE FROM THE APP.
+     scoreLadderLabel existed only to relabel a figure the morning rating had been blended
+     into, and went with the rating in .508. bandOf split a score into low/mid/high and had
+     one caller, the placebo-effect readout, so it went with blind days in .606. Nothing
+     replaced either, so there is nothing for a port to reproduce — pinning a function the
+     app no longer has is how this tool stopped running at all, which is worse than a spec
+     that is merely thin. */
+  return { scoresForEntry: rows };
 });
 
 const scenarios = await p.evaluate(async () => {

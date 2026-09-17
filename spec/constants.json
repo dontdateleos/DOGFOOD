@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.13.525",
+ "generatedFrom": "2026.09.17.618",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -264,10 +264,6 @@
     "on": true,
     "note": "Unsteady while the score is unsure, settling as the baseline matures"
    },
-   "refusesHeld": {
-    "on": true,
-    "note": "Starts the glance down at a held score, then turns away instead"
-   },
    "weekArc": {
     "on": true,
     "note": "Fresher at the start of a training week, worn by the end of it"
@@ -486,7 +482,6 @@
    "pct": "percentile",
    "gate": "gate",
    "gated": "gate reason",
-   "held": "held",
    "present": "inputs present",
    "complete": "window completeness",
    "mature": "baseline maturity",
@@ -592,23 +587,6 @@
   ],
   "MC_W": 24,
   "TOAST_MS": 1800,
-  "STREAK_MILESTONES": [
-   7,
-   14,
-   30,
-   50,
-   100,
-   200,
-   365
-  ],
-  "CONFETTI_INK": [
-   "var(--block-lime)",
-   "var(--block-orange)",
-   "var(--block-yellow)",
-   "var(--block-blue)",
-   "var(--block-purple)",
-   "var(--bg)"
-  ],
   "EYE_FLINCH_SELECTOR": "#clearAllWeekBtn, #clearAllDataBtn, .remove-row, .rec-actions .dismiss-btn",
   "EYE_EMPTY_TABS": {
    "today": "insights",
@@ -638,7 +616,6 @@
    "jelly": "Any time the mark pops in",
    "peek": "Now and then, on its own"
   },
-  "MARK_DROP_MORPH": 0.62,
   "EYE_PERCH_SCALE": 0.6,
   "EYE_TAB_GAZE": {
    "insights": {
@@ -790,17 +767,20 @@
     "ms": 760,
     "stagger": 55
    },
-   "streakBurst": {
-    "on": true,
-    "note": "The mark throws confetti the first time you log on a new day",
-    "ms": 1100
-   },
    "staggerIn": {
     "on": true,
     "note": "List entries arrive one after another rather than all at once",
     "ms": 260,
     "stagger": 32,
     "max": 12
+   },
+   "logCascade": {
+    "on": true,
+    "note": "The log sheet fills in a block at a time as it arrives",
+    "ms": 208,
+    "stagger": 31,
+    "px": 14,
+    "max": 5
    },
    "toastFrom": {
     "on": true,
@@ -861,6 +841,15 @@
     "note": "A new page is dealt in from the side you swiped, over the app’s own black",
     "axis": "X",
     "ms": 440
+   },
+   "titleCascade": {
+    "on": true,
+    "note": "The masthead’s title falls away and the new one rises, a letter at a time",
+    "outMs": 120,
+    "outStagger": 10,
+    "inMs": 170,
+    "inStagger": 22,
+    "cap": 7
    },
    "planDeal": {
     "on": true,
@@ -964,7 +953,7 @@
   ],
   "UI_TAB_COLOUR": {
    "insights": "--block-lime",
-   "training": "--block-yellow",
+   "training": "--block-amber",
    "injuries": "--block-red",
    "data": "--block-purple",
    "settings": "--block-blue"
@@ -987,7 +976,7 @@
   "RETIRED_TABS": {
    "goals": "training"
   },
-  "A11Y_INTERACTIVE_SELECTOR": ".type-btn, .remove-row, .ex-tags-toggle, .add-row, .rating-btn, .goal-priority-btn, .flow-header, .group-head.collapsible, .mob-check-row[data-level], .wheel-add-card",
+  "A11Y_INTERACTIVE_SELECTOR": ".type-btn, .remove-row, .add-row, .rating-btn, .goal-priority-btn, .flow-header, .group-head.collapsible, .mob-check-row[data-level], .wheel-add-card",
   "SWEEP_TABS": [
    "insights",
    "training",
@@ -1039,7 +1028,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.09.13.525",
+  "APP_VERSION": "2026.09.17.618",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1269,7 +1258,99 @@
    "2026.09.13.522": "The streak flame is gone. Three bars under the number say when your training is actually going somewhere.",
    "2026.09.13.523": "A week of raised resting heart rate now counts for more than one odd night, which is the right way round.",
    "2026.09.13.524": "The in-form mark counts the days you have held it, and a day you did not open the app no longer breaks the run.",
-   "2026.09.13.525": "Days in form now sits on the mark’s shoulder, the way a notification does."
+   "2026.09.13.525": "Days in form now sits on the mark’s shoulder, the way a notification does.",
+   "2026.09.13.526": "The tab’s name has a line beside it now — one true thing about the page you are on.",
+   "2026.09.13.527": "The mark takes the score’s colour — five brackets, red through cyan, the same five its face already had.",
+   "2026.09.13.528": "Power work is judged on what you put out, not on tonnage — a peaking block no longer reads as losing form.",
+   "2026.09.13.529": "Thirty-one new power movements — pulls, jumps, throws and sprints — and every exercise in the library now answers to its own name.",
+   "2026.09.14.530": "Jumps and throws stop eating your growth allowance — a power set is not a hard set.",
+   "2026.09.14.531": "Power is a goal you can choose — it puts one explosive movement at the front of the session, while you are fresh.",
+   "2026.09.14.532": "Power work progresses on speed, not on reps — the app stops telling you to grind two more onto a clean.",
+   "2026.09.14.533": "Jumps and throws record how far, not how heavy — the one number that was missing from all of it.",
+   "2026.09.14.534": "Bodyweight training finally counts as training — pull-ups, jumps and sprints stop reading as a rest day.",
+   "2026.09.14.535": "A power goal is now prescribed like one — 1–5 reps, not 8–12.",
+   "2026.09.14.536": "Power is a tick on your strength goal now, not a rival to it — train it explosively, and sessions open with the explosive work.",
+   "2026.09.14.537": "The streak is actually gone — no toast, no confetti, no line at the end of the week.",
+   "2026.09.14.538": "A first score in sixteen mornings instead of twenty-four — the app stopped measuring you against a past you could not have had.",
+   "2026.09.14.539": "Your early score is marked as early, and reads on the same scale as the real one — no more ninety on Monday and forty on Tuesday.",
+   "2026.09.15.540": "\"Log this morning\" goes to the morning form again — it had been pointing at a view that moved, which is why a phone-only score never arrived.",
+   "2026.09.15.541": "Every tab but Today names itself in the masthead, in its own colour — and the mark rolls along the title to meet its new end.",
+   "2026.09.15.542": "Dogfood takes the lime, the way the other four take theirs — all five mastheads are the tab’s colour now, not four of them.",
+   "2026.09.15.543": "The field under the trend chart stops rippling on arrival — the texture stays, the movement goes where a line is being read.",
+   "2026.09.15.544": "The notes on Settings get a heading and a lifted clause — you can tell which paragraph you came for, and get its point without reading it.",
+   "2026.09.15.545": "The mark runs cyan to plum now, not red to cyan — a low morning is a different day, not a warning light.",
+   "2026.09.15.546": "Today is woven rather than dotted — the wave that was hiding the texture is now the texture, edge to edge.",
+   "2026.09.15.547": "The score counts up again — it had stopped rolling the moment you had enough nights to earn the real one.",
+   "2026.09.15.548": "The waves on Today are the ones that were actually drawn — one slow cycle per repeat, not two tight ones.",
+   "2026.09.15.549": "The field behind the score is plain for now — no dots, no waves, nothing between you and the number.",
+   "2026.09.15.550": "The masthead title resolves out of scrambled letters when you change tab, a letter at a time from the front.",
+   "2026.09.15.551": "The title falls away a letter at a time and the new one rises — cascade, on the one axis the mark is not using.",
+   "2026.09.15.552": "The cascade actually cascades — both titles were on screen at once and the letters blinked instead of falling.",
+   "2026.09.15.554": "The form badge is the day count again — the three-bar version did not look like anything.",
+   "2026.09.15.555": "A new palette, sampled off Marathon — acid green and amber lead, and every tab takes a hue from Tau Ceti.",
+   "2026.09.15.556": "A few marks on the ground, on every page — four or five to a screen, and never more however far you scroll.",
+   "2026.09.15.557": "The masthead title is the tab’s colour at full strength — it was quieter than the little pills underneath it.",
+   "2026.09.15.558": "A couple more marks on the ground — seven to the tile where there were five.",
+   "2026.09.15.559": "Nine marks on each page, a different nine per tab, and they stay where they are while you scroll past them.",
+   "2026.09.15.560": "The marks move onto the panels — on the ground they were invisible, nine times out of nine.",
+   "2026.09.15.561": "A soft dot screen under the marks, on the same panels — the page has a surface now instead of a flat black.",
+   "2026.09.15.562": "The mark takes each tab’s colour instead of staying violet-black — same weight, new hue, on all five.",
+   "2026.09.15.563": "The dot screen thins out — half the dots, a touch fainter, so the page has room to breathe again.",
+   "2026.09.15.564": "The dot screen fades to half again — barely there, which is the point.",
+   "2026.09.15.565": "The mark turns its new colour as the title lands, instead of snapping to it.",
+   "2026.09.15.566": "The crosses step back — three quarters the weight, three quarters as many.",
+   "2026.09.15.567": "Half as many crosses again — sparse enough that you come across one rather than see a pattern.",
+   "2026.09.15.568": "The dot screen comes off — back to a flat ground with just the marks on it.",
+   "2026.09.15.569": "The mark takes its time changing colour — it now finishes after the title, not with it.",
+   "2026.09.15.570": "The mark stretches as it rolls — it leans into the travel and comes back round on landing.",
+   "2026.09.15.571": "Rest days say so on the week board instead of drawing blank — they were always there, just never named.",
+   "2026.09.15.572": "Each page carries its own number, set huge and faint behind the masthead.",
+   "2026.09.15.573": "The mark lifts out of near-black — its face now shows the tab’s colour instead of hiding it.",
+   "2026.09.15.574": "Four masthead themes in Settings — the banner can carry the tab’s colour instead of the title.",
+   "2026.09.15.575": "Washed is the masthead now — the banner carries the colour by default, and Deep is a choice.",
+   "2026.09.15.576": "Paper by default — the pages open on bone with the dark masthead over them.",
+   "2026.09.15.577": "The score’s ball stops changing colour — it is just the page’s ink now.",
+   "2026.09.15.578": "Each page carries its own mark behind the masthead instead of a number.",
+   "2026.09.15.579": "The page mark opens from the centre when you change tabs instead of appearing.",
+   "2026.09.15.580": "The mark stands beside your score instead of on it, and the two are centred together.",
+   "2026.09.16.581": "The mark tears back into the masthead when you leave Today, the way it tears in when you arrive.",
+   "2026.09.16.582": "The mark and the page title tear together the moment the mark finishes rolling to a new page.",
+   "2026.09.16.583": "The mark lands from a roll exactly the way it lands coming back to Today, and the title no longer tears with it.",
+   "2026.09.16.584": "The mark rolls to its new page and simply stops — no tear on the landing.",
+   "2026.09.16.585": "Body and Data carry new page marks, each taken from something already drawn on that page.",
+   "2026.09.16.586": "Connecting Oura works from the browser too, not just the home-screen app.",
+   "2026.09.16.587": "The log button wears a caret instead of a plus.",
+   "2026.09.16.588": "Your score sits in the shadow of the digits it is not — the way a calculator display does.",
+   "2026.09.16.589": "Each trend metric says what it is measured in, on the button that picks it.",
+   "2026.09.16.590": "The logging sheet loses its rules and puts every value in a box of its own.",
+   "2026.09.16.591": "Those boxes are filled now — white on the sheet, with the writing knocked out of them.",
+   "2026.09.17.618": "A stretch filed under an unfamiliar category is shown and kept, instead of vanishing when you save.",
+   "2026.09.17.617": "Reopening a logged run brings back what you ran — duration, pace and your note — instead of the plan.",
+   "2026.09.17.616": "A plan built mid-week says how many sessions start on Monday, instead of only counting the days that are left.",
+   "2026.09.17.615": "The long run gets a distance and a target pace, sized from your weekly running volume.",
+   "2026.09.17.614": "Ground, Masthead and Motion are one Appearance section under its own band, with one summary line.",
+   "2026.09.17.613": "Weekly no longer scrolls sideways on a 320px screen before the first session is logged.",
+   "2026.09.17.612": "On narrow screens the masthead title sets a size smaller rather than running the mark into the date.",
+   "2026.09.17.611": "Leaving Today before the first score no longer parks the mark on top of the next page's masthead line.",
+   "2026.09.17.610": "Settings stops leaking onto every other tab — a stray closing tag left by .606.",
+   "2026.09.17.609": "The three developer panels leave Settings; their engines stay reachable from the console.",
+   "2026.09.17.608": "The weights now learn from how your body absorbed each session — next morning’s HRV and resting HR, given the load — not from whether you finished the plan.",
+   "2026.09.17.607": "Fixes a crash in the weight learning left behind when blind days came out.",
+   "2026.09.17.606": "Blind days are gone — the score is never withheld, and every session counts the same.",
+   "2026.09.17.605": "The morning sheet asks for last night — hours, woke, resting HR — so a phone can feed the score.",
+   "2026.09.17.604": "The LOG button waits until there is a week to log against.",
+   "2026.09.17.603": "The masthead line stops saying \"100% of inputs\" to everyone and stops reading 5 of 2 as a fraction.",
+   "2026.09.17.602": "Correcting a logged run or mobility session updates it instead of logging a second one.",
+   "2026.09.17.601": "The log button says LOG, and the mark perches in the masthead instead of falling to it.",
+   "2026.09.17.600": "Tag, add and remove sit together in one box at the end of every lift.",
+   "2026.09.16.599": "A comma key over the keyboard, for reps and for weight — the pads have no comma of their own.",
+   "2026.09.16.598": "A space, a slash or a dash separate sets as well as a comma, and the box tidies itself.",
+   "2026.09.16.597": "The log says at the top that a comma is a set — 8,8,6 reps, 60,80,100 kg.",
+   "2026.09.16.596": "The log sheet fills itself in a block at a time as it rises.",
+   "2026.09.16.595": "Hold any box on a lift for edit tags, add a lift and remove this lift.",
+   "2026.09.16.594": "Beat the plan on a lift and a green +5 KG lands next to its name.",
+   "2026.09.16.593": "The log opens with the plan already in the boxes, dimmed until you change it.",
+   "2026.09.16.592": "Every box in the log says what it holds — 3 sets, 8 reps, 60 kg — instead of × and @."
   },
   "UPDATE_CHECK_INTERVAL_MS": 1800000,
   "UPDATE_VALIDATOR_KEY": "settings:updateValidator",
@@ -1280,11 +1361,10 @@
    "backupampr",
    "bodymetrics",
    "scorelog",
-   "blinding",
    "weights",
    "version",
    "legal",
-   "calm",
+   "appearance",
    "strengthskills",
    "mobilityskills",
    "reportproblem",
@@ -1325,6 +1405,27 @@
    "balanced": "Balanced",
    "longevity": "Longevity"
   },
+  "TAB_TITLES": {
+   "training": [
+    "This",
+    "week"
+   ],
+   "injuries": [
+    "Your",
+    "body"
+   ],
+   "data": [
+    "Every",
+    "reading"
+   ],
+   "settings": [
+    "Your",
+    "set-up"
+   ]
+  },
+  "WORDMARK_HTML": "<div class=\"logo-line\"><span style=\"margin-right:-0.01em;\">D</span><span style=\"margin-right:-0.03em;\">o</span><span>g</span></div><div class=\"logo-line\"><span style=\"margin-right:-0.04em;\">f</span><span style=\"margin-right:0.005em;\">o</span><span style=\"margin-right:-0.025em;\">o</span><span>d</span></div>",
+  "ROLL_MS": 560,
+  "ROLL_R": 20,
   "CONFIRM_FILL_STEPS": 14,
   "SIG_TAU": 7,
   "SIG_ALPHA": 0.1331221002498184,
@@ -1337,10 +1438,8 @@
   "LEARN_MIN_SESSIONS": 12,
   "LEARN_FULL_AT": 60,
   "LEARN_MAX_SHIFT": 0.6,
-  "LEARN_UNBLINDED_WEIGHT": 0.25,
   "FORM_BADGE_DX": 21,
-  "PLACEBO_MIN_PER_CELL": 4,
-  "VALIDITY_MIN": 8,
+  "MORNING_TEXT_FIELDS": {},
   "SR_COMPONENT_LABELS": {
    "form": "Recent form",
    "hrvTrend": "HRV trend",
@@ -1422,6 +1521,7 @@
   "SR_MIN_MATURITY": 0.3,
   "CV_RECENT_DAYS": 14,
   "SHIFT_RECENT_DAYS": 10,
+  "POWER_REP_MAX": 6,
   "WAKE_TIME_PENALTY": 1.5,
   "BODY_AREAS": {
    "hips": "Hips",
@@ -1644,7 +1744,8 @@
   "GOAL_TYPE_FIELDS": {
    "strength": [
     "exercise",
-    "weight"
+    "weight",
+    "power"
    ],
    "hypertrophy": [
     "exercise",
@@ -1812,6 +1913,11 @@
   },
   "EX_SWAP_KEY": "settings:exerciseSwaps",
   "SWAP_LEARN_AT": 2,
+  "RA_GLYPH": {
+   "add": "<svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" aria-hidden=\"true\"><path d=\"M12 5V19M5 12H19\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"square\"/></svg>",
+   "del": "<svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" aria-hidden=\"true\"><path d=\"M6 6L18 18M18 6L6 18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"square\"/></svg>",
+   "tag": "<svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" aria-hidden=\"true\"><path d=\"M3.5 3.5h8l9 9-8 8-9-9v-8z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"square\"/><path d=\"M7.6 7.6h0\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"square\"/></svg>"
+  },
   "EX_SEARCH_MAX": 12,
   "EX_SUGGEST_MAX": 6,
   "VOLUME_LANDMARKS": {
@@ -2014,15 +2120,16 @@
   },
   "CONF_RULER_SEGMENTS": 5,
   "ACCEPTANCE_STATS_VISIBLE": false,
+  "PROVISIONAL_K": 2,
   "READING_FULL": 3,
   "TICK_H": 4,
   "TRACE_MIN_W": 56,
   "TRACE_GAP": 16,
   "DOCK_GAP": 9,
-  "DOCK_OVERLAP": 10,
   "DOCK_TRACE_GAP": 9,
   "DOCK_RESERVE": 61,
   "RECLEFT_MIN_W": 84,
+  "RECLEFT_KEEP_W": 96,
   "TICK_SVG": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4.5 12.5L9.5 17.5L19.5 6.5\"/></svg>",
   "CROSS_SVG": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M6 6L18 18M18 6L6 18\"/></svg>",
   "GLITCH_FRAMES": [
@@ -2159,6 +2266,7 @@
     "generalWarmupMin": 2.5
    }
   },
+  "LONG_RUN_WEEKLY_SHARE": 0.3,
   "GOAL_TYPE_LABELS": {
    "strength": "Strength",
    "hypertrophy": "Hypertrophy / muscle gain",
@@ -2428,7 +2536,7 @@
     "movement": "push"
    },
    "hinge": {
-    "name": "Romanian Deadlift",
+    "name": "Deadlift",
     "area": "hamstrings",
     "secondaryArea": "lower_back",
     "movement": "hinge"
@@ -2641,6 +2749,16 @@
    "hyrox"
   ],
   "POWER_PICKS_MAX": 1,
+  "POWER_LEAD_DIFFICULTY": {
+   "beginner": 0,
+   "intermediate": 1,
+   "advanced": 2
+  },
+  "POWER_LEAD_LOWER_MOVEMENTS": [
+   "squat",
+   "hinge",
+   "lunge"
+  ],
   "GOAL_TIER_FIELD": {
    "hypertrophy": "hypertrophyTier",
    "strength": "strengthTier",
@@ -3178,10 +3296,17 @@
   },
   "DRILL_TRANSITION_S": 18,
   "DRILL_DOSE_TAIL": {},
+  "SET_LIST_SEP": {},
   "EFFORT_DROPOFF": {
    "nearFailure": 0.25,
    "moderate": 0.1
   },
-  "DEV_TAPS_NEEDED": 7
+  "DEV_TAPS_NEEDED": 7,
+  "MASTHEAD_NAMES": {
+   "deep": "deep",
+   "lifted": "lifted",
+   "washed": "washed",
+   "bright": "bright"
+  }
  }
 }
