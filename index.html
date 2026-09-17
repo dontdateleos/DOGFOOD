@@ -1004,6 +1004,9 @@
      and it is on the header hairline. The log bar separates itself from the page with a hard
      2px rule, and this is the round version of the same idea. */
   #logFab{ display:none; }
+  /* Nothing to log until there is a week to log against — and the gate's own button is what
+     it would be sitting on. Same specificity as the rule below, so source order decides. */
+  body.tab-insights.first-run #logFab{ display:none !important; }
   body.tab-insights #logFab{
     display:flex; position:fixed; z-index:55;
     /* left:0/right:0 with a fit-content width centres it without a transform. margin:auto
@@ -11590,7 +11593,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.603';
+const APP_VERSION = '2026.09.17.604';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11904,6 +11907,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.604': 'The LOG button waits until there is a week to log against.',
   '2026.09.17.603': 'The masthead line stops saying "100% of inputs" to everyone and stops reading 5 of 2 as a fraction.',
   '2026.09.17.602': 'Correcting a logged run or mobility session updates it instead of logging a second one.',
   '2026.09.17.601': 'The log button says LOG, and the mark perches in the masthead instead of falling to it.',
@@ -27570,6 +27574,11 @@ async function applyTodayStage(){
              || (await hasAnyLoggedSession())
              || ((await hasTrainingDays()) && (await hasAnyGoal()));
   todayIsSetUp = ready;
+  /* The gate is a body class as well as a display, so chrome that is not inside Today can
+     stay out of the way of it. The log button is fixed to the viewport and lives outside
+     #panel-insights, and with the mark's flight gone nothing else hid it during the first
+     run — it sat on the thread, and at the end of it on top of "Build my first week". */
+  document.body.classList.toggle('first-run', !ready);
   updateFooterVisibility();
   if(!ready && todayScoreShown){ todayScoreShown = false; settleEyes(); }
   fr.style.display = ready ? 'none' : 'block';
