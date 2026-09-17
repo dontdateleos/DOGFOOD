@@ -3742,6 +3742,29 @@
   }
   .morning-q{ font-family:var(--mono); font-size:var(--fs-tag); text-transform:uppercase;
     letter-spacing:0.08em; color:rgba(var(--ink-rgb),0.6); margin:var(--sp-3) 0 6px; }
+  /* THREE BOXES FOR THE NIGHT. The pocket's own treatment — bone fill, near-black in it,
+     9px radius — so they are the same object as the log sheet's sets/reps/weight boxes and
+     read as somewhere you put a number rather than as a form on a dark page.
+     Equal thirds: none of the three is more important than the others and a time input has a
+     mind of its own about width, so the row is told rather than asked. min-width:0 because a
+     date/time input's intrinsic width is wider than a third of 358 and without it the row
+     runs off the edge — the same trap the tag selects fell into. */
+  .morning-panel .morning-night{ display:flex; gap:8px; margin:0 0 var(--sp-3); }
+  .morning-panel .mn-field{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:4px; }
+  .morning-panel .mn-field input{
+    width:100%; min-width:0; height:auto; min-height:0; margin:0;
+    border:1px solid var(--bg); border-radius:9px; padding:9px 10px;
+    background:var(--bg); color:var(--ground);
+    font-family:var(--wordmark); font-size:var(--log-write, 16px); font-weight:var(--fw-medium);
+    text-align:center; }
+  .morning-panel .mn-field input::placeholder{ color:var(--ground); opacity:0.4; }
+  .morning-panel .mn-field input::-webkit-outer-spin-button,
+  .morning-panel .mn-field input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  /* The unit under the box, not in it — the same move the log sheet made when the operators
+     became the names of what they follow. */
+  .morning-panel .mn-unit{ font-family:var(--mono); font-size:var(--fs-tag);
+    font-weight:var(--fw-bold); letter-spacing:0.1em; text-transform:uppercase;
+    color:rgba(var(--ink-rgb),0.5); text-align:center; }
   .morning-panel .subj-scale{ display:flex; gap:6px; }
   .morning-panel .subj-dot{ flex:1; background:transparent; color:var(--bg);
     border:2px solid rgba(var(--ink-rgb),0.35); font-family:var(--mono); font-size:var(--fs-tag);
@@ -11593,7 +11616,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.604';
+const APP_VERSION = '2026.09.17.605';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11907,6 +11930,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.605': 'The morning sheet asks for last night — hours, woke, resting HR — so a phone can feed the score.',
   '2026.09.17.604': 'The LOG button waits until there is a week to log against.',
   '2026.09.17.603': 'The masthead line stops saying "100% of inputs" to everyone and stops reading 5 of 2 as a fraction.',
   '2026.09.17.602': 'Correcting a logged run or mobility session updates it instead of logging a second one.',
@@ -14272,11 +14296,17 @@ async function morningAlreadyAsked(){
 async function markMorningAsked(){
   try{ await window.storage.set(`morningAsked:${todayStr}`, JSON.stringify({ at: Date.now() })); } catch(e){}
 }
+/* wakeClock is '06:45' and every other field here is a number. collectRecoveryEntry already
+   makes exactly this distinction on the Settings form — a time input and a select are text,
+   everything else goes through parseFloat — and an entry written from the sheet has to be
+   the same shape as one written from the form, or the two disagree about the same morning. */
+const MORNING_TEXT_FIELDS = new Set(['wakeClock']);
 async function setMorningContext(field, value){
   let entry = null;
   try{ entry = JSON.parse((await window.storage.get(keyFor(todayStr))).value); } catch(e){}
   if(!entry || typeof entry !== 'object') entry = { date: todayStr, disagreements: [] };
-  if(value == null || value === '') delete entry[field]; else entry[field] = +value;
+  if(value == null || value === '') delete entry[field];
+  else entry[field] = MORNING_TEXT_FIELDS.has(field) ? String(value) : +value;
   entry.date = todayStr;
   try{ await window.storage.set(keyFor(todayStr), JSON.stringify(entry)); } catch(e){}
 }
@@ -14294,11 +14324,42 @@ async function maybeAskMorning(){
   const dots = (id, opts) => `<div class="subj-scale" id="${id}">` + opts.map(([v, t]) =>
     `<button type="button" class="subj-dot" data-v="${v}">${t}</button>`).join('') + `</div>`;
 
+  /* THE NIGHT ITSELF, WHICH THIS SHEET NEVER ASKED FOR.
+
+     The score needs 24 nights and a night is an entry: record. Two things write one — a
+     device sync, and Save entry under Settings > Logging, which is a collapsed group whose
+     save button only exists while that group is open. This sheet wrote alcohol and illness
+     into the same record and nothing else, so someone without a ring answered the app's one
+     daily question every morning and never supplied a single number.
+     Measured before the change: thirty mornings answered gives observedNights 30,
+     completeness 1 and weightPresent 0 — the nights gate passes on thirty empty nights, the
+     masthead stops saying "night N of 24" because the score is no longer refusing for that
+     reason, and the only thing still telling the truth is "0% of inputs" on the Data tab.
+
+     Three numbers, which is what the Settings group's own subhead calls plenty. HRV is not
+     one of them: it is not a thing you can know without a device, and this is the branch for
+     people who do not have one.
+
+     Shown only when today's record has no sleep in it, so a synced ring never sees it and a
+     ring that failed to sync still gets asked. */
+  const askNight = !entry || entry.durationHrs == null || entry.durationHrs === '';
+  const nightRow = askNight ? `
+      <div class="morning-q">Last night</div>
+      <div class="morning-night">
+        <label class="mn-field"><input type="text" inputmode="decimal" id="morningSleepHrs"
+          data-field="durationHrs" placeholder="7.5" aria-label="Hours slept"><span class="mn-unit">hours</span></label>
+        <label class="mn-field"><input type="time" id="morningWakeClock"
+          data-field="wakeClock" aria-label="Time you woke"><span class="mn-unit">woke</span></label>
+        <label class="mn-field"><input type="text" inputmode="numeric" id="morningRestingHR"
+          data-field="restingHR" placeholder="52" aria-label="Resting heart rate"><span class="mn-unit">rhr</span></label>
+      </div>` : '';
+
   const sheet = document.createElement('div');
   sheet.className = 'morning-sheet';
   sheet.innerHTML = `<div class="morning-panel" role="dialog" aria-modal="true" aria-label="This morning">
       <div class="lift-sheet-head"><span>This morning</span>
         <button type="button" class="lift-sheet-x" aria-label="Not now">\u00d7</button></div>
+      ${nightRow}
       <div class="morning-q">Alcohol last night</div>
       ${dots('morningAlcohol', [[0,'None'],[1,'A drink or two'],[2,'More']])}
       <div class="morning-q">Illness</div>
@@ -14312,11 +14373,25 @@ async function maybeAskMorning(){
   /* Down the way it came up, and taken out of the DOM when it has gone rather than on the
      frame you dismissed it. Hand-rolled because this one builds itself; the class and the
      duration are the shared sheet's, so it behaves like the six wireSheet owns. */
+  /* A number is a reading and the score is built from readings, so the day has to be
+     recomputed before the sheet is out of the way — otherwise Today sits behind it still
+     saying "No sleep data for today yet" about data you have just given it.
+     Only when one actually arrived: generateRecommendations is the whole engine, and alcohol
+     and illness are attribution rather than signal — they change how a day is read, not what
+     the day measured, and the dots already merged them on the tap. */
+  let nightChanged = false;
   const close = async ()=>{
     sheet.classList.remove('sheet-open');
     setTimeout(()=> sheet.remove(), SHEET_MS);
     document.removeEventListener('keydown', esc);
     await markMorningAsked();
+    if(nightChanged){
+      nightChanged = false;
+      invalidateSignalWindows();
+      try{ await refreshRecoveryLog(); } catch(e){}
+      try{ await generateRecommendations(); } catch(e){}
+      try{ renderTabInsight(currentTabName()); } catch(e){}
+    }
   };
   function esc(e){ if(e.key === 'Escape') close(); }
   document.addEventListener('keydown', esc);
@@ -14335,6 +14410,18 @@ async function maybeAskMorning(){
       await setMorningContext(box.id === 'morningAlcohol' ? 'alcohol' : 'unwell',
         clearing ? null : dot.dataset.v);
     }
+  });
+  /* On change rather than on Done, for the same reason the dots write on the tap: the × is a
+     real way out of this sheet and a number you typed before taking it should not be thrown
+     away. change and not input, so a half-typed 7 does not land as seven hours. */
+  sheet.addEventListener('change', async e=>{
+    const el = e.target.closest('input[data-field]');
+    if(!el) return;
+    const raw = el.value.trim();
+    const ok = raw === '' || el.type === 'time' || isFinite(parseFloat(raw));
+    if(!ok){ el.value = ''; return; }
+    await setMorningContext(el.dataset.field, raw === '' ? null : raw);
+    nightChanged = true;
   });
   document.body.appendChild(sheet);
   requestAnimationFrame(()=> sheet.classList.add('sheet-open'));
