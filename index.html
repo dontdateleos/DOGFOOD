@@ -10484,7 +10484,14 @@ async function tabInsightFor(tab){
       return `in form ${d}${sr.formDaysCapped ? '+' : ''} day${d === 1 && !sr.formDaysCapped ? '' : 's'}`;
     }
     const w = await weekSessionCounts();
-    if(w.planned) return `${w.done} of ${w.planned} done this week`;
+    /* "5 OF 2" IS NOT A FRACTION. done counts every session logged against one of the week's
+       seven dates; planned counts the slots on the board. They are independent sets — a
+       session on a day with nothing planned lifts one and not the other — so done can and
+       does exceed planned. Measured on a real week: 2 planned, 5 done.
+       Said as a proportion only while it is one. Past that the two counts are given as two
+       counts, which is what the Weekly tab's own line has always done. */
+    if(w.planned && w.done <= w.planned) return `${w.done} of ${w.planned} done this week`;
+    if(w.planned) return `${w.done} done · ${w.planned} planned`;
     if(w.done) return `${w.done} logged this week`;
     return `${sr.observedNights} night${sr.observedNights === 1 ? '' : 's'} tracked`;
   }
@@ -10520,8 +10527,21 @@ async function tabInsightFor(tab){
       return n ? `${n} night${n === 1 ? '' : 's'} logged` : 'no nights logged yet';
     }
     const bits = [`${sr.observedNights} night${sr.observedNights === 1 ? '' : 's'}`];
-    if(sr.weightBudget > 0 && sr.weightPresent != null){
+    /* TWO DIFFERENT SENTENCES, AND THIS WAS ONLY EVER SAYING THE ONE THAT CANNOT FAIL.
+       weightPresent is what arrived TODAY; weightBudget is what this kit can supply at all.
+       Dividing one by the other unconditionally gives 100% for everybody whose inputs all
+       turned up — measured on a phone-only setup, the line read "7 nights · 100% of inputs"
+       while the honest fact about that setup was that it covers 58% of the model. The
+       masthead was reporting the most flattering reading available and never the qualifying
+       one.
+       The score's own readout already draws this distinction, so this is that logic and not
+       a second opinion: the arrival rate only when something is actually missing today, and
+       otherwise the coverage, and only when the coverage is worth saying. A ring-and-watch
+       user on a normal day gets neither and the line is just the night count. */
+    if(sr.weightBudget > 0 && sr.weightPresent != null && sr.weightPresent < sr.weightBudget - 0.001){
       bits.push(`${Math.round((sr.weightPresent / sr.weightBudget) * 100)}% of inputs`);
+    } else if(sr.weightBudget != null && sr.weightBudget > 0 && sr.weightBudget < 0.9){
+      bits.push(`${Math.round(sr.weightBudget * 100)}% of the model`);
     }
     return bits.join(' · ');
   }
@@ -11570,7 +11590,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.602';
+const APP_VERSION = '2026.09.17.603';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11884,6 +11904,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.603': 'The masthead line stops saying "100% of inputs" to everyone and stops reading 5 of 2 as a fraction.',
   '2026.09.17.602': 'Correcting a logged run or mobility session updates it instead of logging a second one.',
   '2026.09.17.601': 'The log button says LOG, and the mark perches in the masthead instead of falling to it.',
   '2026.09.17.600': 'Tag, add and remove sit together in one box at the end of every lift.',
