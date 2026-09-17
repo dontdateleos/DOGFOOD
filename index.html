@@ -10389,16 +10389,19 @@ async function nightsLogged(){
 }
 async function weekSessionCounts(){
   const week = new Set(getWeekDates());
-  const count = async (prefix)=>{
+  // NEXT week's plan too, for the part-week case the Weekly line reads below.
+  const next = new Set(getWeekDatesForOffset(1));
+  const count = async (prefix, dates)=>{
     try{
       const r = await window.storage.list(prefix);
       if(!r || !r.keys) return 0;
       /* `weekplan:<date>:<slot>` and `training:<date>:<timestamp>` share a shape, so one
          splitter serves both. The date is always the second segment. */
-      return r.keys.filter(k=> week.has(String(k).split(':')[1])).length;
+      return r.keys.filter(k=> dates.has(String(k).split(':')[1])).length;
     } catch(e){ return 0; }
   };
-  return { planned: await count('weekplan:'), done: await count('training:') };
+  return { planned: await count('weekplan:', week), done: await count('training:', week),
+           nextPlanned: await count('weekplan:', next) };
 }
 async function tabInsightFor(tab){
   const sr = lastReadinessSr;
@@ -10443,6 +10446,24 @@ async function tabInsightFor(tab){
     /* Reads backwards when there is nothing planned rather than leading with a zero: "0
        planned" is the interesting half of nothing, and what was actually done is. */
     if(!w.planned) return `${w.done} done · no plan`;
+    /* A PART-WEEK IS NOT THE PLAN, AND SAYING ONLY ITS COUNT MISREPRESENTS ONE.
+
+       The generator fills forward from today, so installing on a Thursday and asking for
+       four days a week produces two sessions in the days that are left and four every week
+       after. The line read "2 planned · 0 done" — a true count of a week that is three
+       days old, given to somebody who has just asked for four days and is looking at the
+       board to see whether it worked. Measured on a fresh Thursday install: 2 this week, 4
+       next; on a three-day setup, 1 and 3.
+
+       So when the following week carries more, the line says both numbers and where the
+       break is. The done count gives up the slot for it — against a stub week "0 done" is
+       the least informative thing on offer — and takes it back the moment the stub is
+       finished, which is the point at which what you did is the fact worth having. Monday
+       is named rather than "next week" because getWeekDates is Monday-based, so it is the
+       actual day the full rhythm starts. */
+    if(w.nextPlanned > w.planned && w.done < w.planned){
+      return `${w.planned} this week · ${w.nextPlanned} from Monday`;
+    }
     return `${w.planned} planned · ${w.done} done`;
   }
   if(tab === 'injuries'){
@@ -11540,7 +11561,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.615';
+const APP_VERSION = '2026.09.17.616';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11854,6 +11875,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.616': 'A plan built mid-week says how many sessions start on Monday, instead of only counting the days that are left.',
   '2026.09.17.615': 'The long run gets a distance and a target pace, sized from your weekly running volume.',
   '2026.09.17.614': 'Ground, Masthead and Motion are one Appearance section under its own band, with one summary line.',
   '2026.09.17.613': 'Weekly no longer scrolls sideways on a 320px screen before the first session is logged.',
