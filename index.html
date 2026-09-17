@@ -11570,7 +11570,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.601';
+const APP_VERSION = '2026.09.17.602';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11884,6 +11884,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.602': 'Correcting a logged run or mobility session updates it instead of logging a second one.',
   '2026.09.17.601': 'The log button says LOG, and the mark perches in the masthead instead of falling to it.',
   '2026.09.17.600': 'Tag, add and remove sit together in one box at the end of every lift.',
   '2026.09.16.599': 'A comma key over the keyboard, for reps and for weight — the pads have no comma of their own.',
@@ -20244,14 +20245,16 @@ async function openBlockEditor(date, slot, block){
 
   // The logged session first, the draft on top: a draft is unsaved work and is therefore
   // always the more recent of the two.
+  /* EVERY TYPE, NOT JUST STRENGTH. The key this finds is what the save writes back to, and
+     a save with no key to write back to invents a new one — which is how a run logged twice
+     became two runs. Only strength has its numbers put back on the form (applyLoggedSession
+     reads exercises); for the other two this is here purely so the save overwrites. */
   blockEditLoggedKey = null; blockEditLoggedTs = null;
-  if(block.type === 'strength'){
-    const already = await findLoggedSession(date, slot, 'strength');
-    if(already){
-      blockEditLoggedKey = already.key;
-      blockEditLoggedTs = already.session.timestamp || null;
-      applyLoggedSession(already.session);
-    }
+  const already = await findLoggedSession(date, slot, block.type);
+  if(already){
+    blockEditLoggedKey = already.key;
+    blockEditLoggedTs = already.session.timestamp || null;
+    if(block.type === 'strength') applyLoggedSession(already.session);
   }
   applyLogDraft(panel, await loadLogDraft(date, slot));
   // Last, so that anything actually logged or drafted is already in the boxes and the plan
@@ -20514,10 +20517,21 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         runType: runType || 'easy', distanceKm, durationMin,
         pace: durationMin && distanceKm ? `${(durationMin/distanceKm).toFixed(2)} min/km` : ''
       };
+      /* THE KEY IS THE SESSION'S IDENTITY, AND IT HAS TO SURVIVE A SECOND SAVE.
+         This used to be `training:${date}:${Date.now()}` every time, so correcting a run —
+         or pressing Save twice — wrote a NEW session beside the old one. Measured: one 5km
+         run saved three times became three 5km runs, which is 15km in every weekly total,
+         three entries in the training count, and a masthead reading "3 planned · 3 done" off
+         one run. Strength has reused its key since it learned to reopen a session; this is
+         the same line. */
+      const wasEdit = !!blockEditLoggedKey;
       try{
-        const result = await window.storage.set(`training:${date}:${session.timestamp}`, JSON.stringify(session));
+        const key = blockEditLoggedKey || `training:${date}:${session.timestamp}`;
+        const result = await window.storage.set(key, JSON.stringify(session));
         if(!result) throw new Error('log failed');
-        showToast('Saved & logged');
+        blockEditLoggedKey = key;
+        blockEditLoggedTs = session.timestamp;
+        showToast(wasEdit ? 'Run updated' : 'Saved & logged');
         clearLoggingStarted(date);
         clearLogDraft(date, slot);
         closeBlockEditor();
@@ -20562,10 +20576,15 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         return;
       }
       const session = { date, type:'mobility', timestamp: Date.now(), stretches, totalHoldSeconds };
+      // Same as the run above: without the key, every save is another session.
+      const wasEdit = !!blockEditLoggedKey;
       try{
-        const result = await window.storage.set(`training:${date}:${session.timestamp}`, JSON.stringify(session));
+        const key = blockEditLoggedKey || `training:${date}:${session.timestamp}`;
+        const result = await window.storage.set(key, JSON.stringify(session));
         if(!result) throw new Error('log failed');
-        showToast('Session logged');
+        blockEditLoggedKey = key;
+        blockEditLoggedTs = session.timestamp;
+        showToast(wasEdit ? 'Session updated' : 'Session logged');
       } catch(e){ showToast('Log failed — try again', true); }
     }
   });
