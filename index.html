@@ -11545,7 +11545,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.612';
+const APP_VERSION = '2026.09.17.613';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11859,6 +11859,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.17.613': 'Weekly no longer scrolls sideways on a 320px screen before the first session is logged.',
   '2026.09.17.612': 'On narrow screens the masthead title sets a size smaller rather than running the mark into the date.',
   '2026.09.17.611': 'Leaving Today before the first score no longer parks the mark on top of the next page\'s masthead line.',
   '2026.09.17.610': 'Settings stops leaking onto every other tab — a stray closing tag left by .606.',
@@ -18297,12 +18298,17 @@ async function renderBlockLoadChart(){
        (the weeks ahead have a shape whether or not you have used them); it just stops
        claiming you are in one. */
     const anyLogged = sessions.length > 0;
+    /* Two facts and a sentence, not one forty-character chip. The sentence lived in the chip
+       row as a single span — "BLOCK 1 STARTS WITH YOUR FIRST LOGGED SESSION", 333px of nowrap
+       10px mono — and at 320 it was the one element on Weekly that ran off the right edge
+       and gave the whole page a sideways scroll. The chip row is for facts that stand alone;
+       the sentence goes where the sentences go, on the note line under it. */
     const headline = !anyLogged
-      ? `Block ${pos.blocksCompleted+1} starts with your first logged session`
+      ? `Block ${pos.blocksCompleted+1} · not started`
       : reintro
         ? `Block ${pos.blocksCompleted+1} · week ${pos.weekInBlock}/${pos.length} · first week back`
         : `Block ${pos.blocksCompleted+1} · week ${pos.weekInBlock}/${pos.length} · ${phaseNow}`;
-    if(!anyLogged) nextLine = '';
+    if(!anyLogged) nextLine = 'Starts with your first logged session.';
 
     // What survives of the old panel's paragraph: the sentence that is actionable, and the
     // two figures the chart cannot draw. Everything else it said is now the picture.
