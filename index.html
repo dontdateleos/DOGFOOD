@@ -1093,6 +1093,17 @@
   /* 0.56 is 4.41:1 on bone \u2014 nine hundredths under the bar, at 10px. 0.58 is 4.72. */
   .rest-note{ font-family:var(--mono); font-size:10px; letter-spacing:0.02em; line-height:1.4;
     color:rgba(var(--ink-rgb),0.58); margin-top:8px; }
+  /* An outline rather than a filled plate: the page already has one filled call to action in
+     this column (.cta-strip, for the morning log) and two competing for the same glance is a
+     choice rather than a next step. Drawn in the plate's own ink, which is var(--bg) here —
+     the plate takes var(--ground) as its surface — so it inverts with the ground like the
+     word above it. 44px tall because it is a real target. */
+  .rest-build{ margin-top:14px; font-family:var(--mono); font-size:var(--fs-tag);
+    font-weight:var(--fw-bold); letter-spacing:var(--track-ui); text-transform:uppercase;
+    background:transparent; color:var(--bg); border:1px solid rgba(var(--ink-rgb),0.45);
+    border-radius:999px; padding:0 20px; min-height:44px; cursor:pointer; }
+  .rest-build[hidden]{ display:none; }
+  .rest-build:disabled{ opacity:0.55; cursor:default; }
   /* The day number is the one part you read at a glance, so it carries the weight; the
      words either side of it stay quiet enough not to compete with the logo. */
   /* Measured, so mono — the same rule the readout, the strip figures and the version line
@@ -5065,6 +5076,20 @@
     <div class="rest-plate" id="restDayPlate" style="display:none;">
       <div class="rest-word">Rest</div>
       <div class="rest-note" id="restDayNote"></div>
+      <!-- THE PLAN RUNS OUT, AND UNTIL NOW NOTHING SAID SO.
+
+           First run exists because "REST — nothing planned this week" with no way out was
+           unescapable for a new user. It fixed that once. The state comes back: a first build
+           covers the rest of this week and one more, and from the third week Today says the
+           same sentence every morning for as long as you keep opening it — measured by
+           running one install forward to October and November, where it still did. The gate
+           that sends you to first run is hasAnyPlannedSession, which is true of ANY weekplan
+           key ever written, so having once had a plan is treated as having one.
+
+           So the plate says it and now offers it, in the one place the sentence already
+           appears. Shown only when nothing at all is planned in the next seven days, which is
+           the same test the note uses to decide it has no next session to name. -->
+      <button type="button" class="rest-build" id="restBuildBtn" hidden>Build the next two weeks</button>
     </div>
     <div class="session-type" id="todaySessionTypePills">
       <div class="type-btn active" data-type="strength">Strength</div>
@@ -11570,7 +11595,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.17.620';
+const APP_VERSION = '2026.09.18.621';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11884,6 +11909,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.18.621': 'When the plan runs out, Today offers to build the next two weeks instead of saying Rest forever.',
   '2026.09.17.620': 'A suggested weight says where it came from, and an empty bar is no longer a plan you can beat.',
   '2026.09.17.619': 'No change you can see — two injury-rehab tables moved so the engine spec can read them.',
   '2026.09.17.618': 'A stretch filed under an unfamiliar category is shown and kept, instead of vanishing when you save.',
@@ -27483,6 +27509,11 @@ async function applyRestDayShape(){
   let resting = false;
   try{ resting = !!(await isRestDayComing(0)).isRest; }catch(e){ return; }
   plate.style.display = resting ? '' : 'none';
+  // Cleared whichever way this goes, so the flag never carries yesterday's answer into a
+  // plate that is about to be shown again. The plate is hidden on a training day so a stale
+  // true is invisible rather than wrong, which is exactly why it would survive unnoticed.
+  const buildBtn = document.getElementById('restBuildBtn');
+  if(buildBtn) buildBtn.hidden = true;
   REST_HIDDEN.forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.style.display = resting ? 'none' : '';
@@ -27505,6 +27536,9 @@ async function applyRestDayShape(){
        : new Date(next).toLocaleDateString(undefined, { weekday:'long' }).toLowerCase())
     : null;
   note.textContent = label ? `nothing planned · next session ${label}` : 'nothing planned this week';
+  // `label` is null only when the seven-day scan above found nothing, which is the plan
+  // having run out rather than an ordinary rest day with a session later in the week.
+  if(buildBtn) buildBtn.hidden = !!label;
 }
 
 /* The morning form's second half, behind one line. It used to open itself whenever
@@ -27588,6 +27622,61 @@ async function hasAnyRecoveryEntry(){
   try{ const res = await window.storage.list('entry:'); return !!(res && res.keys && res.keys.length); }
   catch(e){ return false; }
 }
+
+/* WHAT TODAY HAS TO REDRAW WHEN A WEEK ARRIVES. Written once because there are two doors into
+   it now — the first-run button and the rest plate's own — and a second copy is a second
+   chance for the two to drift.
+
+   applyRestDayShape first and alone: the summary reads todaySessionType, which is what
+   applyRestDayShape sets from the plan.
+
+   The warm-up and the stretch-down are generated on ENTERING Today, and building a week never
+   leaves Today — so without these two calls the session you have just been given arrives with
+   neither, and both stay hidden until something else happens to re-enter the tab. The person
+   least likely to know how to warm up for a squat was the only one not offered it. */
+async function refreshTodayAfterBuild(){
+  await applyRestDayShape();
+  await Promise.all([generateRecommendations(), renderTodayBlockContext(),
+                     renderTodayWorkoutSummary()]);
+  initWarmupTab();
+  await generateWarmup();
+  await generateMobility();
+  updateFooterVisibility();
+}
+
+/* THE SECOND DOOR. Same generator, same two weeks and the same reason for two: a build that
+   covers only the current week puts every session in days you have already lived through when
+   it happens on a Friday. Setup and goals are already written by the time this can be
+   reached — hasAnyPlannedSession is what let you past first run — so unlike the first-run
+   button this only generates. */
+async function wireRestDayBuild(){
+  const btn = document.getElementById('restBuildBtn');
+  if(!btn || btn.dataset.wired) return;
+  btn.dataset.wired = '1';
+  btn.addEventListener('click', async ()=>{
+    const was = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Building...';
+    try{
+      const res = await generateMultiWeekProgram(2, 'auto',
+        { includeStrength:true, includeMobility:true, includeRunning:true });
+      const err = res && res[0] && res[0].result && res[0].result.error;
+      await renderWeekGrid();
+      if(err){
+        /* The same answer first run gives when the generator comes back empty: say so and
+           open the page where a week can be built by hand, rather than leaving the button
+           looking like it did nothing. */
+        showToast('Could not fill the week — plan it by hand on Weekly', true);
+        activateTab('training');
+        return;
+      }
+      showToast('Week built');
+      await refreshTodayAfterBuild();
+    } catch(e){
+      showToast('Something went wrong — try again', true);
+    } finally { btn.disabled = false; btn.textContent = was; }
+  });
+}
+wireRestDayBuild();
 
 /* Today has three states and used to render only the last one. Before there is a plan it
    showed a score placeholder, a block counter for a block that had not started and an empty
@@ -27767,20 +27856,7 @@ function firstRunSpread(n){
       } else {
         out.textContent = '';
         showToast('Week built');
-        // applyRestDayShape first and alone: the summary reads todaySessionType, which is
-        // what applyRestDayShape sets from the plan.
-        await applyRestDayShape();
-        await Promise.all([generateRecommendations(), renderTodayBlockContext(),
-                           renderTodayWorkoutSummary()]);
-        initWarmupTab();
-        // Both sections are generated on entering Today, and building the first week never
-        // leaves Today — so a new user's first session came with no warm-up and no
-        // stretch-down at all, and the two sections stayed hidden until something else
-        // happened to re-enter the tab. The person least likely to know how to warm up for
-        // a squat was the only one not offered it.
-        await generateWarmup();
-        await generateMobility();
-        updateFooterVisibility();
+        await refreshTodayAfterBuild();
       }
     } catch(e){
       out.textContent = 'Something went wrong — try again.';
