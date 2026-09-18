@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.17.619",
+ "generatedFrom": "2026.09.18.622",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1028,7 +1028,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.09.17.619",
+  "APP_VERSION": "2026.09.18.622",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1324,6 +1324,9 @@
    "2026.09.16.589": "Each trend metric says what it is measured in, on the button that picks it.",
    "2026.09.16.590": "The logging sheet loses its rules and puts every value in a box of its own.",
    "2026.09.16.591": "Those boxes are filled now — white on the sheet, with the writing knocked out of them.",
+   "2026.09.18.622": "Training blocks start with your first logged session instead of counting weeks you never trained.",
+   "2026.09.18.621": "When the plan runs out, Today offers to build the next two weeks instead of saying Rest forever.",
+   "2026.09.17.620": "A suggested weight says where it came from, and an empty bar is no longer a plan you can beat.",
    "2026.09.17.619": "No change you can see — two injury-rehab tables moved so the engine spec can read them.",
    "2026.09.17.618": "A stretch filed under an unfamiliar category is shown and kept, instead of vanishing when you save.",
    "2026.09.17.617": "Reopening a logged run brings back what you ran — duration, pace and your note — instead of the plan.",

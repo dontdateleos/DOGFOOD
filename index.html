@@ -11595,7 +11595,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.18.621';
+const APP_VERSION = '2026.09.18.622';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11909,6 +11909,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.18.622': 'Training blocks start with your first logged session instead of counting weeks you never trained.',
   '2026.09.18.621': 'When the plan runs out, Today offers to build the next two weeks instead of saying Rest forever.',
   '2026.09.17.620': 'A suggested weight says where it came from, and an empty bar is no longer a plan you can beat.',
   '2026.09.17.619': 'No change you can see — two injury-rehab tables moved so the engine spec can read them.',
@@ -17009,6 +17010,14 @@ async function renderBlockPositionNote(){
   if(!el) return;
   try{
     const pos = await getBlockPosition(todayStr);
+    /* A block that has not begun is not week 1 of itself. Saying "Block 1, week 1 of 4 —
+       accumulation" to someone who has logged nothing is the app's most confident sentence
+       at its least informed moment, which is the same objection the Weekly strip already
+       answers in words. The block's length is the useful half here, so it is what is said. */
+    if(!pos.started){
+      el.textContent = `Blocks are ${pos.length} weeks. The first one starts with your first logged session.`;
+      return;
+    }
     const dl = isDeloadPosition(pos.weekInBlock, pos.length);
     const phase = dl ? 'deload' : getBlockPhase(pos.weekInBlock, dl, pos.length);
     const blockNo = pos.blocksCompleted + 1;
@@ -28982,14 +28991,38 @@ async function getBlockConfig(){
     if(cfg.anchor) anchor = cfg.anchor;
     if(cfg.blockIndex) blockIndex = cfg.blockIndex;
   } catch(e){}
-  // No anchor yet — start the block at this week's Monday and persist it, so week
-  // position is derived from real elapsed time instead of being recomputed as "week 1"
-  // on every single-week generate.
+  /* NO ANCHOR YET — AND THE ANCHOR IS THE FIRST SESSION, NOT THE FIRST LAUNCH.
+
+     It used to be this week's Monday, written the first time anything asked for a block
+     position, which is during the very first render. From then on the position was pure
+     elapsed calendar time, so a block advanced whether or not you trained. Run one install
+     forward on a shifted clock and it reported "block 2 week 2/4" to somebody who had never
+     logged a session and had no plan: six weeks of periodisation over an empty app.
+
+     A block is a count of training done, so it starts when training does. The anchor is the
+     Monday of your first logged session; with nothing logged there is no block underway and
+     this reports week 1 of block 1 with started:false, which is the same thing the Weekly
+     note already says in words.
+
+     PERSISTED ONLY ONCE THERE IS ONE. Writing an anchor before the first session is what
+     made opening the app in September and first training in November read as block three.
+     An anchor already stored — including the one "Start a new block from this week" writes —
+     is left exactly as it is, so an explicit choice still wins. */
+  let started = true;
   if(!anchor){
-    anchor = getWeekStartFor(todayStr);
-    try{ await window.storage.set('settings:blockConfig', JSON.stringify({ length, anchor, blockIndex })); } catch(e){}
+    let first = null;
+    try{
+      for(const sn of await getAllTrainingSessions()){
+        if(sn && sn.date && (!first || sn.date < first)) first = sn.date;
+      }
+    } catch(e){}
+    started = !!first;
+    anchor = getWeekStartFor(first || todayStr);
+    if(started){
+      try{ await window.storage.set('settings:blockConfig', JSON.stringify({ length, anchor, blockIndex })); } catch(e){}
+    }
   }
-  return { length, anchor, blockIndex };
+  return { length, anchor, blockIndex, started };
 }
 
 // Whole weeks elapsed between two Monday-anchored dates.
@@ -29003,10 +29036,13 @@ function weeksBetween(fromDate, toDate){
 // loop position (always 1 for a single-week generate), so single-week generation never
 // left accumulation and the whole periodization model was unreachable in normal use.
 async function getBlockPosition(date){
-  const { length, anchor } = await getBlockConfig();
+  const { length, anchor, started } = await getBlockConfig();
   const elapsed = Math.max(0, weeksBetween(anchor, getWeekStartFor(date || todayStr)));
   return {
     length,
+    // Carried so a caller can say "not started" rather than having to re-derive it. Every
+    // existing caller reads the three fields below and is unaffected.
+    started: started !== false,
     blocksCompleted: Math.floor(elapsed / length),
     weekInBlock: (elapsed % length) + 1
   };
