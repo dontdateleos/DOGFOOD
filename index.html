@@ -3785,6 +3785,10 @@
   .morning-panel .mn-unit{ font-family:var(--mono); font-size:var(--fs-tag);
     font-weight:var(--fw-bold); letter-spacing:0.1em; text-transform:uppercase;
     color:rgba(var(--ink-rgb),0.5); text-align:center; }
+  /* Sits under the row it explains, quieter than the labels above it — it is read once and
+     then never again, so it must not compete with the boxes on every later morning. */
+  .morning-panel .morning-why{ font-family:var(--sans); font-size:var(--fs-tag);
+    line-height:1.4; color:rgba(var(--ink-rgb),0.55); margin:calc(-1 * var(--sp-2)) 0 var(--sp-3); }
   .morning-panel .subj-scale{ display:flex; gap:6px; }
   .morning-panel .subj-dot{ flex:1; background:transparent; color:var(--bg);
     border:2px solid rgba(var(--ink-rgb),0.35); font-family:var(--mono); font-size:var(--fs-tag);
@@ -11595,7 +11599,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.18.622';
+const APP_VERSION = '2026.09.18.623';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11909,6 +11913,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.18.623': 'The morning sheet says why the wake time matters, which is the box people skip.',
   '2026.09.18.622': 'Training blocks start with your first logged session instead of counting weeks you never trained.',
   '2026.09.18.621': 'When the plan runs out, Today offers to build the next two weeks instead of saying Rest forever.',
   '2026.09.17.620': 'A suggested weight says where it came from, and an empty bar is no longer a plan you can beat.',
@@ -14421,7 +14426,17 @@ async function maybeAskMorning(){
           data-field="wakeClock" aria-label="Time you woke"><span class="mn-unit">woke</span></label>
         <label class="mn-field"><input type="text" inputmode="numeric" id="morningRestingHR"
           data-field="restingHR" placeholder="52" aria-label="Resting heart rate"><span class="mn-unit">rhr</span></label>
-      </div>` : '';
+      </div>
+      <!-- WHAT THE MIDDLE BOX IS FOR, because it is the one that looks optional and is not.
+
+           Hours and resting heart rate obviously feed a recovery score. A wake time looks
+           like bookkeeping, so it is the box people skip — and it is the only source of the
+           sleep-regularity channel, one of the five whose baselines the score averages to
+           decide whether it has enough to report at all. Skipping it holds that average down
+           for as long as you skip it, and nothing on screen ever said so. A ring fills it
+           from bedtime_end, so this is aimed at the people who type. -->
+      <div class="morning-why">The time you woke is what regularity is measured from — the one
+        of these three the score cannot get any other way.</div>` : '';
 
   const sheet = document.createElement('div');
   sheet.className = 'morning-sheet';
