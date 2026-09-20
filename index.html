@@ -9602,6 +9602,11 @@ const UI_ANIM = {
   keyLands:     { on:true, note:'The separator key presses, and the box it wrote into answers', ms:260 },
   countsWithYou:{ on:true, note:'The set breakdown re-counts as you type rather than swapping', ms:220 },
   sepKeyRides:  { on:true, note:'The separator key rises with the keyboard instead of appearing over it', ms:220 },
+  paceWrites:   { on:true, note:'A run\u2019s pace writes itself in the moment both boxes hold a number', ms:420 },
+  cutShows:     { on:true, note:'A deload week\u2019s bar draws to last week before dropping to the cut', ms:820 },
+  weekTurns:    { on:true, note:'The week the board rolls over, its seven days turn once', ms:460, stagger:38 },
+  restLifts:    { on:true, note:'The rest plate lifts away when you build a week from it', ms:420 },
+  confidenceNarrows:{ on:true, note:'The score\u2019s range closes in when a maturing baseline actually narrows it', ms:720 },
   logCascade:   { on:true, note:'The log sheet fills in a block at a time as it arrives', ms:208, stagger:31, px:14, max:5 },
   toastFrom:    { on:true, note:'The toast comes from wherever you just tapped', px:22 },
   panelDirection:{ on:true, note:'A panel arrives from the side its tab sits on — what runs when the deal is off, since both write the same transform', ms:280, px:26 },
@@ -9640,6 +9645,10 @@ window.UI_ANIM = UI_ANIM;
 let uiArrivalUntil = 0;
 function uiArriving(){ return Math.max(0, uiArrivalUntil - performance.now()); }
 
+/* The last confidence-interval width this readout drew, so a narrowing can be told from a
+   redraw. Module-level rather than stored: it is a within-session comparison, and a first
+   render after a reload has nothing to compare against and correctly plays nothing. */
+let lastCiWidth = null;
 function uiAnim(k){
   if(!UI_ANIM[k] || !UI_ANIM[k].on) return false;
   return !eyeMotionOff();   // the same reduced-motion gate the mark uses
@@ -9826,7 +9835,12 @@ function growBarsSoon(){
 function growBars(root){
   if(!uiAnim('growBars')) return;
   const bars = [...(root || document).querySelectorAll(UI_BAR_SELECTOR)]
-    .filter(b => b.getBoundingClientRect().width > 0 && b.dataset.grown !== b.style.width);
+    .filter(b => b.getBoundingClientRect().width > 0 && b.dataset.grown !== b.style.width)
+    /* A DELOAD BAR IS SPOKEN FOR. cutShows draws it to the week before and then drops it to
+       the cut, which is a longer move than growing from nothing and says a different thing.
+       Both would run on the same element and set the same property, so the grow is skipped
+       rather than left to whichever finishes last. */
+    .filter(b => !(b.dataset.cutFrom && uiAnim('cutShows')));
   bars.forEach((b, i)=>{
     b.dataset.grown = b.style.width || '1';
     /* A week that beat its plan pushes past its own end and settles back onto it. Overshoot
@@ -11547,7 +11561,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.20.626';
+const APP_VERSION = '2026.09.20.627';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11861,6 +11875,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
   '2026.09.20.626': 'Four new motions in the log sheet — the over-plan plate lands, the separator key answers, the breakdown re-counts.',
   '2026.09.20.625': 'The workout-streak counter goes, four years after the flame it fed left the masthead.',
   '2026.09.19.624': 'Opening Today stops making twelve hundred storage reads to work out your streak.',
@@ -18260,6 +18275,9 @@ async function renderBlockLoadChart(){
     // own row rather than above a column it has to be matched to.
     const rows = [];
     const TRACK_H = 22;
+    // Carried down the loop so a deload bar knows the height it is a cut FROM — the week
+    // before it, which is the only thing the reduction is meaningful against.
+    let prevPct = null;
     for(let w = 1; w <= pos.length; w++){
       const dl = isDeloadPosition(w, pos.length);
       const phase = dl ? 'deload' : getBlockPhase(w, dl, pos.length);
@@ -18301,11 +18319,12 @@ async function renderBlockLoadChart(){
       rows.push(`<div class="blc-row" title="${title}">
         <div class="blc-wk" style="font-weight:${isNow ? 700 : 400}; opacity:${isNow ? 1 : 0.55};">${label}</div>
         <div class="blc-track" style="height:${TRACK_H}px;">
-          <div class="blc-bar"${(refPct != null && ref > 0 && act > ref) ? ' data-beat-plan="1"' : ''} style="width:${pct.toFixed(1)}%; background:${ink};"></div>
+          <div class="blc-bar"${(refPct != null && ref > 0 && act > ref) ? ' data-beat-plan="1"' : ''}${(isDeloadPosition(w, pos.length) && prevPct != null && prevPct > pct + 2) ? ` data-cut-from="${prevPct.toFixed(1)}"` : ''} style="width:${pct.toFixed(1)}%; background:${ink};"></div>
           ${refPct != null ? `<div class="blc-tick${uiAnim('growBars') ? ' arrive' : ''}" style="left:${Math.min(99.2, refPct).toFixed(1)}%; background:${PLAN_INK}; opacity:${ref > 0 ? 1 : 0.45}; --tick-delay:${260 + rows.length * UI_ANIM.growBars.stagger}ms;"></div>` : ''}
         </div>
         <div class="blc-fig" style="opacity:${isNow ? 1 : 0.55};">${figure}</div>
       </div>`);
+      prevPct = pct;
     }
 
     const dlNow = isDeloadPosition(pos.weekInBlock, pos.length);
@@ -18372,6 +18391,23 @@ async function renderBlockLoadChart(){
       + `<span class="blc-key blc-key-plan">${isSets ? 'plan' : '4-week average'}</span>`;
     strip.innerHTML = `<div class="blc-head"><span class="score-note blc-cap">${legend}</span>${pills}</div>
       <div class="blc-rows">${rows.join('')}</div>`;
+    /* THE REDUCTION IS THE INFORMATION. A deload week's bar simply drew short, which looks
+       identical to a week you missed. Drawn to the week before it and then dropped to the
+       cut, the bar says what a deload is: the same training, deliberately less of it.
+       Only where the previous week is genuinely longer — a deload after a light week has
+       nothing to fall from, and faking the fall would be the chart inventing a contrast. */
+    if(uiAnim('cutShows') && !uiArriving()){
+      strip.querySelectorAll('.blc-bar[data-cut-from]').forEach(barEl=>{
+        barEl.dataset.grown = barEl.style.width || '1';
+        const from = parseFloat(barEl.dataset.cutFrom);
+        const to = parseFloat(barEl.style.width);
+        if(!isFinite(from) || !isFinite(to) || !(from > to)) return;
+        const A = UI_ANIM.cutShows;
+        uiPlay(barEl, [{ width:'0%', offset:0 }, { width:from + '%', offset:0.42 },
+                       { width:from + '%', offset:0.6 }, { width:to + '%', offset:1 }],
+               { duration:A.ms, easing:'cubic-bezier(0.3,0.8,0.25,1)' });
+      });
+    }
     const notesEl = document.getElementById('weekBlockNotes');
     if(notesEl) notesEl.innerHTML = `${chipRow(headline)}
       ${nextLine ? `<div class="score-note" style="margin-top:1px;">${nextLine}</div>` : ''}
@@ -18390,6 +18426,7 @@ async function renderBlockLoadChart(){
   }
 }
 
+let weekBoardShowing = null;
 async function renderWeekGrid(){
   // Surface block position where the week is actually planned. Previously the whole
   // periodization model was invisible: an intensification or deload week looked identical
@@ -18402,6 +18439,27 @@ async function renderWeekGrid(){
   renderBlockLoadChart();
   const boardEl = document.getElementById('weekBoard');
   if(boardEl) boardEl.style.display = '';
+  /* WHICH WEEK THIS IS, REMEMBERED, so a roll can be told from a redraw. The board renders on
+     every visit to Weekly and after every change to it; almost all of those are the same seven
+     days again. A turn on each would be decoration. A turn on the one render where the seven
+     days are different days is the page saying a week has ended — the same thing the date
+     block already does at midnight, one scale up. */
+  const weekTurned = weekBoardShowing != null && weekBoardShowing !== getWeekDates()[0];
+  weekBoardShowing = getWeekDates()[0];
+  /* Deferred a frame because the lanes are drawn further down this render, and a turn played
+     against the seven that are on their way out would turn the wrong week. */
+  if(weekTurned && uiAnim('weekTurns') && boardEl){
+    const A = UI_ANIM.weekTurns;
+    requestAnimationFrame(()=>{
+      boardEl.style.perspective = '760px';
+      [...boardEl.querySelectorAll('.week-lane')].forEach((lane, i)=>{
+        uiPlay(lane, [{ transform:'rotateX(0deg)', opacity:1 },
+                      { transform:'rotateX(-78deg)', opacity:0.3, offset:0.45 },
+                      { transform:'rotateX(0deg)', opacity:1 }],
+               { duration:A.ms, delay:i * A.stagger, easing:'cubic-bezier(0.4,0.1,0.2,1)' });
+      });
+    });
+  }
   const detailCol = document.getElementById('weekWheelDetail');
   const dates = getWeekDates();
   if(activeWheelDayIndex==null) activeWheelDayIndex = Math.max(0, dates.indexOf(todayStr));
@@ -19927,9 +19985,19 @@ async function wireRunLogging(date, block){
   // number implied by the first two, and it was the only one missing.
   const paint = ()=>{
     if(!pace) return;
+    const had = !!pace.textContent;
     const p2 = paceLabel(parseFloat(dist && dist.value), parseFloat(dur && dur.value));
     pace.textContent = p2 ? p2 : '';
     pace.style.display = p2 ? 'block' : 'none';
+    /* THE THIRD NUMBER, AS IT BECOMES KNOWABLE. Nothing is stored here — pace is what the two
+       boxes above already imply, and the line exists the instant both of them hold something.
+       So it is written rather than shown: a clip from the left, the way a figure is worked
+       out left to right. Only on the way in, so editing a distance you already paced does not
+       retype the answer at you on every keystroke. */
+    if(p2 && !had && uiAnim('paceWrites')){
+      uiPlay(pace, [{ clipPath:'inset(0 100% 0 0)' }, { clipPath:'inset(0 0 0 0)' }],
+             { duration:UI_ANIM.paceWrites.ms, easing:'steps(14, end)' });
+    }
   };
   if(dist) dist.addEventListener('input', paint);
   if(dur) dur.addEventListener('input', paint);
@@ -20914,6 +20982,7 @@ function paintReadinessConfidence(){
   const sr = lastReadinessSr;
   const el = document.getElementById('baselineStatus');
   if(!el || !sr) return false;
+  let ciNarrowed = false;
   const bits = [];
   // Readiness still owns the slot either way, so the system-confidence panel does not move
   // into it the moment this one is folded away.
@@ -20925,6 +20994,14 @@ function paintReadinessConfidence(){
   if(sr.available){
     if(sr.ciLow != null && sr.ciHigh != null && sr.ciHigh - sr.ciLow >= 2) bits.push(`${sr.shown} (${sr.ciLow}–${sr.ciHigh})`);
     else bits.push(`${sr.shown}`);
+    /* THE RANGE CLOSING IS A REAL EVENT AND ONLY WORTH PLAYING WHEN IT HAPPENS. The interval
+       genuinely narrows as the baseline matures, over weeks — so this is not a flourish
+       replayed on every render, which would animate a change that is not occurring. The last
+       width seen is remembered across renders and the line closes in only when today's is
+       actually smaller. Widening gets nothing: a range that opens up is not reassurance. */
+    const ciW = (sr.ciLow != null && sr.ciHigh != null) ? sr.ciHigh - sr.ciLow : null;
+    if(ciW != null && lastCiWidth != null && ciW < lastCiWidth && uiAnim('confidenceNarrows')) ciNarrowed = true;
+    if(ciW != null) lastCiWidth = ciW;
     bits.push(`${sr.observedNights}/${sr.windowNights} nights`);
     bits.push(`baseline ${Math.round(sr.maturity * 100)}% mature`);
     /* Two different sentences, and a thin setup must not be able to hide behind the first.
@@ -20945,7 +21022,7 @@ function paintReadinessConfidence(){
     bits.push(`${sr.observedNights} of ${sr.windowNights} nights`);
     bits.push(`baseline ${Math.round(sr.maturity * 100)}% mature`);
   } else return false;
-  let html = `<div>${bits.join(' · ')}</div>`;
+  let html = `<div${ciNarrowed ? ' data-ci-narrowed="1"' : ''}>${bits.join(' · ')}</div>`;
   if(sr.gateReason) html += `<div style="color:var(--ink-warn); margin-top:2px;">${sr.gateReason}</div>`;
   if(sr.drinkNote) html += `<div style="margin-top:2px; opacity:0.75;">${sr.drinkNote}</div>`;
   if(sr.saturated) html += `<div style="color:var(--ink-warn); margin-top:2px;">High HRV with a heart rate that does not agree — read as unclear, not fresh.</div>`;
@@ -20958,6 +21035,12 @@ function paintReadinessConfidence(){
     html += `<div style="margin-top:2px; opacity:0.8;">Night-to-night HRV is ${sr.variability.recent}% against your usual ${sr.variability.baseline}% — instability carries its own signal, though the research disagrees on which way it points.</div>`;
   }
   el.innerHTML = html;
+  // The bracketed range closes in on the score it belongs to, from where it used to sit.
+  if(ciNarrowed){
+    const line = el.firstElementChild;
+    uiPlay(line, [{ letterSpacing:'0.055em', opacity:0.55 }, { letterSpacing:'0em', opacity:1 }],
+           { duration:UI_ANIM.confidenceNarrows.ms, easing:'cubic-bezier(0.3,0.8,0.2,1)' });
+  }
   el.dataset.readiness = '1';
   return true;
 }
@@ -27693,6 +27776,16 @@ async function wireRestDayBuild(){
         return;
       }
       showToast('Week built');
+      /* THE PLATE GOES UP AND THE DAY ARRIVES UNDER IT. Rest is what the page said when there
+         was nothing; the moment there is something, the word should get out of the way rather
+         than blink off. Played before the refresh so the lift and the session arriving are the
+         same gesture — refreshTodayAfterBuild is what hides the plate and draws the session. */
+      const plate = document.getElementById('restDayPlate');
+      if(plate && uiAnim('restLifts')){
+        uiPlay(plate, [{ transform:'translateY(0)', opacity:1 },
+                       { transform:'translateY(-34px)', opacity:0 }],
+               { duration:UI_ANIM.restLifts.ms, easing:'cubic-bezier(0.4,0,0.2,1)' });
+      }
       await refreshTodayAfterBuild();
     } catch(e){
       showToast('Something went wrong — try again', true);

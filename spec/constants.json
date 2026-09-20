@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.20.625",
+ "generatedFrom": "2026.09.20.627",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -774,6 +774,52 @@
     "stagger": 32,
     "max": 12
    },
+   "overLands": {
+    "on": true,
+    "note": "The plate for beating the plan drops onto the row, and the row takes the weight",
+    "ms": 300
+   },
+   "keyLands": {
+    "on": true,
+    "note": "The separator key presses, and the box it wrote into answers",
+    "ms": 260
+   },
+   "countsWithYou": {
+    "on": true,
+    "note": "The set breakdown re-counts as you type rather than swapping",
+    "ms": 220
+   },
+   "sepKeyRides": {
+    "on": true,
+    "note": "The separator key rises with the keyboard instead of appearing over it",
+    "ms": 220
+   },
+   "paceWrites": {
+    "on": true,
+    "note": "A run’s pace writes itself in the moment both boxes hold a number",
+    "ms": 420
+   },
+   "cutShows": {
+    "on": true,
+    "note": "A deload week’s bar draws to last week before dropping to the cut",
+    "ms": 820
+   },
+   "weekTurns": {
+    "on": true,
+    "note": "The week the board rolls over, its seven days turn once",
+    "ms": 460,
+    "stagger": 38
+   },
+   "restLifts": {
+    "on": true,
+    "note": "The rest plate lifts away when you build a week from it",
+    "ms": 420
+   },
+   "confidenceNarrows": {
+    "on": true,
+    "note": "The score’s range closes in when a maturing baseline actually narrows it",
+    "ms": 720
+   },
    "logCascade": {
     "on": true,
     "note": "The log sheet fills in a block at a time as it arrives",
@@ -1028,7 +1074,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.09.20.625",
+  "APP_VERSION": "2026.09.20.627",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1324,6 +1370,8 @@
    "2026.09.16.589": "Each trend metric says what it is measured in, on the button that picks it.",
    "2026.09.16.590": "The logging sheet loses its rules and puts every value in a box of its own.",
    "2026.09.16.591": "Those boxes are filled now — white on the sheet, with the writing knocked out of them.",
+   "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
+   "2026.09.20.626": "Four new motions in the log sheet — the over-plan plate lands, the separator key answers, the breakdown re-counts.",
    "2026.09.20.625": "The workout-streak counter goes, four years after the flame it fed left the masthead.",
    "2026.09.19.624": "Opening Today stops making twelve hundred storage reads to work out your streak.",
    "2026.09.18.623": "The morning sheet says why the wake time matters, which is the box people skip.",
