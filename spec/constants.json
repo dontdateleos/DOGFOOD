@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.20.632",
+ "generatedFrom": "2026.09.20.633",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1094,7 +1094,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.09.20.632",
+  "APP_VERSION": "2026.09.20.633",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1393,6 +1393,7 @@
    "2026.09.20.630": "Yesterday’s score sits behind today’s as a watermark.",
    "2026.09.20.631": "Generating mid-week no longer fills every day left — the rest day is counted against the days you have, not the days you had.",
    "2026.09.20.632": "The last clear day in the week stays clear — mobility stops taking it to repeat a drill it already carries.",
+   "2026.09.20.633": "Mobility gets a day of its own instead of riding the end of a lift, on weeks long enough to spare one.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",

@@ -11615,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.20.632';
+const APP_VERSION = '2026.09.20.633';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11932,6 +11932,7 @@ const APP_NOTES = {
   '2026.09.20.630': 'Yesterday\u2019s score sits behind today\u2019s as a watermark.',
   '2026.09.20.631': 'Generating mid-week no longer fills every day left \u2014 the rest day is counted against the days you have, not the days you had.',
   '2026.09.20.632': 'The last clear day in the week stays clear \u2014 mobility stops taking it to repeat a drill it already carries.',
+  '2026.09.20.633': 'Mobility gets a day of its own instead of riding the end of a lift, on weeks long enough to spare one.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -27557,6 +27558,42 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
     if(!includeRunning) plan = { ...plan, runningSessions: 0 };
   }
 
+  /* MOBILITY GETS A DAY, NOT A SEAT ON SOMEONE ELSE'S.
+
+     determineHybridPlan hands every day but one to strength and running, so mobility could
+     only ever arrive as a passenger — a pm block beside a lift, or, with two-a-days off,
+     folded onto the end of one as its cool-down. Two consequences, both measured on a
+     fresh install with a strength goal:
+
+       1. The NUMBER of mobility blocks is a function of lift days, not of the weekly
+          target. Three lift days left reads as three mobility sessions, because placement
+          is one per lift day and nothing consults MOBILITY_WEEKLY_TARGET_SECONDS.
+       2. Riding the lift is lossy. A pm block gets a session's budget, min(sessionLength,
+          30); a cool-down gets cooldownBudgetMin(), 11 minutes at a 45-minute setting. At
+          that size the goal drill and the integrate movement spend the whole budget and
+          the access and load rungs never get in. Same seven-day week, only the two-a-days
+          setting changed: pm blocks carried 6 goal, 6 integrate, 24 access and 24 load
+          items and charged 1020s across seven areas; cool-downs carried 6 goal, 6
+          integrate, no access, no load, and charged NOTHING to any area.
+
+     So when mobility would otherwise be cool-downs only, it gets a day. Taken from the
+     larger of the two training modalities, never from the held-back rest day, and only
+     from five available days up — below that the week is too short to spend one, and
+     riding the lifts remains the honest answer. At five days that is three lift days
+     rather than four, which is inside the consensus dose either way; the day buys a
+     30-minute session that charges real area time against nothing at all.
+
+     Weeks with two-a-days on already get a standalone pm block per lift day and are left
+     alone here. */
+  let mobilityDayWanted = 0;
+  if(includeMobility && !setup.multiSessionOk && plan && daysLeft >= 5
+     && (plan.strengthSessions + plan.runningSessions) > 1){
+    mobilityDayWanted = 1;
+    plan = plan.strengthSessions >= plan.runningSessions
+      ? { ...plan, strengthSessions: plan.strengthSessions - 1 }
+      : { ...plan, runningSessions: plan.runningSessions - 1 };
+  }
+
   // Consolidated: this now covers both "no strength/running goal exists at all" and
   // "a goal exists but the checkbox turned it off this pass" — either way, mobility-only
   // (if wanted) is the right fallback, not two separate code paths reaching the same place.
@@ -27634,7 +27671,7 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
 
   result.mobilityHandled = (plan.strengthSessions > 0 && includeMobility) || (goals.skillGoals||[]).some(sg=>sg.category==='mobility');
 
-  if(includeMobility && !result.mobilityHandled){
+  if(includeMobility && (mobilityDayWanted || !result.mobilityHandled)){
     // Running-only (or running-emphasis) week with no lift domain to carry the usual
     // complementary-mobility companion blocks — give mobility its own light presence on
     // whatever days are left, rather than silently dropping it entirely. No longer gated
@@ -27653,7 +27690,11 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
     // straight back, so a full week came out with a session on all seven days. Leave one
     // empty whenever the week is long enough for the reservation to have been intended.
     const keepRest = daysLeft >= 3 ? 1 : 0;
-    const mobilitySlots = Math.min(Math.max(0, remainingDates.length - keepRest), 2);
+    /* One day when it was reserved above, out of a week that already has its lifts. Two
+       only in the case this block was originally written for — nothing but running in the
+       week, so mobility is the only thing with anywhere to go. */
+    const cap = result.mobilityHandled ? mobilityDayWanted : 2;
+    const mobilitySlots = Math.min(Math.max(0, remainingDates.length - keepRest), cap);
     if(mobilitySlots > 0){
       const genResult = await generateMobilityProgram(mobilitySlots, remainingDates.slice(0, mobilitySlots), 'maintenance');
       result.mobilityPlaced = (result.mobilityPlaced||0) + genResult.placed;
@@ -30493,26 +30534,23 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
 
   let skillMobilityPlaced = false;
   if(mobilityGoals.length){
-    const remaining = emptyDates.filter(d=>!placedDates.includes(d));
-    // Spending the LAST empty day on skill mobility consumed the rest day the planner
-    // deliberately held back, so a full week came out with something on all seven days.
-    // Only take an empty day while more than one is left; otherwise ride along on a
-    // training day's pm slot, which is already what happens when there are none.
-    //
-    // That used to have an exception: with two-a-days off, riding along is not available,
-    // so the rest day was called the lesser cost and the empty day got taken anyway. The
-    // exception was buying nothing. With the setting off the companion mobility folds into
-    // each lift as its cool-down, and the goal drill is the one thing the cool-down always
-    // carries — measured on a seven-day week, six cool-downs, the skill's progression in
-    // all six. The rider's own day was a seventh copy of a drill already scheduled six
-    // times, and it cost the only clear day in the week to say it. Nothing is lost by
-    // skipping it, so the same rule now applies whatever the setting says.
-    const spendEmpty = remaining.length > 1 ? remaining[0] : null;
-    // Nowhere of its own to go and no permission to double up. Skipping is what the two
-    // neighbouring writers already do in exactly this position — the skill's own
-    // progression still appears inside the mobility blocks that do get placed.
-    const mobDate = (!spendEmpty && !multiSessionOk) ? null
-                  : (spendEmpty || placedDates[placedDates.length-1]);
+    /* THIS RIDES, IT DOES NOT CLAIM A DAY.
+
+       It used to take an empty one — the last one, which was the rest day the planner
+       deliberately held back, so a full week came out with something on all seven days.
+       Then it took the second-to-last, which is the day the planner now reserves for a
+       real mobility session, so the reservation arrived and was eaten before the session
+       that was meant to use it could be built. Measured: seven available days, two-a-days
+       off, the reserved day came back holding one drill — "Ankle mobility + assisted
+       hold", 2x45, no area, nothing charged to the weekly ledger — instead of a
+       thirty-minute session of access, load, integrate and goal work.
+
+       A day of its own is the planner's to grant, not this writer's to take. What it can
+       still do is ride: a training day's pm slot when two-a-days are on. With them off it
+       skips, and loses nothing — the companion folds into each lift as its cool-down, and
+       the goal drill is the one thing a cool-down always carries (measured on that same
+       week: six cool-downs, the skill's progression in all six). */
+    const mobDate = multiSessionOk ? placedDates[placedDates.length-1] : null;
     // pm either way now. Riding along on a training day was always pm; a day of its own
     // used to be am, which put the skill's loaded end-range work at the stiffest hour of
     // the day for no reason other than the day being free.
