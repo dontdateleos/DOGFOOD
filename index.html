@@ -104,6 +104,12 @@
        flipping. Anything that means "the text colour, but quieter" must use this and
        never a literal, or it will not follow the ground. */
     --ink-rgb:251,250,246; --ground-rgb:12,13,11;
+    /* THE PAGE'S OWN INK, WHICH A POCKET MUST NOT RESTATE. --ink-rgb is redefined inside every
+       dark pocket — the header, the log sheet, the morning sheet — so a rule that has to read
+       against the PAGE rather than against the pocket it is drawn in cannot use it. The header
+       is exactly that case: it is a dark band on both grounds, and the line under it borders
+       the page below. Set here and in the bone block and nowhere else. */
+    --edge-rgb:251,250,246;
     --hair:rgba(var(--ink-rgb),0.16);
     --text:#0c0d0b;
     /* The grey explanatory text is set in, sampled off the reference (#c8c7bc there). It
@@ -767,6 +773,7 @@
     --ground:#fbfaf6;
     --bg:#0c0d0b;
     --ink-rgb:12,13,11; --ground-rgb:251,250,246;
+    --edge-rgb:12,13,11;
     --dim:#38332f;
     --hue-faded:#0c0d0b;
     --label:var(--label-bone);
@@ -4306,11 +4313,16 @@
      retracts the same way when you come back to the top. */
   .ui-hairlineDraws header{ position:relative; }
   .ui-hairlineDraws header::after{ content:''; position:absolute; left:0; right:0; bottom:0;
-    height:1px; background:rgba(var(--ink-rgb),0.34); transform:scaleX(0); transform-origin:left center;
+    height:1px; background:rgba(var(--edge-rgb),0.34); transform:scaleX(0); transform-origin:left center;
     transition:transform 320ms cubic-bezier(0.3,0.9,0.3,1); pointer-events:none; }
   .ui-hairlineDraws header.scrolled::after{ transform:scaleX(1); }
-  /* The two together would double the line, so the drawn one takes over the hairline's job. */
-  .ui-hairlineDraws.ui-headerHairline header.scrolled{ box-shadow:0 8px 14px -10px rgba(12,13,11,0.4); }
+  /* AND NO SHADOW UNDER IT. The soft drop was doing the separating before there was a line to
+     do it, and on Today it fell straight across the score — the one number on the page, read
+     through a gradient that existed to say the header was in front of it. A drawn rule says
+     that outright, so the shadow is not a second opinion, it is the same sentence said twice
+     in a softer voice. The drawn line takes the hairline's whole job. */
+  .ui-hairlineDraws.ui-headerHairline header.scrolled,
+  .ui-hairlineDraws header.scrolled{ box-shadow:none; }
 
   /* 8 — The update banner is fixed to the bottom edge; it should arrive from under it. */
   @keyframes bannerSlideIn{ from{ transform:translateY(100%); } to{ transform:translateY(0); } }
@@ -11585,7 +11597,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.20.628';
+const APP_VERSION = '2026.09.20.629';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11899,6 +11911,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
   '2026.09.20.626': 'Four new motions in the log sheet — the over-plan plate lands, the separator key answers, the breakdown re-counts.',
