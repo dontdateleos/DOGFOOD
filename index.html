@@ -9598,6 +9598,10 @@ const UI_ANIM = {
   budgetBar:    { on:true, note:'Today\u2019s session carries a bar showing its length against your setting', ms:620 },
   weightsDrift: { on:true, note:'Each channel\u2019s bar travels from its starting weight to the one your data learned', ms:760, stagger:55 },
   staggerIn:    { on:true, note:'List entries arrive one after another rather than all at once', ms:260, stagger:32, max:12 },
+  overLands:    { on:true, note:'The plate for beating the plan drops onto the row, and the row takes the weight', ms:300 },
+  keyLands:     { on:true, note:'The separator key presses, and the box it wrote into answers', ms:260 },
+  countsWithYou:{ on:true, note:'The set breakdown re-counts as you type rather than swapping', ms:220 },
+  sepKeyRides:  { on:true, note:'The separator key rises with the keyboard instead of appearing over it', ms:220 },
   logCascade:   { on:true, note:'The log sheet fills in a block at a time as it arrives', ms:208, stagger:31, px:14, max:5 },
   toastFrom:    { on:true, note:'The toast comes from wherever you just tapped', px:22 },
   panelDirection:{ on:true, note:'A panel arrives from the side its tab sits on — what runs when the deal is off, since both write the same transform', ms:280, px:26 },
@@ -11543,7 +11547,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.20.625';
+const APP_VERSION = '2026.09.20.626';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11857,6 +11861,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.20.626': 'Four new motions in the log sheet — the over-plan plate lands, the separator key answers, the breakdown re-counts.',
   '2026.09.20.625': 'The workout-streak counter goes, four years after the flame it fed left the masthead.',
   '2026.09.19.624': 'Opening Today stops making twelve hundred storage reads to work out your streak.',
   '2026.09.18.623': 'The morning sheet says why the wake time matters, which is the box people skip.',
@@ -19158,10 +19163,26 @@ function refreshOverPlan(row){
     row.classList.remove('has-over');
     return;
   }
+  const wasHidden = plate.hidden;
   plate.textContent = '+' + up[0].d + ' ' + up[0].label;
   plate.title = 'Above plan: ' + up.map(u=> '+' + u.d + ' ' + u.label.toLowerCase()).join(', ');
   plate.hidden = false;
   row.classList.add('has-over');
+  /* ONLY ON THE WAY IN. The plate is refreshed on every keystroke once it is up, and a plate
+     that lands again on each one is a twitch rather than an arrival. This is the transition
+     from nothing to something, which is the moment worth marking: the number you just typed
+     went past what you were asked for.
+     The row takes the weight after it, a couple of pixels, because the plate is a plate. */
+  if(wasHidden && uiAnim('overLands') && !uiArriving()){
+    const A = UI_ANIM.overLands;
+    uiPlay(plate, [{ transform:'translateY(-22px) scale(0.86)', opacity:0 },
+                    { transform:'translateY(2px) scale(1.05)', opacity:1, offset:0.62 },
+                    { transform:'translateY(0) scale(1)', opacity:1 }],
+           { duration:A.ms, easing:'cubic-bezier(0.2,0.9,0.3,1)' });
+    uiPlay(row, [{ transform:'translateY(0)' }, { transform:'translateY(2px)', offset:0.45 },
+                 { transform:'translateY(0)' }],
+           { duration:A.ms + 80, delay:70, easing:'cubic-bezier(0.3,0.8,0.3,1)' });
+  }
 }
 
 /* THE SEPARATOR KEY. A comma is how you say "and then another set", and on a phone there is
@@ -19210,8 +19231,17 @@ function placeLogSepKey(){
 function showLogSepKey(field){
   logSepField = field;
   const el = logSepKey();
+  const wasHidden = el.hidden;
   el.hidden = false;
   placeLogSepKey();
+  /* IT BELONGS TO THE KEYBOARD, so it arrives the way the keyboard does. placeLogSepKey already
+     pins it to visualViewport's bottom edge, which is the keyboard's top edge; appearing there
+     fully formed read as a thing dropped on top of the keyboard rather than a row of it.
+     Only on the way in — moving between two list fields keeps the same key in place. */
+  if(wasHidden && uiAnim('sepKeyRides')){
+    uiPlay(el, [{ transform:'translateY(64px)', opacity:0 }, { transform:'translateY(0)', opacity:1 }],
+           { duration:UI_ANIM.sepKeyRides.ms, easing:'cubic-bezier(0.25,0.9,0.25,1)' });
+  }
 }
 function hideLogSepKey(){
   logSepField = null;
@@ -19230,6 +19260,17 @@ function insertSetSeparator(field){
   field.value = before + ',' + v.slice(at);
   try{ field.setSelectionRange(at + 1, at + 1); }catch(e){}
   field.dispatchEvent(new Event('input', { bubbles:true }));
+  /* A KEY WHOSE WHOLE EFFECT IS ONE CHARACTER HAS TO PROVE IT FIRED. The caret does not move
+     on screen in any way a thumb can see, the comma lands among digits, and the key itself
+     never takes focus — by design, since focus would close the keyboard. So the key presses
+     and the box it wrote into answers, which is the only feedback either of them gets. */
+  if(uiAnim('keyLands')){
+    const A = UI_ANIM.keyLands;
+    uiPlay(logSepKeyEl, [{ transform:'scale(1)' }, { transform:'scale(0.9)', offset:0.4 },
+                          { transform:'scale(1)' }], { duration:A.ms, easing:'cubic-bezier(0.3,0.9,0.3,1)' });
+    uiPlay(field, [{ transform:'scale(1)' }, { transform:'scale(1.03)', offset:0.45 },
+                   { transform:'scale(1)' }], { duration:A.ms, easing:'cubic-bezier(0.3,1.2,0.4,1)' });
+  }
 }
 (function wireLogSepKey(){
   const sheet = document.getElementById('logSheet');
@@ -19711,8 +19752,20 @@ function refreshSetBreakdown(row){
   const out = row && row.querySelector('.set-breakdown');
   if(!out) return;
   const html = setBreakdownHtml(row);
+  /* A LINE THAT RE-READS ITSELF SHOULD LOOK LIKE IT DID. This is the only figure in the sheet
+     that recomputes while you are still typing — sets, total reps and volume, all from the
+     boxes above it — and it hard-swapped, so the one element on the row that is doing
+     arithmetic for you was the one element that never moved. The same idiom the score's digit
+     roll uses, at a tenth the size: it lifts a hair and comes back on the new number.
+     Only when the text actually changed; a keystroke that leaves the line alone leaves it alone. */
+  const changed = html !== out.innerHTML;
   out.innerHTML = html;
   out.hidden = !html;
+  if(changed && html && uiAnim('countsWithYou') && !uiArriving()){
+    uiPlay(out, [{ transform:'translateY(3px)', opacity:0.45 },
+                 { transform:'translateY(0)', opacity:1 }],
+           { duration:UI_ANIM.countsWithYou.ms, easing:'cubic-bezier(0.2,0.9,0.3,1)' });
+  }
 }
 
 const EX_SUGGEST_MAX = 6;
