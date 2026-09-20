@@ -3918,6 +3918,14 @@
   .skg-bar{ height:8px; background:rgba(var(--ink-rgb),0.16); margin-top:2px; }
   .skg-bar.thin{ height:5px; margin-top:6px; }
   .skg-bar-fill{ height:100%; background:var(--bg); transform-origin:left center; }
+  /* The ring tightens onto the bar once, as it draws. Drawn in the page's own ink rather than
+     the lime, which is spoken for: lime means you went past what was asked of you, and being
+     close to the top of a ladder is not that. */
+  @keyframes skgNear{ 0%{ box-shadow:0 0 0 6px rgba(var(--ink-rgb),0); }
+                      55%{ box-shadow:0 0 0 3px rgba(var(--ink-rgb),0.22); }
+                      100%{ box-shadow:0 0 0 1px rgba(var(--ink-rgb),0.30); } }
+  .skg-bar.near{ animation:skgNear 620ms cubic-bezier(0.3,0.8,0.2,1) both; }
+  @media (prefers-reduced-motion: reduce){ .skg-bar.near{ animation:none; box-shadow:0 0 0 1px rgba(var(--ink-rgb),0.30); } }
   /* THE GOALS BOARD. Same lane as the skills, the mobility domains and the week: role, type,
      target. Three columns rather than the skills' name-cells-rung — a goal has no rung count,
      and 74px is what "Keeping" needs at the lane's 11px mono. */
@@ -4290,6 +4298,19 @@
      already clear. */
   .ui-headerHairline header{ transition:box-shadow 180ms ease; }
   .ui-headerHairline header.scrolled{ box-shadow:0 1px 0 rgba(12,13,11,0.18), 0 8px 14px -10px rgba(12,13,11,0.4); }
+  /* THE RULE IS DRAWN, and the shadow stays a shadow. A box-shadow can only fade, so the line
+     and the depth under it arrived as one soft event everywhere along the edge at once — which
+     is how a shadow behaves and not how a rule is made. Split: the shadow above keeps doing
+     the depth, and the line is its own element that draws left to right, the direction every
+     other rule in this app is read in. Only while scrolled, so it draws on the way in and
+     retracts the same way when you come back to the top. */
+  .ui-hairlineDraws header{ position:relative; }
+  .ui-hairlineDraws header::after{ content:''; position:absolute; left:0; right:0; bottom:0;
+    height:1px; background:rgba(var(--ink-rgb),0.34); transform:scaleX(0); transform-origin:left center;
+    transition:transform 320ms cubic-bezier(0.3,0.9,0.3,1); pointer-events:none; }
+  .ui-hairlineDraws header.scrolled::after{ transform:scaleX(1); }
+  /* The two together would double the line, so the drawn one takes over the hairline's job. */
+  .ui-hairlineDraws.ui-headerHairline header.scrolled{ box-shadow:0 8px 14px -10px rgba(12,13,11,0.4); }
 
   /* 8 — The update banner is fixed to the bottom edge; it should arrive from under it. */
   @keyframes bannerSlideIn{ from{ transform:translateY(100%); } to{ transform:translateY(0); } }
@@ -9607,6 +9628,9 @@ const UI_ANIM = {
   weekTurns:    { on:true, note:'The week the board rolls over, its seven days turn once', ms:460, stagger:38 },
   restLifts:    { on:true, note:'The rest plate lifts away when you build a week from it', ms:420 },
   confidenceNarrows:{ on:true, note:'The score\u2019s range closes in when a maturing baseline actually narrows it', ms:720 },
+  hairlineDraws:{ on:true, note:'The header\u2019s rule draws in from the left rather than fading on everywhere at once' },
+  goalNears:    { on:true, note:'A progress bar within reach of its top says so as it draws', ms:620, at:0.8 },
+  substituteSwaps:{ on:true, note:'A lift the generator has learned to substitute swaps itself in as the sheet opens', ms:460 },
   logCascade:   { on:true, note:'The log sheet fills in a block at a time as it arrives', ms:208, stagger:31, px:14, max:5 },
   toastFrom:    { on:true, note:'The toast comes from wherever you just tapped', px:22 },
   panelDirection:{ on:true, note:'A panel arrives from the side its tab sits on — what runs when the deal is off, since both write the same transform', ms:280, px:26 },
@@ -10096,7 +10120,7 @@ function crossFade(el){
    but they are rows in the registry like everything else, so each one's rules hang off a
    class and this is what puts the class there. Re-run whenever a switch is flipped. */
 const UI_CSS_ANIMS = ['tabIndicator','fieldUnderline','buttonPress','headerHairline',
-                      'bannerSlide','stickyHeads'];
+                      'bannerSlide','stickyHeads','hairlineDraws'];
 function applyUiCssAnims(){
   UI_CSS_ANIMS.forEach(k=> document.documentElement.classList.toggle('ui-' + k, uiAnim(k)));
 }
@@ -11561,7 +11585,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.20.627';
+const APP_VERSION = '2026.09.20.628';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11875,6 +11899,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
   '2026.09.20.626': 'Four new motions in the log sheet — the over-plan plate lands, the separator key answers, the breakdown re-counts.',
   '2026.09.20.625': 'The workout-streak counter goes, four years after the flame it fed left the masthead.',
@@ -19586,6 +19611,9 @@ function exHistKey(name){ return String(name || '').trim().toLowerCase(); }
    generator asks for what you actually do. Kept as a plain map from the old name to the new
    one, so it survives an export and reads as itself if you ever look. */
 const EX_SWAP_KEY = 'settings:exerciseSwaps';
+// Which learned substitutions have already been shown swapping themselves in — see the
+// substituteSwaps block in openBlockEditor for why this is remembered rather than replayed.
+const SWAPS_SHOWN_KEY = 'settings:swapsShown';
 const SWAP_LEARN_AT = 2;      // the second time you do it, not the first
 async function loadExerciseSwaps(){
   try{ return JSON.parse((await window.storage.get(EX_SWAP_KEY)).value) || {}; } catch(e){ return {}; }
@@ -20397,6 +20425,49 @@ async function openBlockEditor(date, slot, block){
   // Last, so that anything actually logged or drafted is already in the boxes and the plan
   // only lands where there is nothing.
   if(block.type === 'strength') logExRows().forEach(row=>{ prefillPlanned(row); refreshOverPlan(row); refreshWeightWhy(row); });
+  /* THE SUBSTITUTION, SHOWN HAPPENING RATHER THAN ALREADY DONE.
+
+     Change a lift twice and the generator stops asking for the original — applyExerciseSwaps
+     rewrites it on the way out and leaves swappedFrom behind saying what it used to be. That
+     is the one piece of learning in the app you never see happen: by the time the sheet opens
+     the row simply holds a different name, identical to a row that was always that lift, so
+     the app quietly taking your correction looks like nothing at all.
+
+     So the row opens holding the name you kept overruling and swaps to the one it learned,
+     once, as the sheet arrives. Nothing is faked: both names are on the row already, and the
+     sheet is the moment you would otherwise have reached to change it again. */
+  if(block.type === 'strength' && uiAnim('substituteSwaps')){
+    const A = UI_ANIM.substituteSwaps;
+    /* ONCE PER SUBSTITUTION, NOT ONCE PER OPEN. swappedFrom is written into the stored plan and
+       stays there, so every later visit to the same block would replay a change that happened
+       weeks ago — the same objection that keeps the score's interval from animating on every
+       render. The pairs already shown are remembered, so this fires on the first sheet that
+       carries a given substitution and never again. */
+    let swapsShown = {};
+    try{ swapsShown = JSON.parse((await window.storage.get(SWAPS_SHOWN_KEY)).value) || {}; }catch(e){}
+    let newlyShown = false;
+    logExRows().forEach(row=>{
+      const src = row._srcExercise;
+      const el = row.querySelector('.week-ex-name');
+      if(!src || !src.swappedFrom || !el || el.value !== src.name) return;
+      const pair = exHistKey(src.swappedFrom) + '>' + exHistKey(src.name);
+      if(swapsShown[pair]) return;
+      swapsShown[pair] = 1; newlyShown = true;
+      el.value = src.swappedFrom;
+      setTimeout(()=>{
+        uiPlay(el, [{ transform:'translateY(0)', opacity:1 },
+                    { transform:'translateY(-13px)', opacity:0, offset:0.42 },
+                    { transform:'translateY(13px)', opacity:0, offset:0.44 },
+                    { transform:'translateY(0)', opacity:1 }],
+               { duration:A.ms, easing:'cubic-bezier(0.3,0.8,0.3,1)' });
+        // Halfway, behind the blank, so the name changes where the eye cannot follow it.
+        setTimeout(()=>{ el.value = src.name; }, Math.round(A.ms * 0.43));
+      }, 260);
+    });
+    if(newlyShown){
+      try{ await window.storage.set(SWAPS_SHOWN_KEY, JSON.stringify(swapsShown)); }catch(e){}
+    }
+  }
   // A session read back from history or from a draft arrives without a keystroke, so the
   // delegated input handler never fires for it.
   panel.querySelectorAll('#weekExerciseRows .edit-row').forEach(refreshSetBreakdown);
@@ -28481,8 +28552,14 @@ async function skillForecast(skill, levelIndex){
 function skillProgressHtml(o){
   const shown = o.levelIndex + 1;
   const pct = Math.max(0, Math.round((shown / o.levelCount) * 100));
+  /* WITHIN REACH, SAID BY THE BAR. The percentage and the rung count are both already here,
+     and both are numbers you have to read; the bar itself said the same thing at every value
+     in exactly the same way. Past the threshold it draws with a ring that tightens onto it —
+     once, as it arrives, rather than as a permanent decoration on a bar you are close to.
+     Nothing is claimed that the number does not already say; this is the number, felt. */
+  const near = uiAnim('goalNears') && pct >= Math.round(UI_ANIM.goalNears.at * 100);
   let html = `<div class="skg-prog-head"><span>Progress</span><span>${shown < 1 ? 'not started' : 'L'+shown+'/'+o.levelCount}</span></div>`
-    + `<div class="skg-bar"><div class="skg-bar-fill" style="width:${pct}%;"></div></div>`
+    + `<div class="skg-bar${near ? ' near' : ''}"><div class="skg-bar-fill" style="width:${pct}%;"></div></div>`
     + `<div class="score-note" style="margin-top:4px;">${o.levelText}</div>`
     + `<div class="score-note" style="margin-top:3px;">${o.note}</div>`
     + (o.forecast

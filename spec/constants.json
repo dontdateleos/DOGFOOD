@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.20.627",
+ "generatedFrom": "2026.09.20.628",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -820,6 +820,21 @@
     "note": "The score’s range closes in when a maturing baseline actually narrows it",
     "ms": 720
    },
+   "hairlineDraws": {
+    "on": true,
+    "note": "The header’s rule draws in from the left rather than fading on everywhere at once"
+   },
+   "goalNears": {
+    "on": true,
+    "note": "A progress bar within reach of its top says so as it draws",
+    "ms": 620,
+    "at": 0.8
+   },
+   "substituteSwaps": {
+    "on": true,
+    "note": "A lift the generator has learned to substitute swaps itself in as the sheet opens",
+    "ms": 460
+   },
    "logCascade": {
     "on": true,
     "note": "The log sheet fills in a block at a time as it arrives",
@@ -1010,7 +1025,8 @@
    "buttonPress",
    "headerHairline",
    "bannerSlide",
-   "stickyHeads"
+   "stickyHeads",
+   "hairlineDraws"
   ],
   "TAB_BACKDROP_COLOR": {
    "insights": "var(--ground)",
@@ -1074,7 +1090,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.09.20.627",
+  "APP_VERSION": "2026.09.20.628",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1370,6 +1386,7 @@
    "2026.09.16.589": "Each trend metric says what it is measured in, on the button that picks it.",
    "2026.09.16.590": "The logging sheet loses its rules and puts every value in a box of its own.",
    "2026.09.16.591": "Those boxes are filled now — white on the sheet, with the writing knocked out of them.",
+   "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
    "2026.09.20.626": "Four new motions in the log sheet — the over-plan plate lands, the separator key answers, the breakdown re-counts.",
    "2026.09.20.625": "The workout-streak counter goes, four years after the flame it fed left the masthead.",
@@ -1967,6 +1984,7 @@
    "legs": "leg days"
   },
   "EX_SWAP_KEY": "settings:exerciseSwaps",
+  "SWAPS_SHOWN_KEY": "settings:swapsShown",
   "SWAP_LEARN_AT": 2,
   "RA_GLYPH": {
    "add": "<svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" aria-hidden=\"true\"><path d=\"M12 5V19M5 12H19\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"square\"/></svg>",
