@@ -8829,91 +8829,6 @@ async function countLoggedStreak(){
     return n;
   }catch(e){ return 0; }
 }
-/* THE WORKOUT STREAK. Consecutive workouts done, not consecutive days logged.
-
-   countLoggedStreak above counts days with an entry, which is the streak the mark's blink
-   rate rides on and is a different thing: it measures whether you opened the app and wrote
-   something down. This measures whether you did the session. A day the plan had nothing on
-   it is not a break — there is no workout to miss. A day the plan had one and it was not
-   logged is where the run ends.
-
-   Walks backwards from today and stops at the first miss, so it reads two keys per day for
-   as long as the streak is and then nothing. The 400 is the same ceiling countLoggedStreak
-   uses: a guard against a corrupt date walking the loop forever, not a cap on the streak.
-
-   Today is exempt. A session planned for this afternoon is not missed yet, and a streak that
-   breaks at midnight and mends when you train is a streak that is wrong all morning. */
-async function countWorkoutStreak(){
-  try{
-    const byDate = {};
-    for(const s of await getAllTrainingSessions()){
-      if(!s || !s.date) continue;
-      (byDate[s.date] = byDate[s.date] || []).push(s.type || 'strength');
-    }
-    /* WHAT EXISTS, ASKED ONCE — not guessed at four hundred times.
-
-       This used to ask storage three questions about every one of the last 400 days: is it a
-       day off, is there an AM block, is there a PM block. Three reads a day, 1,200 reads,
-       every single time Today was opened, and every one of them a synchronous localStorage
-       hit on the main thread. Measured: 1,200 reads and ~11ms on a laptop, the same 1,200
-       whether the app held a year of training or nothing at all — a fresh install did twelve
-       hundred reads to discover a streak of zero. It was 94% of all the storage reads a
-       switch from Weekly to Today made.
-
-       Two list calls answer the same question. The keys alone say which days have a plan and
-       which are marked off, so the walk below reads a value only for a day that actually has
-       one AND that the streak reaches. A fresh install now reads nothing; a year of Monday,
-       Wednesday and Friday training reads the days it counts rather than every day since. */
-    const offDays = new Set();
-    try{
-      const r = await window.storage.list(DAY_OFF_PREFIX);
-      (r && r.keys || []).forEach(k => offDays.add(String(k).slice(DAY_OFF_PREFIX.length)));
-    }catch(e){}
-    const slotsByDate = {};
-    try{
-      const r = await window.storage.list('weekplan:');
-      (r && r.keys || []).forEach(k => {
-        const parts = String(k).split(':');
-        if(parts.length < 3) return;
-        (slotsByDate[parts[1]] = slotsByDate[parts[1]] || []).push(parts[2]);
-      });
-    }catch(e){}
-    let n = 0;
-    const d = new Date(todayStr + 'T00:00:00');
-    for(let i = 0; i < 400; i++){
-      const date = d.toISOString().slice(0,10);
-      d.setDate(d.getDate() - 1);
-      // A day you marked off is not a day you missed.
-      if(offDays.has(date)) continue;
-      const slots = slotsByDate[date];
-      if(!slots || !slots.length) continue;      // nothing was asked of you — and nothing read
-      const planned = [];
-      // Sorted so am is answered before pm, which is the order the plan is written in and the
-      // order the one-logged-answers-one-planned matching below assumes.
-      for(const slot of [...slots].sort()){
-        try{
-          const b = JSON.parse((await window.storage.get(`weekplan:${date}:${slot}`)).value);
-          if(b && b.type) planned.push(b.type);
-        }catch(e){}
-      }
-      if(!planned.length) continue;              // nothing was asked of you
-      const done = (byDate[date] || []).slice();
-      let missed = false;
-      for(const type of planned){
-        const at = done.indexOf(type);
-        if(at < 0){ missed = true; break; }
-        done.splice(at, 1);                      // one logged session answers one planned block
-      }
-      if(missed){
-        if(date === todayStr) continue;          // the day is not over
-        break;
-      }
-      n += planned.length;
-    }
-    return n;
-  }catch(e){ return 0; }
-}
-let workoutStreak = 0;
 /* IN FORM, NOT ON A STREAK.
 
    There was a flame here with a number in it, counting consecutive workouts, up in the
@@ -8957,7 +8872,6 @@ function renderFormMark(inForm, days, capped){
 
 async function refreshEyeHistory(){
   loggedStreak = await countLoggedStreak();
-  workoutStreak = await countWorkoutStreak();
   eyeCtx.streak = anim('streakPerk') ? loggedStreak : 0;
 
 }
@@ -11629,7 +11543,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.19.624';
+const APP_VERSION = '2026.09.20.625';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11943,6 +11857,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.20.625': 'The workout-streak counter goes, four years after the flame it fed left the masthead.',
   '2026.09.19.624': 'Opening Today stops making twelve hundred storage reads to work out your streak.',
   '2026.09.18.623': 'The morning sheet says why the wake time matters, which is the box people skip.',
   '2026.09.18.622': 'Training blocks start with your first logged session instead of counting weeks you never trained.',
