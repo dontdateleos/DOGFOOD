@@ -1592,6 +1592,20 @@
     -webkit-text-stroke:1.4px currentColor;
     font-variant-numeric:tabular-nums; font-feature-settings:'tnum' 1; }
   .score-num svg{ width:0.72em; height:0.72em; stroke-width:2.8; }
+  /* THE WATERMARK, AND EVERYTHING ABOUT IT SAYS SO. Larger than the number it sits behind and
+     offset up and left, because a ghost at the same size and position would read as a
+     rendering fault rather than as another day. 0.09 of the page's ink is under every
+     contrast floor this app holds itself to, deliberately: it is not text to be read, it is
+     the shape of a number you can compare a height against. pointer-events none so it never
+     takes a tap meant for the band, and out of the flow so the score keeps its own centring. */
+  .score-ghost{ position:absolute; left:50%; top:50%;
+    transform:translate(-64%, -58%);
+    font-family:var(--mono); font-size:calc(var(--fs-score) * 1.26); font-weight:var(--fw-bold);
+    line-height:0.92; letter-spacing:-0.02em; color:rgba(var(--ink-rgb),0.09);
+    font-variant-numeric:tabular-nums; font-feature-settings:'tnum' 1;
+    pointer-events:none; user-select:none; white-space:nowrap; z-index:0; }
+  .score-ghost[hidden]{ display:none; }
+  .score-stack > .score-num{ position:relative; z-index:1; }
   .score-label{ font-family:var(--sans); font-size:var(--fs-tag); color:var(--dim);  letter-spacing:0.05em; margin-top:4px; -webkit-text-stroke:0.15px currentColor; }
   .score-note{ font-size:var(--fs-tag); color:var(--dim); margin-top:8px; line-height:1.4; letter-spacing:0.015em; font-weight:var(--fw-medium); }
   /* ---------- TWO VOICES IN A NOTE ----------
@@ -5060,6 +5074,9 @@
     <div class="today-open">
     <div class="gauge-wrap">
       <div class="score-stack">
+        <!-- YESTERDAY, BEHIND TODAY. aria-hidden and unfocusable: a screen reader hearing two
+             numbers in a row where the page shows one would be worse off than hearing none. -->
+        <div class="score-ghost" id="scoreGhost" aria-hidden="true" hidden></div>
         <div class="score-eyes eyes" id="scoreEyes" aria-hidden="true"><div class="eye-gaze"><div class="eye-motion"><span></span><span></span></div></div></div>
         <div class="score-num" id="overallScoreOut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.5" y1="4.5" x2="19.5" y2="19.5"/><line x1="19.5" y1="4.5" x2="4.5" y2="19.5"/></svg></div>
       </div>
@@ -9609,6 +9626,7 @@ const UI_ANIM = {
   traceDraw:      { on:true, note:'The trend chart draws its line, and the band fills in behind it', ms:1000 },
   loadTilt:       { on:true, note:'A week that beat its plan pushes past the tick and rocks back', ms:520, over:0.06 },
   gapDots:        { on:true, note:'The trend line goes dotted across a gap where you logged nothing', gapDays:9 },
+  ghostDigits:    { on:true, note:'Yesterday\u2019s score sits behind today\u2019s, as a watermark' },
   dayHandoff:     { on:true, note:'Midnight passing with the app open turns the date over', ms:620 },
   firstLight:     { on:true, note:'Your first generated week arrives a day at a time', ms:300, stagger:70 },
   strikeThrough:  { on:true, note:'A drill you tick is struck through rather than switching to done', ms:300 },
@@ -11597,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.20.629';
+const APP_VERSION = '2026.09.20.630';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11911,6 +11929,7 @@ const APP_NOTES = {
   '2026.09.16.589': 'Each trend metric says what it is measured in, on the button that picks it.',
   '2026.09.16.590': 'The logging sheet loses its rules and puts every value in a box of its own.',
   '2026.09.16.591': 'Those boxes are filled now — white on the sheet, with the writing knocked out of them.',
+  '2026.09.20.630': 'Yesterday\u2019s score sits behind today\u2019s as a watermark.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -22326,6 +22345,9 @@ async function renderScoreTrace(todayScore){
   host.style.display = 'none';
   scoreDays = [];
   scoreDayIndex = null;
+  // Cleared with the rest of the trace's state: a ghost left over from the last render would
+  // be yesterday's yesterday the moment anything about the week changed.
+  paintScoreGhost();
   // The mark is not the trace and does not wait on it: it stands beside the number on a
   // first-ever morning, with no week to draw yet.
   paintTodayMark();
@@ -22391,6 +22413,7 @@ async function renderScoreTrace(todayScore){
     .forEach(el=>{ if(el) el.style.opacity = ''; });
   const lbl = document.getElementById('overallScoreLabel');
   scoreTodayLabel = lbl ? lbl.textContent : '';
+  paintScoreGhost();
   if(scoreDays.filter(d=>d.score != null).length < 3){ pendingScoreDate = null; layoutBandColumn(false); return; }   // two points is a slope, not a history
   paintScoreTrace();
   if(pendingScoreDate){
@@ -22646,6 +22669,32 @@ const SCORE_FADE_STEP = 0.065;   // per day back, over six days
 function scoredIndices(){
   return scoreDays.map((d, i)=> d.score != null ? i : -1).filter(i=>i >= 0);
 }
+/* THE DAY BEFORE WHICHEVER DAY IS ON THE BAND.
+
+   scoreDays is the one place a past score exists on the SAME SCALE as the number on screen,
+   and that is the whole reason the ghost reads from it rather than computing its own. The
+   trace's own note says why it matters: while Systemic Readiness is refused the headline
+   comes from the older model, and drawing one day on one scale beside another on a different
+   one would be a comparison of two different things wearing the same clothes. scoreDays is
+   built from sr.shownSeries when readiness is available and from overallScoreForEntry when it
+   is not — either way, both numbers come from whatever is currently the score.
+
+   NOTHING IS SHOWN RATHER THAN SOMETHING APPROXIMATE. No previous day, no reading on it, or a
+   reading identical to today's — the last of which would put a number exactly behind itself
+   and say nothing — and the ghost is simply absent. */
+function paintScoreGhost(){
+  const el = document.getElementById('scoreGhost');
+  if(!el) return;
+  const hide = ()=>{ el.hidden = true; el.textContent = ''; };
+  if(!uiAnim('ghostDigits')) return hide();
+  const i = (typeof scoreDayIndex === 'number' && scoreDayIndex >= 0) ? scoreDayIndex : -1;
+  if(i < 1 || !Array.isArray(scoreDays)) return hide();
+  const shown = scoreDays[i], before = scoreDays[i - 1];
+  if(!shown || !before || shown.score == null || before.score == null) return hide();
+  if(before.score === shown.score) return hide();
+  el.textContent = String(before.score);
+  el.hidden = false;
+}
 function showScoreDay(idx){
   const out = document.getElementById('overallScoreOut');
   const label = document.getElementById('overallScoreLabel');
@@ -22677,6 +22726,7 @@ function showScoreDay(idx){
   // exactly the context that makes an old score readable, so it is worth getting right.
   renderTodayBlockContext(scoreDays[idx].date);
   paintScoreTrace();
+  paintScoreGhost();
 }
 
 /* THE BAND NO LONGER SWIPES THROUGH THE WEEK.
