@@ -11615,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.21.641';
+const APP_VERSION = '2026.09.21.642';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11941,6 +11941,7 @@ const APP_NOTES = {
   '2026.09.21.639': 'Mobility\u2019s own day comes out of a spare day when the week has one, instead of costing a training day.',
   '2026.09.21.640': 'Ticking a stretch credits the dose it actually prescribes, instead of a flat five minutes.',
   '2026.09.21.641': 'A jump only opens every lifting day when power is the goal you put first \u2014 otherwise one day a week.',
+  '2026.09.21.642': 'A session that will not fit drops its least goal-relevant work, not whatever happened to be last.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -26016,6 +26017,81 @@ function determineHybridPlan(goalList, totalDaysRaw, sessionLength){
   return { emphasis, strengthSessions, runningSessions, liftGoal, runGoal, secondaryLevel };
 }
 
+/* WHAT COMES OFF WHEN THE SESSION WILL NOT FIT.
+
+   The trim was `exercises.pop()` in a loop — the end of the array, whatever was there.
+   The list is built power lead, then main lift, then bulletproofing, then secondary
+   compound, then the accessories, so the end of the array is exactly where the work the
+   goal is FOR sits. A hypertrophy week at sixty minutes therefore threw its accessories
+   away and kept the prehab: measured, five exercises survived per day, one of them an
+   isolation lift, while the same week at ninety kept eight or nine and the Incline Curl,
+   Cable Pullover and Face Pull reappeared. They were being generated and then discarded by
+   position.
+
+   So the session drops its least goal-relevant work instead of its last work. The main
+   lift, a lift you named, and skill work are never candidates; everything else is ranked
+   by what the block is built around:
+
+     hypertrophy   power lead first, then prehab, then bodyweight work, then the secondary
+                   compound. Isolation last — it is the goal's own stimulus.
+     strength      the same until the tail, where the secondary compound outranks isolation
+                   — an extra press is worth more to a squat than a lateral raise is.
+     running       isolation goes first and the power and durability work goes last, which
+                   is the order a runner's lifting exists in.
+
+   A placeholder left by an injury skip is not training and goes before any of it.
+
+   Returning an index rather than popping means a trim can take something from the middle,
+   so both callers already have to handle a stranded superset partner — which the refit
+   loop below did from the day it was written. */
+/* An entry may hold two kinds of work that are worth the same to the goal. A Bulgarian
+   split squat and a lateral raise both grow tissue; ranking either above the other threw
+   the session's shape off in one direction or the other — ordered one way a measured
+   hypertrophy week came back with 24 isolation sets and 3 compound, ordered the other with
+   the accessories gone again. Equal rank, and the tie-break below thins whichever kind
+   there is most of, which keeps a spread instead of emptying a category. */
+const TRIM_ORDER_BY_GOAL = {
+  hypertrophy: ['power', 'bulletproofing', 'calisthenics', ['secondary_strength', 'isolation']],
+  strength:    ['power', 'bulletproofing', 'calisthenics', 'isolation', 'secondary_strength'],
+  running:     ['isolation', 'calisthenics', 'secondary_strength', 'bulletproofing', 'power'],
+};
+const TRIM_ORDER_DEFAULT = ['power', 'bulletproofing', 'calisthenics', ['isolation', 'secondary_strength']];
+function trimRankIn(order, group){
+  for(let i = 0; i < order.length; i++){
+    const e = order[i];
+    if(Array.isArray(e) ? e.includes(group) : e === group) return i;
+  }
+  return order.length;
+}
+function trimGroupOf(ex){
+  if(ex.isPowerLead) return 'power';
+  const lib = ex.exerciseId ? EXERCISE_LIBRARY[ex.exerciseId] : null;
+  return (lib && lib.category) || 'other';
+}
+function trimCandidateIndex(exercises, topGoalType, prefersPower){
+  const order = (TRIM_ORDER_BY_GOAL[topGoalType] || TRIM_ORDER_DEFAULT).slice();
+  // A goal that leads on power keeps its lead to the end, like any other goal's own work.
+  if(prefersPower){ const i = order.indexOf('power'); if(i >= 0){ order.splice(i, 1); order.push('power'); } }
+  // How many of each kind are still in the session, for the tie-break.
+  const remaining = {};
+  exercises.forEach(ex=>{ const g = trimGroupOf(ex); remaining[g] = (remaining[g] || 0) + 1; });
+  let pick = -1, pickRank = Infinity, pickCount = -1;
+  exercises.forEach((ex, i)=>{
+    if(ex.goalNamed || ex.isSkillWork) return;
+    if(ex.isMainLift && !ex.isPowerLead) return;
+    const group = trimGroupOf(ex);
+    const rank = ex.skippedForInjury ? -1 : trimRankIn(order, group);
+    const count = remaining[group] || 0;
+    // Lowest rank goes; among equals, thin whichever kind there is most of, so no single
+    // kind of work is emptied out while another still has three of it.
+    if(rank < pickRank || (rank === pickRank && count > pickCount)){
+      pickRank = rank; pickCount = count; pick = i;
+    }
+  });
+  // Nothing droppable left; the caller stops rather than eating the main lift.
+  return pick;
+}
+
 function isHeavyStrengthTag(tag){
   return tag==='lower' || tag==='legs' || tag==='full_body';
 }
@@ -30386,8 +30462,13 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
     const trimmedNames = [];
     let sessionEstimate = estimateSessionDuration({ type:'strength', details:{ exercises, plannedFocus } }, null, personalSets, sessionLength);
     while(sessionEstimate != null && sessionEstimate > sessionLength && exercises.length > 1){
-      const removed = exercises.pop();
+      const cut = trimCandidateIndex(exercises, topGoalType, powerLeadIsPrimary);
+      if(cut < 0) break;
+      const removed = exercises.splice(cut, 1)[0];
       if(!removed.skippedForInjury) trimmedNames.push(removed.name);
+      if(removed.supersetGroup){
+        exercises.forEach(e=>{ if(e.supersetGroup === removed.supersetGroup){ delete e.supersetGroup; delete e.supersetSlot; } });
+      }
       sessionEstimate = estimateSessionDuration({ type:'strength', details:{ exercises, plannedFocus } }, null, personalSets, sessionLength);
     }
     const trimNote = trimmedNames.length ? ` — trimmed ${trimmedNames.join(', ')} to fit your ${sessionLength}min session length` : '';
@@ -30423,7 +30504,9 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
     // 60min budget. Re-fit once the pairing is final.
     let refit = estimateSessionDuration({ type:'strength', details:{ exercises, plannedFocus } }, null, personalSets, sessionLength);
     while(refit != null && refit > sessionLength && exercises.length > 1){
-      const removed = exercises.pop();
+      const cut = trimCandidateIndex(exercises, topGoalType, powerLeadIsPrimary);
+      if(cut < 0) break;
+      const removed = exercises.splice(cut, 1)[0];
       if(!removed.skippedForInjury) trimmedNames.push(removed.name);
       if(removed.supersetGroup){
         // Never leave the partner stranded on the way out.
@@ -30586,10 +30669,12 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
         block.details.exercises.push(...gapFillers);
         // These are appended after the per-day trim loop has already run, so without
         // re-fitting they push the last day over its time budget — measured at 95min
-        // against a 90min setting. Trim from the end again, same rule as the main loop.
+        // against a 90min setting. Same rule as the main loop: least goal-relevant first.
         let fillEstimate = estimateSessionDuration({ type:'strength', details:{ exercises: block.details.exercises, plannedFocus: block.details.plannedFocus } }, null, personalSets, sessionLength);
         while(fillEstimate != null && fillEstimate > sessionLength && block.details.exercises.length > 1){
-          block.details.exercises.pop();
+          const cut = trimCandidateIndex(block.details.exercises, topGoalType, powerLeadIsPrimary);
+          if(cut < 0) break;
+          block.details.exercises.splice(cut, 1);
           fillEstimate = estimateSessionDuration({ type:'strength', details:{ exercises: block.details.exercises, plannedFocus: block.details.plannedFocus } }, null, personalSets, sessionLength);
         }
         block.details.notes = (block.details.notes||'') + ' — added to guarantee weekly hamstring/calf coverage';
