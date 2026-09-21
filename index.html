@@ -11615,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.21.638';
+const APP_VERSION = '2026.09.21.639';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11938,6 +11938,7 @@ const APP_NOTES = {
   '2026.09.21.636': 'An injury, a load spike or today\u2019s first lift now outranks a stretching statistic when the warm-up picks its areas.',
   '2026.09.21.637': 'A warm-up slot is no longer spent on a body area the drill library has nothing for.',
   '2026.09.21.638': 'A power day\u2019s landing prep leaves a slot for the rest of the session, and the session\u2019s own order decides who gets it.',
+  '2026.09.21.639': 'Mobility\u2019s own day comes out of a spare day when the week has one, instead of costing a training day.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -27581,22 +27582,47 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
           items and charged 1020s across seven areas; cool-downs carried 6 goal, 6
           integrate, no access, no load, and charged NOTHING to any area.
 
-     So when mobility would otherwise be cool-downs only, it gets a day. Taken from the
-     larger of the two training modalities, never from the held-back rest day, and only
-     from five available days up — below that the week is too short to spend one, and
-     riding the lifts remains the honest answer. At five days that is three lift days
-     rather than four, which is inside the consensus dose either way; the day buys a
-     30-minute session that charges real area time against nothing at all.
+     So when mobility would otherwise be cool-downs only, it gets a day.
+
+     WHERE THAT DAY COMES FROM IS COUNTED AGAINST THE WEEK, NOT AGAINST YOUR TRAINING DAYS.
+
+     It used to come out of the training allocation whenever five or more of your days were
+     left, on the reasoning that a week shorter than that cannot spare one. That reads the
+     wrong number: a day you did not mark available is a clear day on the board just the
+     same. Someone training four days of seven has three untouched days, and taking a lift
+     off them to make room was paying for something the week already had. Measured over
+     four weeks at four available days with two-a-days off, the version that took no day
+     at all left ankles at 2100s against a 2400s month and quads/knees at 1620s — the
+     configuration got worse, not better, for want of this distinction.
+
+     So: a spare day you marked available carries it when the whole week still ends with a
+     clear day, which costs no training. Only when it would not — six or seven days
+     marked, every one of them spoken for — does a training day pay for it, and then from
+     the larger of the two modalities, and never below three training days. At seven days
+     that is five lifts rather than six,
+     which is inside the consensus dose either way, and the week keeps a clear day it did
+     not have before.
 
      Weeks with two-a-days on already get a standalone pm block per lift day and are left
      alone here. */
+  const weekDaysLeft = (weekDatesOverride || getWeekDates()).filter(d => d >= todayStr).length;
   let mobilityDayWanted = 0;
-  if(includeMobility && !setup.multiSessionOk && plan && daysLeft >= 5
-     && (plan.strengthSessions + plan.runningSessions) > 1){
-    mobilityDayWanted = 1;
-    plan = plan.strengthSessions >= plan.runningSessions
-      ? { ...plan, strengthSessions: plan.strengthSessions - 1 }
-      : { ...plan, runningSessions: plan.runningSessions - 1 };
+  if(includeMobility && !setup.multiSessionOk && plan
+     && (plan.strengthSessions + plan.runningSessions) > 0){
+    const training = plan.strengthSessions + plan.runningSessions;
+    if(weekDaysLeft - training - 1 >= 1){
+      // The week has a day going spare. Nothing needs to be given up for it.
+      mobilityDayWanted = 1;
+    } else if(training >= 4){
+      /* Never below three training days to buy one. Without a floor, a Friday generate
+         with two sessions left spent one of them on mobility — half the week's lifting
+         for a block whose content the cool-downs already carry some of. Four is the first
+         count that survives paying. */
+      mobilityDayWanted = 1;
+      plan = plan.strengthSessions >= plan.runningSessions
+        ? { ...plan, strengthSessions: plan.strengthSessions - 1 }
+        : { ...plan, runningSessions: plan.runningSessions - 1 };
+    }
   }
 
   // Consolidated: this now covers both "no strength/running goal exists at all" and
@@ -27690,16 +27716,29 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
     // actually consumed) — using them directly here would incorrectly exclude every
     // available date.
     const remainingDates = await getAvailableEmptyDates(weekDatesOverride);
-    // determineHybridPlan holds a day back as rest — "available" is a ceiling, not a
-    // mandate to fill everything. Handing every leftover day to mobility gave that day
-    // straight back, so a full week came out with a session on all seven days. Leave one
-    // empty whenever the week is long enough for the reservation to have been intended.
-    const keepRest = daysLeft >= 3 ? 1 : 0;
+    /* determineHybridPlan holds a day back as rest — "available" is a ceiling, not a
+       mandate to fill everything. Handing every leftover day to mobility gave that day
+       straight back, so a full week came out with a session on all seven days.
+
+       Counted over the whole week rather than over your available days, for the same
+       reason the reservation above is: the day that makes a week feel like it has rest in
+       it is any day with nothing on it, marked available or not. So mobility may take a
+       spare day while at least one day of the week would still be left clear — which at
+       four available days of seven is no constraint at all, and at seven is the whole
+       constraint. */
+    let clearDays = 0;
+    for(const d of (weekDatesOverride || getWeekDates()).filter(x => x >= todayStr)){
+      let taken = false;
+      for(const slot of ['am','pm']){
+        try{ await window.storage.get(`weekplan:${d}:${slot}`); taken = true; } catch(e){}
+      }
+      if(!taken) clearDays++;
+    }
     /* One day when it was reserved above, out of a week that already has its lifts. Two
        only in the case this block was originally written for — nothing but running in the
        week, so mobility is the only thing with anywhere to go. */
     const cap = result.mobilityHandled ? mobilityDayWanted : 2;
-    const mobilitySlots = Math.min(Math.max(0, remainingDates.length - keepRest), cap);
+    const mobilitySlots = Math.min(Math.max(0, Math.min(remainingDates.length, clearDays - 1)), cap);
     if(mobilitySlots > 0){
       const genResult = await generateMobilityProgram(mobilitySlots, remainingDates.slice(0, mobilitySlots), 'maintenance');
       result.mobilityPlaced = (result.mobilityPlaced||0) + genResult.placed;
