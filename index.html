@@ -11615,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.20.634';
+const APP_VERSION = '2026.09.21.635';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11934,6 +11934,7 @@ const APP_NOTES = {
   '2026.09.20.632': 'The last clear day in the week stays clear \u2014 mobility stops taking it to repeat a drill it already carries.',
   '2026.09.20.633': 'Mobility gets a day of its own instead of riding the end of a lift, on weeks long enough to spare one.',
   '2026.09.20.634': 'The warm-up prepares what you open with \u2014 the first movement\u2019s tissue stops being outvoted by the accessories.',
+  '2026.09.21.635': 'The last line of the warm-up names the lift you are about to do, and ramps a jump differently from a barbell.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -33704,7 +33705,7 @@ async function generateWarmup(){
   if(runKey && QUALITY_RUNS.includes(runKey)){
     prime = 'Strides — 4-6 × 80-100m at roughly 5K to mile pace, walking back between. Start the session within 2 minutes of the last one — 4-5 min';
   } else if(!runType){
-    prime = 'Ramp up on the first lift, to your working weight — 3 min';
+    prime = primeForOpener(opener, openerIsPower);
   }
   const raise = runKey ? (RUN_RAISE_BY_TYPE[runKey] || RUN_RAISE_BY_TYPE.easy) : null;
 
@@ -33741,6 +33742,46 @@ async function generateWarmup(){
    the per-area cost there would double the number of areas selected, which is the opposite
    of the fix. */
 const DRILL_TRANSITION_S = 18;
+/* PRIME NAMES THE MOVEMENT, AND KNOWS WHETHER IT HAS A WEIGHT.
+
+   "Ramp up on the first lift, to your working weight" was fixed text, and the comment
+   above it has claimed since it was written that Potentiate stays "because it names the
+   ramp-up sets for the specific lift you are about to do". It never named anything.
+
+   Worse on a power day, where it is not vague but wrong. A box jump has no working weight
+   to ramp to, so the instruction describes nothing you can do. And a loaded power lift is
+   not ramped the way a squat is either: the ramp is singles and doubles at full intent and
+   it ends when bar speed drops, not when the working weight is reached — the whole
+   point of the lift is the velocity, and grinding the ramp spends exactly what the session
+   is for. Two different instructions, and the app already knows which applies: category
+   "power" in the library, read through isPowerExercise, and the equipment list separating
+   the barbell from the jump.
+
+   Falls back to the old sentence when today's plan has no exercises to name. */
+function primeForOpener(opener, isPower){
+  const DEFAULT = 'Ramp up on the first lift, to your working weight — 3 min';
+  if(!opener || !opener.name) return DEFAULT;
+  const name = opener.name;
+  if(!isPower) return `Ramp up on ${name}, to your working weight — 3 min`;
+  let lib = null;
+  try{
+    // Typed-in sessions carry a name and no id, which is the same fallback isPowerExercise
+    // makes to decide this is power work in the first place.
+    const id = opener.exerciseId || (guessTagsFromLibrary(name) || {}).exerciseId;
+    lib = id ? EXERCISE_LIBRARY[id] : null;
+  } catch(e){}
+  /* Named, not inferred from "anything that is not bodyweight" — a box jump's equipment is
+     ["box"] and a depth jump's is too, so that test sent both of them the barbell sentence,
+     telling someone to watch bar speed on a box. What separates the two instructions is
+     whether there is external load to ramp, which is the implement. A medicine ball is
+     deliberately not in here: a throw is ramped in effort like a jump, not in weight. */
+  const LOADED_POWER_IMPLEMENTS = ['barbell','trap_bar','dumbbell','kettlebell','machine','cable','sandbag'];
+  const loaded = !!(lib && (lib.equipment || []).some(eq => LOADED_POWER_IMPLEMENTS.includes(eq)));
+  return loaded
+    ? `Ramp up on ${name} — singles and doubles to your opening weight, full intent on every rep. Stop the ramp when the speed drops — 4 min`
+    : `Build into ${name} — submaximal efforts first, then one at full intent, with full recovery between — 3 min`;
+}
+
 function drillDoseSeconds(text){
   const t = String(text).replace(/<[^>]*>/g, '').toLowerCase();
   const sides = /\/side|each side|each leg|each arm|each|both/.test(t) ? 2 : 1;
