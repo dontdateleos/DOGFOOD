@@ -11615,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.21.637';
+const APP_VERSION = '2026.09.21.638';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11937,6 +11937,7 @@ const APP_NOTES = {
   '2026.09.21.635': 'The last line of the warm-up names the lift you are about to do, and ramps a jump differently from a barbell.',
   '2026.09.21.636': 'An injury, a load spike or today\u2019s first lift now outranks a stretching statistic when the warm-up picks its areas.',
   '2026.09.21.637': 'A warm-up slot is no longer spent on a body area the drill library has nothing for.',
+  '2026.09.21.638': 'A power day\u2019s landing prep leaves a slot for the rest of the session, and the session\u2019s own order decides who gets it.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -33086,9 +33087,14 @@ async function computeWarmupAreas(){
 
   const plannedExercises = await getPlannedExercisesToday();
   const exercisesByArea = {};
-  plannedExercises.forEach(ex=>{
+  /* Where in the session an area first appears. The tier below says the opener outranks
+     everything else planned; this says the second exercise outranks the fourth, which is
+     the same argument carried down the list. An area nothing plans sorts after all of them. */
+  const areaFirstAt = {};
+  plannedExercises.forEach((ex, i)=>{
     if(ex.area){ (exercisesByArea[ex.area] = exercisesByArea[ex.area]||[]).push(ex.name); }
     if(ex.secondaryArea){ (exercisesByArea[ex.secondaryArea] = exercisesByArea[ex.secondaryArea]||[]).push(ex.name+' (secondary)'); }
+    [ex.area, ex.secondaryArea].filter(Boolean).forEach(a=>{ if(areaFirstAt[a] == null) areaFirstAt[a] = i; });
   });
 
   const plannedAreas = new Set(Object.keys(exercisesByArea));
@@ -33198,7 +33204,7 @@ async function computeWarmupAreas(){
   pinnedAreas.forEach(a=>{ if(!mustKeep[a]) mustKeep[a] = { pinned:true }; });
   openerAreas.forEach(a=>{ if(!mustKeep[a]) mustKeep[a] = { opener: opener.name, power: openerIsPower }; });
 
-  return { ordered, priority, injuryByArea, loadFlagged, runFlagged, exercisesByArea, doneToday, doneTrailing7, squatAnkleFlag, pinnedAreas, mustKeep, opener, openerIsPower, openerAreas, openerGroundAreas };
+  return { ordered, priority, areaFirstAt, injuryByArea, loadFlagged, runFlagged, exercisesByArea, doneToday, doneTrailing7, squatAnkleFlag, pinnedAreas, mustKeep, opener, openerIsPower, openerAreas, openerGroundAreas };
 }
 
 function areaReason(area, injuryByArea, loadFlagged, runFlagged, squatAnkleFlag, pinnedAreas){
@@ -33237,6 +33243,7 @@ function drillReasonChips(selected, f){
     // The opener's own tissue is in the list because of what it is, not because anything
     // is wrong with it — so it gets a chip like the rest, saying which.
     else if(f.openerAreas && f.openerAreas.has(area)) why = 'first up';
+    else if(f.openerGroundAreas && f.openerGroundAreas.has(area)) why = 'landing';
     if(why) chips.push(`${name} \u00b7 ${why}`);
   }
   return chips;
@@ -33450,7 +33457,7 @@ async function generateWarmup(){
 
   await window.storage.set(`plan:${todayStr}`, JSON.stringify({ date: todayStr, planTypes: Array.from(selectedPlanTypes) }));
 
-  const { ordered, priority, injuryByArea, loadFlagged, runFlagged, exercisesByArea, squatAnkleFlag, pinnedAreas, mustKeep, opener, openerIsPower, openerAreas } = await computeWarmupAreas();
+  const { ordered, priority, areaFirstAt, injuryByArea, loadFlagged, runFlagged, exercisesByArea, squatAnkleFlag, pinnedAreas, mustKeep, opener, openerIsPower, openerAreas, openerGroundAreas } = await computeWarmupAreas();
 
   const sectionIds = ['warmupSection'];
   if(ordered.length === 0){
@@ -33534,12 +33541,46 @@ async function generateWarmup(){
   const _needW = rotatedBase.filter(a => mustKeep[a] || _goalAreasW.has(a) || (_ledgerW[a] || 0) < MOBILITY_WEEKLY_TARGET_SECONDS);
   // If everything has hit target, fall back to the full list rather than emptying the
   // warm-up entirely — being at the ROM ceiling is no reason to skip movement prep.
+  /* THE GROUND PAIR YIELDS THE LAST SLOT.
+
+     A power opener seeds the ankles and calves on top of its own two areas, and the budget
+     above 45 minutes is a flat four — so on a clean-then-bench day the opener took all
+     four and the press got nothing. Defensible for the clean, and still the same shape as
+     the failure that started this: one movement winning the whole list.
+
+     So the seeded pair gets whatever is left after the protected areas, less one slot held
+     open for the rest of the session. Four slots, two protected by the opener, leaves one
+     for the ankles and one for the press. An injury protects a third area and the pair
+     yields entirely, which is the right order — the seeding is prophylaxis for a landing
+     and an injury is not hypothetical. Demoted, not dropped: they fall to the plain tier
+     and can still take a slot nothing else wants.
+
+     Ankles before calves, by the order they are seeded: the joint sets the landing the
+     tissue absorbs. */
+  const _slots = Math.max(1, Math.floor(warmupCap / WARMUP_TIME_PER_AREA));
+  const _groundAllow = Math.max(0, _slots - Object.keys(mustKeep).length - 1);
+  const _prio = Object.assign({}, priority);
+  if(openerGroundAreas && openerGroundAreas.size){
+    let taken = 0;
+    for(const a of openerGroundAreas){
+      if(mustKeep[a]) continue;
+      if(taken < _groundAllow){ taken++; continue; }
+      _prio[a] = 0;
+    }
+  }
+  /* Tier, then where the session reaches it, then the ledger. The middle key is what makes
+     the freed slot worth freeing: without it the winner among the plain areas was whichever
+     the date rotation happened to put first, which on a clean/bench/row day was the row's
+     biceps rather than the chest about to be pressed. The rotation still varies the DRILLS
+     within an area every day, which is what it was for. */
+  const _at = a => (areaFirstAt && areaFirstAt[a] != null) ? areaFirstAt[a] : 99;
   const rotated = (_needW.length ? _needW : rotatedBase)
-    .slice().sort((a, b) => ((priority[b] || 0) - (priority[a] || 0))
+    .slice().sort((a, b) => ((_prio[b] || 0) - (_prio[a] || 0))
+                         || (_at(a) - _at(b))
                          || ((_ledgerW[a] || 0) - (_ledgerW[b] || 0)));
   const { selected, estMinutes, deferred } = selectWithinBudget(rotated, mustKeep, warmupCap, WARMUP_TIME_PER_AREA);
   paintReasonChips('warmupChips', drillReasonChips(selected,
-    { injuryByArea, loadFlagged, runFlagged, squatAnkleFlag, pinnedAreas, openerAreas }));
+    { injuryByArea, loadFlagged, runFlagged, squatAnkleFlag, pinnedAreas, openerAreas, openerGroundAreas }));
 
   // Persist which areas actually got warmed up today — previously this was computed
   // fresh on every view and thrown away, meaning "did warm-ups already cover this area
