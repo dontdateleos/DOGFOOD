@@ -11615,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.21.635';
+const APP_VERSION = '2026.09.21.636';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11935,6 +11935,7 @@ const APP_NOTES = {
   '2026.09.20.633': 'Mobility gets a day of its own instead of riding the end of a lift, on weeks long enough to spare one.',
   '2026.09.20.634': 'The warm-up prepares what you open with \u2014 the first movement\u2019s tissue stops being outvoted by the accessories.',
   '2026.09.21.635': 'The last line of the warm-up names the lift you are about to do, and ramps a jump differently from a barbell.',
+  '2026.09.21.636': 'An injury, a load spike or today\u2019s first lift now outranks a stretching statistic when the warm-up picks its areas.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -33175,10 +33176,19 @@ async function computeWarmupAreas(){
   const pinnedAreas = await getMobilityPins();
   pinnedAreas.forEach(a=>allAreas.add(a));
 
-  const ordered = Array.from(allAreas).sort((a,b)=>{
-    const score = a2=> pinnedAreas.has(a2) ? 5 : (injuryByArea[a2] ? 4 : ((openerAreas.has(a2) || openerGroundAreas.has(a2)) ? 3 : (loadFlagged[a2] ? 2 : (runFlagged[a2] ? 1 : 0))));
-    return score(b) - score(a);
-  });
+  /* The tier is kept, not consumed. It used to exist only as the order of this array, and
+     generateWarmup re-sorts the array outright by the weekly stretch ledger — so the tier
+     reached nothing, and the only thing that still decided anything was mustKeep. Handing
+     the scores back lets that sort use them as its first key and the ledger as its second.
+     See the sort in generateWarmup for why the ledger is the wrong first key THERE and the
+     right one in the cool-down. */
+  const areaPriority = a2=> pinnedAreas.has(a2) ? 5
+    : (injuryByArea[a2] ? 4
+    : ((openerAreas.has(a2) || openerGroundAreas.has(a2)) ? 3
+    : (loadFlagged[a2] ? 2 : (runFlagged[a2] ? 1 : 0))));
+  const priority = {};
+  allAreas.forEach(a=>{ priority[a] = areaPriority(a); });
+  const ordered = Array.from(allAreas).sort((a,b)=> priority[b] - priority[a]);
 
   // What selectWithinBudget must never trim. Injuries were always non-negotiable; a pin
   // joins them, or accepting the card would place the area only when the budget happened
@@ -33187,7 +33197,7 @@ async function computeWarmupAreas(){
   pinnedAreas.forEach(a=>{ if(!mustKeep[a]) mustKeep[a] = { pinned:true }; });
   openerAreas.forEach(a=>{ if(!mustKeep[a]) mustKeep[a] = { opener: opener.name, power: openerIsPower }; });
 
-  return { ordered, injuryByArea, loadFlagged, runFlagged, exercisesByArea, doneToday, doneTrailing7, squatAnkleFlag, pinnedAreas, mustKeep, opener, openerIsPower, openerAreas, openerGroundAreas };
+  return { ordered, priority, injuryByArea, loadFlagged, runFlagged, exercisesByArea, doneToday, doneTrailing7, squatAnkleFlag, pinnedAreas, mustKeep, opener, openerIsPower, openerAreas, openerGroundAreas };
 }
 
 function areaReason(area, injuryByArea, loadFlagged, runFlagged, squatAnkleFlag, pinnedAreas){
@@ -33439,7 +33449,7 @@ async function generateWarmup(){
 
   await window.storage.set(`plan:${todayStr}`, JSON.stringify({ date: todayStr, planTypes: Array.from(selectedPlanTypes) }));
 
-  const { ordered, injuryByArea, loadFlagged, runFlagged, exercisesByArea, squatAnkleFlag, pinnedAreas, mustKeep, opener, openerIsPower, openerAreas } = await computeWarmupAreas();
+  const { ordered, priority, injuryByArea, loadFlagged, runFlagged, exercisesByArea, squatAnkleFlag, pinnedAreas, mustKeep, opener, openerIsPower, openerAreas } = await computeWarmupAreas();
 
   const sectionIds = ['warmupSection'];
   if(ordered.length === 0){
@@ -33470,9 +33480,26 @@ async function generateWarmup(){
   const rotatedBase = ordered.length
     ? ordered.slice(rotDay % ordered.length).concat(ordered.slice(0, rotDay % ordered.length))
     : ordered;
-  // Areas already at the weekly static ceiling step aside for areas still short of it.
-  // Rotation gave everyone a turn but couldn't stop an area at 14 min being picked again
-  // while another sat at 1 — sorting by remaining budget is what makes the target bind.
+  /* Areas already at the weekly static ceiling step aside for areas still short of it.
+     Rotation gave everyone a turn but couldn't stop an area at 14 min being picked again
+     while another sat at 1, and the ceiling filter below is what fixes that.
+
+     THE LEDGER IS THE SECOND KEY HERE, NOT THE FIRST.
+
+     It was the only key: this sorted the whole list by remaining static budget, which threw
+     away the tier computeWarmupAreas had just finished building. The argument for it was
+     that sorting by remaining budget makes the weekly target bind — true of the cool-down,
+     which credits MOBILITY_STATIC_SHARE_PER_AREA, five minutes an area. It cannot be true
+     here. WARMUP_STATIC_SHARE_PER_AREA is zero, deliberately — held stretching before
+     loaded training costs force output and RAMP is movement prep by design — so every
+     warmupLog record this section writes carries 0s against each area. The warm-up reads
+     this number and can never move it.
+
+     What it was doing instead was ordering today's movement prep by how much static
+     stretching happened somewhere else this week, ahead of an injury, a load spike, or the
+     barbell about to come off the floor. So the tier decides, and the ledger breaks ties
+     among areas with an equal claim on today, which is the job it is actually good at. The
+     rotation survives as the last tie-break, since the sort is stable. */
   const _ledgerW = await loadWeekStretchLedger();
   // Areas feeding an active mobility goal are exempt from the ceiling: preparing the
   // tissue you're about to load at end range isn't the same thing as general ROM volume.
@@ -33487,7 +33514,8 @@ async function generateWarmup(){
   // If everything has hit target, fall back to the full list rather than emptying the
   // warm-up entirely — being at the ROM ceiling is no reason to skip movement prep.
   const rotated = (_needW.length ? _needW : rotatedBase)
-    .slice().sort((a, b) => (_ledgerW[a] || 0) - (_ledgerW[b] || 0));
+    .slice().sort((a, b) => ((priority[b] || 0) - (priority[a] || 0))
+                         || ((_ledgerW[a] || 0) - (_ledgerW[b] || 0)));
   const { selected, estMinutes, deferred } = selectWithinBudget(rotated, mustKeep, warmupCap, WARMUP_TIME_PER_AREA);
   paintReasonChips('warmupChips', drillReasonChips(selected,
     { injuryByArea, loadFlagged, runFlagged, squatAnkleFlag, pinnedAreas, openerAreas }));
