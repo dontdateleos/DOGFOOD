@@ -11615,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.21.636';
+const APP_VERSION = '2026.09.21.637';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11936,6 +11936,7 @@ const APP_NOTES = {
   '2026.09.20.634': 'The warm-up prepares what you open with \u2014 the first movement\u2019s tissue stops being outvoted by the accessories.',
   '2026.09.21.635': 'The last line of the warm-up names the lift you are about to do, and ramps a jump differently from a barbell.',
   '2026.09.21.636': 'An injury, a load spike or today\u2019s first lift now outranks a stretching statistic when the warm-up picks its areas.',
+  '2026.09.21.637': 'A warm-up slot is no longer spent on a body area the drill library has nothing for.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -33477,9 +33478,29 @@ async function generateWarmup(){
   // Priority decides the first two slots; the remainder rotates by date so the tail of
   // the list is reachable at all. Deterministic within a day, different across days.
   const rotDay = new Date(todayStr).getDate();
-  const rotatedBase = ordered.length
-    ? ordered.slice(rotDay % ordered.length).concat(ordered.slice(0, rotDay % ordered.length))
-    : ordered;
+  /* AN AREA WITH NOTHING TO SHOW DOES NOT COST A SLOT.
+
+     The budget is an area budget — four of them above a 45-minute session — and an area
+     was charged for whether or not it could produce a drill. "back" is not a key in
+     WARMUP_LIBRARY and no warmupSuitable library exercise carries it, so a barbell row's
+     primary area came back with an empty pool, took one of the four slots and rendered
+     silence. Measured on a clean/bench/row day: four areas selected, six drills shown.
+
+     Filtered before the rotation rather than after, so the rotation steps through areas
+     that can actually appear instead of landing on a blank every few days. A flagged area
+     with an empty pool drops out too, and does not reach the deferred note — "first in
+     line tomorrow" is a promise about a list it can never be on. */
+  const _libWarmupAreas = new Set();
+  Object.values(EXERCISE_LIBRARY).forEach(ex=>{
+    if(!ex.warmupSuitable) return;
+    if(ex.area) _libWarmupAreas.add(ex.area);
+    if(ex.secondaryArea) _libWarmupAreas.add(ex.secondaryArea);
+  });
+  const hasWarmupDrills = a => ((WARMUP_LIBRARY[a] || []).length > 0) || _libWarmupAreas.has(a);
+  const drillable = ordered.filter(hasWarmupDrills);
+  const rotatedBase = drillable.length
+    ? drillable.slice(rotDay % drillable.length).concat(drillable.slice(0, rotDay % drillable.length))
+    : drillable;
   /* Areas already at the weekly static ceiling step aside for areas still short of it.
      Rotation gave everyone a turn but couldn't stop an area at 14 min being picked again
      while another sat at 1, and the ceiling filter below is what fixes that.
