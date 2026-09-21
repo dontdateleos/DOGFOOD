@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.21.639",
+ "generatedFrom": "2026.09.21.640",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1094,7 +1094,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.09.21.639",
+  "APP_VERSION": "2026.09.21.640",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1400,6 +1400,7 @@
    "2026.09.21.637": "A warm-up slot is no longer spent on a body area the drill library has nothing for.",
    "2026.09.21.638": "A power day’s landing prep leaves a slot for the rest of the session, and the session’s own order decides who gets it.",
    "2026.09.21.639": "Mobility’s own day comes out of a spare day when the week has one, instead of costing a training day.",
+   "2026.09.21.640": "Ticking a stretch credits the dose it actually prescribes, instead of a flat five minutes.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
@@ -3360,8 +3361,7 @@
   "WARMUP_TIME_PER_AREA": 3,
   "MOBILITY_TIME_CAP": 15,
   "MOBILITY_TIME_PER_AREA": 7,
-  "MOBILITY_STATIC_SHARE_PER_AREA": 5,
-  "WARMUP_STATIC_SHARE_PER_AREA": 0,
+  "PNF_CYCLE_SECONDS": 45,
   "RUN_WARMUP_BUDGET": {
    "easy": 3,
    "recovery": 3,

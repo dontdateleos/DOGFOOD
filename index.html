@@ -11615,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.21.639';
+const APP_VERSION = '2026.09.21.640';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11939,6 +11939,7 @@ const APP_NOTES = {
   '2026.09.21.637': 'A warm-up slot is no longer spent on a body area the drill library has nothing for.',
   '2026.09.21.638': 'A power day\u2019s landing prep leaves a slot for the rest of the session, and the session\u2019s own order decides who gets it.',
   '2026.09.21.639': 'Mobility\u2019s own day comes out of a spare day when the week has one, instead of costing a training day.',
+  '2026.09.21.640': 'Ticking a stretch credits the dose it actually prescribes, instead of a flat five minutes.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -33344,15 +33345,13 @@ function cooldownBudgetMin(sessionLength){
   if(len && len <= 45) return Math.round(MOBILITY_TIME_CAP * 0.7);
   return MOBILITY_TIME_CAP;
 }
-// Of those 7 minutes, roughly this much is held-position work — the static stretch plus
-// the PNF contract-relax cycles, which count together. The remainder is foam rolling and
-// dynamic drills, which the Ingram dose-response doesn't cover. Only this portion is
-// charged to the weekly static ceiling.
-const MOBILITY_STATIC_SHARE_PER_AREA = 5;
-// Warm-ups should contain essentially no static work: held stretching before loaded
-// training transiently reduces force output, and RAMP's Raise/Activate/Mobilise phases
-// are movement prep by design. Zero, not a token minute.
-const WARMUP_STATIC_SHARE_PER_AREA = 0;
+// The weekly static ceiling is charged from the drills themselves now, not from a share of
+// the per-area budget — see drillStaticSeconds. The distinction that constant was built on
+// survives inside it: held stretching and PNF count, rolling and dynamic drills do not,
+// because the Ingram dose-response does not cover them.
+/* A PNF contract-relax cycle, whole. Its printed dose names only the contract phase, so
+   this is what the row is worth when one is ticked — see drillStaticSeconds. */
+const PNF_CYCLE_SECONDS = 45;
 /* A RUN'S PREPARATION IS NOT ONE SIZE, AND IT IS NOT A FRACTION OF A LIFT'S.
 
    This was briefly a single multiplier applied to every run, which the evidence does not
@@ -33556,8 +33555,8 @@ async function generateWarmup(){
      It was the only key: this sorted the whole list by remaining static budget, which threw
      away the tier computeWarmupAreas had just finished building. The argument for it was
      that sorting by remaining budget makes the weekly target bind — true of the cool-down,
-     which credits MOBILITY_STATIC_SHARE_PER_AREA, five minutes an area. It cannot be true
-     here. WARMUP_STATIC_SHARE_PER_AREA is zero, deliberately — held stretching before
+     which credits the doses its held work actually prescribes. It cannot be true here. The
+     warm-up credits nothing, deliberately — held stretching before
      loaded training costs force output and RAMP is movement prep by design — so every
      warmupLog record this section writes carries 0s against each area. The warm-up reads
      this number and can never move it.
@@ -33854,7 +33853,7 @@ async function generateWarmup(){
   const warmMins = drillMinutes(warmItems.filter(i=>!i.note).map(i=>i.html));
   renderDrillList(flow, 'warmup', warmItems,
     document.getElementById('warmupEstimate'), `~${warmMins}<i class="unit">min</i>`,
-    { logKey:'warmupLog', secondsPerArea: WARMUP_STATIC_SHARE_PER_AREA * 60 });
+    { logKey:'warmupLog' });
 }
 
 /* THE ESTIMATE IS COUNTED, NOT ASSUMED.
@@ -33930,6 +33929,55 @@ function drillDoseSeconds(text){
   if((m = t.match(/\b(\d+)\b/)))                     return reps(+m[1]);
   return [30, 45];
 }
+/* WHAT A DRILL CREDITS IS WHAT IT PRESCRIBES.
+
+   The cool-down credited MOBILITY_STATIC_SHARE_PER_AREA — a flat five minutes — to any
+   area with a single ticked drill, whatever that drill was. It is the last number in either
+   list still assumed rather than counted, and everything downstream runs on it: which areas
+   step aside at the weekly ceiling, what the review reports, what the warm-up's own sort
+   reads as already covered.
+
+   Measured over one week, six training days, every cool-down drill ticked, against what the
+   printed doses add up to:
+
+     quads_knees   1500s credited     225s prescribed
+     ankles         600s credited       0s prescribed
+     thoracic       600s credited       0s prescribed
+     chest          300s credited     135s prescribed
+     ...            4500s total      1230s total
+
+   Ankles and thoracic were being marked at the weekly dose in a week that prescribed no
+   held work for them at all — their rows are ankle circles x10, band openers x10-12 and
+   foam rolling. quads_knees read 1500s because the deep-squat goal drill rides every lift's
+   cool-down and claimed a flat five minutes a day for one 3x45s hold.
+
+   So a tick credits that drill's own dose. Three rules decide what a dose is worth:
+
+     PNF   its printed dose is the CONTRACT phase — "contract 6s -> relax -> deepen x3-4"
+           — so reading it literally books six seconds for a cycle this file budgets at
+           "the better part of a minute". Counted at that.
+     ROLL  rolling and release work is not held-position stretching, and the dose-response
+           the 600s target comes from does not cover it. Zero. Same list withDefaultDose
+           uses to know these cannot be counted in reps.
+     REPS  a drill dosed in reps is movement prep, not time under stretch. Zero.
+
+   Anything else dosed in seconds counts at the low end of its printed range, per side where
+   it says per side, which is what drillDoseSeconds already works out for the estimate.
+
+   The warm-up is unchanged: it credits nothing, which is what WARMUP_STATIC_SHARE_PER_AREA
+   said before it was retired along with its opposite number — warm-ups should contain
+   essentially no static work, because held stretching before loaded training transiently
+   reduces force output and RAMP's Raise/Activate/Mobilise phases are movement prep by
+   design. Zero, not a token minute. It still records WHICH areas were worked, which is
+   what several other places read it for. */
+function drillStaticSeconds(html, group){
+  const t = String(html).replace(/<[^>]*>/g, '').trim().toLowerCase();
+  if(!t) return 0;
+  if(String(group || '').toUpperCase() === 'PNF' || /^pnf\b/.test(t)) return PNF_CYCLE_SECONDS;
+  if(/foam roll|roller|lacrosse|smash|release|traction/.test(t)) return 0;
+  if(!/\d+\s*(?:[-–]\s*\d+\s*)?s\b/.test(t)) return 0;
+  return drillDoseSeconds(html)[0];
+}
 function drillMinutes(items){
   const secs = items.reduce((a, it)=> a + drillDoseSeconds(it) [1] + DRILL_TRANSITION_S, 0);
   return Math.max(1, Math.round(secs / 60));
@@ -33962,15 +34010,16 @@ function drillKey(text){
 function drillsDoneRaw(listKey){
   try{
     const raw = JSON.parse(localStorage.getItem('drills:' + listKey) || 'null');
-    if(raw && raw.date === todayStr) return { ids: raw.ids || [], areas: raw.areas || {} };
+    if(raw && raw.date === todayStr) return { ids: raw.ids || [], areas: raw.areas || {}, secs: raw.secs || {} };
   } catch(e){}
-  return { ids: [], areas: {} };
+  return { ids: [], areas: {}, secs: {} };
 }
 function drillsDone(listKey){ return new Set(drillsDoneRaw(listKey).ids); }
-function setDrillsDone(listKey, set, areaByKey){
+function setDrillsDone(listKey, set, areaByKey, secsByKey){
   const prev = drillsDoneRaw(listKey);
   const areas = Object.assign({}, prev.areas, areaByKey || {});
-  try{ localStorage.setItem('drills:' + listKey, JSON.stringify({ date: todayStr, ids: [...set], areas })); } catch(e){}
+  const secs = Object.assign({}, prev.secs, secsByKey || {});
+  try{ localStorage.setItem('drills:' + listKey, JSON.stringify({ date: todayStr, ids: [...set], areas, secs })); } catch(e){}
 }
 /* items: [{ html, group }] — group starts a labelled run, the way the stretch-down groups
    Roll / Move / Hold. A note (an item with no key) is text that is not a thing to tick. */
@@ -33989,16 +34038,19 @@ function setDrillsDone(listKey, set, areaByKey){
 
    The log is written from the ticks now, on render and on every tap. An untouched section
    credits nothing, which is the honest reading of an untouched section. */
-function writeDrillLog(logKey, listKey, secondsPerArea){
+function writeDrillLog(logKey, listKey, countDoses){
   if(!logKey) return;
   const rec = drillsDoneRaw(listKey);
   const areas = [];
+  const secondsByArea = {};
   rec.ids.forEach(k=>{
     const a = rec.areas[k];
-    if(a && !areas.includes(a)) areas.push(a);
+    if(!a) return;
+    if(!areas.includes(a)){ areas.push(a); secondsByArea[a] = 0; }
+    // A list that does not count doses still records WHICH areas were worked; the warm-up
+    // is read for coverage in several places and credits no time by design.
+    if(countDoses) secondsByArea[a] += (rec.secs && rec.secs[k]) || 0;
   });
-  const secondsByArea = {};
-  areas.forEach(a=>{ secondsByArea[a] = secondsPerArea; });
   try{ window.storage.set(`${logKey}:${todayStr}`, JSON.stringify({ date: todayStr, areas, secondsByArea })); } catch(e){}
 }
 // MOVE is the bucket both lists fall into when a drill is not one of the specific stages —
@@ -34112,12 +34164,17 @@ function drillDoseSplit(html){
     (m, dose, tail)=> `<span class="drill-dose">${dose}</span>${tail}`);
 }
 function renderDrillList(host, listKey, items, estEl, estHtml, opts){
-  const logKey = opts && opts.logKey, secPerArea = (opts && opts.secondsPerArea) || 0;
+  const logKey = opts && opts.logKey, countDoses = !!(opts && opts.countDoses);
   const done = drillsDone(listKey);
   // What each drill on screen credits, registered so a tick keeps its meaning after the
   // list has moved on.
-  const areaByKey = {};
-  items.forEach(it=>{ if(!it.note && it.area) areaByKey[drillKey(it.html)] = it.area; });
+  const areaByKey = {}, secsByKey = {};
+  items.forEach(it=>{
+    if(it.note || !it.area) return;
+    const k = drillKey(it.html);
+    areaByKey[k] = it.area;
+    secsByKey[k] = drillStaticSeconds(it.html, it.group);
+  });
   const tickable = items.filter(it=> !it.note);
   // One list, the same shape as the session's own exercise rows, with each drill's stage
   // carried on the row instead of as a heading over a block of them. Grouping them into
@@ -34151,14 +34208,14 @@ function renderDrillList(host, listKey, items, estEl, estHtml, opts){
       setDrillsDone(listKey, set, areaByKey);
       btn.classList.toggle('on', set.has(k));
       btn.setAttribute('aria-pressed', set.has(k) ? 'true' : 'false');
-      writeDrillLog(logKey, listKey, secPerArea);
+      writeDrillLog(logKey, listKey, countDoses);
       paint();
     });
   });
   paint();
   // On render, register what is on screen and restate the record. It cannot lose anything
   // now: the areas map only ever gains entries, and the credit is read from the ticks.
-  if(logKey){ setDrillsDone(listKey, done, areaByKey); writeDrillLog(logKey, listKey, secPerArea); }
+  if(logKey){ setDrillsDone(listKey, done, areaByKey, secsByKey); writeDrillLog(logKey, listKey, countDoses); }
 }
 
 // Auto-generated alongside the warm-up and workout when the Today tab renders — no
@@ -34375,7 +34432,7 @@ async function generateMobility(){
   if(coolDeferred) coolItems.push(coolDeferred);
   renderDrillList(coolFlow, 'cooldown', coolItems,
     document.getElementById('cooldownEstimate'), `~${drillMinutes(coolItems.filter(i=>!i.note).map(i=>i.html))}<i class="unit">min</i>`,
-    { logKey:'postMobilityLog', secondsPerArea: MOBILITY_STATIC_SHARE_PER_AREA * 60 });
+    { logKey:'postMobilityLog', countDoses:true });
 }
 
 /* ---------- EXPORT ALL DATA (closes the loop with Bulk Import) ---------- */
