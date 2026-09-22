@@ -11615,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.22.644';
+const APP_VERSION = '2026.09.22.645';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11944,6 +11944,7 @@ const APP_NOTES = {
   '2026.09.21.642': 'A session that will not fit drops its least goal-relevant work, not whatever happened to be last.',
   '2026.09.22.643': 'The two injury-prevention lifts with trials behind them stop being trimmed like band work.',
   '2026.09.22.644': 'A strength day in a hypertrophy week picks its accessories on strength merit, not the week\u2019s.',
+  '2026.09.22.645': 'Ranking running below other goals now makes it easier, and a lone weekly run stops being the long one.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -26264,14 +26265,7 @@ async function buildRunSlots(tierKey, maxSessions){
   if(maxSessions!=null) tier.runsPerWeek = Math.min(tier.runsPerWeek, maxSessions);
   let goalNote = null;
   const goals = await getCurrentGoals(todayStr);
-  if(goals && goals.list && goals.list.length){
-    const runningGoal = goals.list.find(g=>g.type==='running');
-    const runningIsTop = goals.list[0] && goals.list[0].type==='running';
-    if(runningGoal && runningGoal.isMaintenance && !runningIsTop && tier.qualityCount > 0){
-      tier.qualityCount = Math.max(0, tier.qualityCount - 1);
-      goalNote = 'Reduced quality sessions — running is flagged maintenance while a higher-priority goal takes precedence';
-    }
-  }
+  goalNote = applyGoalRankToRunTier(tier, goals) || goalNote;
   // Injury ceiling — strips quality work, and the long run too when severe. Applied
   // after the goal adjustment so an injury note replaces the softer maintenance note
   // rather than the more important signal being silently overwritten.
@@ -26299,6 +26293,60 @@ async function buildRunSlots(tierKey, maxSessions){
 // approaching or exceeding available days) targets 2 reserved rest days, using same-day
 // combination of low-conflict pairs as the release valve to make room rather than just
 // cramming every session onto its own day regardless of density.
+/* HOW HARD THE RUNNING IS FOLLOWS WHERE YOU RANKED IT.
+
+   Two copies of this lived inline in the two run-planning paths, and both asked only
+   whether the running goal carried the isMaintenance flag. Rank itself did nothing:
+   generating a week with running third behind hypertrophy and strength, once unflagged and
+   once flagged maintenance, produced byte-identical plans. The flag was the only lever, and
+   nothing in the app tells you that ranking a goal below two others is not the same as
+   saying you are maintaining it.
+
+   It should be. Quality running — tempo, intervals, fartlek — is the high-stress end of
+   the sport and the end that interferes most with concurrent lifting; easy running barely
+   competes at all. Ranking running below goals you are actively progressing is a statement
+   that it cannot have the recovery those sessions need. So each progressing goal above it
+   takes one quality session off the tier, the flag takes one more, and the two together
+   stop at RUN_QUALITY_DEMOTE_MAX. A goal above it that is ITSELF flagged maintenance is not
+   competing for the same recovery and does not count.
+
+   Quality counts are small to begin with — 0 below intermediate, 1 at intermediate, 2 at
+   advanced — so this reaches zero quickly, which is the point. Running third behind two
+   goals you are building is base mileage, not a training block. */
+const RUN_QUALITY_DEMOTE_MAX = 2;
+function applyGoalRankToRunTier(tier, goals){
+  let note = null;
+  const list = (goals && goals.list) || [];
+  const idx = list.findIndex(g => g.type === 'running');
+  if(idx >= 0){
+    const outranking = list.slice(0, idx).filter(g => !g.isMaintenance).length;
+    const demote = Math.min(RUN_QUALITY_DEMOTE_MAX, outranking + (list[idx].isMaintenance ? 1 : 0));
+    if(demote > 0 && tier.qualityCount > 0){
+      tier.qualityCount = Math.max(0, tier.qualityCount - demote);
+      // Both reasons can apply at once, and the note says so rather than naming the first
+      // one and leaving the second session unaccounted for.
+      const why = [];
+      if(outranking > 0) why.push(`${outranking} higher-priority goal${outranking > 1 ? 's' : ''} ahead of it`);
+      if(list[idx].isMaintenance) why.push('running flagged maintenance');
+      note = `Fewer quality sessions — ${why.join(', ')}`;
+    }
+  }
+  /* AND ONE RUN A WEEK IS JUST A RUN.
+
+     "Long" is defined as a share of weekly volume — LONG_RUN_WEEKLY_SHARE, 30% — so a
+     single weekly run sized as the long one is 30% of itself, which is circular. "Quality"
+     is a hard session you recover from across the easy running either side of it, and there
+     is none. The slot list is built long first, then quality, then easy, and the cap is
+     applied before it, so the one run a squeezed hybrid week can afford came out as the
+     most fatiguing option available. It is the easy one now. */
+  if(tier.runsPerWeek <= 1 && (tier.longCount > 0 || tier.qualityCount > 0)){
+    tier.longCount = 0;
+    tier.qualityCount = 0;
+    note = 'Kept easy — one run in the week has no weekly volume for a long or quality session to sit inside';
+  }
+  return note;
+}
+
 function computeRestDaysTarget(totalSlots, availableDaysCount){
   if(availableDaysCount < 3) return 0;
   const density = totalSlots / availableDaysCount;
@@ -30798,14 +30846,7 @@ async function generateRunPlan(tierKey, maxSessions, forcedDates, runSlotByDate,
     const tier = { ...RUN_PLAN_TEMPLATES[tierKey] };
     if(maxSessions!=null) tier.runsPerWeek = Math.min(tier.runsPerWeek, maxSessions);
     const goals = await getCurrentGoals(todayStr);
-    if(goals && goals.list && goals.list.length){
-      const runningGoal = goals.list.find(g=>g.type==='running');
-      const runningIsTop = goals.list[0] && goals.list[0].type==='running';
-      if(runningGoal && runningGoal.isMaintenance && !runningIsTop && tier.qualityCount > 0){
-        tier.qualityCount = Math.max(0, tier.qualityCount - 1);
-        goalNote = 'Reduced quality sessions — running is flagged maintenance while a higher-priority goal takes precedence';
-      }
-    }
+    goalNote = applyGoalRankToRunTier(tier, goals) || goalNote;
     // Same injury ceiling as buildRunSlots — this is the standalone path (no adjacency
     // pre-planning), so it has to resolve it independently.
     const ceiling = await getRunningCapacityCeiling();
