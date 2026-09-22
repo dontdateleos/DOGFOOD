@@ -11615,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.22.643';
+const APP_VERSION = '2026.09.22.644';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11943,6 +11943,7 @@ const APP_NOTES = {
   '2026.09.21.641': 'A jump only opens every lifting day when power is the goal you put first \u2014 otherwise one day a week.',
   '2026.09.21.642': 'A session that will not fit drops its least goal-relevant work, not whatever happened to be last.',
   '2026.09.22.643': 'The two injury-prevention lifts with trials behind them stop being trimmed like band work.',
+  '2026.09.22.644': 'A strength day in a hypertrophy week picks its accessories on strength merit, not the week\u2019s.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -25851,6 +25852,10 @@ const GOAL_DOMAIN = {
    instead of being fixed for the whole block). The accumulation/intensification bias
    across the 4-week block is a named, real block-periodization structure — offered as a
    legitimate option, not asserted as validated-superior. */
+// The inverse of liftGoalToFocus, for the places that hold a day's focus and need the goal
+// type a tier table is keyed by. 'general' is deliberately absent: it means no single goal
+// owns the day, so the caller falls back to the week's.
+const FOCUS_TO_GOAL_TYPE = { strength: 'strength', hypertrophy: 'hypertrophy' };
 function liftGoalToFocus(goalType){
   if(goalType==='strength') return 'strength';
   if(goalType==='hypertrophy') return 'hypertrophy';
@@ -30432,7 +30437,23 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
       const state = dayStates[d];
       const daysRemaining = dayStates.length - d;
       const picks = selectVolumeGapAccessories({
-        tag: state.tag, weekSetsByArea, daysRemaining, goalType: topGoalType, emphasisAreas, blockPhase: effectiveBlockPhase,
+        /* THE DAY'S FOCUS PICKS THE DAY'S ACCESSORIES.
+
+           GOAL_TIER_FIELD exists because "accessories were ranked on hypertrophyTier
+           unconditionally — so a strength block picked its accessory work on hypertrophy
+           merit". That was fixed for the week and left unfixed for the day. In a multi-goal
+           week distributeSessionFocuses splits the lifting days by goal rank — hypertrophy
+           first and strength second gives two hypertrophy days and one strength day — and
+           every one of them still selected its accessories on the WEEK's top goal. The
+           strength day was choosing its work on hypertrophy tiers, which is the same bug in
+           the same table, one level down.
+
+           plannedFocus is the day's own answer and sits right here in the day state. It maps
+           back to a goal type for the tier lookup; 'general' has no tier field of its own, so
+           it falls through to the week's goal as before. */
+        tag: state.tag, weekSetsByArea, daysRemaining,
+        goalType: FOCUS_TO_GOAL_TYPE[state.plannedFocus] || topGoalType,
+        emphasisAreas, blockPhase: effectiveBlockPhase,
         bodyweightOnly: equipmentPrefs.bodyweightAll,
         usedNames: weekUsedExerciseNames, injuryMovementFlags,
         maxPicks: 1,
