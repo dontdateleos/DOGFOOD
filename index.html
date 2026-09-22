@@ -11615,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.22.645';
+const APP_VERSION = '2026.09.22.646';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11945,6 +11945,7 @@ const APP_NOTES = {
   '2026.09.22.643': 'The two injury-prevention lifts with trials behind them stop being trimmed like band work.',
   '2026.09.22.644': 'A strength day in a hypertrophy week picks its accessories on strength merit, not the week\u2019s.',
   '2026.09.22.645': 'Ranking running below other goals now makes it easier, and a lone weekly run stops being the long one.',
+  '2026.09.22.646': 'On a hypertrophy block the delts and arms are served before the neck and forearms.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -25258,6 +25259,10 @@ const EMPHASIS_BLOCK_WEEKS = 4;   // matches the existing 4-week block/deload ca
 
 // Which areas a goal draws its emphasis from. Ordering within a pool is the tiebreak
 // when several areas are equally overdue.
+// Ahead of gap size, not added to it: see the rank in selectVolumeGapAccessories. Bigger
+// than the largest shortfall the landmark table can produce, so an area the goal is built
+// around is served before one it is not, whatever the raw numbers say.
+const GOAL_POOL_PRIORITY = 25;
 const GOAL_EMPHASIS_POOLS = {
   // Visually-driven: the areas that most change how the body reads.
   hypertrophy: ['shoulders','side_delts','rear_delts','chest','biceps','triceps','thoracic','glutes','quads_knees','calves','core'],
@@ -25668,8 +25673,39 @@ function selectVolumeGapAccessories({ tag, weekSetsByArea, daysRemaining, goalTy
     // round, the sets belong to the big movers, and neck and forearms are what a four-hour
     // week gives up. More days or longer sessions is the lever for those, not a ranking
     // that takes them off the back.
+    /* AND THE GOAL DECIDES WHICH SHORTFALL MATTERS.
+
+       Everything above ranks a shortfall by how big it is, and nothing above asks what the
+       block is FOR. GOAL_EMPHASIS_POOLS already names that — for hypertrophy, "the areas
+       that most change how the body reads": the delts, arms, chest, back, quads, glutes,
+       calves and core. It was read only to pick the two-per-region block emphasis and never
+       to rank the queue, so an area outside the pool competed on equal terms with the ones
+       the goal is defined by.
+
+       Measured on a hypertrophy week, the queue for a full-body day with eight slots ran:
+       core, calves, thoracic, FOREARMS, hips, ADDUCTORS, biceps, rear delts. A sixty-minute
+       day reaches two or three of those. So the generated week came out with forearms 3 of
+       3, neck 3 of 3 and adductors 3 of 3 — none of them in the hypertrophy pool, each
+       having taken a whole slot — while rear delts sat at 0 against a maintenance dose of
+       3, shoulders at 1.5 with no direct work at all, and eleven of the twelve pool areas
+       were under maintenance.
+
+       GOAL_POOL_PRIORITY is larger than any gap the landmark table can produce, so it
+       orders pool ahead of non-pool and gap size orders within each group. That is
+       deliberate and it is a real trade: on a hypertrophy goal the neck, forearms and
+       adductors now get a slot only once the pool is fed, which at sixty minutes is never.
+       The file already said as much about the arithmetic — "when there is not enough
+       session to go round, the sets belong to the big movers, and neck and forearms are
+       what a four-hour week gives up" — it just had no way to tell which the big movers
+       were. Hips, hamstrings and lower back are outside the pool too and are the one thing
+       to watch here; they are fed by the squat, the deadlift and their indirect credit
+       rather than by this queue.
+
+       A goal with no pool of its own leaves the ranking exactly as it was. */
+    const inGoalPool = !GOAL_EMPHASIS_POOLS[goalType] || GOAL_EMPHASIS_POOLS[goalType].includes(area);
     return { area, gap, perDay,
-      rank: gap + (belowMaintenance ? 1000 : 0) + belowFloor + (emphasis.has(area) ? 500 : 0) };
+      rank: gap + (belowMaintenance ? 1000 : 0) + belowFloor + (emphasis.has(area) ? 500 : 0)
+          + (inGoalPool ? GOAL_POOL_PRIORITY : 0) };
   }).filter(Boolean).sort((a,b)=> b.rank - a.rank);
 
   const picks = [];
