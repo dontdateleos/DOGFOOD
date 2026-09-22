@@ -5270,7 +5270,7 @@
             <div class="week-setup-row">
               <span class="week-setup-label">Split</span>
               <select id="programSplitOverride" aria-label="Training split">
-                <option value="auto">Auto split</option>
+                <option value="auto">Recommended</option>
                 <option value="full_body">Full Body</option>
                 <option value="upper_lower">Upper / Lower</option>
                 <option value="ppl">Push / Pull / Legs</option>
@@ -11615,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.22.648';
+const APP_VERSION = '2026.09.22.649';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11948,6 +11948,7 @@ const APP_NOTES = {
   '2026.09.22.646': 'On a hypertrophy block the delts and arms are served before the neck and forearms.',
   '2026.09.22.647': 'The plan stops picking the one rear-delt exercise it was going to cut for time.',
   '2026.09.22.648': 'The split is chosen from your training days and your goal, and the plan says which and why.',
+  '2026.09.22.649': 'The split row names the recommendation instead of promising one.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -24296,9 +24297,40 @@ function attachRunStartToRunningGoal(){
    the section under it was the real answer. It has to be right the moment a save lands, so it
    is written from here rather than inline in the load, and called from both. Saving from
    Function writes the same record, so it repaints there too. */
+/* AND THE SPLIT ROW SAYS WHAT IS RECOMMENDED, NOT THAT SOMETHING WILL BE.
+
+   "Auto split" named the mechanism and told you nothing. The recommendation is a real
+   answer — it falls out of your training days and your top goal, both of which are
+   already set by the time this row is on screen — so the row can carry it: "Recommended
+   · Full Body" beside a menu whose other entries are the splits you can force instead.
+
+   Sized for an ordinary week, from the days you marked available. Generating part-way
+   through a week counts the days that are actually left, so a Friday generate can land on
+   a different split from the one named here; the row is a setting, and a setting describes
+   the normal case. */
+async function paintSplitRecommendation(list){
+  const sel = document.getElementById('programSplitOverride');
+  const opt = sel && sel.querySelector('option[value="auto"]');
+  if(!opt) return;
+  let label = '';
+  try{
+    const setup = JSON.parse((await window.storage.get('settings:trainingSetup')).value);
+    const goals = (list && list.length) ? { list } : await getCurrentGoals(todayStr);
+    const gl = (goals && goals.list) || [];
+    const plan = gl.length ? determineHybridPlan(gl, (setup.availableDays || []).length, setup.sessionLength) : null;
+    if(plan && plan.strengthSessions > 0){
+      const rec = recommendedSplit(plan.strengthSessions, gl[0] && gl[0].type);
+      label = (SPLIT_TEMPLATES[rec.split] || {}).label || '';
+    }
+  } catch(e){}
+  opt.textContent = label ? `Recommended · ${label}` : 'Recommended';
+}
+
 function paintGoalSummary(list){
   const el = document.getElementById('weekGoalsSummary');
   if(!el) return;
+  // The recommendation reads the goals, so it is repainted from the same place they are.
+  paintSplitRecommendation(list);
   const named = (list || []).map(g=> GOAL_TYPE_LABELS[g.type] || g.type).filter(Boolean);
   el.textContent = named.length ? named.join(' \u00b7 ') : 'none set';
 }
