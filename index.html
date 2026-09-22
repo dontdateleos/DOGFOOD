@@ -11615,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.22.646';
+const APP_VERSION = '2026.09.22.647';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11946,6 +11946,7 @@ const APP_NOTES = {
   '2026.09.22.644': 'A strength day in a hypertrophy week picks its accessories on strength merit, not the week\u2019s.',
   '2026.09.22.645': 'Ranking running below other goals now makes it easier, and a lone weekly run stops being the long one.',
   '2026.09.22.646': 'On a hypertrophy block the delts and arms are served before the neck and forearms.',
+  '2026.09.22.647': 'The plan stops picking the one rear-delt exercise it was going to cut for time.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -25490,6 +25491,22 @@ const GOAL_TIER_FIELD = {
 // back per slot than a single-joint isolation, so it wins an otherwise equal contest —
 // previously the tie fell to whichever key happened to come first in the library object.
 const CATEGORY_VALUE = { secondary_strength: 0.4, calisthenics: 0.3, isolation: 0, bulletproofing: 0.1 };
+/* AND DO NOT SPEND A SLOT ON WORK THE SESSION IS ABOUT TO DELETE.
+
+   The queue ranked its options without knowing what the trim does with them, and the two
+   disagreed. CATEGORY_VALUE puts bulletproofing (0.1) above isolation (0), while the trim
+   order for a hypertrophy day drops bulletproofing first and isolation last. So the queue
+   reached rear delts, chose FACE PULL over REVERSE FLY because prehab outranked isolation
+   by a tenth of a point, credited three sets, and the trim then deleted it. Traced through
+   a generated week: the pick happens on the thirteenth call, rear delts go 0 to 3, and the
+   session note reports "trimmed Squat Jump, Band External Rotation, Face Pull". The week
+   ends with rear delts at zero and the only rear-delt exercise the plan ever chose in the
+   bin — which is exactly the muscle that was missing.
+
+   So survival is part of the option's worth. One step per position in the same order the
+   trim reads, scaled to sit alongside CATEGORY_VALUE and well below a tier step, so it
+   settles which of two similar exercises to take without overturning the better one. */
+const TRIM_SURVIVAL_STEP = 0.1;
 
 // Accessory selection driven by the weekly volume landmarks that already exist in
 // VOLUME_LANDMARKS but were previously only ever DISPLAYED, never used to generate.
@@ -25729,10 +25746,12 @@ function selectVolumeGapAccessories({ tag, weekSetsByArea, daysRemaining, goalTy
       // outranked an A-tier one, which the evidence doesn't support.
       .map(([id,ex])=> {
         const tierField = GOAL_TIER_FIELD[goalType] || 'hypertrophyTier';
+        const trimOrder = TRIM_ORDER_BY_GOAL[goalType] || TRIM_ORDER_DEFAULT;
         return { id, ex,
           rank: (HYPERTROPHY_TIER_RANK[ex[tierField]] || 0)
               + (ex.longLengthBias ? 0.75 : 0)
-              + (CATEGORY_VALUE[ex.category] || 0) };
+              + (CATEGORY_VALUE[ex.category] || 0)
+              + trimRankIn(trimOrder, trimGroupOf({ exerciseId: id })) * TRIM_SURVIVAL_STEP };
       })
       .sort((a,b)=> b.rank - a.rank);
     if(!options.length) continue;
