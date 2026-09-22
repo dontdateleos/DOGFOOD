@@ -11615,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.21.642';
+const APP_VERSION = '2026.09.22.643';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11942,6 +11942,7 @@ const APP_NOTES = {
   '2026.09.21.640': 'Ticking a stretch credits the dose it actually prescribes, instead of a flat five minutes.',
   '2026.09.21.641': 'A jump only opens every lifting day when power is the goal you put first \u2014 otherwise one day a week.',
   '2026.09.21.642': 'A session that will not fit drops its least goal-relevant work, not whatever happened to be last.',
+  '2026.09.22.643': 'The two injury-prevention lifts with trials behind them stop being trimmed like band work.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -26050,12 +26051,19 @@ function determineHybridPlan(goalList, totalDaysRaw, sessionLength){
    hypertrophy week came back with 24 isolation sets and 3 compound, ordered the other with
    the accessories gone again. Equal rank, and the tie-break below thins whichever kind
    there is most of, which keeps a spread instead of emptying a category. */
+/* injury_prevention is last in every one of these, which is the strongest statement the
+   table makes about anything. Ranking it WITH the goal's own work was not enough: the
+   tie-break thins the larger group and falls back to array position when the groups are
+   the same size, and this work sits early in the list, so a Nordic curl still went third
+   out of a hypertrophy session — before a lateral raise. It is two exercises in the whole
+   library. Protecting them outright costs at most one slot on the days they are picked, and
+   what it buys is the block not ending in a torn hamstring. */
 const TRIM_ORDER_BY_GOAL = {
-  hypertrophy: ['power', 'bulletproofing', 'calisthenics', ['secondary_strength', 'isolation']],
-  strength:    ['power', 'bulletproofing', 'calisthenics', 'isolation', 'secondary_strength'],
-  running:     ['isolation', 'calisthenics', 'secondary_strength', 'bulletproofing', 'power'],
+  hypertrophy: ['power', 'bulletproofing', 'calisthenics', ['secondary_strength', 'isolation'], 'injury_prevention'],
+  strength:    ['power', 'bulletproofing', 'calisthenics', 'isolation', 'secondary_strength', 'injury_prevention'],
+  running:     ['isolation', 'calisthenics', 'secondary_strength', 'bulletproofing', 'power', 'injury_prevention'],
 };
-const TRIM_ORDER_DEFAULT = ['power', 'bulletproofing', 'calisthenics', ['isolation', 'secondary_strength']];
+const TRIM_ORDER_DEFAULT = ['power', 'bulletproofing', 'calisthenics', ['isolation', 'secondary_strength'], 'injury_prevention'];
 function trimRankIn(order, group){
   for(let i = 0; i < order.length; i++){
     const e = order[i];
@@ -26063,15 +26071,35 @@ function trimRankIn(order, group){
   }
   return order.length;
 }
+/* "bulletproofing" is one label over two different things, and the library already knows
+   which is which. Thirteen of its fifteen entries are coaching_consensus — band external
+   rotations, face pulls, tibialis raises — work a squeezed session can lose because the
+   warm-up prescribes the same tissue anyway. Two are rct: the Nordic hamstring curl and the
+   Copenhagen plank, which are the best-evidenced injury-prevention movements in the file and
+   which nothing in WARMUP_LIBRARY substitutes for — a loaded eccentric is not a band drill.
+
+   Ranking them together dropped a Nordic curl to make room for a plate pinch hold, in a week
+   that had a running goal in it. So the evidence field splits them: the trial-backed pair
+   ranks with the work the block is built around, the consensus drills stay first to go.
+   Two entries in the whole library, so it costs at most one slot, on the days they are
+   picked at all. */
 function trimGroupOf(ex){
   if(ex.isPowerLead) return 'power';
   const lib = ex.exerciseId ? EXERCISE_LIBRARY[ex.exerciseId] : null;
-  return (lib && lib.category) || 'other';
+  const cat = (lib && lib.category) || 'other';
+  if(cat === 'bulletproofing' && lib && lib.evidenceConfidence === 'rct') return 'injury_prevention';
+  return cat;
 }
 function trimCandidateIndex(exercises, topGoalType, prefersPower){
   const order = (TRIM_ORDER_BY_GOAL[topGoalType] || TRIM_ORDER_DEFAULT).slice();
-  // A goal that leads on power keeps its lead to the end, like any other goal's own work.
-  if(prefersPower){ const i = order.indexOf('power'); if(i >= 0){ order.splice(i, 1); order.push('power'); } }
+  /* A goal that leads on power keeps its lead to the end, like any other goal's own work
+     — but not past the injury-prevention work, which is last for every goal. A sprinter's
+     plyometric and a runner's Nordic curl are not in competition until the very last slot,
+     and at that point the one that keeps you running wins. */
+  if(prefersPower){
+    const i = order.indexOf('power');
+    if(i >= 0){ order.splice(i, 1); order.splice(Math.max(0, order.length - 1), 0, 'power'); }
+  }
   // How many of each kind are still in the session, for the tie-break.
   const remaining = {};
   exercises.forEach(ex=>{ const g = trimGroupOf(ex); remaining[g] = (remaining[g] || 0) + 1; });
