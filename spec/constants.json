@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.22.647",
+ "generatedFrom": "2026.09.22.648",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1094,7 +1094,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.09.22.647",
+  "APP_VERSION": "2026.09.22.648",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1408,6 +1408,7 @@
    "2026.09.22.645": "Ranking running below other goals now makes it easier, and a lone weekly run stops being the long one.",
    "2026.09.22.646": "On a hypertrophy block the delts and arms are served before the neck and forearms.",
    "2026.09.22.647": "The plan stops picking the one rear-delt exercise it was going to cut for time.",
+   "2026.09.22.648": "The split is chosen from your training days and your goal, and the plan says which and why.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",

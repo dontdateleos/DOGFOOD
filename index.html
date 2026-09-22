@@ -11615,7 +11615,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.22.647';
+const APP_VERSION = '2026.09.22.648';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -11947,6 +11947,7 @@ const APP_NOTES = {
   '2026.09.22.645': 'Ranking running below other goals now makes it easier, and a lone weekly run stops being the long one.',
   '2026.09.22.646': 'On a hypertrophy block the delts and arms are served before the neck and forearms.',
   '2026.09.22.647': 'The plan stops picking the one rear-delt exercise it was going to cut for time.',
+  '2026.09.22.648': 'The split is chosen from your training days and your goal, and the plan says which and why.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -25880,6 +25881,63 @@ const SPLIT_TEMPLATES = {
   upper_lower: { label:'Upper / Lower',    tagsFor:(n)=> Array.from({length:n},(_,i)=> i%2===0 ? 'upper' : 'lower') },
   ppl:         { label:'Push / Pull / Legs', tagsFor:(n)=> { const cycle=['push','pull','legs']; return Array.from({length:n},(_,i)=>cycle[i%3]); } }
 };
+/* WHICH SPLIT, AND WHY.
+
+   The rule this replaces read the session COUNT and the session LENGTH and never asked
+   what the block was for:
+
+     2 or fewer sessions            full body
+     60 min or longer, 3-4          full body, else upper/lower
+     under 60 min,     3-4          upper/lower, else push/pull/legs
+
+   Two things wrong with that. The goal was not an input, so a strength block could be
+   handed push/pull/legs — a split that puts the squat and the deadlift on the same day
+   and then leaves five days before either is practised again, when main-lift frequency is
+   the thing a strength block is buying. And session length was treated as if it chose the
+   split, which sent a three-day week under an hour to upper/lower: legs once, chest once,
+   everything trained half as often as it could be, for no gain.
+
+   What a split actually controls is how often each muscle is trained, and that is decided
+   by how many days there are. Schoenfeld, Ogborn & Krieger (2016) put twice a week ahead of
+   once at matched volume, and the direct comparison — Schoenfeld et al. (2015), total-body
+   three days a week against a split at equated volume in trained men — favoured the
+   total-body group. Past twice a week the volume-equated evidence thins out, so more
+   frequency is not the goal in itself; two exposures is, and the split that reaches it with
+   the fewest compromises wins.
+
+   Session length is a real constraint and it is the wrong lever here: it decides how much
+   work fits in a day, which the accessory budget and the session trim already handle. It
+   does not change how often a muscle should be trained.
+
+     1-3 days   full body      ×3 is three exposures for everything. A split over three
+                               days trains half the body once.
+     4-5 days   upper / lower  two or three exposures each, with a day's volume behind each.
+                               Push/pull/legs over five days is 2/2/1 — whichever lands
+                               once is worse off than under upper/lower.
+     6+ days    push/pull/legs twice each, with room for the volume.
+                               Except on a strength goal, which stays upper/lower for the
+                               main-lift frequency.
+
+   The reason is returned with the split so the plan can say it rather than assert it. */
+function recommendedSplit(strengthSessions, goalType){
+  const n = Math.max(0, strengthSessions || 0);
+  if(n <= 3){
+    return { split:'full_body',
+      why: n <= 2
+        ? `at ${n} lifting day${n===1?'':'s'} it is the only way to train each muscle more than once a week`
+        : 'three lifting days trains everything three times; a split over three days trains half the body once' };
+  }
+  if(n <= 5){
+    return { split:'upper_lower',
+      why: `${n} lifting days gives each half ${n === 4 ? 'two sessions' : 'two or three sessions'} with a day's volume behind each` };
+  }
+  if(goalType === 'strength'){
+    return { split:'upper_lower',
+      why: 'a strength block keeps the main lifts frequent; push/pull/legs would put the squat and the deadlift on one day and leave five before either came round again' };
+  }
+  return { split:'ppl', why: `${n} lifting days is enough to train each muscle twice with a full session behind it` };
+}
+
 function movementFitsTag(movement, tag){
   const fits = { pull:['pull','upper','full_body'], push:['push','upper','full_body'], squat:['legs','lower','full_body'] };
   return (fits[movement]||[]).includes(tag);
@@ -27863,24 +27921,18 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
   // so an unsaved edit produces a week that contradicts what is on screen with nothing to
   // say why — a running goal you added but did not save reads as "strength-only" here.
   const result = { plan, goalsUsed: goals.list.map(g=>g.type) };
+  const topGoalTypeForSplit = (goals.list[0] && goals.list[0].type) || null;
 
   const emptyDates = await getAvailableEmptyDates(weekDatesOverride);
-  // Session count alone was choosing the split, ignoring stated session-length preference —
-  // someone who wants 3-4 LONG sessions and full-body coverage was getting pushed into
-  // upper/lower or PPL just because of the count. Auto mode now factors in length too;
-  // splitOverride ('full_body'/'upper_lower'/'ppl') skips this entirely when set explicitly.
+  // splitOverride ('full_body'/'upper_lower'/'ppl') skips the recommendation entirely.
   let splitType = splitOverride;
   const sessionLength = parseInt(setup.sessionLength, 10) || 45;
-  if(!splitType || splitType === 'auto'){
-    if(plan.strengthSessions <= 2){
-      splitType = 'full_body';
-    } else if(sessionLength >= 60){
-      splitType = plan.strengthSessions <= 4 ? 'full_body' : 'upper_lower';
-    } else {
-      splitType = plan.strengthSessions <= 4 ? 'upper_lower' : 'ppl';
-    }
-  }
   result.splitAuto = !splitOverride || splitOverride === 'auto';
+  if(result.splitAuto){
+    const rec = recommendedSplit(plan.strengthSessions, topGoalTypeForSplit);
+    splitType = rec.split;
+    result.splitWhy = rec.why;
+  }
   let strengthDates = emptyDates, runDates = emptyDates;
   let runSlotByDate = null, runSlotOverride = null, comboDates = new Set(), strengthDateTags = null;
   let runTierForSlots = (await suggestRunTier()) || 'base';
@@ -27908,6 +27960,7 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
     const genResult = await generateStrengthProgram(plan.strengthSessions, splitType, includeMobility, strengthDates, volumeWaveNote, focusSequence, comboDates, strengthDateTags, blockPhase);
     result.liftPlaced = genResult.placed || 0;
     result.splitLabel = genResult.splitLabel;
+    result.splitType = splitType;
     result.focusSequence = focusSequence;
   }
 
@@ -29860,7 +29913,12 @@ document.getElementById('generateProgramFromGoalsBtn').addEventListener('click',
       // honest hedge rather than asserting more certainty than is actually established.
       msg += ` Ratio/floors from concurrent strength+running research (some thresholds are coaching consensus, not lab-derived). ${evidenceBadgeHtml('coaching_consensus')}`;
     }
-    if(!first.result.splitAuto) msg += ` Split set manually — auto-recommendation skipped.`;
+    if(first.result.splitAuto && first.result.splitWhy){
+      const lbl = (SPLIT_TEMPLATES[first.result.splitType] || {}).label || first.result.splitType;
+      msg += ` Split: ${lbl} — ${first.result.splitWhy}. ${evidenceBadgeHtml('meta_analysis')}`;
+    } else if(!first.result.splitAuto){
+      msg += ` Split set manually — recommendation skipped.`;
+    }
     if(first.result.spacingApplied){
       if(first.result.combinedSessionDays > 0){
         msg += ` Combined ${first.result.combinedSessionDays===1?'a low-conflict strength+run pair':'low-conflict strength+run pairs'} onto the same day to protect spacing elsewhere — strength in the AM, running in the PM.`;
