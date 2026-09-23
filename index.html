@@ -3330,7 +3330,6 @@
   .today-empty-actions button{ flex:1 1 0; }
   .prep-done-btn{ margin-left:auto; flex:none; height:28px; padding:0 10px; font-size:11px; }
   .prep-done-btn.is-done{ background:transparent; color:var(--bg); }
-  .quick-swap{ margin-left:8px; height:24px; padding:0 7px; font-size:10px; vertical-align:middle; background:transparent; color:var(--bg); }
   .week-consistency{ margin-top:14px; border-top:1px solid var(--border); padding-top:12px; }
   .week-consistency-head{ display:flex; justify-content:space-between; gap:12px; align-items:baseline; font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold); letter-spacing:.05em; text-transform:uppercase; }
   .week-consistency-days{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:10px; }
@@ -5160,7 +5159,6 @@
       <div id="recommendationCards" style="display:none;"></div>
     </div>
     <div id="progressSnapshot"></div>
-    <div id="backupNudge"></div>
     <div id="sessionCompleteCard"></div>
 
     <!-- A rest day has nothing to plan, so the page stops pretending it has. -->
@@ -6513,7 +6511,7 @@
      bar below this, on every tab, with its own name and rest clock. All this does is START
      one, and that is something you do from Today. A disc floating over Data's charts or
      Settings' forms would be cost without benefit. -->
-<button type="button" class="log-fab" id="logFab" aria-label="Log a workout"><span class="fab-word">Log</span></button>
+<button type="button" class="log-fab" id="logFab" aria-label="Start workout"><span class="fab-word">Start</span></button>
 
 <div class="log-bar" id="logBar" style="display:none;">
   <button type="button" class="log-bar-open" id="logBarOpen">
@@ -10423,7 +10421,7 @@ async function refreshHeaderLogBtn(){
   try{ logged = !!(await findLoggedSession(todayStr, null, todaySessionType)); } catch(e){}
   try{ started = !!(await loggingStartedAt(todayStr)); } catch(e){}
   btn.setAttribute('aria-label', logged ? 'Edit today' + '\u2019' + 's session'
-                                : started ? 'Resume logging' : 'Log a workout');
+                                : started ? 'Resume workout' : 'Start workout');
 }
 (function setupHeaderLogBtn(){
   const btn = document.getElementById('logFab');
@@ -18719,23 +18717,14 @@ async function renderPlanAheadPrompt(){
 }
 async function renderProgressSnapshot(){
   const host = document.getElementById('progressSnapshot');
-  const backup = document.getElementById('backupNudge');
-  if(!host || !backup) return;
+  if(!host) return;
   let sessions = [];
   try{ sessions = await getAllTrainingSessions(); }catch(e){}
-  if(!sessions.length){ host.innerHTML = ''; backup.innerHTML = ''; return; }
+  if(!sessions.length){ host.innerHTML = ''; return; }
   const trainedDays = new Set(sessions.map(s=>s.date)).size;
   const runs = sessions.filter(s=>s.type==='run' && s.distanceKm);
   const longest = runs.reduce((m,s)=>Math.max(m, s.distanceKm || 0), 0);
   host.innerHTML = `<div class="progress-snapshot"><div class="progress-snapshot-head">Since you started</div><div class="progress-snapshot-stats"><span><b>${sessions.length}</b>sessions</span><span><b>${trainedDays}</b>training days</span>${longest ? `<span><b>${longest}km</b>longest run</span>` : ''}</div></div>`;
-  let exported = false;
-  try{ exported = !!JSON.parse((await window.storage.get('settings:lastExport')).value).at; }catch(e){}
-  backup.innerHTML = !exported && sessions.length >= 5
-    ? `<div class="backup-nudge">Your progress lives in this browser. Save a copy so it is not lost.<button type="button" id="backupNowBtn">Back up</button></div>` : '';
-  document.getElementById('backupNowBtn')?.addEventListener('click', ()=>{
-    document.querySelector('.tab[data-tab="settings"]')?.click();
-    setTimeout(()=>{ setCollapsed('backupampr', false); document.querySelector('.group-head[data-collapse="backupampr"]')?.scrollIntoView({behavior:'smooth', block:'start'}); }, 180);
-  });
 }
 async function showSessionComplete(session){
   try{ await window.storage.set(`sessionSummary:${session.date}`, JSON.stringify(session)); }catch(e){}
@@ -32061,10 +32050,9 @@ async function blockSummaryHtml(block){
           gapNote = ` · ${Math.round(gap * 10) / 10} off`;
         }
       }
-      const swapButton = `<button type="button" class="quick-swap" data-quick-swap="${encodeURIComponent(exerciseFlagKey(ex))}" aria-label="Swap ${ex.name}">Swap</button>`;
       rows.push(planRow(ex.name, `${sets}×${repsLabel} @ ${weightLabel}${arrow}${gapNote}`,
         [ progression.note ? { key:'Progression', text: progression.note, caps: !!progression.noteCaps } : null ],
-        { lead: ssTag, trail: dropTag + swapButton, rowClass: ex.supersetGroup ? 'ss-row' : '', tag }));
+        { lead: ssTag, trail: dropTag, rowClass: ex.supersetGroup ? 'ss-row' : '', tag }));
     }
     /* The cool-down that rides on the lift when two sessions a day are off. Same stretches
        the pm companion block carries, rendered in the same shape, under a rule that says
@@ -32418,7 +32406,6 @@ async function renderTodayWorkoutSummary(){
         ${deloadNote}
         ${adjustmentNote}
         <div class="today-plan-actions">
-          <button type="button" id="startTodayWorkoutBtn">Start workout</button>
           <button type="button" class="outline" id="replaceTodayWorkoutBtn">Replace / edit</button>
           <button type="button" class="outline" id="rescheduleTodayWorkoutBtn">Reschedule</button>
           <button type="button" class="outline" id="skipTodayWorkoutBtn">Skip today</button>
@@ -32469,7 +32456,6 @@ async function renderTodayWorkoutSummary(){
     refreshLogStripWord();   // the strip is offering to resume something that no longer exists
     refreshHeaderLogBtn().catch(()=>{});   // and so is the masthead button
   });
-  document.getElementById('startTodayWorkoutBtn')?.addEventListener('click', ()=>startTodayLogging());
   document.getElementById('replaceTodayWorkoutBtn')?.addEventListener('click', async ()=>{
     const found = await getTodaysBlockAndSlotForType(todaySessionType);
     if(found) await openBlockEditor(todayStr, found.slot, found.block);
@@ -32510,26 +32496,6 @@ async function renderTodayWorkoutSummary(){
     renderTodayWorkoutSummary();
     renderWeekGrid();
   });
-  container.querySelectorAll('[data-quick-swap]').forEach(btn=>btn.addEventListener('click', async ()=>{
-    const key = decodeURIComponent(btn.dataset.quickSwap || '');
-    const changed = await mutateTodayStrengthPlan(list=>{
-      const i = list.findIndex(ex=>exerciseFlagKey(ex) === key);
-      if(i < 0) return false;
-      const current = list[i];
-      const namedChoices = VARIATION_LIBRARY[String(current.name || '').toLowerCase()] || [];
-      const choices = namedChoices.length ? namedChoices.map(name=>({ name }))
-        : Object.values(EXERCISE_LIBRARY).filter(ex=> ex && ex.name && ex.area === current.area && ex.name !== current.name);
-      if(!choices.length) return false;
-      const next = choices[0];
-      const libraryEntry = Object.entries(EXERCISE_LIBRARY).find(([, ex])=>ex.name === next.name);
-      list[i] = { ...current, name:next.name, exerciseId:libraryEntry ? libraryEntry[0] : null, swappedFrom:current.name };
-      return true;
-    });
-    if(!changed){ showToast('No alternate movement found for this exercise', true); return; }
-    showToast('Exercise swapped — edit it any time');
-    renderTodayWorkoutSummary();
-    renderWeekGrid();
-  }));
 }
 document.querySelectorAll('#todaySessionTypePills .type-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
