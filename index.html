@@ -2717,6 +2717,10 @@
      separator, so the first control comes straight up to it. */
   .skill-sheet .skill-active-row{ margin-top:0; }
   .goal-sheet .group.form-panel{ margin-bottom:0; }
+  /* Goal editing happens in a scrollable sheet. The global sticky-section rule is useful on
+     long pages, but inside this sheet it can pin the running setup heading over the goal
+     fields beneath it. */
+  #goalSheet .group-head{ position:static !important; }
   /* Still the Settings toggles' row — three of them use it — it is only the week's own
      deload that has left for the setup list above. */
   .week-deload{ display:flex; align-items:center; gap:8px; min-height:44px; cursor:pointer;
@@ -5024,15 +5028,25 @@
            arriving once the last is answered. Nothing is hidden that has been reached — the
            thread stays on screen and every answer stays tappable, so changing your mind is
            tapping the other one rather than going back. -->
-      <div class="fr-progress" id="firstRunProgress" role="status" aria-live="polite">Step 1 of 4 · choose your focus</div>
+      <div class="fr-progress" id="firstRunProgress" role="status" aria-live="polite">Step 1 of 5 · choose your primary goal</div>
       <ol class="fr-thread">
 
         <li class="fr-step" data-step="goal">
-          <p class="fr-q">What do you want to get better at?</p>
-          <div class="fr-answers" id="firstRunGoal" role="radiogroup" aria-label="What do you want to get better at?">
+          <p class="fr-q">What is your primary goal?</p>
+          <div class="fr-answers" id="firstRunGoal" role="radiogroup" aria-label="What is your primary goal?">
             <button type="button" class="fr-a" role="radio" aria-checked="false" data-goal="strength">Get stronger</button>
             <button type="button" class="fr-a" role="radio" aria-checked="false" data-goal="hypertrophy">Build muscle</button>
             <button type="button" class="fr-a" role="radio" aria-checked="false" data-goal="running">Run better</button>
+          </div>
+        </li>
+
+        <li class="fr-step" data-step="secondary" hidden>
+          <p class="fr-q">What is your secondary goal?</p>
+          <div class="fr-answers" id="firstRunSecondaryGoal" role="radiogroup" aria-label="What is your secondary goal?">
+            <button type="button" class="fr-a" role="radio" aria-checked="false" data-goal="strength">Get stronger</button>
+            <button type="button" class="fr-a" role="radio" aria-checked="false" data-goal="hypertrophy">Build muscle</button>
+            <button type="button" class="fr-a" role="radio" aria-checked="false" data-goal="running">Run better</button>
+            <button type="button" class="fr-a" role="radio" aria-checked="false" data-goal="">No secondary goal yet</button>
           </div>
         </li>
 
@@ -28637,7 +28651,7 @@ function firstRunSpread(n){
   const root = document.getElementById('firstRun');
   if(!root) return;
   const progress = document.getElementById('firstRunProgress');
-  const progressCopy = { goal:'Step 1 of 4 · choose your focus', often:'Step 2 of 4 · choose your training days', time:'Step 3 of 4 · choose your session length', done:'Step 4 of 4 · check your plan' };
+  const progressCopy = { goal:'Step 1 of 5 · choose your primary goal', secondary:'Step 2 of 5 · choose your secondary goal', often:'Step 3 of 5 · choose your training days', time:'Step 4 of 5 · choose your session length', done:'Step 5 of 5 · check your plan' };
   const updateProgress = name => { if(progress) progress.textContent = progressCopy[name] || progressCopy.goal; };
   const step = name => root.querySelector(`.fr-step[data-step="${name}"]`);
 
@@ -28695,7 +28709,16 @@ function firstRunSpread(n){
   });
 
   updateProgress('goal');
-  askOne('firstRunGoal', ()=> reveal('often'));
+  askOne('firstRunGoal', b=>{
+    document.querySelectorAll('#firstRunSecondaryGoal .fr-a').forEach(x=>{
+      x.hidden = false;
+      x.setAttribute('aria-checked', 'false');
+      const sameGoal = !!x.dataset.goal && x.dataset.goal === b.dataset.goal;
+      x.hidden = sameGoal;
+    });
+    reveal('secondary');
+  });
+  askOne('firstRunSecondaryGoal', ()=> reveal('often'));
   askOne('firstRunFreq', b=>{
     const spread = firstRunSpread(parseInt(b.dataset.freq, 10) || 3);
     root.querySelectorAll('.fr-day').forEach(x=>{
@@ -28713,6 +28736,7 @@ function firstRunSpread(n){
   if(build) build.addEventListener('click', async ()=>{
     const out = document.getElementById('firstRunResult');
     const goal = document.querySelector('#firstRunGoal .fr-a[aria-checked="true"]');
+    const secondary = document.querySelector('#firstRunSecondaryGoal .fr-a[aria-checked="true"]');
     const chosen = chosenDays();
     const len = document.querySelector('#firstRunLength .fr-a[aria-checked="true"]');
     /* The thread makes two of these unreachable — this step does not exist until the first
@@ -28740,8 +28764,12 @@ function firstRunSpread(n){
       // row you can retarget rather than something that arrived by a private door.
       await window.storage.set(`goals:${todayStr}`, JSON.stringify({
         date: todayStr, skillGoals: [],
-        list: [{ type: goal.dataset.goal, detail:'', targetExercise:'', targetWeight:null,
-                 targetDistance:null, targetTime:null, targetDate:null, isMaintenance:false }]
+        list: [
+          { type: goal.dataset.goal, role:'main', detail:'', targetExercise:'', targetWeight:null,
+            targetDistance:null, targetTime:null, targetDate:null, isMaintenance:false },
+          ...(secondary && secondary.dataset.goal ? [{ type: secondary.dataset.goal, role:'also', detail:'', targetExercise:'', targetWeight:null,
+            targetDistance:null, targetTime:null, targetDate:null, isMaintenance:false }] : [])
+        ]
       }));
       // Two weeks, not one: build your first week on a Friday and a single week puts every
       // session in the days you have already lived through.
