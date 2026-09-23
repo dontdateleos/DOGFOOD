@@ -3321,6 +3321,8 @@
      The morning sheet is not in these selectors: it restyles .subj-dot, a control it
      inherits rather than markup it writes, so its copy of these values lives with the rules
      that override those. */
+  .fr-progress{ font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); margin:18px 0 2px; }
+  .fr-build-help{ margin:8px 0 0; color:var(--muted); font-size:13px; }
   .fr-thread{ list-style:none; margin:0; padding:calc(var(--sp-3) + 6px) 0 0; }
   .fr-step{ margin:0 0 40px; }
   .fr-step[hidden]{ display:none; }
@@ -4993,6 +4995,7 @@
            arriving once the last is answered. Nothing is hidden that has been reached — the
            thread stays on screen and every answer stays tappable, so changing your mind is
            tapping the other one rather than going back. -->
+      <div class="fr-progress" id="firstRunProgress" role="status" aria-live="polite">Step 1 of 4 · choose your focus</div>
       <ol class="fr-thread">
 
         <li class="fr-step" data-step="goal">
@@ -5051,6 +5054,7 @@
             </span>
           </label>
           <button class="primary" id="firstRunBuildBtn">Build my first week</button>
+          <p class="fr-build-help">You can change this plan later from Weekly or Settings.</p>
           <div id="firstRunResult" class="score-note fr-note" role="status"></div>
           <div class="fr-after">All of it changeable afterwards.</div>
         </li>
@@ -28379,6 +28383,9 @@ function firstRunSpread(n){
 (function wireFirstRun(){
   const root = document.getElementById('firstRun');
   if(!root) return;
+  const progress = document.getElementById('firstRunProgress');
+  const progressCopy = { goal:'Step 1 of 4 · choose your focus', often:'Step 2 of 4 · choose your training days', time:'Step 3 of 4 · choose your session length', done:'Step 4 of 4 · check your plan' };
+  const updateProgress = name => { if(progress) progress.textContent = progressCopy[name] || progressCopy.goal; };
   const step = name => root.querySelector(`.fr-step[data-step="${name}"]`);
 
   /* Revealing is the whole interaction, so it is one function. scrollIntoView with 'nearest'
@@ -28387,6 +28394,7 @@ function firstRunSpread(n){
   function reveal(name){
     const el = step(name);
     if(!el || !el.hidden) return;
+    updateProgress(name);
     el.hidden = false;
     if(uiAnim('firstRunThread')){
       uiPlay(el, [{ opacity:0, transform:'translateY(12px)' }, { opacity:1, transform:'none' }],
@@ -28433,6 +28441,7 @@ function firstRunSpread(n){
     dayBox.appendChild(b);
   });
 
+  updateProgress('goal');
   askOne('firstRunGoal', ()=> reveal('often'));
   askOne('firstRunFreq', b=>{
     const spread = firstRunSpread(parseInt(b.dataset.freq, 10) || 3);
