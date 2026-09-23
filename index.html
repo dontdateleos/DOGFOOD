@@ -13112,6 +13112,11 @@ function updateHeaderCollapse(){
   if(brandEl){
     brandEl.style.paddingTop = lerp(18, 8, progress).toFixed(2) + 'px';
     brandEl.style.paddingBottom = lerp(12, 6, progress).toFixed(2) + 'px';
+    // The tabs are absolutely positioned, so they do not give the banner any height of
+    // their own. Once the title reaches zero the old banner collapsed to its padding and
+    // clipped the only compact-header control. Keep a real tab-row-sized floor while the
+    // wordmark shrinks away.
+    brandEl.style.minHeight = lerp(128, 52, progress).toFixed(2) + 'px';
   }
   /* THE LOCKUP FITS BEFORE THE DATE, AT EVERY WIDTH.
 
