@@ -3323,6 +3323,36 @@
      that override those. */
   .fr-progress{ font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); margin:18px 0 2px; }
   .fr-build-help{ margin:8px 0 0; color:var(--muted); font-size:13px; }
+  .today-plan-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; }
+  .today-plan-actions button:first-child{ grid-column:1 / -1; height:40px; font-size:var(--fs-md); }
+  .today-plan-actions .outline{ background:transparent; color:var(--bg); }
+  .today-empty-actions{ display:flex; gap:8px; margin-top:12px; }
+  .today-empty-actions button{ flex:1 1 0; }
+  .prep-done-btn{ margin-left:auto; flex:none; height:28px; padding:0 10px; font-size:11px; }
+  .prep-done-btn.is-done{ background:transparent; color:var(--bg); }
+  .quick-swap{ margin-left:8px; height:24px; padding:0 7px; font-size:10px; vertical-align:middle; background:transparent; color:var(--bg); }
+  .week-consistency{ margin-top:14px; border-top:1px solid var(--border); padding-top:12px; }
+  .week-consistency-head{ display:flex; justify-content:space-between; gap:12px; align-items:baseline; font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold); letter-spacing:.05em; text-transform:uppercase; }
+  .week-consistency-days{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:10px; }
+  .week-consistency-day{ min-width:0; text-align:center; color:var(--dim); font-family:var(--mono); font-size:10px; }
+  .week-consistency-dot{ display:block; width:10px; height:10px; border:1px solid var(--bg); border-radius:50%; margin:0 auto 5px; }
+  .week-consistency-day.done .week-consistency-dot{ background:var(--bg); }
+  .week-consistency-day.planned .week-consistency-dot{ background:var(--field); }
+  .week-consistency-note{ margin:10px 0 0; font-size:var(--fs-tag); color:var(--dim); }
+  .progress-snapshot{ margin:14px 0 0; padding:12px; border:1px solid var(--border); }
+  .progress-snapshot-head{ font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold); letter-spacing:.05em; text-transform:uppercase; }
+  .progress-snapshot-stats{ display:flex; gap:18px; margin-top:8px; font-family:var(--mono); font-size:var(--fs-tag); }
+  .progress-snapshot-stats b{ display:block; font-size:var(--fs-xl); }
+  .backup-nudge{ margin-top:12px; padding:10px 12px; border-left:3px solid var(--block-yellow); color:var(--dim); font-size:var(--fs-tag); }
+  .backup-nudge button{ display:inline-flex; width:auto; height:26px; margin-left:8px; padding:0 8px; font-size:10px; }
+  .page-snapshot{ margin:0 0 14px; padding:12px; border:1px solid var(--border); }
+  .page-snapshot-head{ font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold); text-transform:uppercase; letter-spacing:.06em; }
+  .page-snapshot-copy{ margin:7px 0 0; color:var(--dim); font-size:var(--fs-tag); }
+  .settings-shortcuts{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:0 0 14px; }
+  .settings-shortcuts button{ min-width:0; height:34px; padding:0 8px; font-size:10px; }
+  .session-complete{ margin:14px 0; padding:12px; border:2px solid var(--good); }
+  .session-complete b{ display:block; font-family:var(--mono); font-size:var(--fs-tag); letter-spacing:.06em; text-transform:uppercase; }
+  html[data-high-contrast="true"]{ filter:contrast(1.18); }
   .fr-thread{ list-style:none; margin:0; padding:calc(var(--sp-3) + 6px) 0 0; }
   .fr-step{ margin:0 0 40px; }
   .fr-step[hidden]{ display:none; }
@@ -5129,6 +5159,9 @@
       </div>
       <div id="recommendationCards" style="display:none;"></div>
     </div>
+    <div id="progressSnapshot"></div>
+    <div id="backupNudge"></div>
+    <div id="sessionCompleteCard"></div>
 
     <!-- A rest day has nothing to plan, so the page stops pretending it has. -->
     <div class="rest-plate" id="restDayPlate" style="display:none;">
@@ -5148,6 +5181,7 @@
            appears. Shown only when nothing at all is planned in the next seven days, which is
            the same test the note uses to decide it has no next session to name. -->
       <button type="button" class="rest-build" id="restBuildBtn" hidden>Build the next two weeks</button>
+      <button type="button" class="rest-build" id="restNextBtn" hidden>View next workout</button>
     </div>
     <div class="session-type" id="todaySessionTypePills">
       <div class="type-btn active" data-type="strength">Strength</div>
@@ -5170,7 +5204,7 @@
          what is below it now is the exercise list, which you scroll to read regardless. -->
     <div id="warmupSection" style="display:none; margin-top:14px;">
       <div class="group quiet" style="margin-top:0;">
-        <div class="group-head"><div class="group-title">Warm-up</div><span class="head-est" id="warmupEstimate"></span></div>
+        <div class="group-head"><div class="group-title">Warm-up</div><span class="head-est" id="warmupEstimate"></span><button type="button" class="prep-done-btn" id="warmupDoneBtn">Mark done</button></div>
         <div class="chip-row" id="warmupChips" style="display:none;"></div>
         <div class="fields">
           <div id="warmupCards"></div>
@@ -5192,7 +5226,7 @@
 
     <div id="mobilitySection" style="display:none; margin-top:14px;">
       <div class="group quiet" style="margin-top:0;">
-        <div class="group-head"><div class="group-title">Cooldown</div><span class="head-est" id="cooldownEstimate"></span></div>
+        <div class="group-head"><div class="group-title">Cooldown</div><span class="head-est" id="cooldownEstimate"></span><button type="button" class="prep-done-btn" id="cooldownDoneBtn">Mark done</button></div>
         <div class="chip-row" id="cooldownChips" style="display:none;"></div>
         <div class="fields">
           <div id="mobilityCards"></div>
@@ -5296,11 +5330,16 @@
               <span class="week-setup-val">~50% volume<span id="deloadSuggestedBadge">Suggested</span></span>
               <input type="checkbox" id="deloadWeekCheckbox">
             </label>
+            <div class="week-setup-row"><span class="week-setup-label">Unavailable</span><input type="date" id="unavailableDateInput" aria-label="Date you are unavailable"><button type="button" class="small outline" id="addUnavailableDateBtn">Add</button></div>
+            <div id="unavailableDatesList" class="score-note"></div>
           </div>
           <div class="week-actions">
+            <button id="changeTrainingSetupBtn" class="small outline">Change setup</button>
             <button id="generateProgramFromGoalsBtn" class="small">Generate</button>
             <button class="small outline" id="clearAllWeekBtn">Clear all</button>
           </div>
+          <div class="week-actions"><button type="button" class="small outline" id="exportCalendarBtn">Export calendar</button><button type="button" class="small outline" id="rebalanceWeekBtn">Rebalance week</button></div>
+          <button type="button" id="undoWeekChangeBtn" class="small outline" style="display:none; margin-top:8px;">Undo last change</button>
           <div id="deloadSuggestedNote" class="score-note note-live" style="display:none;"></div>
         </div>
       </div>
@@ -5312,6 +5351,8 @@
       <div class="group form-panel">
         <div class="group-head"><div class="group-title">Training load</div></div>
         <div class="fields">
+          <div id="weekConsistency"></div>
+          <div id="planAheadPrompt"></div>
           <div id="weekBlockStrip" class="dot-field"></div>
           <!-- Outside the strip, because the field is the strip's background and the field
                belongs to the chart. What is under the dots is the graph; what is under this
@@ -5320,6 +5361,11 @@
                after an await on arrival — a field inside the rebuilt markup would have its
                ripple wiped by the render that follows it. -->
           <div id="weekBlockNotes"></div>
+          <details class="glossary" style="margin-top:12px;"><summary>training terms</summary>
+            <div class="gloss-item"><span class="gloss-term">RIR</span> Reps in reserve: stop with that many good reps still available.</div>
+            <div class="gloss-item"><span class="gloss-term">DELOAD</span> A planned easier week that keeps the habit while reducing fatigue.</div>
+            <div class="gloss-item"><span class="gloss-term">TEMPO</span> A comfortably hard run you can hold steadily, not a sprint.</div>
+          </details>
         </div>
       </div>
       <!-- Under the week, not above it. Generate still builds FROM these, and the chain
@@ -5589,6 +5635,7 @@
          view and its only form: everything else on Data is something you read, and putting a
          morning's data entry in front of them made the tab open on a chore. Two views left,
          and Trends leads. -->
+    <div id="dataSnapshot"></div>
     <div class="session-type" id="dataViewPills">
       <div class="type-btn active" data-view="trends">Trends</div>
       <div class="type-btn" data-view="history">Workout History</div>
@@ -5698,6 +5745,7 @@
   </div>
 
   <div class="panel" id="panel-settings">
+    <div id="settingsQuickActions"></div>
     <!-- Version leads. It was ninth of ten, and checking for an update is the one thing on
          this page anyone does more than once — four taps deep for a control that mostly
          answers "yes, you're current". -->
@@ -6036,6 +6084,9 @@
           <input type="checkbox" id="eyeCalmToggle">
           <span>Calm mode &mdash; keep the useful ones, drop the character</span>
         </label>
+        <div class="field-row"><span class="field-label">Text size</span><select id="textScaleSelect"><option value="1">Standard</option><option value="1.12">Large</option><option value="1.25">Extra large</option></select></div>
+        <label class="week-deload" for="highContrastToggle"><input type="checkbox" id="highContrastToggle"><span>High contrast</span></label>
+        <label class="week-deload" for="workoutRemindersToggle"><input type="checkbox" id="workoutRemindersToggle"><span>Workout reminders — asks your browser before enabling notifications</span></label>
         <div class="score-note">The mark still blinks to say something is loading and still moves to the header when you scroll. What goes is everything that was only ever character.</div>
         <div class="dev-only" id="eyesDevGroup" style="margin-top:14px;">
           <div class="field-row"><span class="field-label">The mark</span><span class="head-est" id="eyesSummary"></span></div>
@@ -10600,6 +10651,41 @@ function renderTabInsight(tab){
       try{ console.error('FACTORS: tab insight failed for', tab, err); } catch(e){}
     });
 }
+async function renderDataSnapshot(){
+  const host = document.getElementById('dataSnapshot');
+  if(!host) return;
+  let sessions = [], nights = 0;
+  try{ sessions = await getAllTrainingSessions(); }catch(e){}
+  try{ nights = await nightsLogged(); }catch(e){}
+  const last = sessions.length ? sessions[sessions.length - 1] : null;
+  const lastText = last ? `Last workout: ${last.type || 'session'} · ${stamp(last.date)}.` : 'Your first logged workout will appear here.';
+  host.innerHTML = `<div class="page-snapshot"><div class="page-snapshot-head">Your data</div><div class="page-snapshot-copy">${sessions.length} workout${sessions.length===1?'':'s'} · ${nights} night${nights===1?'':'s'} logged. ${lastText}</div></div>`;
+}
+function renderSettingsQuickActions(){
+  const host = document.getElementById('settingsQuickActions');
+  if(!host) return;
+  const install = deferredInstallPrompt ? `<button type="button" class="outline" id="installAppBtn">Install app</button>` : '';
+  host.innerHTML = `<div class="settings-shortcuts"><button type="button" data-settings-jump="trainingsetup">Training setup</button><button type="button" class="outline" data-settings-jump="backupampr">Back up</button><button type="button" class="outline" data-settings-jump="appearance">Appearance</button>${install}</div>`;
+  host.querySelectorAll('[data-settings-jump]').forEach(btn=>btn.addEventListener('click', ()=>{
+    const key = btn.dataset.settingsJump;
+    setCollapsed(key, false);
+    document.querySelector(`.group-head[data-collapse="${key}"]`)?.scrollIntoView({behavior:'smooth', block:'start'});
+  }));
+  document.getElementById('installAppBtn')?.addEventListener('click', async ()=>{
+    if(!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    renderSettingsQuickActions();
+  });
+}
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if(currentTabName() === 'settings') renderSettingsQuickActions();
+});
+window.addEventListener('appinstalled', ()=>{ deferredInstallPrompt = null; if(currentTabName() === 'settings') renderSettingsQuickActions(); });
 function activateTab(name, opts){
   if(RETIRED_TABS[name]) name = RETIRED_TABS[name];
   if(!document.getElementById('panel-' + name)) name = 'insights';
@@ -10655,6 +10741,8 @@ function activateTab(name, opts){
     restorePlanSummary();
     loadCurrentGoals();
   }
+  if(name==='data') renderDataSnapshot().catch(()=>{});
+  if(name==='settings') renderSettingsQuickActions();
   // Both skill ladders and the progression live on Function; the goal list lives on Weekly.
   // loadCurrentGoals fills both tabs' rows — the queries don't care which panel is showing
   // — so it runs for either, and each tab renders what it actually displays.
@@ -18026,21 +18114,94 @@ async function syncPlannedSessionMirror(date){
   }
 }
 
+let lastWeekUndo = null;
+function offerWeekUndo(entries, label){
+  lastWeekUndo = entries;
+  const btn = document.getElementById('undoWeekChangeBtn');
+  if(!btn) return;
+  btn.textContent = `Undo ${label || 'last change'}`;
+  btn.style.display = entries && entries.length ? '' : 'none';
+}
+async function restoreWeekUndo(){
+  if(!lastWeekUndo || !lastWeekUndo.length) return;
+  const entries = lastWeekUndo;
+  for(const entry of entries){
+    if(entry.value == null) { try{ await window.storage.delete(entry.key); }catch(e){}; }
+    else await window.storage.set(entry.key, entry.value);
+    if(entry.date) await syncPlannedSessionMirror(entry.date);
+  }
+  lastWeekUndo = null;
+  const btn = document.getElementById('undoWeekChangeBtn');
+  if(btn) btn.style.display = 'none';
+  showToast('Plan restored');
+  renderWeekGrid();
+  renderTodayWorkoutSummary();
+}
+document.getElementById('undoWeekChangeBtn').addEventListener('click', ()=>{ restoreWeekUndo().catch(()=>showToast('Could not restore that change', true)); });
+document.getElementById('changeTrainingSetupBtn').addEventListener('click', ()=>{
+  const tab = document.querySelector('.tab[data-tab="settings"]');
+  if(tab) tab.click();
+  setTimeout(()=>{
+    setCollapsed('trainingsetup', false);
+    document.querySelector('.group-head[data-collapse="trainingsetup"]')?.scrollIntoView({ behavior:'smooth', block:'start' });
+  }, 180);
+});
+document.getElementById('exportCalendarBtn').addEventListener('click', async ()=>{
+  const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//DOGFOOD//Training Plan//EN'];
+  for(const date of getWeekDatesForOffset(0).concat(getWeekDatesForOffset(1))){
+    for(const slot of ['am','pm']){
+      try{
+        const block = JSON.parse((await window.storage.get(`weekplan:${date}:${slot}`)).value);
+        const stampDate = date.replaceAll('-','');
+        const endStampDate = shiftDateStr(date, 1).replaceAll('-','');
+        lines.push('BEGIN:VEVENT',`UID:dogfood-${date}-${slot}@local`,`DTSTART;VALUE=DATE:${stampDate}`,`DTEND;VALUE=DATE:${endStampDate}`,`SUMMARY:DOGFOOD — ${sessionTitle(block)}`,'END:VEVENT');
+      }catch(e){}
+    }
+  }
+  lines.push('END:VCALENDAR');
+  const url = URL.createObjectURL(new Blob([lines.join('\r\n')], {type:'text/calendar'}));
+  const a = document.createElement('a'); a.href = url; a.download = 'dogfood-training-plan.ics'; a.click(); URL.revokeObjectURL(url);
+  showToast('Calendar file downloaded');
+});
+document.getElementById('rebalanceWeekBtn').addEventListener('click', async e=>{
+  if(!await confirmInPlace(e.currentTarget,{mode:'tap',label:'Tap again to rebalance'})) return;
+  const dates = [];
+  for(const d of getWeekDates()) if(d >= todayStr && !(await isDayOff(d))) dates.push(d);
+  const blocks = [];
+  for(const date of getWeekDates()) for(const slot of ['am','pm']){
+    try{ const r = await window.storage.get(`weekplan:${date}:${slot}`); if(date >= todayStr) blocks.push({date,slot,value:r.value}); }catch(e){}
+  }
+  if(!blocks.length || dates.length < blocks.length){ showToast('Not enough open days to rebalance', true); return; }
+  const undoByKey = new Map(blocks.map(b=>[`weekplan:${b.date}:${b.slot}`,{key:`weekplan:${b.date}:${b.slot}`,value:b.value,date:b.date}]));
+  for(const b of blocks) await window.storage.delete(`weekplan:${b.date}:${b.slot}`);
+  for(let i=0;i<blocks.length;i++){
+    const date = dates[Math.round(i*(dates.length-1)/Math.max(1,blocks.length-1))];
+    const slot = await blockOn(date,'am') ? 'pm' : 'am';
+    const targetKey = `weekplan:${date}:${slot}`;
+    if(!undoByKey.has(targetKey)) undoByKey.set(targetKey, {key:targetKey,value:null,date});
+    await window.storage.set(`weekplan:${date}:${slot}`,blocks[i].value); await syncPlannedSessionMirror(date);
+  }
+  offerWeekUndo([...undoByKey.values()],'rebalance'); renderWeekGrid(); renderTodayWorkoutSummary(); showToast('Upcoming sessions rebalanced');
+});
 document.getElementById('clearAllWeekBtn').addEventListener('click', async (e)=>{
   // Recoverable — you can regenerate the week — so one more tap is the whole guard.
   if(!await confirmInPlace(e.currentTarget, { mode:'tap', label:'Tap again to clear the week' })) return;
   const dates = getWeekDates();
   let cleared = 0;
+  const undoEntries = [];
   for(const date of dates){
     for(const slot of ['am','pm']){
       try{
-        await window.storage.get(`weekplan:${date}:${slot}`);
-        await window.storage.delete(`weekplan:${date}:${slot}`);
+        const key = `weekplan:${date}:${slot}`;
+        const before = await window.storage.get(key);
+        undoEntries.push({ key, value:before.value, date });
+        await window.storage.delete(key);
         cleared++;
       } catch(e){}
     }
     await syncPlannedSessionMirror(date);
   }
+  if(undoEntries.length) offerWeekUndo(undoEntries, 'clear');
   showToast(cleared ? `Cleared ${cleared} block${cleared===1?'':'s'}` : 'Nothing to clear');
   renderWeekGrid();
 });
@@ -18507,6 +18668,90 @@ async function renderBlockLoadChart(){
 }
 
 let weekBoardShowing = null;
+async function renderWeekConsistency(){
+  const host = document.getElementById('weekConsistency');
+  if(!host) return;
+  const dates = getWeekDates();
+  const planned = new Set();
+  const done = new Set();
+  let sessions = [];
+  try{
+    sessions = await getAllTrainingSessions();
+    sessions.forEach(s=>{ if(dates.includes(s.date)) done.add(s.date); });
+  }catch(e){}
+  for(const date of dates){
+    for(const slot of ['am','pm']){
+      try{ await window.storage.get(`weekplan:${date}:${slot}`); planned.add(date); break; }catch(e){}
+    }
+  }
+  const completed = done.size;
+  const target = planned.size;
+  const dayHtml = dates.map((date, i)=>{
+    const state = done.has(date) ? 'done' : planned.has(date) ? 'planned' : '';
+    return `<div class="week-consistency-day ${state}" title="${WEEK_DAY_FULL[i]}"><i class="week-consistency-dot"></i>${WEEK_DAY_LABELS[i]}</div>`;
+  }).join('');
+  const milestone = completed && target && completed >= target
+    ? ' Week complete — nice work.'
+    : sessions.length >= 10 && sessions.length % 10 === 0
+      ? ` ${sessions.length} sessions logged — a real training base.` : '';
+  const note = (target
+    ? `${completed} session${completed===1?'':'s'} done · ${Math.max(0, target-completed)} still planned`
+    : completed ? `${completed} session${completed===1?'':'s'} logged this week` : 'No sessions planned yet.') + milestone;
+  host.innerHTML = `<div class="week-consistency"><div class="week-consistency-head"><span>This week</span><span>${completed} / ${target || '—'} sessions</span></div><div class="week-consistency-days">${dayHtml}</div><p class="week-consistency-note">${note}</p></div>`;
+}
+async function renderPlanAheadPrompt(){
+  const host = document.getElementById('planAheadPrompt');
+  if(!host) return;
+  const nextWeek = getWeekDatesForOffset(1);
+  let hasNext = false;
+  for(const date of nextWeek){
+    for(const slot of ['am','pm']){
+      try{ await window.storage.get(`weekplan:${date}:${slot}`); hasNext = true; break; }catch(e){}
+    }
+    if(hasNext) break;
+  }
+  host.innerHTML = hasNext ? '' : `<div class="backup-nudge">Next week has no sessions yet.<button type="button" id="planNextWeekBtn">Plan next week</button></div>`;
+  document.getElementById('planNextWeekBtn')?.addEventListener('click', ()=>{
+    const select = document.getElementById('programWeeksSelect');
+    if(select) select.value = '4';
+    document.getElementById('generateProgramFromGoalsBtn')?.click();
+  });
+}
+async function renderProgressSnapshot(){
+  const host = document.getElementById('progressSnapshot');
+  const backup = document.getElementById('backupNudge');
+  if(!host || !backup) return;
+  let sessions = [];
+  try{ sessions = await getAllTrainingSessions(); }catch(e){}
+  if(!sessions.length){ host.innerHTML = ''; backup.innerHTML = ''; return; }
+  const trainedDays = new Set(sessions.map(s=>s.date)).size;
+  const runs = sessions.filter(s=>s.type==='run' && s.distanceKm);
+  const longest = runs.reduce((m,s)=>Math.max(m, s.distanceKm || 0), 0);
+  host.innerHTML = `<div class="progress-snapshot"><div class="progress-snapshot-head">Since you started</div><div class="progress-snapshot-stats"><span><b>${sessions.length}</b>sessions</span><span><b>${trainedDays}</b>training days</span>${longest ? `<span><b>${longest}km</b>longest run</span>` : ''}</div></div>`;
+  let exported = false;
+  try{ exported = !!JSON.parse((await window.storage.get('settings:lastExport')).value).at; }catch(e){}
+  backup.innerHTML = !exported && sessions.length >= 5
+    ? `<div class="backup-nudge">Your progress lives in this browser. Save a copy so it is not lost.<button type="button" id="backupNowBtn">Back up</button></div>` : '';
+  document.getElementById('backupNowBtn')?.addEventListener('click', ()=>{
+    document.querySelector('.tab[data-tab="settings"]')?.click();
+    setTimeout(()=>{ setCollapsed('backupampr', false); document.querySelector('.group-head[data-collapse="backupampr"]')?.scrollIntoView({behavior:'smooth', block:'start'}); }, 180);
+  });
+}
+async function showSessionComplete(session){
+  try{ await window.storage.set(`sessionSummary:${session.date}`, JSON.stringify(session)); }catch(e){}
+}
+async function renderSessionComplete(){
+  const host = document.getElementById('sessionCompleteCard');
+  if(!host) return;
+  let session = null;
+  try{ session = JSON.parse((await window.storage.get(`sessionSummary:${todayStr}`)).value); }catch(e){}
+  if(!session){ host.innerHTML = ''; return; }
+  const detail = session.type === 'strength'
+    ? `${(session.exercises || []).reduce((n,e)=>n + (e.sets || 0), 0)} sets · ${Math.round(session.totalVolume || 0).toLocaleString()} kg moved`
+    : session.type === 'run' ? `${session.distanceKm || '—'} km · ${session.durationMin || '—'} min`
+    : `${(session.stretches || []).length} movements · ${Math.round((session.totalHoldSeconds || 0) / 60)} min held`;
+  host.innerHTML = `<div class="session-complete"><b>Workout complete</b>${detail}${session.durationMin ? ` · ${session.durationMin} min total` : ''}</div>`;
+}
 async function renderWeekGrid(){
   // Surface block position where the week is actually planned. Previously the whole
   // periodization model was invisible: an intensification or deload week looked identical
@@ -18542,6 +18787,9 @@ async function renderWeekGrid(){
   }
   const detailCol = document.getElementById('weekWheelDetail');
   const dates = getWeekDates();
+  renderWeekConsistency();
+  renderPlanAheadPrompt();
+  renderUnavailableDates();
   if(activeWheelDayIndex==null) activeWheelDayIndex = Math.max(0, dates.indexOf(todayStr));
 
   const checkbox = document.getElementById('deloadWeekCheckbox');
@@ -20167,6 +20415,7 @@ async function openBlockEditor(date, slot, block){
       <div class="log-hint">A comma is a set — a space, a slash or a dash do the same.
         <b>8,8,6</b> reps where they dropped, <b>60,80,100</b> kg for a ramp.
         One number where every set was alike.</div>
+      <div class="score-note">For weight, choose a load you can control for every planned rep; leave it blank if you are still finding it out.</div>
       <div id="weekExerciseRows"></div><div class="add-row" id="addWeekExerciseRow">Add a lift</div>
       <!-- The run block has always had one. A strength session did not, so "gym was rammed,
            shoulder twinged on set three" — the context the score cannot see and cannot
@@ -20759,6 +21008,7 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         // Said differently for an edit, because "logged" a second time is exactly the thing
         // that used to happen and exactly the thing you would want to know had not.
         showToast(wasEdit ? 'Session updated' : 'Saved & logged');
+        await showSessionComplete(session);
         clearLoggingStarted(date);
         clearLogDraft(date, slot);
         eyeNotePRFrom(session);
@@ -20804,6 +21054,7 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         blockEditLoggedKey = key;
         blockEditLoggedTs = session.timestamp;
         showToast(wasEdit ? 'Run updated' : 'Saved & logged');
+        await showSessionComplete(session);
         clearLoggingStarted(date);
         clearLogDraft(date, slot);
         closeBlockEditor();
@@ -20857,6 +21108,7 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         blockEditLoggedKey = key;
         blockEditLoggedTs = session.timestamp;
         showToast(wasEdit ? 'Session updated' : 'Session logged');
+        await showSessionComplete(session);
       } catch(e){ showToast('Log failed — try again', true); }
     }
   });
@@ -28149,7 +28401,9 @@ async function applyRestDayShape(){
   // plate that is about to be shown again. The plate is hidden on a training day so a stale
   // true is invisible rather than wrong, which is exactly why it would survive unnoticed.
   const buildBtn = document.getElementById('restBuildBtn');
+  const nextBtn = document.getElementById('restNextBtn');
   if(buildBtn) buildBtn.hidden = true;
+  if(nextBtn) nextBtn.hidden = true;
   REST_HIDDEN.forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.style.display = resting ? 'none' : '';
@@ -28171,7 +28425,17 @@ async function applyRestDayShape(){
     ? (nextIn === 1 ? 'tomorrow'
        : new Date(next).toLocaleDateString(undefined, { weekday:'long' }).toLowerCase())
     : null;
-  note.textContent = label ? `nothing planned · next session ${label}` : 'nothing planned this week';
+  let nextBlock = null;
+  if(next){
+    for(const slot of ['am','pm']){
+      try{ nextBlock = JSON.parse((await window.storage.get(`weekplan:${next}:${slot}`)).value); break; }catch(e){}
+    }
+  }
+  note.textContent = label ? `nothing planned · next session ${label}${nextBlock ? ` · ${sessionTitle(nextBlock)}` : ''}` : 'nothing planned this week';
+  if(nextBtn && label){
+    nextBtn.hidden = false;
+    nextBtn.onclick = ()=>document.querySelector('.tab[data-tab="training"]')?.click();
+  }
   // `label` is null only when the seven-day scan above found nothing, which is the plan
   // having run out rather than an ordinary rest day with a session later in the week.
   if(buildBtn) buildBtn.hidden = !!label;
@@ -30019,6 +30283,27 @@ async function setDayOff(date, on){
   if(on) await window.storage.set(DAY_OFF_PREFIX + date, JSON.stringify({ date, at: Date.now() }));
   else await window.storage.delete(DAY_OFF_PREFIX + date);
 }
+async function renderUnavailableDates(){
+  const host = document.getElementById('unavailableDatesList');
+  if(!host) return;
+  const dates = getWeekDates();
+  const unavailable = [];
+  for(const date of dates) if(await isDayOff(date)) unavailable.push(date);
+  host.innerHTML = unavailable.length ? `Unavailable: ${unavailable.map(d=>`<button type="button" class="outline" data-clear-unavailable="${d}">${logDateWords(d)} ×</button>`).join(' ')}` : '';
+  host.querySelectorAll('[data-clear-unavailable]').forEach(btn=>btn.addEventListener('click', async ()=>{
+    await setDayOff(btn.dataset.clearUnavailable, false); await renderUnavailableDates(); renderWeekGrid();
+  }));
+}
+document.getElementById('addUnavailableDateBtn').addEventListener('click', async ()=>{
+  const input = document.getElementById('unavailableDateInput');
+  const date = input.value;
+  if(!date) return;
+  await setDayOff(date, true);
+  input.value = '';
+  await renderUnavailableDates();
+  renderWeekGrid();
+  showToast(`${logDateWords(date)} marked unavailable`);
+});
 async function getAvailableEmptyDates(weekDatesOverride){
   /* A day that has already gone is not an available day. getWeekDates() runs Monday to
      Sunday whatever day it is now, and nothing filtered it, so generating mid-week put
@@ -31776,9 +32061,10 @@ async function blockSummaryHtml(block){
           gapNote = ` · ${Math.round(gap * 10) / 10} off`;
         }
       }
+      const swapButton = `<button type="button" class="quick-swap" data-quick-swap="${encodeURIComponent(exerciseFlagKey(ex))}" aria-label="Swap ${ex.name}">Swap</button>`;
       rows.push(planRow(ex.name, `${sets}×${repsLabel} @ ${weightLabel}${arrow}${gapNote}`,
         [ progression.note ? { key:'Progression', text: progression.note, caps: !!progression.noteCaps } : null ],
-        { lead: ssTag, trail: dropTag, rowClass: ex.supersetGroup ? 'ss-row' : '', tag }));
+        { lead: ssTag, trail: dropTag + swapButton, rowClass: ex.supersetGroup ? 'ss-row' : '', tag }));
     }
     /* The cool-down that rides on the lift when two sessions a day are off. Same stretches
        the pm companion block carries, rendered in the same shape, under a rule that says
@@ -32032,10 +32318,15 @@ async function weekPositionLine(){
 
 async function renderTodayWorkoutSummary(){
   const container = document.getElementById('todayWorkoutSummary');
+  refreshPrepChecks().catch(()=>{});
+  renderProgressSnapshot().catch(()=>{});
+  renderSessionComplete().catch(()=>{});
 
   const block = await getTodaysBlockForType(todaySessionType);
   if(!block){
-    container.innerHTML = `<div class="empty-state" data-aim="weekly"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><span>No ${todaySessionType} today</span></div>`;
+    container.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><span>No ${todaySessionType} today</span><div class="today-empty-actions"><button type="button" id="planTodayWorkoutBtn">Plan a workout</button><button type="button" class="outline" id="viewWeeklyPlanBtn">Weekly plan</button></div></div>`;
+    document.getElementById('planTodayWorkoutBtn')?.addEventListener('click', ()=>openLogFromAnywhere());
+    document.getElementById('viewWeeklyPlanBtn')?.addEventListener('click', ()=>document.querySelector('.tab[data-tab="training"]')?.click());
     return;
   }
   const rows = await blockSummaryHtml(block);
@@ -32056,6 +32347,12 @@ async function renderTodayWorkoutSummary(){
   const isDeload = (block.type==='strength' || block.type==='run') ? await isDeloadWeek(todayStr) : false;
   const deloadNote = isDeload ? `<div class="score-note" style="margin-top:-4px;">~${Math.round(DELOAD_CUT*100)}% volume — deload week</div>` : '';
   const adjustment = (block.type==='strength' || block.type==='run') ? await getTodayAdjustment() : { lever:null, delta:0 };
+  const focusText = block.type === 'strength'
+    ? ((SESSION_FOCUS_INFO[block.details && block.details.plannedFocus] || {}).cue || 'Move cleanly and leave a little in reserve.')
+    : block.type === 'run'
+      ? ({ easy:'Keep the pace conversational.', long:'Settle in; the goal is steady time on your feet.', tempo:'Controlled pressure — hard, but never a sprint.', interval:'Keep each repeat crisp; recover enough to make the next one count.' }[(block.details || {}).runType] || 'Keep the effort controlled and repeatable.')
+      : 'Move slowly, breathe, and stay out of sharp pain.';
+  const focusNote = `<div class="score-note" style="margin-top:8px;"><b>Today’s focus</b> · ${focusText}</div>`;
   let adjustmentNote = '';
   if(adjustment.lever){
     const d = adjustment.delta;
@@ -32117,8 +32414,15 @@ async function renderTodayWorkoutSummary(){
       <div class="fields">
         ${loggingLine}
         ${rows || '<div class="score-note">Planned but no specific exercises added yet.</div>'}
+        ${focusNote}
         ${deloadNote}
         ${adjustmentNote}
+        <div class="today-plan-actions">
+          <button type="button" id="startTodayWorkoutBtn">Start workout</button>
+          <button type="button" class="outline" id="replaceTodayWorkoutBtn">Replace / edit</button>
+          <button type="button" class="outline" id="rescheduleTodayWorkoutBtn">Reschedule</button>
+          <button type="button" class="outline" id="skipTodayWorkoutBtn">Skip today</button>
+        </div>
       </div>
     </div>`;
   budgetBar(container);
@@ -32165,6 +32469,67 @@ async function renderTodayWorkoutSummary(){
     refreshLogStripWord();   // the strip is offering to resume something that no longer exists
     refreshHeaderLogBtn().catch(()=>{});   // and so is the masthead button
   });
+  document.getElementById('startTodayWorkoutBtn')?.addEventListener('click', ()=>startTodayLogging());
+  document.getElementById('replaceTodayWorkoutBtn')?.addEventListener('click', async ()=>{
+    const found = await getTodaysBlockAndSlotForType(todaySessionType);
+    if(found) await openBlockEditor(todayStr, found.slot, found.block);
+  });
+  document.getElementById('skipTodayWorkoutBtn')?.addEventListener('click', async ()=>{
+    const found = await getTodaysBlockAndSlotForType(todaySessionType);
+    if(!found) return;
+    const key = `weekplan:${todayStr}:${found.slot}`;
+    const before = await window.storage.get(key);
+    await window.storage.delete(key);
+    await syncPlannedSessionMirror(todayStr);
+    offerWeekUndo([{ key, value:before.value, date:todayStr }], 'skip');
+    showToast('Skipped today — undo is available in Weekly');
+    renderTodayWorkoutSummary();
+    renderWeekGrid();
+  });
+  document.getElementById('rescheduleTodayWorkoutBtn')?.addEventListener('click', async ()=>{
+    const found = await getTodaysBlockAndSlotForType(todaySessionType);
+    if(!found) return;
+    let target = null, targetSlot = null;
+    for(let offset=1; offset<=14 && !target; offset++){
+      const date = shiftDateStr(todayStr, offset);
+      if(await isDayOff(date)) continue;
+      for(const slot of ['am','pm']){
+        if(!await blockOn(date, slot)){ target = date; targetSlot = slot; break; }
+      }
+    }
+    if(!target){ showToast('No open day in the next two weeks', true); return; }
+    const fromKey = `weekplan:${todayStr}:${found.slot}`;
+    const toKey = `weekplan:${target}:${targetSlot}`;
+    const before = await window.storage.get(fromKey);
+    await window.storage.set(toKey, before.value);
+    await window.storage.delete(fromKey);
+    await syncPlannedSessionMirror(todayStr);
+    await syncPlannedSessionMirror(target);
+    offerWeekUndo([{ key:fromKey, value:before.value, date:todayStr }, { key:toKey, value:null, date:target }], 'reschedule');
+    showToast(`Moved to ${logDateWords(target)}`);
+    renderTodayWorkoutSummary();
+    renderWeekGrid();
+  });
+  container.querySelectorAll('[data-quick-swap]').forEach(btn=>btn.addEventListener('click', async ()=>{
+    const key = decodeURIComponent(btn.dataset.quickSwap || '');
+    const changed = await mutateTodayStrengthPlan(list=>{
+      const i = list.findIndex(ex=>exerciseFlagKey(ex) === key);
+      if(i < 0) return false;
+      const current = list[i];
+      const namedChoices = VARIATION_LIBRARY[String(current.name || '').toLowerCase()] || [];
+      const choices = namedChoices.length ? namedChoices.map(name=>({ name }))
+        : Object.values(EXERCISE_LIBRARY).filter(ex=> ex && ex.name && ex.area === current.area && ex.name !== current.name);
+      if(!choices.length) return false;
+      const next = choices[0];
+      const libraryEntry = Object.entries(EXERCISE_LIBRARY).find(([, ex])=>ex.name === next.name);
+      list[i] = { ...current, name:next.name, exerciseId:libraryEntry ? libraryEntry[0] : null, swappedFrom:current.name };
+      return true;
+    });
+    if(!changed){ showToast('No alternate movement found for this exercise', true); return; }
+    showToast('Exercise swapped — edit it any time');
+    renderTodayWorkoutSummary();
+    renderWeekGrid();
+  }));
 }
 document.querySelectorAll('#todaySessionTypePills .type-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -33833,6 +34198,30 @@ function deferredAreasNote(deferred, where){
   return { note:true, html: `<b>Also flagged</b> \u2014 ${list}. ${names.length === 1 ? 'It did' : 'They did'} not fit today\u2019s ${where} and ${names.length === 1 ? 'is' : 'are'} first in line tomorrow.` };
 }
 
+async function refreshPrepChecks(){
+  for(const [kind, id] of [['warmup','warmupDoneBtn'], ['cooldown','cooldownDoneBtn']]){
+    const btn = document.getElementById(id);
+    if(!btn) continue;
+    let done = false;
+    try{ done = !!JSON.parse((await window.storage.get(`prepDone:${todayStr}:${kind}`)).value).done; }catch(e){}
+    btn.textContent = done ? 'Done ✓' : 'Mark done';
+    btn.classList.toggle('is-done', done);
+    btn.setAttribute('aria-pressed', done ? 'true' : 'false');
+  }
+}
+(function wirePrepChecks(){
+  [['warmup','warmupDoneBtn'], ['cooldown','cooldownDoneBtn']].forEach(([kind, id])=>{
+    document.getElementById(id)?.addEventListener('click', async ()=>{
+      const key = `prepDone:${todayStr}:${kind}`;
+      let done = false;
+      try{ done = !!JSON.parse((await window.storage.get(key)).value).done; }catch(e){}
+      if(done) await window.storage.delete(key);
+      else await window.storage.set(key, JSON.stringify({ done:true, at:Date.now() }));
+      await refreshPrepChecks();
+      showToast(done ? `${kind === 'warmup' ? 'Warm-up' : 'Cooldown'} marked not done` : `${kind === 'warmup' ? 'Warm-up' : 'Cooldown'} complete`);
+    });
+  });
+})();
 async function generateWarmup(){
   // A dedicated mobility session opens with its own Access work and finishes with
   // Integrate — bracketing it with a separate warm-up would prescribe the same tissue
@@ -35593,6 +35982,29 @@ const eyeCalmToggleEl = document.getElementById('eyeCalmToggle');
 if(eyeCalmToggleEl){
   eyeCalmToggleEl.checked = eyeCalm;
   eyeCalmToggleEl.addEventListener('change', ()=>{ setEyeCalm(eyeCalmToggleEl.checked); renderEyeAnimList(); renderAppearanceSummary(); });
+}
+const textScaleSelectEl = document.getElementById('textScaleSelect');
+const highContrastToggleEl = document.getElementById('highContrastToggle');
+const workoutRemindersToggleEl = document.getElementById('workoutRemindersToggle');
+if(textScaleSelectEl){
+  const saved = localStorage.getItem('appearance:textScale') || '1';
+  textScaleSelectEl.value = saved; document.body.style.zoom = saved;
+  textScaleSelectEl.addEventListener('change', ()=>{ document.body.style.zoom = textScaleSelectEl.value; localStorage.setItem('appearance:textScale', textScaleSelectEl.value); });
+}
+if(highContrastToggleEl){
+  highContrastToggleEl.checked = localStorage.getItem('appearance:highContrast') === '1';
+  document.documentElement.dataset.highContrast = highContrastToggleEl.checked ? 'true' : 'false';
+  highContrastToggleEl.addEventListener('change', ()=>{ document.documentElement.dataset.highContrast = highContrastToggleEl.checked ? 'true' : 'false'; localStorage.setItem('appearance:highContrast', highContrastToggleEl.checked ? '1' : '0'); });
+}
+if(workoutRemindersToggleEl){
+  workoutRemindersToggleEl.checked = localStorage.getItem('settings:workoutReminders') === '1';
+  workoutRemindersToggleEl.addEventListener('change', async ()=>{
+    if(workoutRemindersToggleEl.checked && 'Notification' in window && Notification.permission === 'default') await Notification.requestPermission();
+    const enabled = workoutRemindersToggleEl.checked && (!('Notification' in window) || Notification.permission === 'granted');
+    workoutRemindersToggleEl.checked = enabled;
+    localStorage.setItem('settings:workoutReminders', enabled ? '1' : '0');
+    showToast(enabled ? 'Workout reminders enabled' : 'Workout reminders are off');
+  });
 }
 // After all three controls above are reflected, so the line reads the stored state.
 renderAppearanceSummary();
