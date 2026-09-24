@@ -4360,7 +4360,10 @@
      the depth, and the line is its own element that draws left to right, the direction every
      other rule in this app is read in. Only while scrolled, so it draws on the way in and
      retracts the same way when you come back to the top. */
-  .ui-hairlineDraws header{ position:relative; }
+  /* Keep the masthead pinned while its scroll-state rule is drawn.  `relative` here
+     quietly overrode the base `sticky` header rule, so on phones the compact header
+     scrolled completely off-screen instead of staying as the short tab bar. */
+  .ui-hairlineDraws header{ position:sticky; }
   .ui-hairlineDraws header::after{ content:''; position:absolute; left:0; right:0; bottom:0;
     height:1px; background:rgba(var(--edge-rgb),0.34); transform:scaleX(0); transform-origin:left center;
     transition:transform 320ms cubic-bezier(0.3,0.9,0.3,1); pointer-events:none; }
@@ -13118,6 +13121,12 @@ function updateHeaderCollapse(){
     // wordmark shrinks away.
     brandEl.style.minHeight = lerp(128, 52, progress).toFixed(2) + 'px';
   }
+  /* A sticky header's negative banner margin is measured from its original document
+     position by WebKit on iPhone. That leaves absolutely positioned tabs moving up with
+     the disappearing title even though the banner itself is pinned. Move the whole tab
+     scale down by the same amount as the compact banner so it remains inside the 52px row. */
+  const tabsEl = document.querySelector('.header-brand > .tabs');
+  if(tabsEl) tabsEl.style.transform = 'translateY(' + lerp(0, 52, progress).toFixed(2) + 'px)';
   /* THE LOCKUP FITS BEFORE THE DATE, AT EVERY WIDTH.
 
      "EVERY READING puts the mark's right edge at 258 and the date starts at 295" — at 390.
