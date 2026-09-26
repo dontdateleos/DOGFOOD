@@ -11722,7 +11722,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.26.650';
+const APP_VERSION = '2026.09.26.651';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12057,6 +12057,7 @@ const APP_NOTES = {
   '2026.09.22.648': 'The split is chosen from your training days and your goal, and the plan says which and why.',
   '2026.09.22.649': 'The split row names the recommendation instead of promising one.',
   '2026.09.26.650': 'A secondary goal in setup, undo for week edits, calendar export, and a steadier header on scroll.',
+  '2026.09.26.651': 'Reschedule and Rebalance only move a session to a day you actually train, and never double one up against the setting that says not to.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -18192,21 +18193,36 @@ document.getElementById('exportCalendarBtn').addEventListener('click', async ()=
 });
 document.getElementById('rebalanceWeekBtn').addEventListener('click', async e=>{
   if(!await confirmInPlace(e.currentTarget,{mode:'tap',label:'Tap again to rebalance'})) return;
-  const dates = [];
-  for(const d of getWeekDates()) if(d >= todayStr && !(await isDayOff(d))) dates.push(d);
+  /* SEATS, NOT DATES.
+
+     This used to spread blocks across every date that was not explicitly marked off —
+     which is a bigger set than the days you actually train. getWeekDates() runs Monday to
+     Sunday regardless of what you set, so someone training Mon/Wed/Fri could have their
+     Tuesday session rebalanced onto a Saturday they never agreed to. trainableDatesIn is
+     the same filter the generator itself sizes the week from.
+
+     And a date was worth exactly one seat here whatever multiSessionOk said, with the
+     am-then-pm fallback there to allow doubling up on a day the setting says should hold
+     only one. Seats are built to match: two per trainable day when you allow a same-day
+     pairing, one when you do not, so blocks can never land somewhere the generator itself
+     would refuse to put them. */
+  let multiSessionOk = false;
+  try{ multiSessionOk = !!JSON.parse((await window.storage.get('settings:trainingSetup')).value).multiSessionOk; } catch(e){}
+  const dates = await trainableDatesIn(getWeekDates().filter(d => d >= todayStr));
+  const seats = [];
+  dates.forEach(date=>{ seats.push({date, slot:'am'}); if(multiSessionOk) seats.push({date, slot:'pm'}); });
   const blocks = [];
   for(const date of getWeekDates()) for(const slot of ['am','pm']){
     try{ const r = await window.storage.get(`weekplan:${date}:${slot}`); if(date >= todayStr) blocks.push({date,slot,value:r.value}); }catch(e){}
   }
-  if(!blocks.length || dates.length < blocks.length){ showToast('Not enough open days to rebalance', true); return; }
+  if(!blocks.length || seats.length < blocks.length){ showToast('Not enough open days to rebalance', true); return; }
   const undoByKey = new Map(blocks.map(b=>[`weekplan:${b.date}:${b.slot}`,{key:`weekplan:${b.date}:${b.slot}`,value:b.value,date:b.date}]));
   for(const b of blocks) await window.storage.delete(`weekplan:${b.date}:${b.slot}`);
   for(let i=0;i<blocks.length;i++){
-    const date = dates[Math.round(i*(dates.length-1)/Math.max(1,blocks.length-1))];
-    const slot = await blockOn(date,'am') ? 'pm' : 'am';
-    const targetKey = `weekplan:${date}:${slot}`;
-    if(!undoByKey.has(targetKey)) undoByKey.set(targetKey, {key:targetKey,value:null,date});
-    await window.storage.set(`weekplan:${date}:${slot}`,blocks[i].value); await syncPlannedSessionMirror(date);
+    const seat = seats[Math.round(i*(seats.length-1)/Math.max(1,blocks.length-1))];
+    const targetKey = `weekplan:${seat.date}:${seat.slot}`;
+    if(!undoByKey.has(targetKey)) undoByKey.set(targetKey, {key:targetKey,value:null,date:seat.date});
+    await window.storage.set(targetKey,blocks[i].value); await syncPlannedSessionMirror(seat.date);
   }
   offerWeekUndo([...undoByKey.values()],'rebalance'); renderWeekGrid(); renderTodayWorkoutSummary(); showToast('Upcoming sessions rebalanced');
 });
@@ -30386,8 +30402,15 @@ async function getAvailableEmptyDates(weekDatesOverride){
 
    Counts days, not empty days: a day already holding something is still one of your days,
    and counting only the empty ones would shrink the ask again on every regenerate. */
-async function availableDaysRemaining(weekDatesOverride){
-  const dates = (weekDatesOverride || getWeekDates()).filter(d => d >= todayStr);
+/* THE FILTER availableDaysRemaining WAS DOING, PULLED OUT SO OTHER CALLERS CAN GET THE
+   DATES THEMSELVES, NOT JUST A COUNT.
+
+   Reschedule and Rebalance both move a planned session to a different day, and both need
+   the same answer availableDaysRemaining already computes for the generator: a day that is
+   off, or a day outside your recurring pattern, is not a day to land a session on just
+   because nothing happens to be booked on it yet. Written once here; availableDaysRemaining
+   below is now the one-line count version of it. */
+async function trainableDatesIn(dates){
   const off = await daysOffInWeek(dates);
   let avail = null;
   try{
@@ -30399,7 +30422,11 @@ async function availableDaysRemaining(weekDatesOverride){
     if(!avail) return true;
     // localDateFrom and the Mon-first index, for the same reason getAvailableEmptyDates does it.
     return avail.includes(WEEKDAY_NAMES[(localDateFrom(date).getDay()+6)%7]);
-  }).length;
+  });
+}
+async function availableDaysRemaining(weekDatesOverride){
+  const dates = (weekDatesOverride || getWeekDates()).filter(d => d >= todayStr);
+  return (await trainableDatesIn(dates)).length;
 }
 
 // Generates weekplan strength blocks matching the chosen split, only into empty days.
@@ -32518,12 +32545,31 @@ async function renderTodayWorkoutSummary(){
   document.getElementById('rescheduleTodayWorkoutBtn')?.addEventListener('click', async ()=>{
     const found = await getTodaysBlockAndSlotForType(todaySessionType);
     if(!found) return;
+    /* THE NEXT OPEN DAY MEANS THE NEXT DAY YOU TRAIN.
+
+       This scanned forward skipping only isDayOff — a one-off "not this specific day"
+       override — and never looked at your recurring availableDays pattern, so a Tuesday
+       session could reschedule itself onto a Saturday you never marked as a training day.
+       trainableDatesIn is the same check the generator itself uses to decide what a
+       trainable day is.
+
+       And it took the first free slot on the first candidate day, am or pm, whatever
+       multiSessionOk said — which could pair the rescheduled session onto a day that
+       already had one, on a setting that says no second session. With it off, a day only
+       qualifies when BOTH slots are free, and the session always lands in 'am', the same
+       single-session default the generator uses. */
+    let multiSessionOk = false;
+    try{ multiSessionOk = !!JSON.parse((await window.storage.get('settings:trainingSetup')).value).multiSessionOk; } catch(e){}
     let target = null, targetSlot = null;
     for(let offset=1; offset<=14 && !target; offset++){
       const date = shiftDateStr(todayStr, offset);
-      if(await isDayOff(date)) continue;
-      for(const slot of ['am','pm']){
-        if(!await blockOn(date, slot)){ target = date; targetSlot = slot; break; }
+      if(!(await trainableDatesIn([date])).length) continue;
+      const amTaken = await blockOn(date, 'am');
+      if(multiSessionOk){
+        if(!amTaken){ target = date; targetSlot = 'am'; }
+        else if(!await blockOn(date, 'pm')){ target = date; targetSlot = 'pm'; }
+      } else if(!amTaken && !await blockOn(date, 'pm')){
+        target = date; targetSlot = 'am';
       }
     }
     if(!target){ showToast('No open day in the next two weeks', true); return; }
