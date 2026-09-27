@@ -11722,7 +11722,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.27.652';
+const APP_VERSION = '2026.09.27.653';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12059,6 +12059,7 @@ const APP_NOTES = {
   '2026.09.26.650': 'A secondary goal in setup, undo for week edits, calendar export, and a steadier header on scroll.',
   '2026.09.26.651': 'Reschedule and Rebalance only move a session to a day you actually train, and never double one up against the setting that says not to.',
   '2026.09.27.652': 'The exported calendar file now has a timestamp every reader requires, escapes what it writes, and no longer races Safari to cancel its own download.',
+  '2026.09.27.653': 'The recommended split now updates when you change your available days, instead of only when you touch your goals.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -17243,6 +17244,13 @@ document.getElementById('saveTrainingSetupBtn').addEventListener('click', async 
     await renderBlockPositionNote();
     showToast('Training setup saved');
     renderSettingsSummaries();
+    /* The Split row on Weekly names a split by how many days you train, and this is the one
+       place that number changes. It only repainted from paintGoalSummary — called when
+       goals load or save, never when Training Setup does — so changing from 4 available
+       days to 6 and saving left "Recommended · Upper / Lower" on screen for a week that
+       would now generate Push / Pull / Legs, with nothing to say the label was stale. It
+       reads settings:trainingSetup fresh on every call, so this only needs the one line. */
+    paintSplitRecommendation();
   } catch(e){ showToast('Save failed — try again', true); }
 });
 
