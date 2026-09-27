@@ -11722,7 +11722,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.27.653';
+const APP_VERSION = '2026.09.27.654';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12060,6 +12060,7 @@ const APP_NOTES = {
   '2026.09.26.651': 'Reschedule and Rebalance only move a session to a day you actually train, and never double one up against the setting that says not to.',
   '2026.09.27.652': 'The exported calendar file now has a timestamp every reader requires, escapes what it writes, and no longer races Safari to cancel its own download.',
   '2026.09.27.653': 'The recommended split now updates when you change your available days, instead of only when you touch your goals.',
+  '2026.09.27.654': 'A week that could not fit both a lift and a run now says which one lost, instead of just dropping it.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -26486,7 +26487,29 @@ function determineHybridPlan(goalList, totalDaysRaw, sessionLength){
     runningSessions = totalDays - strengthSessions;
   }
 
-  return { emphasis, strengthSessions, runningSessions, liftGoal, runGoal, secondaryLevel };
+  /* WHEN THE WEEK CANNOT AFFORD BOTH, SOMETHING GOES TO ZERO — AND IT SAYS SO.
+
+     At totalDays===1 both branches round or floor one discipline to nothing: the strength
+     branch computes runningSessions from a fraction that rounds down to 0 before the
+     strength floor ever runs, and the running branch's own strength floor (a flat 1 below
+     four days) leaves nothing over for running. Measured directly: a hypertrophy+running
+     week that had 3 available days and, in one particular week, two of those three marked
+     off — totalDays reserved down to 1 — came back strengthSessions:1,
+     runningSessions:0, with nothing on the generated week or its summary saying running
+     had been squeezed out rather than simply not wanted.
+
+     That silence is the actual defect, not the allocation — giving the single day to
+     whichever goal you ranked higher is consistent with every other tie-break this
+     function makes. squeezedOut names what happened so a caller can say it, the same way
+     secondaryLevel already lets one be said about the trade-off generally. It only fires
+     when a real goal for the zeroed discipline exists and the OTHER discipline actually
+     took the day — never for strength-only/running-only, where a domain reading 0
+     because there was no goal for it needs no explaining. */
+  let squeezedOut = null;
+  if(runningSessions === 0 && strengthSessions > 0) squeezedOut = { type:'running', to: liftGoal.type };
+  else if(strengthSessions === 0 && runningSessions > 0) squeezedOut = { type:'strength', to: runGoal.type };
+
+  return { emphasis, strengthSessions, runningSessions, liftGoal, runGoal, secondaryLevel, squeezedOut };
 }
 
 /* WHAT COMES OFF WHEN THE SESSION WILL NOT FIT.
@@ -30187,6 +30210,11 @@ function describeWeekResult(r, weekNum, isDeload){
   }
   if(r.runPlaced) parts.push(`${r.runPlaced} run${r.runPlaced===1?'':'s'}`);
   if(r.mobilityPlaced) parts.push(`${r.mobilityPlaced} mobility session${r.mobilityPlaced===1?'':'s'}`);
+  // A discipline that reads 0 this week said nothing about why — including when the week
+  // could not afford both and the day went to whichever goal outranks it. See squeezedOut
+  // on determineHybridPlan.
+  const squeeze = r.plan && r.plan.squeezedOut;
+  if(squeeze) parts.push(`no ${squeeze.type} — one day this week, given to ${GOAL_TYPE_LABELS[squeeze.to] || squeeze.to}`);
   if(parts.length===0) return { empty: true };
   const prefix = isDeload ? `Week ${weekNum} (deload, ~50% volume): ` : `Week ${weekNum}: `;
   return { text: prefix + parts.join(' + ') };
