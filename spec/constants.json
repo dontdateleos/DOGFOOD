@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.27.654",
+ "generatedFrom": "2026.09.27.655",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1094,7 +1094,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.09.27.654",
+  "APP_VERSION": "2026.09.27.655",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1415,6 +1415,7 @@
    "2026.09.27.652": "The exported calendar file now has a timestamp every reader requires, escapes what it writes, and no longer races Safari to cancel its own download.",
    "2026.09.27.653": "The recommended split now updates when you change your available days, instead of only when you touch your goals.",
    "2026.09.27.654": "A week that could not fit both a lift and a run now says which one lost, instead of just dropping it.",
+   "2026.09.27.655": "“Why this week” now explains the week you are actually looking at, not just the one you generated from.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",

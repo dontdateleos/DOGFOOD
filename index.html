@@ -11722,7 +11722,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.27.654';
+const APP_VERSION = '2026.09.27.655';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12061,6 +12061,7 @@ const APP_NOTES = {
   '2026.09.27.652': 'The exported calendar file now has a timestamp every reader requires, escapes what it writes, and no longer races Safari to cancel its own download.',
   '2026.09.27.653': 'The recommended split now updates when you change your available days, instead of only when you touch your goals.',
   '2026.09.27.654': 'A week that could not fit both a lift and a run now says which one lost, instead of just dropping it.',
+  '2026.09.27.655': '\u201cWhy this week\u201d now explains the week you are actually looking at, not just the one you generated from.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -30151,7 +30152,9 @@ async function generateMultiWeekProgram(numWeeks, splitOverride, options){
     const volumeWaveNote = getVolumeWaveNote(weekNum, isDeload, pos.length);
     const blockPhase = getBlockPhase(weekNum, isDeload, pos.length);
     const r = await generateProgramFromGoals(weekDates, volumeWaveNote, blockPhase, splitOverride, options);
-    weekResults.push({ weekNum, isDeload, blockPhase, result: r });
+    // The week's own Monday, so a caller can key a per-week record by it rather than by
+    // whichever week happens to be on screen right now — see planSummary below.
+    weekResults.push({ weekNum, isDeload, blockPhase, result: r, weekStart: weekDates[0] });
     if(r.error) break; // stop early if something's fundamentally missing (no setup/goals)
   }
   return weekResults;
@@ -30348,10 +30351,26 @@ document.getElementById('generateProgramFromGoalsBtn').addEventListener('click',
     }
     result.innerHTML = msg;
     result.style.color = '';
-    // The generated week persists but the reason for it didn't: this explanation only
-    // existed in the DOM from the moment Generate was pressed, so any reload left the
-    // section that explains the week blank while the week itself was still there.
-    try{ await window.storage.set(`planSummary:${getWeekDates()[0]}`, JSON.stringify({ html: msg, at: new Date().toISOString() })); } catch(e){}
+    /* The generated week persists but the reason for it didn't: this explanation only
+       existed in the DOM from the moment Generate was pressed, so any reload left the
+       section that explains the week blank while the week itself was still there.
+
+       Written once, keyed to whichever week happened to be on screen at generate time —
+       so a 4-week batch explained week 1 and nothing else. restorePlanSummary reads
+       planSummary keyed to the week currently on screen, and by the time a later week
+       turns current, its own key had never been written: "Why this week" read blank for
+       every week past the one you generated from, including the one week most worth
+       reading it on — a week where a discipline came back at zero and the reason was
+       sitting in this same msg the whole time, just filed under the wrong week.
+
+       The full message already names every week in the batch ("Week 1: … · Week 2: …"),
+       so the fix is to file the same copy under each week it describes, not to rebuild a
+       trimmed one per week. */
+    try{
+      for(const wr of weekResults){
+        await window.storage.set(`planSummary:${wr.weekStart}`, JSON.stringify({ html: msg, at: new Date().toISOString() }));
+      }
+    } catch(e){}
     showToast(`${numWeeks} week${numWeeks===1?'':'s'} generated`);
     const afterFilled = await filledWeekDays();
     dealPlanThroughWeek(afterFilled.filter(d => beforeFilled.indexOf(d) < 0));
