@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.26.651",
+ "generatedFrom": "2026.09.27.652",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1094,7 +1094,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.09.26.651",
+  "APP_VERSION": "2026.09.27.652",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1412,6 +1412,7 @@
    "2026.09.22.649": "The split row names the recommendation instead of promising one.",
    "2026.09.26.650": "A secondary goal in setup, undo for week edits, calendar export, and a steadier header on scroll.",
    "2026.09.26.651": "Reschedule and Rebalance only move a session to a day you actually train, and never double one up against the setting that says not to.",
+   "2026.09.27.652": "The exported calendar file now has a timestamp every reader requires, escapes what it writes, and no longer races Safari to cancel its own download.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
