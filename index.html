@@ -11722,7 +11722,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.27.655';
+const APP_VERSION = '2026.09.27.656';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12062,6 +12062,7 @@ const APP_NOTES = {
   '2026.09.27.653': 'The recommended split now updates when you change your available days, instead of only when you touch your goals.',
   '2026.09.27.654': 'A week that could not fit both a lift and a run now says which one lost, instead of just dropping it.',
   '2026.09.27.655': '\u201cWhy this week\u201d now explains the week you are actually looking at, not just the one you generated from.',
+  '2026.09.27.656': 'When a week could not fit every planned session, dropping the overflow no longer defaults to keeping strength and losing running \u2014 a tie in stress weight now splits the risk between the two instead of always going strength\u2019s way.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -26896,7 +26897,36 @@ function assignSlotsWithAdjacency(dates, strengthSlots, runSlots){
   // units onto the same date would silently overwrite one in storage, which is worse
   // than an honest, reported drop of the least important session.
   const unitStress = u => Math.max(...u.map(s=>SESSION_STRESS_WEIGHT[s.stressType]||1));
-  units.sort((a,b) => unitStress(b) - unitStress(a));
+  const unitKind = u => u.some(s => s.kind === 'run') ? 'run' : 'strength';
+  // A plain sort by stress is stable, and allSlots is strength then run — so every tie
+  // (an easy_run and an upper day both weigh 1) resolved in strength's favour purely
+  // because its units sat earlier in the array, never because it actually mattered more.
+  // Measured directly: a week down to one genuinely empty day (the rest already
+  // occupied — see getAvailableEmptyDates, which never touches a day something is
+  // already on) with a plan asking for 3 strength + 2 running kept one strength session
+  // and dropped both runs, every time, regardless of which specific sessions they were.
+  // Ranking within each stress tier round-robin by kind means a tie splits the risk
+  // between disciplines instead of collapsing it onto whichever kind's slots happen to
+  // come first — real stress differences still decide first, ties no longer do.
+  const tiers = new Map();
+  units.forEach(u=>{
+    const w = unitStress(u);
+    if(!tiers.has(w)) tiers.set(w, []);
+    tiers.get(w).push(u);
+  });
+  const ranked = [];
+  for(const w of [...tiers.keys()].sort((a,b)=>b-a)){
+    const byKind = {};
+    tiers.get(w).forEach(u=>{ const k = unitKind(u); (byKind[k] = byKind[k] || []).push(u); });
+    const kinds = Object.keys(byKind);
+    let i = 0;
+    while(kinds.some(k=>byKind[k].length)){
+      const k = kinds[i % kinds.length];
+      if(byKind[k].length) ranked.push(byKind[k].shift());
+      i++;
+    }
+  }
+  units.length = 0; units.push(...ranked);
   const droppedCount = Math.max(0, units.length - usedIndices.length);
   const placedUnits = units.slice(0, usedIndices.length);
   // Order units so ADJACENT days conflict as little as possible. conflictScore was only
@@ -26917,7 +26947,6 @@ function assignSlotsWithAdjacency(dates, strengthSlots, runSlots){
   // below the collisions that genuinely matter (heavy_lower|heavy_lower is 8.1), so it
   // reorders only where nothing more important is at stake.
   const SAME_KIND_ADJACENT_PENALTY = 2;
-  const unitKind = u => u.some(s => s.kind === 'run') ? 'run' : 'strength';
   const worstOverlap = (unitA, unitB) => {
     let worst = 0;
     unitA.forEach(a => unitB.forEach(b => {
