@@ -11722,7 +11722,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.27.656';
+const APP_VERSION = '2026.09.27.657';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12063,6 +12063,7 @@ const APP_NOTES = {
   '2026.09.27.654': 'A week that could not fit both a lift and a run now says which one lost, instead of just dropping it.',
   '2026.09.27.655': '\u201cWhy this week\u201d now explains the week you are actually looking at, not just the one you generated from.',
   '2026.09.27.656': 'When a week could not fit every planned session, dropping the overflow no longer defaults to keeping strength and losing running \u2014 a tie in stress weight now splits the risk between the two instead of always going strength\u2019s way.',
+  '2026.09.27.657': 'A week that drops every run (or every lift) because there was not enough clear room for both now says so, the same way it already does when the plan itself rounded one to zero.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -30247,6 +30248,16 @@ function describeWeekResult(r, weekNum, isDeload){
   // on determineHybridPlan.
   const squeeze = r.plan && r.plan.squeezedOut;
   if(squeeze) parts.push(`no ${squeeze.type} — one day this week, given to ${GOAL_TYPE_LABELS[squeeze.to] || squeeze.to}`);
+  // squeezedOut only names it when the PLAN rounds a discipline to zero before placement
+  // ever runs. It says nothing when the plan asks for both but the week's actual empty
+  // days — see getAvailableEmptyDates, which never touches a day something is already
+  // on — can't fit every session: assignSlotsWithAdjacency drops the overflow, and that
+  // drop can take every session of one kind while the plan it came from still reads
+  // non-zero for it. Same silence, a later stage.
+  else if(r.droppedSessions > 0){
+    if(r.plan && r.plan.runningSessions > 0 && !r.runPlaced) parts.push('no runs — not enough clear days this week to fit them');
+    if(r.plan && r.plan.strengthSessions > 0 && !r.liftPlaced) parts.push('no strength — not enough clear days this week to fit it');
+  }
   if(parts.length===0) return { empty: true };
   const prefix = isDeload ? `Week ${weekNum} (deload, ~50% volume): ` : `Week ${weekNum}: `;
   return { text: prefix + parts.join(' + ') };
