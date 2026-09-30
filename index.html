@@ -2649,11 +2649,19 @@
     color:rgba(var(--ink-rgb),0.58); }
   .week-cal-mark.rest{ font-weight:var(--fw-normal); letter-spacing:0.04em; background:none;
     color:rgba(var(--ink-rgb),0.4); }
+  /* Which day the cards below belong to. Used to be the sheet's own head — a title bar over
+     a popup names itself for free; inline, on a page that already has six other headings on
+     it, the cards need something to say whose they are. Same quiet-column ink every other
+     label in this panel sits on, not a heading of its own weight: the board above it already
+     marks the day with .here, this is confirming it, not introducing it. */
+  .week-day-detail-title{ font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold);
+    text-transform:uppercase; letter-spacing:0.04em; color:rgba(var(--ink-rgb),0.58);
+    margin-top:var(--sp-3); }
   /* The day's workouts, one either side of the page. Two is the most a day can hold — the
      plan has an am slot and a pm slot — so they sit as a pair rather than a stack, and a
      day with one leaves the other half empty rather than stretching to fill it. */
   .week-wheel-detail{ display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-3);
-    margin-top:var(--sp-3); align-items:start; }
+    margin-top:8px; align-items:start; }
   .week-wheel-detail:empty{ display:none; }
   /* Sits under the day it builds, inside the same black. The selects keep their light fill
      — they are inputs, and .form-panel already gives its buttons a light one. */
@@ -5132,6 +5140,15 @@
              always seven, and seeing the shape of it is the whole reason to open this
              view. The board says what is on every day; a tap opens the day. -->
         <div class="skill-board week-board" id="weekBoard"></div>
+        <!-- WHAT'S ON THE TAPPED DAY, RIGHT HERE — NOT IN A POPUP.
+             This used to open a sheet: a full-screen overlay for what is, most of the time,
+             one or two cards. A day's workout isn't a separate task from looking at the week
+             — tapping a day IS how you look at the week, one day at a time — so it belongs as
+             the next thing on the page, not as a box that covers the page to show it. Tapping
+             a different day updates this in place; the board itself still marks which day is
+             open (.here), so there's nothing lost by dropping the sheet's own title bar. -->
+        <div class="week-day-detail-title" id="weekWheelDetailTitle"></div>
+        <div class="week-wheel-detail" id="weekWheelDetail"></div>
       </div>
     </div>
 
@@ -6496,15 +6513,6 @@
   </div>
 </div>
 
-<div class="lift-sheet week-day-sheet" id="weekDaySheet" style="display:none;">
-  <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="weekDaySheetTitle">
-    <div class="lift-sheet-head"><span id="weekDaySheetTitle">Day</span>
-      <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
-    <div class="fields">
-      <div class="week-wheel-detail" id="weekWheelDetail"></div>
-    </div>
-  </div>
-</div>
 
 <div class="lift-sheet skill-sheet" id="skillSheet" style="display:none;">
   <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="skillSheetTitle">
@@ -11748,7 +11756,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.29.661';
+const APP_VERSION = '2026.09.29.662';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12094,6 +12102,7 @@ const APP_NOTES = {
   '2026.09.29.659': 'The Weekly board is a calendar strip now — seven days across with their dates, instead of seven stacked rows. Tap a day the same as before to see and edit what is on it.',
   '2026.09.29.660': 'Weekly is gone as its own tab — the calendar and everything that builds the week now live on Today, below the day itself, so seeing the week and seeing today are one screen instead of two.',
   '2026.09.29.661': 'Tapping a day on the calendar no longer opens its sheet before that day’s own workout has actually loaded into it — a fast enough tap could catch it still showing whichever day was open before.',
+  '2026.09.29.662': 'Tapping a day on the calendar no longer opens a popup for it at all — the day’s workout shows right below the board instead, updating in place as you tap between days.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -18317,10 +18326,6 @@ document.getElementById('clearAllWeekBtn').addEventListener('click', async (e)=>
 });
 
 let activeWheelDayIndex = null; // set to today's index on first render each session
-// Bumped on every calendar tap; a tap's own render checks it against itself after awaiting
-// renderWeekGrid so a slower, now-stale tap can't open the sheet for a day you've since
-// tapped past — see the board's click handler.
-let dayTapToken = 0;
 
 /* NO DOSE ON THE WEEK'S CARDS. There was a blockLineDose here that turned a planned
    exercise into "3×8-12", and every card carried a column of them. Weekly is the view where
@@ -18477,37 +18482,23 @@ function renderWeekBoard(dayBlocks){
     // held from the day you tapped last, correcting itself a moment later once the render
     // actually landed — a day that looked right for an instant and then changed under you,
     // or the wrong day outright if you tapped a second cell before the first render finished.
-    // Awaited now, and dayTapToken guards against exactly that second case: if another tap
-    // lands while this one is still awaiting, this one's render is stale the moment it
-    // resolves, and it must not open a sheet for a day you are no longer pointing at.
-    board.addEventListener('click', async e=>{
+    // Used to await that finishing, then open a sheet with the day's title on it. There is
+    // no sheet any more — the detail pane below the board is always on the page — so a tap
+    // just points the board at the day and re-renders; renderWeekGrid reads
+    // activeWheelDayIndex itself, late, when it actually writes the pane, so two overlapping
+    // taps both end up drawing whichever day was tapped last regardless of which one's
+    // storage reads happen to finish first.
+    board.addEventListener('click', e=>{
       const lane = e.target.closest('.week-lane');
       if(!lane) return;
       activeWheelDayIndex = parseInt(lane.dataset.dayAt, 10) || 0;
-      const myTap = ++dayTapToken;
-      await renderWeekGrid();
-      if(myTap !== dayTapToken) return;
-      openWeekDaySheet();
+      renderWeekGrid();
     });
   }
 }
 
-/* The day, off the board. Opened on a tap and closed the moment you pick a workout out of
-   it: the block editor is a panel further down this same tab, so leaving the sheet up would
-   put the editor behind its own overlay. The sheet is how you choose what to edit, not
-   where you edit it. */
-let weekDaySheet = null;
-function openWeekDaySheet(){
-  if(!weekDaySheet) weekDaySheet = wireSheet('weekDaySheet');
-  const title = document.getElementById('weekDaySheetTitle');
-  const dates = getWeekDates();
-  if(title) title.textContent = WEEK_DAY_FULL[activeWheelDayIndex]
-    + (dates[activeWheelDayIndex] === todayStr ? ' \u00b7 today' : '');
-  weekDaySheet.open();
-}
-function closeWeekDaySheet(){
-  if(weekDaySheet) weekDaySheet.close();
-}
+/* The day, off the board and no longer in a sheet \u2014 see renderWeekGrid, which now writes
+   #weekWheelDetailTitle itself alongside the pane it used to open a sheet to show. */
 
 /* ============ THE BLOCK CHART — ONE CHART, NOT TWO ============
    Weekly used to stack two things that were both about load: a bar strip of planned sets
@@ -18947,11 +18938,16 @@ async function renderWeekGrid(){
   const activeDayData = dayBlocks[activeWheelDayIndex];
   const realBlocks = activeDayData.blocks.filter(b => b.block);
   const detailHtml = weekDayDetailHtml(activeDate, realBlocks, activeDayData.off);
+  // Named here now that it isn't a sheet's own title bar — see #weekWheelDetailTitle.
+  const titleEl = document.getElementById('weekWheelDetailTitle');
+  if(titleEl) titleEl.textContent = WEEK_DAY_FULL[activeWheelDayIndex]
+    + (activeDate === todayStr ? ' · today' : '');
   /* The tallest-day reservation is gone with the pane that needed it. It existed because the
      detail sat on the page under the picker, so a light day next to a heavy one moved the
-     load bars and the buttons below it under your thumb while you were still choosing. In a
-     sheet there is nothing below it to move, and holding a two-lift day open at an eight-lift
-     day's height would just be blank space you have to scroll past. */
+     load bars and the buttons below it under your thumb while you were still choosing. Inline
+     under the board there is nothing below it to move either — the rest of Today's own
+     content comes after it regardless of which day is open — so a two-lift day next to an
+     eight-lift one still costs nothing but its own height. */
   // Only when the pane is actually showing something else — the wheel re-renders on every
   // move, and fading a pane into itself is a flicker, not a transition.
   const detailChanged = detailHtml !== weekDetailLastHtml;
@@ -18962,9 +18958,6 @@ async function renderWeekGrid(){
     card.addEventListener('click', ()=>{
       const { editDate, editSlot } = card.dataset;
       const match = realBlocks.find(b=>b.slot===editSlot);
-      // The editor is a panel further down this same tab, so the sheet has to come down
-      // first or the thing you just asked for opens behind its own overlay.
-      closeWeekDaySheet();
       openBlockEditor(editDate, editSlot, match ? match.block : null);
     });
   });
@@ -18973,7 +18966,6 @@ async function renderWeekGrid(){
     // while the only way here was from an empty day and would have overwritten the morning
     // the moment a second session could be added to a day that already had one.
     card.addEventListener('click', ()=>{
-      closeWeekDaySheet();
       openBlockEditor(card.dataset.addDate, card.dataset.addSlot || 'am', null);
     });
   });
@@ -18985,7 +18977,6 @@ async function renderWeekGrid(){
       for(const slot of ['am','pm']){ try{ await window.storage.delete(`weekplan:${d}:${slot}`); } catch(e){} }
       try{ await window.storage.delete(`planned_session:${d}`); } catch(e){}
       await setDayOff(d, true);
-      closeWeekDaySheet();
       showToast('Nothing will be planned for that day');
       weekDetailLastHtml = '';
       renderWeekGrid();
@@ -18994,7 +18985,6 @@ async function renderWeekGrid(){
   detailCol.querySelectorAll('[data-clear-off]').forEach(card=>{
     card.addEventListener('click', async ()=>{
       await setDayOff(card.dataset.clearOff, false);
-      closeWeekDaySheet();
       showToast('That day is available again');
       weekDetailLastHtml = '';
       renderWeekGrid();
@@ -28602,22 +28592,16 @@ async function applyRestDayShape(){
   if(nextBtn && label){
     nextBtn.hidden = false;
     // Used to switch to the Weekly tab; the calendar is part of this same screen now, above
-    // this plate, so this scrolls up to it instead. Opens the day's own sheet too when `next`
+    // this plate, so this scrolls up to it instead. Points the board at `next` too, when it
     // falls inside the week the board is actually showing — it can fall outside it (the scan
     // above runs seven days ahead regardless of where in the week today sits), in which case
-    // the scroll alone still gets you to the board to find it from there. Awaited before
-    // opening, same reason the board's own tap handler awaits it — renderWeekGrid is what
-    // actually writes the detail pane the sheet shows, and opening before it lands showed
-    // whatever the pane held from whichever day was last open.
-    nextBtn.onclick = async ()=>{
+    // the scroll alone still gets you to the board to find it from there.
+    nextBtn.onclick = ()=>{
       document.getElementById('weekBoard')?.scrollIntoView({ behavior:'smooth', block:'start' });
       const idx = getWeekDates().indexOf(next);
       if(idx >= 0){
         activeWheelDayIndex = idx;
-        const myTap = ++dayTapToken;
-        await renderWeekGrid();
-        if(myTap !== dayTapToken) return;
-        openWeekDaySheet();
+        renderWeekGrid();
       }
     };
   }
