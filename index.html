@@ -2589,65 +2589,53 @@
   .injury-actions{ display:flex; gap:8px; margin-top:10px; }
 
 
-  /* THE WEEK BOARD. Seven lanes, the same component the skill ladders and the mobility
-     domains are drawn with — the day, then what is planned on it. The three-row day picker
-     that stood here is gone; see renderWeekBoard for why a wheel was the wrong control for a
-     list that is always exactly seven long.
-
-     Two columns rather than the skills' three: a week has no rung count to sit in the middle,
-     and 96px is what "WEDNESDAY" needs at the lane's 11px mono. align-items:start because a
-     day can hold two sessions and they stack, so the day name lines up with the first of them
-     rather than floating between the pair. */
-  /* The 8px left padding is on EVERY lane, not just the marked one. .skill-lane.here adds it
-     to make room for its own rule, which is right on a board where one row of thirteen is
-     selected and wrong on one where all seven are always visible: the day you last opened
-     would sit 8px in from the other six and read as a wobble rather than a mark. Paid once by
-     all of them, and .here draws its rule into space that is already there. */
-  .week-lane{ grid-template-columns:96px 1fr; align-items:start; padding:9px 0 9px 8px; }
-  .week-lane .skill-lane-name{ padding-top:1px; }
-  .wk-sessions{ display:flex; flex-direction:column; gap:3px; min-width:0; }
-  /* Type then detail, the type carrying the weight because it is what you scan the column
-     for. Both ellipsise: two sessions share this width with nothing, and "Push / Pull /
-     Legs" against a 5km easy run is the case that overruns. */
-  .wk-sess{ display:flex; gap:7px; min-width:0; font-size:var(--fs-tag);
-    color:rgba(var(--ink-rgb),0.58); overflow:hidden; }
-  .wk-sess b{ flex:none; font-weight:var(--fw-bold); text-transform:uppercase;
-    letter-spacing:0.04em; color:var(--bg); }
-  /* Which half of the day. A fixed 20px so the types line up down the column whether a day
-     has one session or two — that column of aligned words is what makes seven rows read as a
-     board. NOT the old .wk-line's opacity:0.45: that sat on its own colour, and stacked on
-     .wk-sess's 0.58 it would come out at an effective 0.26. It takes the same 0.58 the detail
-     does and lets the type, which is full ink, carry the emphasis on its own. */
-  .wk-slot{ flex:0 0 20px; font-style:normal; text-transform:uppercase;
-    letter-spacing:0.04em; color:rgba(var(--ink-rgb),0.58); }
-  /* On the sheet's cards the head is full ink, so the slot steps back from it rather than
-     from the quiet column it steps back from on the board. The head is space-between, which
-     with a third item pushed the slot hard left and stranded the type in the middle of the
-     card — the chevron takes the auto margin instead, so "AM STRENGTH" stays one label. */
-  .wheel-workout-type .wk-slot{ flex:none; margin-right:7px; }
-  .wheel-workout-type{ justify-content:flex-start; }
-  .wheel-workout-chevron{ margin-left:auto; }
-  .wk-sess-detail{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  /* A day you marked off, rather than one the generator has not filled. Italic and nothing
-     else: 0.58 is the floor these quiet columns sit on (6.61 dark, 4.72 bone) and the 0.75
-     opacity this had first took it to an effective 0.435 — 4.38 and 3.09, under on both
-     grounds. The slant is the whole distinction it needs. */
-  .wk-off{ font-style:italic; }
-  /* And a day the generator left clear on purpose. Distinguished by what it HASN'T got --
-     no am/pm marker, no bold type name -- plus a little tracking, which is the whole of it.
-     Deliberately not dimmed and deliberately not italic: opacity would drop it under the same
-     0.58 floor the note above works out, and the slant already means "you marked this off",
-     which is a different statement from "the plan rests here". */
-  .wk-rest{ letter-spacing:0.08em; }
-  /* Today, on a board where every day is visible at once. The wheel could put today in the
-     focused row and be done; a board has to say which of the seven it is.
-     --hue-faded, NOT --band. The band is a FILL everywhere else in the app — a section head
-     pill with dark ink on it — and it is the same hue on both grounds because a fill does not
-     have to follow the ground. As text it does: #e4be3a on bone is 1.67:1, unreadable.
-     --hue-faded is the app's answer to exactly this, the tab's hue on the dark ground and
-     plain ink on the bone one, which is what every wheel in here used to read. On bone that
-     leaves the bullet after the name doing the marking, which is what it is for. */
-  .week-lane.today .skill-lane-name{ color:var(--hue-faded); }
+  /* THE WEEK BOARD, AS A WEEK. Seven stacked rows read as a list you scan top to bottom; a
+     week is not a list, it is seven days that share a shape — the same weekday names, one
+     after another, a today somewhere among them — and a calendar strip says that at a glance
+     instead of making you read down a column to find your place in it. The tap-a-day,
+     .here-marks-the-open-one, .today-marks-the-date logic carries over unchanged from the row
+     board (see renderWeekBoard); only the seven rows become seven columns.
+     #weekBoard directly, not a class: the element has one ID already and this replaces the
+     row layout rather than sitting beside it. */
+  #weekBoard{ display:grid; grid-template-columns:repeat(7, 1fr); gap:3px; margin-bottom:10px; }
+  /* Each cell keeps .skill-lane's font, colour and cursor and drops its row grid for a stack:
+     weekday, date, then what is on it. Centred rather than left-aligned — a row of six-day
+     names had somewhere to run to on the right; a 44px column does not. */
+  #weekBoard .week-lane{ display:flex; flex-direction:column; align-items:center;
+    grid-template-columns:none; gap:3px; padding:8px 2px 7px; text-align:center; }
+  #weekBoard .week-lane .skill-lane-name{ padding-top:0; font-size:9.5px; opacity:0.58; }
+  /* The date number carries the emphasis, not the weekday letters beside it — the letters say
+     which of seven, the position in the row already says that; the number says which one. */
+  .week-cal-date{ font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold); }
+  /* Today, on a board where every day is visible at once. --hue-faded, NOT --band: the band is
+     a FILL everywhere else in the app and does not have to follow the ground; the date number
+     is text and does — #e4be3a on bone is 1.67:1, unreadable. --hue-faded is the app's answer
+     to exactly that, the tab's hue on the dark ground and plain ink on the bone one. */
+  .week-lane.today .week-cal-date{ color:var(--hue-faded); }
+  /* .here loses the left rule the row board drew it with — 2px inset on a 44px column reads as
+     a stray mark rather than an edge a whole row had space to carry. A fill plus a rule under
+     the cell instead: seven cells are small enough that a fill is the difference between
+     noticing which one is open and not, the way it never needed to be down a column of seven
+     full-width rows. */
+  #weekBoard .week-lane.here{ background:rgba(var(--ink-rgb),0.12); border-radius:4px;
+    box-shadow:inset 0 -2px 0 var(--bg); }
+  /* What is on the day, now a row of glyphs instead of a sentence. A 96px row had room for
+     "STRENGTH" and a detail beside it; a 44px column does not, and the detail is one tap away
+     on the same sheet that already opens — nothing here is information the row said that the
+     tap-through does not still say. Each session becomes the letter its type starts with, the
+     same abbreviation this app already reaches for at this size (BW, FAIL, AM/PM) rather than
+     a colour code the rest of the app does not use anywhere else. */
+  .week-cal-marks{ display:flex; gap:2px; min-height:13px; }
+  .week-cal-mark{ font-family:var(--mono); font-size:9px; font-weight:var(--fw-bold);
+    line-height:13px; width:13px; height:13px; border-radius:2px; text-align:center;
+    color:var(--ground); background:var(--bg); }
+  /* Off and rest keep the distinction the row version drew in words — a decision you took,
+     against one the generator took — as the same italic/tracked pair the row used, just on a
+     bare glyph now instead of a whole word, and without the fill: there is no type to badge. */
+  .week-cal-mark.off{ font-style:italic; font-weight:var(--fw-normal); background:none;
+    color:rgba(var(--ink-rgb),0.58); }
+  .week-cal-mark.rest{ font-weight:var(--fw-normal); letter-spacing:0.04em; background:none;
+    color:rgba(var(--ink-rgb),0.4); }
   /* The day's workouts, one either side of the page. Two is the most a day can hold — the
      plan has an am slot and a pm slot — so they sit as a pair rather than a stack, and a
      day with one leaves the other half empty rather than stretching to fill it. */
@@ -9865,7 +9853,9 @@ function firstLight(picker){
   try{ if(localStorage.getItem(FIRST_LIGHT_KEY) === '1') return; } catch(e){ return; }
   const days = [...picker.querySelectorAll('.week-lane')];
   // Nothing to announce until there is a week to announce — an empty board is not a plan.
-  if(!days.some(d => d.querySelector('.wk-sess'))) return;
+  // .week-cal-mark covers a session, an off day and a rest day alike, same as .wk-sess did
+  // before the board became a calendar grid — see renderWeekBoard.
+  if(!days.some(d => d.querySelector('.week-cal-mark'))) return;
   try{ localStorage.setItem(FIRST_LIGHT_KEY, '1'); } catch(e){}
   days.forEach((d, i)=>{
     uiPlay(d, [{ opacity:0, transform:'translateY(6px)' },
@@ -11722,7 +11712,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.29.658';
+const APP_VERSION = '2026.09.29.659';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12065,6 +12055,7 @@ const APP_NOTES = {
   '2026.09.27.656': 'When a week could not fit every planned session, dropping the overflow no longer defaults to keeping strength and losing running \u2014 a tie in stress weight now splits the risk between the two instead of always going strength\u2019s way.',
   '2026.09.27.657': 'A week that drops every run (or every lift) because there was not enough clear room for both now says so, the same way it already does when the plan itself rounded one to zero.',
   '2026.09.29.658': 'A planned number in the log sheet now selects itself the moment you tap into the box, so typing a real reading replaces it instead of making you backspace it out first.',
+  '2026.09.29.659': 'The Weekly board is a calendar strip now — seven days across with their dates, instead of seven stacked rows. Tap a day the same as before to see and edit what is on it.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -18104,6 +18095,8 @@ function logDateWords(ds){
    widening WEEK_DAY_LABELS: the other three callers ARE tight rows — the week review's day
    column, a toast, and the missed-days line — where MON is the right answer. */
 const WEEK_DAY_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+// The letter a session's type reduces to on the calendar board — see renderWeekBoard.
+const WEEK_CAL_MARK_LETTER = { strength:'S', run:'R', mobility:'M' };
 
 // Provisional — within Bell et al.'s 40-60% cut range, same "flagged not fabricated"
 // treatment as every other constant in this app.
@@ -18366,27 +18359,15 @@ function weekDayDetailHtml(date, realBlocks, isOff){
   }).join('') + addStrip;
 }
 
-/* What the plan actually records for a session, in one line. Lifted out of
-   renderWeekSessionList, which said exactly this in a collapsed drawer further down the tab
-   while the picker above it was showing one day at a time — the board says it where the week
-   is, so the drawer's copy is gone. No reconstructed reasoning: only what is stored. */
-function weekBlockDetailText(block){
-  const d = (block && block.details) || {};
-  if(!block) return '';
-  // full_body, upper_lower, push — stored as keys, read as words. The same underscore swap
-  // the session symbol falls back to.
-  if(block.type === 'strength') return String(d.workoutTag || d.plannedFocus || '').replace(/_/g, ' ');
-  if(block.type === 'run') return [d.runType, d.distanceKm ? d.distanceKm + 'km' : ''].filter(Boolean).join(' ');
-  return (d.stretches || []).length ? (d.stretches.length + ' stretches') : '';
-}
+/* SEVEN CELLS, THE SAME .skill-lane COMPONENT THE SKILLS AND THE MOBILITY TEST USE — laid out
+   as a calendar strip instead of the stacked rows that component usually draws (see the
+   #weekBoard rules that reshape .week-lane into a column-flex cell).
 
-/* SEVEN LANES, THE SAME BOARD THE SKILLS AND THE MOBILITY TEST USE.
-
-   The wheel this replaces was the right control for a long list you move through and the
+   The wheel this replaced first was the right control for a long list you move through and the
    wrong one for a week: seven is not a long list, it never changes length, and "what is on
-   this week" is a question about all seven at once. It answered it three days at a time, and
-   the answer for the other four was a single letter in the margin of the two neighbours you
-   could see.
+   this week" is a question about all seven at once. Rows answered that at full width, one day
+   per line; a calendar strip answers it the way every calendar answers it — seven days across,
+   in the order and shape a week actually has, with today somewhere in the middle of them.
 
    Every day is on screen with what is planned on it. Today is marked. A tap opens the day. */
 function renderWeekBoard(dayBlocks){
@@ -18403,18 +18384,17 @@ function renderWeekBoard(dayBlocks){
     const day = (dayBlocks && dayBlocks[i]) || { blocks:[], off:false };
     const blocks = (day.blocks || []).filter(b=>b.block);
     const here = i === activeWheelDayIndex;
-    /* AM / PM ON EVERY SESSION, NOT JUST THE DOUBLED DAYS. A day holds two slots and which
-       one a workout sits in is the difference between a workout before work and one after it.
-       The only place that ever said so was the week list under "Why this week", which .451
-       deleted as a duplicate of this board — correctly, except that this board was not
-       carrying the one column that list had and it did not. Shown on single-session days too:
-       it is the same question there, and a marker that appears only sometimes reads as a flag
-       on the day rather than as a column you can run your eye down. */
-    const sessions = blocks.map(({slot, block})=>{
-      const detail = weekBlockDetailText(block);
-      return `<span class="wk-sess"><i class="wk-slot">${slot}</i><b>${block.type}</b>`
-        + (detail ? `<span class="wk-sess-detail">${detail}</span>` : '') + `</span>`;
-    }).join('');
+    /* ONE GLYPH PER SESSION, THE LETTER ITS TYPE STARTS WITH. A 96px row had room to spell
+       "strength" and the tag beside it (workoutTag, distance, stretch count); a 44px calendar
+       cell does not, and that detail is one tap away on the day sheet this board has always
+       opened (weekDayDetailHtml, via extractBlockLines) — weekBlockDetailText existed only to
+       say the same thing here and is gone with the row it was written for. AM/PM lives in the
+       glyph's title rather than beside it for the same reason — a hover/long-press label costs
+       no width, a visible marker would. */
+    const sessions = blocks.map(({slot, block})=>
+      `<span class="week-cal-mark" title="${slot === 'am' ? 'morning' : 'evening'} ${block.type}">`
+      + `${WEEK_CAL_MARK_LETTER[block.type] || '?'}</span>`
+    ).join('');
     /* A day you MARKED off says so; that is a decision you took. A rest day is a decision too
        -- the generator's -- and it used to draw blank, on the reasoning that an empty row is
        already legible as nothing planned and the word would be printed four times down a
@@ -18427,10 +18407,10 @@ function renderWeekBoard(dayBlocks){
        programmed: with no plan at all, an empty day really is nothing planned, and that is
        still what it says. */
     const rest = !day.off && !blocks.length && programmed;
-    const body = day.off
-      ? `<span class="wk-sess wk-off">not training</span>`
+    const marks = day.off
+      ? `<span class="week-cal-mark off" title="not training">\u00d7</span>`
       : rest
-      ? `<span class="wk-sess wk-rest">rest</span>`
+      ? `<span class="week-cal-mark rest" title="rest day">\u2013</span>`
       : sessions;
     const said = day.off ? 'not training'
       : blocks.length ? blocks.map(b=>`${b.slot === 'am' ? 'morning' : 'evening'} ${b.block.type}`).join(', ')
@@ -18438,8 +18418,9 @@ function renderWeekBoard(dayBlocks){
       : 'nothing planned';
     return `<button type="button" class="skill-lane week-lane${here ? ' here' : ''}${date === todayStr ? ' today' : ''}"
         data-day-at="${i}" aria-label="${WEEK_DAY_FULL[i]}${date === todayStr ? ', today' : ''}, ${said}">
-      <span class="skill-lane-name">${WEEK_DAY_FULL[i]}${date === todayStr ? ' \u2022' : ''}</span>
-      <span class="wk-sessions">${body}</span></button>`;
+      <span class="skill-lane-name">${WEEKDAY_NAMES[i]}</span>
+      <span class="week-cal-date">${localDateFrom(date).getDate()}</span>
+      <span class="week-cal-marks">${marks}</span></button>`;
   }).join('');
   firstLight(board);
   const pos = document.getElementById('weekBlockPos');

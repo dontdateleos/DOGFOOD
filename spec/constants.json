@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.27.657",
+ "generatedFrom": "2026.09.29.658",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1094,7 +1094,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.09.27.657",
+  "APP_VERSION": "2026.09.29.658",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1418,6 +1418,7 @@
    "2026.09.27.655": "“Why this week” now explains the week you are actually looking at, not just the one you generated from.",
    "2026.09.27.656": "When a week could not fit every planned session, dropping the overflow no longer defaults to keeping strength and losing running — a tie in stress weight now splits the risk between the two instead of always going strength’s way.",
    "2026.09.27.657": "A week that drops every run (or every lift) because there was not enough clear room for both now says so, the same way it already does when the plan itself rounded one to zero.",
+   "2026.09.29.658": "A planned number in the log sheet now selects itself the moment you tap into the box, so typing a real reading replaces it instead of making you backspace it out first.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
@@ -1962,6 +1963,11 @@
    "Saturday",
    "Sunday"
   ],
+  "WEEK_CAL_MARK_LETTER": {
+   "strength": "S",
+   "run": "R",
+   "mobility": "M"
+  },
   "DELOAD_CUT": 0.5,
   "SCORE_PLACEHOLDER_SVG": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\"><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"22\"/><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"/><line x1=\"4.5\" y1=\"4.5\" x2=\"19.5\" y2=\"19.5\"/><line x1=\"19.5\" y1=\"4.5\" x2=\"4.5\" y2=\"19.5\"/></svg>",
   "WEEK_LOAD_UNITS": [
