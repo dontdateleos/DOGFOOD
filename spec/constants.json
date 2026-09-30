@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.29.662",
+ "generatedFrom": "2026.09.29.663",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1092,7 +1092,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.09.29.662",
+  "APP_VERSION": "2026.09.29.663",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1421,6 +1421,7 @@
    "2026.09.29.660": "Weekly is gone as its own tab — the calendar and everything that builds the week now live on Today, below the day itself, so seeing the week and seeing today are one screen instead of two.",
    "2026.09.29.661": "Tapping a day on the calendar no longer opens its sheet before that day’s own workout has actually loaded into it — a fast enough tap could catch it still showing whichever day was open before.",
    "2026.09.29.662": "Tapping a day on the calendar no longer opens a popup for it at all — the day’s workout shows right below the board instead, updating in place as you tap between days.",
+   "2026.09.29.663": "\"Plan the week\" — goals, split, deload, Generate and the rest — is a single button that opens a sheet now, instead of a whole section always sitting open on the page.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",

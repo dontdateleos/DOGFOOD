@@ -5328,77 +5328,86 @@
        that closes the footer on #whyWeekGroup) and the code that renders into these exact
        element ids don't need to know or care that their parent panel changed. -->
   <div id="weeklyTrainingView">
-      <!-- Retitled now that the calendar it used to open with lives at the top of the panel
-           instead — this group is only the controls that BUILD the week. Same black band the
-           mobility assessment takes on the Body tab. Carries an id now: it's what "plan it by
-           hand" scrolls to when a generate fails, since that's this same screen now rather
-           than a tab switch away. -->
-      <div class="group form-panel" id="planTheWeekGroup">
-        <div class="group-head"><div class="group-title">Plan the week</div><div class="group-sub">goals, split, how many weeks, deload</div></div>
-        <div class="fields">
-          <!-- What builds the week, then the shape it built. Generate used to sit under the
-               chart, which put the control after its own output — you read the block, then
-               scrolled past it to find the thing that makes one. -->
-          <!-- GOALS SIT WITH THE THING THEY FEED, NOT IN A SECTION OF THEIR OWN.
-               Generate builds the week FROM the goals, so the goals belong on the same row of
-               controls rather than as a numbered section further down that you had to know to
-               unfold. What is left on the page is the answer — which goals are set — and a way
-               in; the setting of them is a sheet, because it is a job you do and finish rather
-               than something the page has to keep showing. -->
-          <!-- WHAT BUILDS THE WEEK, AS ONE LIST AND ONE ACTION ROW.
+      <!-- A BUTTON NOW, NOT A SECTION. This used to sit here as a full group — goals, split,
+           weeks, deload, unavailable dates, five buttons — permanently taking the height of
+           all of it whether or not you were touching any of it today. These are setup: things
+           you visit to change a plan, not things you read on the way past. Goals already knew
+           this (it was a sheet before this group existed), so the rest joins it in one instead
+           of being the one inline holdout in a panel where everything else that isn't daily
+           content already opens on demand. planWeekOpenBtn carries the id "plan it by hand"
+           opens when a generate fails, since that used to mean scrolling to a group and now
+           means opening the sheet that replaced it. -->
+      <button type="button" class="small outline" id="planWeekOpenBtn" style="margin:var(--sp-3) 0;">Plan the week</button>
+      <!-- Same markup that used to sit inline, in a sheet instead of a section — the pattern
+           #goalSheet already used, and every id inside is spoken to from the same places it
+           always was (renderWeekGrid, restorePlanSummary, the Generate handler and the rest),
+           so nothing downstream needed to change for the move. -->
+      <div class="lift-sheet plan-week-sheet" id="planWeekSheet" style="display:none;">
+        <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Plan the week">
+          <div class="lift-sheet-head"><span>Plan the week</span>
+            <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
+          <div class="fields">
+            <!-- GOALS SIT WITH THE THING THEY FEED, NOT IN A SECTION OF THEIR OWN.
+                 Generate builds the week FROM the goals, so the goals belong on the same row of
+                 controls rather than as a numbered section further down that you had to know to
+                 unfold. What is left on the page is the answer — which goals are set — and a way
+                 in; the setting of them is a sheet, because it is a job you do and finish rather
+                 than something the page has to keep showing. -->
+            <!-- WHAT BUILDS THE WEEK, AS ONE LIST AND ONE ACTION ROW.
 
-               This was three rows that shared nothing but a right edge: a readout with an
-               outline button, two filled selects with a filled button, and a checkbox with
-               another outline button. Four species of thing, three alignments, and the two
-               selects — inputs, so they take the light fill — ended up the loudest elements
-               in the panel, louder than Generate, which is the only thing here that does
-               anything.
+                 This was three rows that shared nothing but a right edge: a readout with an
+                 outline button, two filled selects with a filled button, and a checkbox with
+                 another outline button. Four species of thing, three alignments, and the two
+                 selects — inputs, so they take the light fill — ended up the loudest elements
+                 in the panel, louder than Generate, which is the only thing here that does
+                 anything.
 
-               One label column now, one control column, and the two actions together at the
-               end where actions go. Every row reads the same way: what it is on the left,
-               what it is set to on the right. -->
-          <div class="week-setup">
-            <button type="button" class="week-setup-row week-setup-go" id="updateGoalsBtn">
-              <span class="week-setup-label">Goals</span>
-              <span class="week-setup-val" id="weekGoalsSummary"></span>
-              <span class="week-setup-chev" aria-hidden="true">&rsaquo;</span>
-            </button>
-            <div class="week-setup-row">
-              <span class="week-setup-label">Split</span>
-              <select id="programSplitOverride" aria-label="Training split">
-                <option value="auto">Recommended</option>
-                <option value="full_body">Full Body</option>
-                <option value="upper_lower">Upper / Lower</option>
-                <option value="ppl">Push / Pull / Legs</option>
-              </select>
+                 One label column now, one control column, and the two actions together at the
+                 end where actions go. Every row reads the same way: what it is on the left,
+                 what it is set to on the right. -->
+            <div class="week-setup">
+              <button type="button" class="week-setup-row week-setup-go" id="updateGoalsBtn">
+                <span class="week-setup-label">Goals</span>
+                <span class="week-setup-val" id="weekGoalsSummary"></span>
+                <span class="week-setup-chev" aria-hidden="true">&rsaquo;</span>
+              </button>
+              <div class="week-setup-row">
+                <span class="week-setup-label">Split</span>
+                <select id="programSplitOverride" aria-label="Training split">
+                  <option value="auto">Recommended</option>
+                  <option value="full_body">Full Body</option>
+                  <option value="upper_lower">Upper / Lower</option>
+                  <option value="ppl">Push / Pull / Legs</option>
+                </select>
+              </div>
+              <div class="week-setup-row">
+                <span class="week-setup-label">Weeks</span>
+                <select id="programWeeksSelect" aria-label="How many weeks to generate">
+                  <option value="1">1 week</option>
+                  <option value="4">4 weeks</option>
+                  <option value="8">8 weeks</option>
+                </select>
+              </div>
+              <!-- Deload sits with the other controls that shape the week rather than below the
+                   chart that reports on it: generate it, mark it, clear it, then read what came
+                   out. The chart ends the panel because it is the readout, not an input. -->
+              <label class="week-setup-row" for="deloadWeekCheckbox">
+                <span class="week-setup-label">Deload</span>
+                <span class="week-setup-val">~50% volume<span id="deloadSuggestedBadge">Suggested</span></span>
+                <input type="checkbox" id="deloadWeekCheckbox">
+              </label>
+              <div class="week-setup-row"><span class="week-setup-label">Unavailable</span><input type="date" id="unavailableDateInput" aria-label="Date you are unavailable"><button type="button" class="small outline" id="addUnavailableDateBtn">Add</button></div>
+              <div id="unavailableDatesList" class="score-note"></div>
             </div>
-            <div class="week-setup-row">
-              <span class="week-setup-label">Weeks</span>
-              <select id="programWeeksSelect" aria-label="How many weeks to generate">
-                <option value="1">1 week</option>
-                <option value="4">4 weeks</option>
-                <option value="8">8 weeks</option>
-              </select>
+            <div class="week-actions">
+              <button id="changeTrainingSetupBtn" class="small outline">Change setup</button>
+              <button id="generateProgramFromGoalsBtn" class="small">Generate</button>
+              <button class="small outline" id="clearAllWeekBtn">Clear all</button>
             </div>
-            <!-- Deload sits with the other controls that shape the week rather than below the
-                 chart that reports on it: generate it, mark it, clear it, then read what came
-                 out. The chart ends the panel because it is the readout, not an input. -->
-            <label class="week-setup-row" for="deloadWeekCheckbox">
-              <span class="week-setup-label">Deload</span>
-              <span class="week-setup-val">~50% volume<span id="deloadSuggestedBadge">Suggested</span></span>
-              <input type="checkbox" id="deloadWeekCheckbox">
-            </label>
-            <div class="week-setup-row"><span class="week-setup-label">Unavailable</span><input type="date" id="unavailableDateInput" aria-label="Date you are unavailable"><button type="button" class="small outline" id="addUnavailableDateBtn">Add</button></div>
-            <div id="unavailableDatesList" class="score-note"></div>
+            <div class="week-actions"><button type="button" class="small outline" id="exportCalendarBtn">Export calendar</button><button type="button" class="small outline" id="rebalanceWeekBtn">Rebalance week</button></div>
+            <button type="button" id="undoWeekChangeBtn" class="small outline" style="display:none; margin-top:8px;">Undo last change</button>
+            <div id="deloadSuggestedNote" class="score-note note-live" style="display:none;"></div>
           </div>
-          <div class="week-actions">
-            <button id="changeTrainingSetupBtn" class="small outline">Change setup</button>
-            <button id="generateProgramFromGoalsBtn" class="small">Generate</button>
-            <button class="small outline" id="clearAllWeekBtn">Clear all</button>
-          </div>
-          <div class="week-actions"><button type="button" class="small outline" id="exportCalendarBtn">Export calendar</button><button type="button" class="small outline" id="rebalanceWeekBtn">Rebalance week</button></div>
-          <button type="button" id="undoWeekChangeBtn" class="small outline" style="display:none; margin-top:8px;">Undo last change</button>
-          <div id="deloadSuggestedNote" class="score-note note-live" style="display:none;"></div>
         </div>
       </div>
       <!-- Its own section, with a title. It sat inside the Week panel as an untitled strip
@@ -11756,7 +11765,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.29.662';
+const APP_VERSION = '2026.09.29.663';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12103,6 +12112,7 @@ const APP_NOTES = {
   '2026.09.29.660': 'Weekly is gone as its own tab — the calendar and everything that builds the week now live on Today, below the day itself, so seeing the week and seeing today are one screen instead of two.',
   '2026.09.29.661': 'Tapping a day on the calendar no longer opens its sheet before that day’s own workout has actually loaded into it — a fast enough tap could catch it still showing whichever day was open before.',
   '2026.09.29.662': 'Tapping a day on the calendar no longer opens a popup for it at all — the day’s workout shows right below the board instead, updating in place as you tap between days.',
+  '2026.09.29.663': '"Plan the week" — goals, split, deload, Generate and the rest — is a single button that opens a sheet now, instead of a whole section always sitting open on the page.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -24943,14 +24953,29 @@ function wireSheet(id, onClose){
   return api;
 }
 
+/* Plan the week: goals, split, weeks, deload, unavailable dates, Generate and the rest —
+   moved from an always-open group to a sheet, the same reasoning #goalSheet already had. No
+   reload on open for the same reason Goals doesn't: the controls are already in the DOM with
+   whatever they were last set to, and renderWeekGrid keeps the deload badge/unavailable list
+   current independently of whether this sheet happens to be open. */
+const planWeekSheet = wireSheet('planWeekSheet');
+document.getElementById('planWeekOpenBtn')?.addEventListener('click', ()=> planWeekSheet.open());
+
 /* Goals. It does not reload on open: the rows are already in the DOM and loadCurrentGoals
    keeps them current from both tabs that render them, so a reload would do nothing except
-   throw away edits you had not saved when you closed it by mistake. */
-const goalSheet = wireSheet('goalSheet');
+   throw away edits you had not saved when you closed it by mistake.
+   updateGoalsBtn lives inside planWeekSheet now, and this app doesn't stack a second
+   .lift-sheet over a first — see the near-identical call on the goal sheet's own two-pane
+   list/edit swap, which exists for exactly that reason. planWeekSheet steps aside instead
+   and comes back once goals closes, whichever way it closes: save, the ×, a background tap
+   and Escape all end up going through the sheet's own close(), which is what onClose here
+   actually fires on. */
+const goalSheet = wireSheet('goalSheet', ()=> planWeekSheet.open());
 const updateGoalsBtn = document.getElementById('updateGoalsBtn');
 if(updateGoalsBtn) updateGoalsBtn.addEventListener('click', ()=>{
   const r = document.getElementById('saveGoalsResult');
   if(r) r.textContent = '';
+  planWeekSheet.close();
   goalSheet.open();
 });
 document.getElementById('saveGoalsBtn').addEventListener('click', async ()=>{
@@ -28732,10 +28757,11 @@ async function wireRestDayBuild(){
       await renderWeekGrid();
       if(err){
         /* The same answer first run gives when the generator comes back empty: say so and
-           scroll to where a week can be built by hand, rather than leaving the button looking
-           like it did nothing. Used to switch to the Weekly tab; it's the same screen now. */
-        showToast('Could not fill the week — plan it by hand below', true);
-        document.getElementById('planTheWeekGroup')?.scrollIntoView({ behavior:'smooth', block:'start' });
+           open where a week can be built by hand, rather than leaving the button looking like
+           it did nothing. Used to switch to the Weekly tab, then to scroll to an inline group;
+           the group is a sheet now, so this opens it directly. */
+        showToast('Could not fill the week — plan it by hand', true);
+        planWeekSheet.open();
         return;
       }
       showToast('Week built');
@@ -28949,9 +28975,10 @@ function firstRunSpread(n){
       if(err){
         // The setup and the goal are saved either way — being unable to fill the week is not
         // a reason to make someone answer the three questions again. Used to switch to the
-        // Weekly tab; it's the same screen now, so this scrolls to it instead.
-        out.textContent = 'Saved, but the week came back empty. Plan it by hand below.';
-        document.getElementById('planTheWeekGroup')?.scrollIntoView({ behavior:'smooth', block:'start' });
+        // Weekly tab, then to scroll to an inline group; the group is a sheet now, so this
+        // opens it directly.
+        out.textContent = 'Saved, but the week came back empty. Plan it by hand.';
+        planWeekSheet.open();
       } else {
         out.textContent = '';
         showToast('Week built');
