@@ -11748,7 +11748,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.29.660';
+const APP_VERSION = '2026.09.29.661';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12093,6 +12093,7 @@ const APP_NOTES = {
   '2026.09.29.658': 'A planned number in the log sheet now selects itself the moment you tap into the box, so typing a real reading replaces it instead of making you backspace it out first.',
   '2026.09.29.659': 'The Weekly board is a calendar strip now — seven days across with their dates, instead of seven stacked rows. Tap a day the same as before to see and edit what is on it.',
   '2026.09.29.660': 'Weekly is gone as its own tab — the calendar and everything that builds the week now live on Today, below the day itself, so seeing the week and seeing today are one screen instead of two.',
+  '2026.09.29.661': 'Tapping a day on the calendar no longer opens its sheet before that day’s own workout has actually loaded into it — a fast enough tap could catch it still showing whichever day was open before.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -18316,6 +18317,10 @@ document.getElementById('clearAllWeekBtn').addEventListener('click', async (e)=>
 });
 
 let activeWheelDayIndex = null; // set to today's index on first render each session
+// Bumped on every calendar tap; a tap's own render checks it against itself after awaiting
+// renderWeekGrid so a slower, now-stale tap can't open the sheet for a day you've since
+// tapped past — see the board's click handler.
+let dayTapToken = 0;
 
 /* NO DOSE ON THE WEEK'S CARDS. There was a blockLineDose here that turned a planned
    exercise into "3×8-12", and every card carried a column of them. Weekly is the view where
@@ -18466,11 +18471,22 @@ function renderWeekBoard(dayBlocks){
   if(pos) pos.textContent = wheelBlockPos ? `${wheelBlockPos.weekInBlock} of ${wheelBlockPos.length}` : '';
   if(!board.dataset.bound){
     board.dataset.bound = '1';
-    board.addEventListener('click', e=>{
+    // renderWeekGrid is async — it re-reads all seven days' storage before it writes the
+    // detail pane the sheet is about to show. Opening the sheet right after CALLING it
+    // rather than after it FINISHES meant the sheet came up showing whatever the pane still
+    // held from the day you tapped last, correcting itself a moment later once the render
+    // actually landed — a day that looked right for an instant and then changed under you,
+    // or the wrong day outright if you tapped a second cell before the first render finished.
+    // Awaited now, and dayTapToken guards against exactly that second case: if another tap
+    // lands while this one is still awaiting, this one's render is stale the moment it
+    // resolves, and it must not open a sheet for a day you are no longer pointing at.
+    board.addEventListener('click', async e=>{
       const lane = e.target.closest('.week-lane');
       if(!lane) return;
       activeWheelDayIndex = parseInt(lane.dataset.dayAt, 10) || 0;
-      renderWeekGrid();
+      const myTap = ++dayTapToken;
+      await renderWeekGrid();
+      if(myTap !== dayTapToken) return;
       openWeekDaySheet();
     });
   }
@@ -28589,13 +28605,18 @@ async function applyRestDayShape(){
     // this plate, so this scrolls up to it instead. Opens the day's own sheet too when `next`
     // falls inside the week the board is actually showing — it can fall outside it (the scan
     // above runs seven days ahead regardless of where in the week today sits), in which case
-    // the scroll alone still gets you to the board to find it from there.
-    nextBtn.onclick = ()=>{
+    // the scroll alone still gets you to the board to find it from there. Awaited before
+    // opening, same reason the board's own tap handler awaits it — renderWeekGrid is what
+    // actually writes the detail pane the sheet shows, and opening before it lands showed
+    // whatever the pane held from whichever day was last open.
+    nextBtn.onclick = async ()=>{
       document.getElementById('weekBoard')?.scrollIntoView({ behavior:'smooth', block:'start' });
       const idx = getWeekDates().indexOf(next);
       if(idx >= 0){
         activeWheelDayIndex = idx;
-        renderWeekGrid();
+        const myTap = ++dayTapToken;
+        await renderWeekGrid();
+        if(myTap !== dayTapToken) return;
         openWeekDaySheet();
       }
     };
