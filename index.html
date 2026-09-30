@@ -662,30 +662,32 @@
      Same reason .header-date is scoped that way a few rules up. */
   /* CENTRED, AND BENT. It sat in the right corner as a flat row, which put it under the date
      and made the corner carry two things. In the middle it belongs to the bar rather than to
-     either end, and the bend is what stops a centred row of five dashes reading as a rule.
+     either end, and the bend is what stops a centred row of dashes reading as a rule.
 
-     The arc is real geometry rather than five guessed angles: a circle through the ends and
-     the middle, sagitta 8 over the 150px the row spans, which is a radius of 355.6 and puts
-     the outer pair at 10.04 degrees and the inner pair at 5. Shallow on purpose — the ask was
-     a lower angle than a semicircle, and at this width anything deeper stops being a row of
-     ticks and becomes a bowl. 13 was tried first and read as too much bend for five short
-     dashes; the sagitta is the one number to change if it ever wants more or less.
+     The arc is real geometry rather than guessed angles: a circle through the row's own tick
+     centres, sagitta 8 over the 150px the row spans, which is a radius of 355.6. Four ticks
+     now, not five (Weekly merged into Today) — recomputed from the same construction rather
+     than dropping one angle and leaving the rest: with 150px, four ticks and the same 5px
+     gaps, the centres sit at ±19.375 and ±58.125 from the middle, which puts the inner pair
+     at 3.13 degrees and the outer pair at 9.41. Nothing here is hand-picked; the sagitta is
+     still the one number to change for more or less bend, and the four angles follow from it.
 
      It arches rather than dips, and that is the direction with the room in it: dipping puts
      the outer ticks UP toward the wordmark's line box while arching sends them down into
      empty bar. Flip the sign on both the rotate and the translate to swap it.
 
-     Each tick is offset so the arc balances on the line the flat row used to sit on, which is
-     why the middle rises 2.73 rather than the ends dropping 5.46: the bar keeps its height.
+     Each tick is offset so the arc balances on the line the flat row used to sit on — with an
+     even count there is no dead-centre tick to read the balance off, but the same shift still
+     applies: the outer pair rises 2.13 and the inner pair drops the same 2.13, which is what
+     keeping the bar's height means once the arc is symmetric about a point rather than a tick.
      Transformed on .tab and not on .tab-seg, so the 30x54 hit area rides with the tick it
      belongs to instead of staying flat behind a tilted line. */
   .header-brand > .tabs{ position:absolute; left:50%; margin-left:-75px; bottom:12px; width:150px;
     display:flex; gap:5px; --lit:var(--bg); z-index:1; }
-  .header-brand > .tabs .tab:nth-child(1){ transform:translateY(2.73px)  rotate(-10.04deg); }
-  .header-brand > .tabs .tab:nth-child(2){ transform:translateY(-1.38px) rotate(-5deg); }
-  .header-brand > .tabs .tab:nth-child(3){ transform:translateY(-2.73px); }
-  .header-brand > .tabs .tab:nth-child(4){ transform:translateY(-1.38px) rotate(5deg); }
-  .header-brand > .tabs .tab:nth-child(5){ transform:translateY(2.73px)  rotate(10.04deg); }
+  .header-brand > .tabs .tab:nth-child(1){ transform:translateY(2.13px)  rotate(-9.41deg); }
+  .header-brand > .tabs .tab:nth-child(2){ transform:translateY(-2.13px) rotate(-3.13deg); }
+  .header-brand > .tabs .tab:nth-child(3){ transform:translateY(-2.13px) rotate(3.13deg); }
+  .header-brand > .tabs .tab:nth-child(4){ transform:translateY(2.13px)  rotate(9.41deg); }
   /* The line is 3px and the target is 40: the box a thumb hits has nothing to do with the
      size of the thing it hits. */
   /* 19 above and 18 below a 3px line is a 40px target. The row used to carry 16px of its own
@@ -948,7 +950,7 @@
 
      The name is the one piece of chrome in the masthead with nothing to do: the lit tab tick
      already says which tab you are on, so the word repeats it. Rather than take the word away
-     — which would leave the page unnamed on a strip of five dashes — the slot it sits in gets
+     — which would leave the page unnamed on a strip of four dashes — the slot it sits in gets
      a second voice, and the row says what the page IS and then one true thing ABOUT it.
 
      Mono against the label's sans, and not uppercase: the word is a name and this is a
@@ -2257,12 +2259,16 @@
      The header's own rule goes with it on these tabs, for the same reason it does on
      Weekly — it reads as a gap in the join. And #000000 rather than content black, again
      like the Weekly band: two blacks that touch can't be a shade apart. */
-  .panel > .form-panel:first-child, #weeklyTrainingView > .form-panel:first-child{
+  .panel > .form-panel:first-child{
     margin-top:calc(-1 * (var(--sp-3) + 4px)); padding-top:4px; background:var(--ground); }
-  /* .week-panel used to carry that rule by name, from when it opened the tab. Goals opens
-     it now, and a negative top margin on a section that is no longer first pulls it up
-     THROUGH the one above — which is what put the goal rows under the week's own heading.
-     The whole column takes the same black instead, so the sections read as one surface
+  /* #weeklyTrainingView > .form-panel:first-child used to carry this same rule — .week-panel
+     opened the Weekly tab outright, so its first group needed the same header-seam fix any
+     tab-opening .form-panel does. Weekly merged into Today: #weeklyTrainingView is now a
+     section partway down the page, not the top of a tab, and pulling its first group up by a
+     header-sized gap that is not there any more would jam it against whatever Today content
+     sits above it instead of closing a seam. Dropped rather than repointed — nothing inside
+     #weeklyTrainingView opens a tab any more, so nothing in it needs this. The whole column
+     still takes the same black instead, so the sections read as one surface
      rather than as three panels in two shades of nearly-black. */
   #weeklyTrainingView > .group{ background:var(--ground); }
   /* Same opening band on the two tabs that don't start with a form. What sits in it
@@ -2612,6 +2618,13 @@
      is text and does — #e4be3a on bone is 1.67:1, unreadable. --hue-faded is the app's answer
      to exactly that, the tab's hue on the dark ground and plain ink on the bone one. */
   .week-lane.today .week-cal-date{ color:var(--hue-faded); }
+  /* --hue-faded is tuned per tab, not per component — insights' own bone value (#65772b) was
+     never measured against a .form-panel's grey band before, because this calendar lived on
+     the Weekly tab until the merge, under training's own value (#7a522a), which happens to
+     clear it. Insights' does not: 3.68:1 against #dededa, under the 4.5 AA floor. Darkened the
+     same hue rather than borrowing another tab's — 4d5a21 clears it at 5.56 — scoped to this
+     one element so --hue-faded's other uses on this tab keep the value tuned for them. */
+  html[data-ground="bone"] .week-lane.today .week-cal-date{ color:#4d5a21; }
   /* .here loses the left rule the row board drew it with — 2px inset on a 44px column reads as
      a stray mark rather than an edge a whole row had space to carry. A fill plus a rule under
      the cell instead: seven cells are small enough that a fill is the difference between
@@ -4302,12 +4315,11 @@
   /* The toggle now says whether the light TRAVELS or cuts. There is no block to slide any
      more -- the thing that moves is where the lit run ends -- so the animation is a colour
      transition on the lines themselves, staggered so it reads as the light running along the
-     bar rather than five lines changing at once. */
+     bar rather than four lines changing at once. */
   .ui-tabIndicator .tab-seg{ transition:background-color 200ms linear; }
   .ui-tabIndicator .tab:nth-child(2) .tab-seg{ transition-delay:45ms; }
   .ui-tabIndicator .tab:nth-child(3) .tab-seg{ transition-delay:90ms; }
   .ui-tabIndicator .tab:nth-child(4) .tab-seg{ transition-delay:135ms; }
-  .ui-tabIndicator .tab:nth-child(5) .tab-seg{ transition-delay:180ms; }
 
   /* 5 — A focused field draws its underline in from the left rather than switching a
      border on. Inputs can't hold a pseudo-element, so the line is a background layer and
@@ -4988,8 +5000,10 @@
          score is a cut rather than a morph, so the two never have to agree mid-flight. -->
     <div class="header-mark eyes mark-solid" id="headerMark" role="button" tabindex="0" aria-label="Back to today"><svg class="mark-cube" id="headerMarkCube" aria-hidden="true"></svg><div class="eye-gaze"><div class="eye-motion"><span></span><span></span></div></div></div>
   <div class="tabs">
+    <!-- Weekly merged into Today in .659ish — the calendar strip and the week's planning
+         controls live on this tab now instead of a separate one. See RETIRED_TABS for the
+         deep-link redirect and #panel-insights for where the content actually landed. -->
     <div class="tab active" data-tab="insights" role="tab" tabindex="0" aria-selected="true" aria-current="page"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Today</span></div>
-    <div class="tab" data-tab="training" role="tab" tabindex="0" aria-selected="false"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Weekly</span></div>
     <div class="tab" data-tab="injuries" role="tab" tabindex="0" aria-selected="false"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Body</span></div>
     <div class="tab" data-tab="data" role="tab" tabindex="0" aria-selected="false"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Data</span></div>
     <div class="tab" data-tab="settings" role="tab" tabindex="0" aria-selected="false"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Settings</span></div>
@@ -5088,12 +5102,37 @@
             </span>
           </label>
           <button class="primary" id="firstRunBuildBtn">Build my first week</button>
-          <p class="fr-build-help">You can change this plan later from Weekly or Settings.</p>
+          <p class="fr-build-help">You can change this plan later further down this screen, or in Settings.</p>
           <div id="firstRunResult" class="score-note fr-note" role="status"></div>
           <div class="fr-after">All of it changeable afterwards.</div>
         </li>
 
       </ol>
+    </div>
+
+    <!-- THE WEEK, AT THE TOP OF THIS SCREEN NOW.
+
+         Weekly used to be its own tab; the calendar strip and the controls that build the
+         week are folded into Today instead, so seeing the week at a glance and seeing today's
+         own plan are the same screen rather than two — tap a day here to see and edit it, or
+         just keep reading down for today's.
+
+         Only the calendar leads. Goals, split, deload and Generate — everything that BUILDS
+         the week rather than shows it — moved below Today's own content instead of sitting
+         here too; see the relocated #weeklyTrainingView further down this panel, past the
+         warm-up and cooldown. The same black band the mobility assessment takes on the Body
+         tab, same as it was on Weekly. -->
+    <div class="group form-panel week-panel">
+      <div class="group-head"><div class="group-title">Week</div><span class="head-est" id="weekBlockPos"></span><div class="group-sub">tap a day, tap a workout, change it</div></div>
+      <div class="fields">
+        <!-- SEVEN DAYS, NOT ONE. The picker that used to sit here showed three days
+             through a 114px window, and the detail pane under it reserved the height of
+             the week's BUSIEST day on every day — so a Thursday with nothing on it was a
+             keyhole onto one name over 173px of held-open nothing. A week is seven items,
+             always seven, and seeing the shape of it is the whole reason to open this
+             view. The board says what is on every day; a tap opens the day. -->
+        <div class="skill-board week-board" id="weekBoard"></div>
+      </div>
     </div>
 
     <!-- THE FIELD IS A REGION, NOT A BAND.
@@ -5257,30 +5296,29 @@
          on the Body tab and mid-session you are not on the Body tab. It is on the disc's own
          list now, beside the three things you might have done — which is the same argument
          made in the place you already reach for, and Today gets its foot back. -->
-  </div>
 
+  <!-- WEEKLY'S OLD CONTENT, RELOCATED RATHER THAN REBUILT.
 
-  <!-- TRAINING PANEL -->
-  <div class="panel" id="panel-training">
-        <div class="session-type" id="trainingViewPills" style="display:none;">
-      <div class="type-btn active" data-view="daily">Daily</div>
-      <div class="type-btn" data-view="weekly">Weekly</div>
-    </div>
-
-
-    <div id="weeklyTrainingView" style="display:none;">
-      <!-- The week leads, in the same black band the mobility assessment takes on the
-           Body tab: a picker at the top of it and what you picked underneath. -->
-      <div class="group form-panel week-panel">
-        <div class="group-head"><div class="group-title">Week</div><span class="head-est" id="weekBlockPos"></span><div class="group-sub">tap a day, tap a workout, change it</div></div>
+       This used to be its own tab (#panel-training), reached by its own button in the tab
+       bar. Merging Weekly into Today meant deciding what to do with everything that lived
+       here besides the calendar: the calendar itself moved to the top of #panel-insights (see
+       the new .week-panel group right after #firstRun, above Today's own content), and
+       everything that BUILDS the week rather than shows it — goals, split, deload, Generate,
+       the training-load chart, the goal sheet, the block editor, the Sunday review, "why this
+       week" — stayed together and moved here, below Today's own content, unchanged inside.
+       #weeklyTrainingView keeps its id and its internal structure on purpose: the CSS rules
+       that treat it as a black column (`#weeklyTrainingView > .group`, the :last-child rule
+       that closes the footer on #whyWeekGroup) and the code that renders into these exact
+       element ids don't need to know or care that their parent panel changed. -->
+  <div id="weeklyTrainingView">
+      <!-- Retitled now that the calendar it used to open with lives at the top of the panel
+           instead — this group is only the controls that BUILD the week. Same black band the
+           mobility assessment takes on the Body tab. Carries an id now: it's what "plan it by
+           hand" scrolls to when a generate fails, since that's this same screen now rather
+           than a tab switch away. -->
+      <div class="group form-panel" id="planTheWeekGroup">
+        <div class="group-head"><div class="group-title">Plan the week</div><div class="group-sub">goals, split, how many weeks, deload</div></div>
         <div class="fields">
-          <!-- SEVEN DAYS, NOT ONE. The picker that used to sit here showed three days
-               through a 114px window, and the detail pane under it reserved the height of
-               the week's BUSIEST day on every day — so a Thursday with nothing on it was a
-               keyhole onto one name over 173px of held-open nothing. A week is seven items,
-               always seven, and seeing the shape of it is the whole reason to open this
-               view. The board says what is on every day; a tap opens the day. -->
-          <div class="skill-board week-board" id="weekBoard"></div>
           <!-- What builds the week, then the shape it built. Generate used to sit under the
                chart, which put the control after its own output — you read the block, then
                scrolled past it to find the thing that makes one. -->
@@ -9039,7 +9077,7 @@ function eyeNoteDecision(decision){
 }
 
 // A recoil before anything irreversible. Bound by delegation because these controls are
-// spread across five tabs and half of them are built at runtime.
+// spread across four tabs and half of them are built at runtime.
 const EYE_FLINCH_SELECTOR = '#clearAllWeekBtn, #clearAllDataBtn, .remove-row, .rec-actions .dismiss-btn';
 document.addEventListener('pointerdown', e=>{
   if(!anim('flinch')) return;
@@ -10152,7 +10190,7 @@ function toastEntryOffset(){
 /* 1 — Panels arrive from the side the tab they belong to sits on. The tab bar is a row you
    read left to right, and a panel that ignores that makes it a list of buttons rather than
    a place you move through. */
-const UI_TAB_ORDER = ['insights','training','injuries','data','settings'];
+const UI_TAB_ORDER = ['insights','injuries','data','settings'];
 let uiLastTabIndex = 0;
 let uiPendingSlideDx = 0;
 let uiLastTabDir = 1;   // which way along the tab row the last switch went
@@ -10463,17 +10501,20 @@ async function refreshHeaderLogBtn(){
 // the body.tab-* rules above them, which paint the canvas this backdrop covers, so a
 // rubber-band scroll past the end of the page shows the same colour as the page.
 const TAB_BACKDROP_COLOR = {
-  insights:'var(--ground)', training:'var(--ground)',
+  insights:'var(--ground)',
   injuries:'var(--ground)', data:'var(--ground)', settings:'var(--ground)'
 };
 // Tabs the app used to have, and where their contents went. Without this a stale caller
 // asking for a retired tab hides every panel and leaves a blank screen — the one failure
 // mode of a tab-swap that cannot be recovered from without a reload.
-const RETIRED_TABS = { goals:'training' };
+// Both point straight at insights, not at each other: this is a single lookup, not a chain
+// (see activateTab), so goals→training would land on a tab that no longer has a button of
+// its own now that Weekly has merged into Today.
+const RETIRED_TABS = { goals:'insights', training:'insights' };
 /* THE LINE BESIDE THE TAB'S NAME.
 
    One true thing about the page you are on, written into the slot the tab's name already
-   occupies. The name stays: a page that only identifies itself by which of five dashes is
+   occupies. The name stays: a page that only identifies itself by which of four dashes is
    lit is a page with no name, and the word is two thirds of a centimetre of chrome. What it
    gains is a second clause.
 
@@ -10494,7 +10535,7 @@ let tabInsightToken = 0;
 /* The nights actually on disk, for the two pages whose line is about how much history there
    is. Deliberately not read off the readiness object: that object does not exist until the
    first score computes, and these are exactly the users — a fresh install, an empty week —
-   whose masthead would otherwise be blank on two of five tabs. */
+   whose masthead would otherwise be blank on two of four tabs. */
 async function nightsLogged(){
   try{
     const r = await window.storage.list('entry:');
@@ -10726,6 +10767,15 @@ function activateTab(name, opts){
   if(name==='insights'){
     applyTodayStage();
     refreshEyeContext(); generateRecommendations(); renderTodayBlockContext(); initWarmupTab();
+    // The week board and its planning controls, folded in from the old training branch now
+    // that Weekly lives on this same panel — independent of the today-specific calls above
+    // and below, so it runs alongside them rather than gating anything on it.
+    withEyesBusy(Promise.resolve(renderWeekGrid()), document.getElementById('weekBoard'));
+    // On the way in, like the recovery log — it reads planned blocks and logged sessions
+    // live, and both change while the panel is open.
+    renderWeekReview().catch(()=>{});
+    restorePlanSummary();
+    loadCurrentGoals();
     // Awaited by everything below, not fired alongside it: this is what reads the day's plan
     // into todaySessionType, and anything built before that read is built for the wrong
     // session. The workout summary was the one that showed it — on a run day it rendered
@@ -10741,16 +10791,12 @@ function activateTab(name, opts){
         .then(()=>withEyesBusy(generateMobility(), document.getElementById('mobilityCards')))
     );
   }
-  if(name==='training'){
-    activateTrainingSubView('weekly');
-    restorePlanSummary();
-    loadCurrentGoals();
-  }
   if(name==='data') renderDataSnapshot().catch(()=>{});
   if(name==='settings') renderSettingsQuickActions();
-  // Both skill ladders and the progression live on Function; the goal list lives on Weekly.
-  // loadCurrentGoals fills both tabs' rows — the queries don't care which panel is showing
-  // — so it runs for either, and each tab renders what it actually displays.
+  // Both skill ladders and the progression live on Function; the goal list lives on Today now
+  // too, since Weekly merged into it. loadCurrentGoals fills every tab's rows — the queries
+  // don't care which panel is showing — so it runs for whichever tab is active, and each one
+  // renders what it actually displays.
   if(name==='settings'){
     renderLearnedWeights();
     restoreRememberedCollapse();
@@ -10830,20 +10876,10 @@ function activateTab(name, opts){
   eyeSettleTimer = setTimeout(settleEyes, EYE_FLIGHT_MS + 500);
 }
 
-function activateTrainingSubView(view){
-  document.querySelectorAll('#trainingViewPills .type-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
-  document.getElementById('weeklyTrainingView').style.display = view==='weekly' ? 'block' : 'none';
-  if(view==='weekly'){
-    withEyesBusy(Promise.resolve(renderWeekGrid()), document.getElementById('weekBoard'));
-    // On the way in, like the recovery log — it reads planned blocks and logged sessions
-    // live, and both change while the tab is open.
-    renderWeekReview().catch(()=>{});
-  }
-  updateFooterVisibility();
-}
-document.querySelectorAll('#trainingViewPills .type-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>activateTrainingSubView(btn.dataset.view));
-});
+// activateTrainingSubView and the Daily/Weekly pills that drove it are gone: Weekly merged
+// into Today in .659ish, "weekly" was the only sub-view the pills ever actually showed (no
+// "daily" panel was ever built behind the other button), and what it did on arrival now runs
+// directly from activateTab's insights branch instead.
 
 function activateDataSubView(view){
   // Anything but history is trends now: the recovery view has left the tab, and a stored or
@@ -10933,7 +10969,7 @@ function liftEdge(axis, dir, a){
 
    Which side it comes from is not this function's to decide, and it never was: slidePanelIn
    works it out from the tab's place in the row, and the swipe reaches the same code by the
-   same door — SWEEP_TABS and UI_TAB_ORDER are the same five in the same order, so drag left,
+   same door — SWEEP_TABS and UI_TAB_ORDER are the same four in the same order, so drag left,
    go one right along the row, and the page arrives from the right. `axis` still takes 'Y'
    if this is ever regretted; everything here works either way.
 
@@ -11112,7 +11148,7 @@ applyA11yToInteractiveDivs(document);
    this very tab. Nothing failed. Nothing could fail: the engine suite runs on logic and
    never renders anything, so it passed 22/22 straight through all of it.
 
-   This walks the five tabs, opens every section, and looks at what is actually on screen.
+   This walks the four tabs, opens every section, and looks at what is actually on screen.
    Four questions, each of which was a real fault found by hand:
 
      no keyboard route   — answers a tap, carries no tabindex. The original thirty-five.
@@ -11125,7 +11161,7 @@ applyA11yToInteractiveDivs(document);
    of the same sweep reported 307 findings because every descendant of a clickable element
    reported its parent's cursor as its own. Only the outermost element of a pointer subtree
    is a candidate, and with that one line the same sweep reported 35. */
-const SWEEP_TABS = ['insights', 'training', 'injuries', 'data', 'settings'];
+const SWEEP_TABS = ['insights', 'injuries', 'data', 'settings'];
 const SWEEP_RENDER_MS = 900;
 const SWEEP_NATIVE = new Set(['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA', 'SUMMARY', 'DETAILS']);
 function interfaceSweepFindings(){
@@ -11257,7 +11293,7 @@ tabs.forEach(t=>{
 
 /* LEFT AND RIGHT MOVE BETWEEN TABS.
 
-   The bar is five lines 150px wide now, which is a fine thing to read and a poor thing to
+   The bar is four lines 150px wide now, which is a fine thing to read and a poor thing to
    aim at. So the gesture carries the navigation and the bar reports it: swipe anywhere on the
    page and you step one tab along, in the order the lines are drawn in.
 
@@ -11712,7 +11748,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.29.659';
+const APP_VERSION = '2026.09.29.660';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12056,6 +12092,7 @@ const APP_NOTES = {
   '2026.09.27.657': 'A week that drops every run (or every lift) because there was not enough clear room for both now says so, the same way it already does when the plan itself rounded one to zero.',
   '2026.09.29.658': 'A planned number in the log sheet now selects itself the moment you tap into the box, so typing a real reading replaces it instead of making you backspace it out first.',
   '2026.09.29.659': 'The Weekly board is a calendar strip now — seven days across with their dates, instead of seven stacked rows. Tap a day the same as before to see and edit what is on it.',
+  '2026.09.29.660': 'Weekly is gone as its own tab — the calendar and everything that builds the week now live on Today, below the day itself, so seeing the week and seeing today are one screen instead of two.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -13214,10 +13251,11 @@ function updateHeaderCollapse(){
 
 /* ---------- A TITLE PER TAB, AND THE MARK ROLLS TO MEET IT ----------
 
-   The masthead named the app on all five tabs. The app's name belongs on the app's home and
-   nowhere else: on the other four it was the one piece of 46px display type on the screen
-   saying the thing you already knew, above a label and a lit tick both naming the page you
-   had just tapped. So Today keeps the wordmark and the other four say where you are.
+   The masthead named the app on all five tabs (four now that Weekly has merged into Today).
+   The app's name belongs on the app's home and nowhere else: on the others it was the one
+   piece of 46px display type on the screen saying the thing you already knew, above a label
+   and a lit tick both naming the page you had just tapped. So Today keeps the wordmark and
+   the other three say where you are.
 
    TWO LINES EVERYWHERE, because the header is sticky and the whole collapse geometry hangs
    off its height — .tab-insight's own note says a wrapped label "moves the wordmark, the
@@ -28547,7 +28585,20 @@ async function applyRestDayShape(){
   note.textContent = label ? `nothing planned · next session ${label}${nextBlock ? ` · ${sessionTitle(nextBlock)}` : ''}` : 'nothing planned this week';
   if(nextBtn && label){
     nextBtn.hidden = false;
-    nextBtn.onclick = ()=>document.querySelector('.tab[data-tab="training"]')?.click();
+    // Used to switch to the Weekly tab; the calendar is part of this same screen now, above
+    // this plate, so this scrolls up to it instead. Opens the day's own sheet too when `next`
+    // falls inside the week the board is actually showing — it can fall outside it (the scan
+    // above runs seven days ahead regardless of where in the week today sits), in which case
+    // the scroll alone still gets you to the board to find it from there.
+    nextBtn.onclick = ()=>{
+      document.getElementById('weekBoard')?.scrollIntoView({ behavior:'smooth', block:'start' });
+      const idx = getWeekDates().indexOf(next);
+      if(idx >= 0){
+        activeWheelDayIndex = idx;
+        renderWeekGrid();
+        openWeekDaySheet();
+      }
+    };
   }
   // `label` is null only when the seven-day scan above found nothing, which is the plan
   // having run out rather than an ordinary rest day with a session later in the week.
@@ -28676,10 +28727,10 @@ async function wireRestDayBuild(){
       await renderWeekGrid();
       if(err){
         /* The same answer first run gives when the generator comes back empty: say so and
-           open the page where a week can be built by hand, rather than leaving the button
-           looking like it did nothing. */
-        showToast('Could not fill the week — plan it by hand on Weekly', true);
-        activateTab('training');
+           scroll to where a week can be built by hand, rather than leaving the button looking
+           like it did nothing. Used to switch to the Weekly tab; it's the same screen now. */
+        showToast('Could not fill the week — plan it by hand below', true);
+        document.getElementById('planTheWeekGroup')?.scrollIntoView({ behavior:'smooth', block:'start' });
         return;
       }
       showToast('Week built');
@@ -28892,9 +28943,10 @@ function firstRunSpread(n){
       await applyTodayStage();
       if(err){
         // The setup and the goal are saved either way — being unable to fill the week is not
-        // a reason to make someone answer the three questions again.
-        out.textContent = 'Saved, but the week came back empty. Plan it by hand on Weekly.';
-        activateTab('training');
+        // a reason to make someone answer the three questions again. Used to switch to the
+        // Weekly tab; it's the same screen now, so this scrolls to it instead.
+        out.textContent = 'Saved, but the week came back empty. Plan it by hand below.';
+        document.getElementById('planTheWeekGroup')?.scrollIntoView({ behavior:'smooth', block:'start' });
       } else {
         out.textContent = '';
         showToast('Week built');
@@ -30219,9 +30271,11 @@ async function noEmptyDaysReason(weekDatesOverride){
 }
 
 function describeWeekResult(r, weekNum, isDeload){
-  // Point at the right tab. Both of these said "above", but Training Setup lives on
-  // Settings and goals live on Goals — neither is on the Weekly tab where this button is,
-  // so a new user tapping Generate was sent looking in the wrong place on their first action.
+  // Point at the right place. Both of these said "above", but Training Setup lives on
+  // Settings, a separate tab from wherever this button is (Weekly, and Today since Weekly
+  // merged into it) — a new user tapping Generate was sent looking in the wrong place on
+  // their first action. Goals is "just above" correctly: the goals row sits directly above
+  // Generate in the same relocated group, on Weekly before the merge and on Today after it.
   const fault = s => ({ error: s, code: GENERATE_FAULTS[r.error] });
   if(r.error === 'no-setup') return fault('Set your available training days in Settings → Training Setup first.');
   if(r.error === 'no-goals') return fault('Add at least one goal in Goals, just above, first.');
@@ -32494,9 +32548,12 @@ async function renderTodayWorkoutSummary(){
 
   const block = await getTodaysBlockForType(todaySessionType);
   if(!block){
-    container.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><span>No ${todaySessionType} today</span><div class="today-empty-actions"><button type="button" id="planTodayWorkoutBtn">Plan a workout</button><button type="button" class="outline" id="viewWeeklyPlanBtn">Weekly plan</button></div></div>`;
+    container.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><span>No ${todaySessionType} today</span><div class="today-empty-actions"><button type="button" id="planTodayWorkoutBtn">Plan a workout</button><button type="button" class="outline" id="viewWeeklyPlanBtn">See the week</button></div></div>`;
     document.getElementById('planTodayWorkoutBtn')?.addEventListener('click', ()=>openLogFromAnywhere());
-    document.getElementById('viewWeeklyPlanBtn')?.addEventListener('click', ()=>document.querySelector('.tab[data-tab="training"]')?.click());
+    // Used to switch to the Weekly tab; the calendar is part of this same screen now, above
+    // this card, so this scrolls up to it instead — today's own cell is already the board's
+    // default-open day.
+    document.getElementById('viewWeeklyPlanBtn')?.addEventListener('click', ()=>document.getElementById('weekBoard')?.scrollIntoView({ behavior:'smooth', block:'start' }));
     return;
   }
   const rows = await blockSummaryHtml(block);

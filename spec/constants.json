@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.09.29.658",
+ "generatedFrom": "2026.09.29.660",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1011,7 +1011,6 @@
   "FIRST_LIGHT_KEY": "firstLightSeen",
   "UI_TAB_ORDER": [
    "insights",
-   "training",
    "injuries",
    "data",
    "settings"
@@ -1034,18 +1033,17 @@
   ],
   "TAB_BACKDROP_COLOR": {
    "insights": "var(--ground)",
-   "training": "var(--ground)",
    "injuries": "var(--ground)",
    "data": "var(--ground)",
    "settings": "var(--ground)"
   },
   "RETIRED_TABS": {
-   "goals": "training"
+   "goals": "insights",
+   "training": "insights"
   },
   "A11Y_INTERACTIVE_SELECTOR": ".type-btn, .remove-row, .add-row, .rating-btn, .goal-priority-btn, .flow-header, .group-head.collapsible, .mob-check-row[data-level], .wheel-add-card",
   "SWEEP_TABS": [
    "insights",
-   "training",
    "injuries",
    "data",
    "settings"
@@ -1094,7 +1092,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.09.29.658",
+  "APP_VERSION": "2026.09.29.660",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1419,6 +1417,8 @@
    "2026.09.27.656": "When a week could not fit every planned session, dropping the overflow no longer defaults to keeping strength and losing running — a tie in stress weight now splits the risk between the two instead of always going strength’s way.",
    "2026.09.27.657": "A week that drops every run (or every lift) because there was not enough clear room for both now says so, the same way it already does when the plan itself rounded one to zero.",
    "2026.09.29.658": "A planned number in the log sheet now selects itself the moment you tap into the box, so typing a real reading replaces it instead of making you backspace it out first.",
+   "2026.09.29.659": "The Weekly board is a calendar strip now — seven days across with their dates, instead of seven stacked rows. Tap a day the same as before to see and edit what is on it.",
+   "2026.09.29.660": "Weekly is gone as its own tab — the calendar and everything that builds the week now live on Today, below the day itself, so seeing the week and seeing today are one screen instead of two.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
