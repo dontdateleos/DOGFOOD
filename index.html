@@ -11722,7 +11722,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.27.657';
+const APP_VERSION = '2026.09.29.658';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12064,6 +12064,7 @@ const APP_NOTES = {
   '2026.09.27.655': '\u201cWhy this week\u201d now explains the week you are actually looking at, not just the one you generated from.',
   '2026.09.27.656': 'When a week could not fit every planned session, dropping the overflow no longer defaults to keeping strength and losing running \u2014 a tie in stress weight now splits the risk between the two instead of always going strength\u2019s way.',
   '2026.09.27.657': 'A week that drops every run (or every lift) because there was not enough clear room for both now says so, the same way it already does when the plan itself rounded one to zero.',
+  '2026.09.29.658': 'A planned number in the log sheet now selects itself the moment you tap into the box, so typing a real reading replaces it instead of making you backspace it out first.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -19882,6 +19883,19 @@ function wireBlockEditorClose(panel){
     // still closes outright.
     if(blockEditMinimisable) minimiseBlockEditor();
     else closeBlockEditor({ keepDraft:true });
+  });
+  /* THE PLAN SELECTS ITSELF THE MOMENT YOU TOUCH THE BOX.
+     A dimmed number sitting in a field reads as an editable value, and it is one — so typing
+     a real reading over it meant backspacing every digit first, every set, every session.
+     Selecting it on focus makes the first keystroke replace the whole thing, the way tapping
+     into any prefilled field should feel; it does not touch dataset.planned, so tabbing
+     through untouched boxes without typing still leaves the plan in place as the reading —
+     selecting text is not the same as clearing it. Only while the box still IS the plan:
+     once a keystroke has turned it into yours (see the input/change listener below), focus
+     behaves like a normal field again. */
+  panel.addEventListener('focusin', e=>{
+    if(!(e.target && e.target.matches && e.target.matches('.week-ex-sets, .week-ex-reps, .week-ex-weight, #weekRunActualDuration'))) return;
+    if(e.target.dataset.planned) e.target.select();
   });
   /* SOFT SAVE. Leaving a box is the moment the number in it becomes a claim — the plate is
      recomputed then rather than on every keystroke, so it never flashes "+60 KG" while 120
