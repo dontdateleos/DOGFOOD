@@ -1085,6 +1085,21 @@
     min-height:24px; font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold);
     color:var(--bg); letter-spacing:var(--track-ui); cursor:pointer; }
   .header-score:active{ background:rgba(var(--ink-rgb),0.15); }
+  /* REPLACES THE FULL-WIDTH "LOG THIS MORNING" STRIP.
+     That strip was a lime cta-strip sized to the whole page, for a task ("type one number")
+     this tiny instead of the one-line reminder it should be — a dot on the mark you already
+     look at every time you open the app, gone the moment there is something to show instead.
+     A sibling of the mark's own svg/eye-gaze rather than a separate element positioned
+     against it, so it rides every scroll-collapse and perch move .header-mark already makes
+     without needing any position math of its own. */
+  .header-mark .header-log-badge{ position:absolute; top:-1px; right:-1px; width:11px; height:11px;
+    border-radius:50%; background:var(--block-orange); border:1.5px solid var(--banner);
+    cursor:pointer;
+    /* .header-mark::after is an invisible hit-area expander with no z-index of its own,
+       and a pseudo-element paints after every real child regardless of DOM order — without
+       this, that invisible layer sits on top of the badge and swallows its taps. */
+    z-index:1; }
+  .header-mark .header-log-badge[hidden]{ display:none; }
   /* The rest day plate. Same black, same cream rule, same mono caption as a section heading —
      it is the page's way of saying there is nothing here, so it should look like the app
      rather than like an error. */
@@ -1111,8 +1126,8 @@
   /* 0.56 is 4.41:1 on bone \u2014 nine hundredths under the bar, at 10px. 0.58 is 4.72. */
   .rest-note{ font-family:var(--mono); font-size:10px; letter-spacing:0.02em; line-height:1.4;
     color:rgba(var(--ink-rgb),0.58); margin-top:8px; }
-  /* An outline rather than a filled plate: the page already has one filled call to action in
-     this column (.cta-strip, for the morning log) and two competing for the same glance is a
+  /* An outline rather than a filled plate: a rest day already carries one strong colour move
+     (the plate itself going var(--ground)), and a second filled shape on top of it would be a
      choice rather than a next step. Drawn in the plate's own ink, which is var(--bg) here —
      the plate takes var(--ground) as its surface — so it inverts with the ground like the
      word above it. 44px tall because it is a real target. */
@@ -3633,11 +3648,6 @@
   #scoreTrace{ z-index:3; }
   /* Once one is chosen the other four step back — the answer should read as an answer, not
      as five options with one of them ticked. */
-  .cta-strip{ display:flex; align-items:center; justify-content:space-between; gap:12px;
-    cursor:pointer; margin:0 calc(-1 * var(--gutter)) var(--sp-3); padding:16px var(--gutter); background:var(--accent);
-    color:var(--reverse-bg); font-family:var(--mono); font-size:var(--fs-tag);
-    font-weight:var(--fw-bold); letter-spacing:var(--track-ui); text-transform:uppercase; }
-  .cta-strip-arrow{ font-size:16px; }
   /* The suggestions head is a section head and was the only one not dressed as one: the
      other three on this page are black, sticky and full-bleed, and this one was
      transparent, static and inset — so it read as a stray band of the tab's colour between
@@ -5063,7 +5073,7 @@
          it has always been until it turns. The .eye-gaze pair stays in the DOM and stays
          hidden here — every other copy of the mark still uses it, and the trip down to the
          score is a cut rather than a morph, so the two never have to agree mid-flight. -->
-    <div class="header-mark eyes mark-solid" id="headerMark" role="button" tabindex="0" aria-label="Back to today"><svg class="mark-cube" id="headerMarkCube" aria-hidden="true"></svg><div class="eye-gaze"><div class="eye-motion"><span></span><span></span></div></div></div>
+    <div class="header-mark eyes mark-solid" id="headerMark" role="button" tabindex="0" aria-label="Back to today"><svg class="mark-cube" id="headerMarkCube" aria-hidden="true"></svg><div class="eye-gaze"><div class="eye-motion"><span></span><span></span></div></div><span class="header-log-badge" id="headerLogBadge" role="button" tabindex="0" aria-label="Log this morning" hidden></span></div>
   <div class="tabs">
     <!-- Weekly merged into Today in .659ish — the calendar strip and the week's planning
          controls live on this tab now instead of a separate one. See RETIRED_TABS for the
@@ -11826,7 +11836,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.01.672';
+const APP_VERSION = '2026.10.01.673';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12183,6 +12193,7 @@ const APP_NOTES = {
   '2026.10.01.670': 'The previous pass at simplifying today’s card only touched tags most plans never show. This time it’s the exercise lines themselves — bold, two-line name-and-dose — now the same plain, regular-weight, single line every other day’s card already uses.',
   '2026.10.01.671': 'Warm-up and cooldown lines now match the workout’s own plain look — same size, same weight, the dose rejoined on one line, the stage tags (RAISE/PRIME/ROLL/HOLD/PNF…) read as plain text instead of filled plates.',
   '2026.10.01.672': 'Replace/Reschedule/Skip now sit after the cooldown, not between the workout and it — change what today is after you’ve seen the whole of it, warm-up and cooldown included.',
+  '2026.10.01.673': 'The full-width "Log this morning" strip is gone. The same reminder is a tiny orange dot on the mascot in the header now — tap it to jump straight to the logging field, gone the moment there is a real entry for today.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -33212,6 +33223,31 @@ const TENDINOPATHY_PROTOCOL = {
   low: 'Return to sport: plyometric and energy-storage loading (hopping, bounding) reintroduced progressively, criteria-based on pain ≤3/10 next-day — not purely time-based.'
 };
 
+// Wired once — the badge is a permanent child of #headerMark now, not rebuilt on every
+// render the way the old cta-strip was, so attaching this inside generateRecommendations
+// itself would pile up a new listener on every call.
+(function wireHeaderLogBadge(){
+  const badge = document.getElementById('headerLogBadge');
+  if(!badge) return;
+  const go = ()=>{
+    activateTab('settings');
+    setTimeout(()=>{
+      setCollapsed('logging', false);
+      const el = document.getElementById('durationHrs');
+      const grp = el && el.closest('.group');
+      if(grp) grp.scrollIntoView({ behavior: eyeMotionOff() ? 'auto' : 'smooth', block:'center' });
+      // After the scroll: focusing first is what makes the browser scroll somewhere else.
+      if(el) setTimeout(()=> el.focus({ preventScroll:true }), 260);
+    }, 420);
+  };
+  badge.addEventListener('click', e=>{ e.stopPropagation(); go(); });
+  badge.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); e.stopPropagation(); go(); } });
+})();
+function setHeaderLogBadge(show){
+  const badge = document.getElementById('headerLogBadge');
+  if(badge) badge.hidden = !show;
+}
+
 async function generateRecommendations(){
   const container = document.getElementById('recommendationCards');
   container.innerHTML = '<div class="skeleton tall"></div><div class="skeleton"></div><div class="skeleton short"></div>';
@@ -33238,39 +33274,14 @@ async function generateRecommendations(){
     // costs a tap only to the people it helps. It stops appearing once a ring is connected.
     let ouraOn = false;
     try{ ouraOn = !!JSON.parse((await window.storage.get('oura:tokens')).value); } catch(e){}
-    container.innerHTML = '<div class="cta-strip" id="insightsLogCTA" role="button" tabindex="0">'
-      + '<span>Log this morning</span><span class="cta-strip-arrow" aria-hidden="true">&rarr;</span></div>'
-      + (ouraOn ? '' : '<div class="cta-aside" id="insightsRingOffer" role="button" tabindex="0">'
-          + 'Wear an Oura ring? Connect it and this fills itself in.</div>');
-    /* THE ONE DOOR OUT OF THIS STATE HAS TO OPEN.
-
-       It went to activateDataSubView('recovery'), and the recovery view left the Data tab
-       when the morning check-in moved to Settings > Your data > Logging. That function
-       coerces anything but 'history' to 'trends' — so the single action offered to someone
-       with no score dealt them the trends chart, and the form with the sleep field in it
-       stayed collapsed in a tab they were never sent to.
-
-       Nothing else reaches that form. Without a wearable, durationHrs is the only channel
-       scoresForEntry can read (hrv needs a baseline, and wakeTimeOura/Garmin are sensor
-       fields) — so a broken link here is the difference between having a score and never
-       having one. The morning sheet does not close the gap either: it asks about alcohol
-       and illness, neither of which scores.
-
-       Settings, then the section, then the form, on the 420ms the goal-profile link already
-       uses — the tab deal has to land before anything is scrolled, or it is scrolled inside
-       a panel that is still moving. Focus on the sleep field last, because the whole request
-       is "type one number": on a phone that is the keyboard already up on the right input. */
-    document.getElementById('insightsLogCTA').addEventListener('click', ()=>{
-      activateTab('settings');
-      setTimeout(()=>{
-        setCollapsed('logging', false);
-        const el = document.getElementById('durationHrs');
-        const grp = el && el.closest('.group');
-        if(grp) grp.scrollIntoView({ behavior: eyeMotionOff() ? 'auto' : 'smooth', block:'center' });
-        // After the scroll: focusing first is what makes the browser scroll somewhere else.
-        if(el) setTimeout(()=> el.focus({ preventScroll:true }), 260);
-      }, 420);
-    });
+    // THE REMINDER IS A DOT ON THE MARK NOW, NOT A STRIP ON THE PAGE.
+    // A full-width lime cta-strip was a lot of page for "type one number" — the same reminder
+    // now lives as a tiny badge on the mascot in the header (#headerLogBadge, wired once,
+    // above), gone the instant there is a real entry to show instead of a reminder to log
+    // one. See the success branch below, which turns it back off.
+    setHeaderLogBadge(true);
+    container.innerHTML = ouraOn ? '' : '<div class="cta-aside" id="insightsRingOffer" role="button" tabindex="0">'
+      + 'Wear an Oura ring? Connect it and this fills itself in.</div>';
     // THE SCORE SLOT SAYS WHAT IT IS WAITING FOR.
     // #overallScoreOut ships with an eight-pointed star in it as a placeholder, and nothing
     // overwrites it on the day's first render — so someone six weeks in opens the app in the
@@ -33282,11 +33293,13 @@ async function generateRecommendations(){
     if(scoreOut){ scoreOut.textContent = '\u2014'; scoreOut.classList.add('score-waiting'); delete scoreOut.dataset.value; }
     if(scoreLbl) scoreLbl.textContent = 'Not logged yet';
     syncHeaderScore(null);
-    // The morning CTA is rendered INTO the card container, and the container now folds — so
-    // collapsing the stack hid the one action this state exists to offer. It is not a card
-    // and does not belong behind the stack's handle: shown outright, with the counter and
-    // the chevron out of the way, because there is nothing here to count or to open.
-    container.style.display = '';
+    // The ring offer is rendered INTO the card container, and the container now folds — so
+    // collapsing the stack would hide the one action this state still has to offer. It is not
+    // a card and does not belong behind the stack's handle: shown outright when there is one,
+    // with the counter and the chevron out of the way since there is nothing here to count or
+    // to open. With a ring already connected there is nothing left to show at all — the log
+    // reminder moved to the header badge above — so the container folds away entirely.
+    container.style.display = ouraOn ? 'none' : '';
     const headCounter = document.getElementById('cardStackCounter');
     const headChev = document.getElementById('cardStackChev');
     const headRow = document.getElementById('cardStackHead');
@@ -33305,6 +33318,8 @@ async function generateRecommendations(){
     refreshRecHistory();
     return;
   }
+  // A real entry exists, so there is nothing left to remind anyone to do.
+  setHeaderLogBadge(false);
 
   const trailing = await getTrailingAverages(todayStr);
   const { targetScore, adaptiveScore } = scoresForEntry(entry, trailing);
