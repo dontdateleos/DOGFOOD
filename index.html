@@ -3345,6 +3345,21 @@
      that override those. */
   .fr-progress{ font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); margin:18px 0 2px; }
   .fr-build-help{ margin:8px 0 0; color:var(--muted); font-size:13px; }
+  /* TODAY'S CARD, CALMER — closer to the plain text a tapped calendar day shows, without
+     losing anything it does: Replace/Reschedule/Skip, Mark done and the duration estimate
+     all stay exactly as functional as before. What comes off is decoration that is unique to
+     this card and absent from the plain one — filled pill tags on every exercise row and a
+     boxed chip for the week-position line — not the section-head band every other group on
+     the page (Week, Warm-up, Cooldown) already wears, which this card keeps so it still reads
+     as one of the page's numbered sections rather than an odd one out. */
+  .today-session .chip-row span{ border:0; background:transparent; padding:0; color:var(--dim);
+    font-family:var(--sans); font-size:var(--fs-sm); text-transform:none; letter-spacing:0; }
+  .today-session .chip-row{ gap:0; }
+  .today-session .chip-row span + span::before{ content:'\00b7'; margin:0 6px; color:var(--dim); }
+  .today-session .plan-key, .today-session .ss-tag, .today-session .drop-tag{
+    background:transparent; color:var(--dim); padding:0; border-radius:0;
+    -webkit-text-stroke:0; font-weight:var(--fw-medium); }
+  .today-session .plan-item.has-lead > .plan-key[data-stage]{ background:transparent; color:var(--dim); }
   .today-plan-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; }
   .today-plan-actions button:first-child{ grid-column:1 / -1; height:40px; font-size:var(--fs-md); }
   .today-plan-actions .outline{ background:transparent; color:var(--bg); }
@@ -11766,7 +11781,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.01.666';
+const APP_VERSION = '2026.10.01.667';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12117,6 +12132,7 @@ const APP_NOTES = {
   '2026.10.01.664': 'Today’s workout no longer shows twice. Tapping today on the calendar now shows the full card — Replace, Reschedule, Skip and all — right there; every other day still gets the plain one it always had.',
   '2026.10.01.665': 'The score and the mascot moved into the header, compact — tap the number for the full detail (yesterday’s ghost, the week’s trend, the block position) in a sheet instead of it all sitting below the calendar.',
   '2026.10.01.666': 'Training load is hidden by request.',
+  '2026.10.01.667': 'Today’s own workout card reads plainer now — closer to the text-only card every other day gets — with the filled pill tags on exercise rows and the week-position chip stripped back to plain text. Replace/Reschedule/Skip, Mark done and the duration estimate all still work exactly as before.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -32715,7 +32731,7 @@ async function renderTodayWorkoutSummary(){
     }
   } catch(e){}
   container.innerHTML = `
-    <div class="group" style="margin-top:0;">
+    <div class="group today-session" style="margin-top:0;">
       <div class="group-head"><div class="group-title">${sessionTitle(block)}</div>${planEst}</div>
       ${budgetBarHtml}
       ${weekLine ? chipRow(weekLine) : ''}
