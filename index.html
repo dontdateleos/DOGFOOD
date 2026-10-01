@@ -1076,6 +1076,15 @@
     font-family:var(--sans); font-size:var(--fs-md); font-weight:var(--fw-bold); color:var(--bg);
     text-transform:uppercase; letter-spacing:0.02em; line-height:1.15; }
   .header-date span{ display:block; }
+  /* The score, compact, stacked under the date rather than carried as its own absolutely-
+     positioned element — it inherits the date block's right alignment and its scroll fade
+     for free that way. 24px tall for the same reason the mark is: WCAG 2.2 AA's floor for a
+     real target, not a label. */
+  .header-score{ display:block; margin-top:6px; margin-left:auto; background:transparent;
+    border:1px solid rgba(var(--ink-rgb),0.4); border-radius:999px; padding:0 10px;
+    min-height:24px; font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold);
+    color:var(--bg); letter-spacing:var(--track-ui); cursor:pointer; }
+  .header-score:active{ background:rgba(var(--ink-rgb),0.15); }
   /* The rest day plate. Same black, same cream rule, same mono caption as a section heading —
      it is the page's way of saying there is nothing here, so it should look like the app
      rather than like an error. */
@@ -4994,6 +5003,15 @@
          of the width of the whole date. -->
     <div class="header-date" id="headerDate" aria-label="Today's date">
       <span class="hd-dow"></span><span class="hd-day"></span><span class="hd-mon"></span>
+      <!-- THE SCORE, COMPACT, IN THE HEADER NOW — not the hero band it used to be below the
+           calendar. Just the number: the ghost comparison, the trend, the expandable baseline
+           and the block-position line all still exist, unchanged, inside #scoreDetailSheet,
+           which this opens. A sibling of the date rather than its own absolutely-positioned
+           element, so it fades with the date on scroll for free instead of needing its own
+           copy of that math. -->
+      <button type="button" class="header-score" id="headerScoreBtn" aria-label="Today's score — tap for detail">
+        <span id="headerScoreOut">—</span>
+      </button>
     </div>
     <!-- The word is its own span because the tab switch used to write straight over the
          label's contents, and there is now a second thing in this box: one true line about
@@ -5220,18 +5238,24 @@
       </div>
     </div>
 
-    <!-- THE FIELD IS A REGION, NOT A BAND.
+    <!-- THE SCORE'S OWN DETAIL, BEHIND A TAP NOW — see #headerScoreBtn, up in the header,
+         where the number and the mascot icon live compactly instead. This used to be the
+         biggest thing on the page, sitting below the header; now it is read on demand, in a
+         sheet, same as Plan the week and Goals already were. Nothing inside it changed —
+         the ghost, the trend, the label row's expand and the block-position line all still
+         read and write the same elements they always did, so none of that code had to move
+         with it, only the page position it renders at.
 
-         Everything from under the header down to the suggestions head prints on one dotted
-         field: the score's band, the question that stands in for it on a morning with no
-         reading yet, and the space between the two. One element carries it rather than three,
-         because a background tiles from its own box — three of them would restart the grid
-         twice down the page and put a seam wherever the heights were not a multiple of 4.
-
-         It ends where it does because the next thing down is opaque and full-bleed: the
-         suggestions head, or, before you have logged, the "Log this morning" strip that
-         stands in its place. Nothing has to say where the field stops; the first plate on
-         the page stops it. -->
+         THE FIELD WAS A REGION, NOT A BAND. The comment that used to sit here said so, back
+         when .today-field actually carried the dotted texture it describes; the field is bare
+         now (see the comment on the rule itself — the dots came off and nothing replaced them)
+         and what is left of .today-field is just the full-bleed margin/padding trick, which
+         works the same wherever it sits. -->
+    <div class="lift-sheet" id="scoreDetailSheet" style="display:none;">
+      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Today's score">
+        <div class="lift-sheet-head"><span>Today's score</span>
+          <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
+        <div class="fields">
     <div class="today-field">
     <div class="today-open">
     <div class="gauge-wrap">
@@ -5270,11 +5294,15 @@
          padding there, which would have left the last 16px above the head undotted. -->
     <div id="acceptanceStats" class="log" style="margin-top:0;"></div>
     </div><!-- /.today-field -->
+        </div>
+      </div>
+    </div>
 
-    <!-- The recommendation stack sits directly under the score it is reasoning about.
-         It used to sit below the warm-up, three sections down, so the one thing on the
-         page asking you to change today's session appeared after the page had already
-         told you what today's session was. -->
+    <!-- The recommendation stack sits directly under the calendar now, same spot it held
+         when the score's own band was still inline above it — the score moved into the
+         header and a sheet of its own, not this. It used to sit below the warm-up, three
+         sections down, so the one thing on the page asking you to change today's session
+         appeared after the page had already told you what today's session was. -->
     <div id="todayCardStack">
       <!-- 277px for one of two cards, above the session, on the screen you open every
            morning — and answering one only reveals the next. The counter is a handle now:
@@ -8560,7 +8588,12 @@ function settleEyes(){
      with the drop. */
   const onToday = today.classList.contains('active') && !eyeCtx.perched
                   && todayIsSetUp && todayScoreShown && !!chip;
-  const awayFromHeader = onToday;
+  // Never leaves the header any more — the score band onToday used to describe is a sheet
+  // now, not a scrolled-to part of the page, so there is no "down on the band" for the mark
+  // to settle onto. onToday is kept rather than deleted: it still decides whether the chip
+  // inside that sheet gets its own idle blink going, which is harmless to run whether or not
+  // anyone has the sheet open.
+  const awayFromHeader = false;
   eyesHome = awayFromHeader ? 'score' : 'header';
   applyEyeForm(header, 'header');
   // Never again. The perch is measured against and it anchors the trace load; it is not a
@@ -9538,27 +9571,14 @@ function updateEyePerch(){
   if(!anim('stayVisible') || eyeFlightTimer) return;
   const header = document.querySelector('header');
   if(!header) return;
-  const today = document.getElementById('panel-insights');
-  const onToday = !!(today && today.classList.contains('active'));
-  const score = document.getElementById('scoreEyes');
-  const headerBottom = header.getBoundingClientRect().bottom;
-  let want;
-  if(onToday && score){
-    // Gone once the score is behind the sticky header, back once it is clear of it again.
-    // The gap between the two thresholds is what stops it flickering at the boundary.
-    const r = score.getBoundingClientRect();
-    want = r.bottom < headerBottom + 4 ? true
-         : r.top > headerBottom + 18 ? false
-         : eyeCtx.perched;
-  } else {
-    // On every other tab there is nothing for it to hide behind — it lives in the wordmark,
-    // and the wordmark shrinks to nothing as you scroll, taking the mark down to a scale of
-    // zero with it. So it perched nowhere and simply vanished. The trigger here is how far
-    // that collapse has got rather than where anything else has scrolled to, with the same
-    // gap between the two thresholds.
-    const shrunk = window.scrollY / 100;
-    want = shrunk > 0.6 ? true : shrunk < 0.4 ? false : eyeCtx.perched;
-  }
+  // Today used to need its own branch here — the score band scrolled past in the page, and
+  // the mark perched once it went behind the sticky header. That band is a tap-to-open sheet
+  // now, nothing on Today scrolls past the header any differently than on any other tab, so
+  // Today takes the same path every other tab already did: the mark lives in the wordmark and
+  // perches as it shrinks to nothing on scroll, with the usual gap between the two thresholds
+  // so it does not flicker at the boundary.
+  const shrunk = window.scrollY / 100;
+  const want = shrunk > 0.6 ? true : shrunk < 0.4 ? false : eyeCtx.perched;
   /* The line beside the name has to get out of the mark's way, and the mark does not wait for
      a scroll to want that spot: with no score on screen — a fresh install, before the first
      one computes — `want` is true at scrollY 0 and the mark sits perched beside the word from
@@ -9571,35 +9591,12 @@ function updateEyePerch(){
   if(want === eyeCtx.perched) return;
   eyeCtx.perched = want;
 
-  if(!onToday || !score){
-    // Nowhere to fly from and nowhere to fly to — the mark is already in the header on these
-    // tabs, so this is the same move updateHeaderCollapse would make anyway. It used to be
-    // played as a 380ms hop from where the mark had been; it tears instead, for the same
-    // reason the perch on Today does.
-    const mark = document.querySelector('.header-mark');
-    updateHeaderCollapse();
-    if(mark && anim('tearOnFlight')) playGlitch(mark, 'markGlitch', EYE_ANIM.tearOnFlight.px, MARK_BLEED);
-    return;
-  }
-
-  /* TODAY PERCHES LIKE EVERYWHERE ELSE AGAIN.
-
-     For a while the mark fell to the log disc instead: the disc was a 56px circle, the mark
-     was a 56px circle, and it flew down the page and opened into a plus. That is gone with
-     the disc — the button is a pill with a word on it now, and there is nothing down there
-     for a sphere to land in.
-
-     So this is the same move the branch above makes for every other tab. The mark goes up
-     beside the word in the collapsed masthead, and it tears rather than flies, which is what
-     it does on every other tab and what the trip between pages does.
-
-     settleEyes is what actually moves it — it reads eyeCtx.perched, which has just flipped,
-     and decides whether the mark belongs on the chip or in the header. It is called here
-     rather than left to a timer because the flip has to be on screen by the next frame. */
-  const todayMark = document.querySelector('.header-mark');
+  // The mark is already in the header on every tab, Today included now, so this is the same
+  // move updateHeaderCollapse would make anyway. It used to be played as a 380ms hop from
+  // where the mark had been; it tears instead, for the same reason the perch always has.
+  const mark = document.querySelector('.header-mark');
   updateHeaderCollapse();
-  settleEyes();
-  if(todayMark && anim('tearOnFlight')) playGlitch(todayMark, 'markGlitch', EYE_ANIM.tearOnFlight.px, MARK_BLEED);
+  if(mark && anim('tearOnFlight')) playGlitch(mark, 'markGlitch', EYE_ANIM.tearOnFlight.px, MARK_BLEED);
 }
 // Beside the tab's name, on the one row the collapsed header still has. Measured off the
 // text itself rather than the block, which is full width and would put the mark off-screen.
@@ -10762,18 +10759,9 @@ function activateTab(name, opts){
   if(RETIRED_TABS[name]) name = RETIRED_TABS[name];
   if(!document.getElementById('panel-' + name)) name = 'insights';
   // Measured before the panel swap below hides it, since a hidden panel has no boxes.
-  const wasOnToday = document.getElementById('panel-insights').classList.contains('active');
-  const eyesLeaving = wasOnToday && name !== 'insights' && eyesHome === 'score';
   // Freshness belongs to Today. Applied after the body class settles below, and cleared on
   // the way out so the pair does not carry last night's sleep onto a tab about something else.
   setTimeout(applyEyeFreshness, 0);
-  // Same reason: the header is shared by every tab and the swipe is Today's alone.
-  let eyesFrom = null;
-  if(eyesLeaving){
-    const r = document.getElementById('scoreEyes').getBoundingClientRect();
-    const headerBottom = document.querySelector('header').getBoundingClientRect().bottom;
-    eyesFrom = { x:r.left, y:r.top, offscreen: r.bottom < headerBottom || r.top > window.innerHeight };
-  }
 
   tabs.forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
   document.body.className = document.body.className.replace(/\btab-\w+\b/g, '').trim();
@@ -10871,11 +10859,10 @@ function activateTab(name, opts){
   eyeScrollMuteUntil = Date.now() + 900;
   window.scrollTo(0, 0);
 
-  // Whether this switch actually moves the mark. Computed BEFORE the two calls below, since
-  // moveEyes is what changes eyesHome — reading it afterwards always says no.
-  const eyesFlying = name === 'insights' ? (eyesHome !== 'score') : !!eyesLeaving;
-  if(name === 'insights'){ if(eyesHome !== 'score') moveEyes('score'); }
-  else if(eyesLeaving) moveEyes('header', eyesFrom);
+  // The mark no longer flies to Today's own score band — that band is a tap-to-open sheet
+  // now, not a scrolled part of the page, and #headerMark is its one permanent home instead.
+  // eyesHome never becomes 'score' any more, so there is nothing left for this switch to fly.
+  const eyesFlying = false;
   /* NO TEAR ON A TAB SWITCH. It was beat two of four — page slides, mark tears, page lands,
      titles extend — and read as the mark coming loose rather than as punctuation: a 6px
      throw on the one element that is meant to be the fixed point of the header, played every
@@ -11774,7 +11761,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.01.664';
+const APP_VERSION = '2026.10.01.665';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12123,6 +12110,7 @@ const APP_NOTES = {
   '2026.09.29.662': 'Tapping a day on the calendar no longer opens a popup for it at all — the day’s workout shows right below the board instead, updating in place as you tap between days.',
   '2026.09.29.663': '"Plan the week" — goals, split, deload, Generate and the rest — is a single button that opens a sheet now, instead of a whole section always sitting open on the page.',
   '2026.10.01.664': 'Today’s workout no longer shows twice. Tapping today on the calendar now shows the full card — Replace, Reschedule, Skip and all — right there; every other day still gets the plain one it always had.',
+  '2026.10.01.665': 'The score and the mascot moved into the header, compact — tap the number for the full detail (yesterday’s ghost, the week’s trend, the block position) in a sheet instead of it all sitting below the calendar.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -22537,6 +22525,18 @@ function scoreRollFrom(out){
   const prev = parseInt(out.dataset.value || out.textContent);
   return uiArriving() ? NaN : prev;
 }
+/* The header's own copy of the number, kept separate from #overallScoreOut rather than read
+   off it: showScoreDay repoints that element at whatever day the trace is being browsed to,
+   and the header badge is not a thing you browse — it is always today's, or nothing. Called
+   from generateRecommendations' two outcomes (a score, or not logged yet), not from the roll
+   itself, so it jumps straight to the answer instead of re-running a second animation. */
+function syncHeaderScore(value){
+  const el = document.getElementById('headerScoreOut');
+  if(!el) return;
+  if(value == null){ el.textContent = '—'; delete el.dataset.value; return; }
+  el.textContent = value;
+  el.dataset.value = value;
+}
 function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, entry, srResult){
   const out = document.getElementById('overallScoreOut');
   const label = document.getElementById('overallScoreLabel');
@@ -25001,6 +25001,25 @@ if(updateGoalsBtn) updateGoalsBtn.addEventListener('click', ()=>{
 });
 document.getElementById('saveGoalsBtn').addEventListener('click', async ()=>{
   if(await saveGoalsFromForm('saveGoalsResult')) goalSheet.close();
+});
+
+/* Today's score, in detail. The hero band moved here unchanged from where it used to sit
+   inline below the calendar — same elements, same ids, same renders; only #headerScoreBtn,
+   compact in the header, is new. No reload on open, for the same reason the two sheets above
+   don't: the band keeps itself current independently of whether this happens to be open. */
+const scoreDetailSheet = wireSheet('scoreDetailSheet');
+document.getElementById('headerScoreBtn')?.addEventListener('click', ()=>{
+  scoreDetailSheet.open();
+  // Everything inside measures itself off its own box — layoutBandColumn, the trace, the
+  // suggestion preview — and while the sheet sits display:none that box is a zero rect, so
+  // whatever they last computed was computed against nothing. Redone now that the sheet
+  // actually has a size to measure, the same way a resize already would.
+  if(typeof relayoutColumn === 'function') relayoutColumn();
+  if(typeof paintRecLeft === 'function') paintRecLeft();
+  // The chip beside the number only counts as on screen once its sheet is actually open —
+  // todayChipEl reads offsetParent, which display:none denies it — so settleEyes is called
+  // again here to pick the chip's idle blink back up now that it can.
+  settleEyes();
 });
 
 /* The mobility test. setMobilityAssessmentOpen still owns the state — this only gives the
@@ -28834,7 +28853,10 @@ async function applyTodayStage(){
   // has been logged there is no reading to report, and three pieces of chrome saying so is
   // worse than saying nothing — the first score means more arriving into an empty space.
   const seen = await hasAnyRecoveryEntry();
-  const gauge = panel.querySelector('.gauge-wrap');
+  // document-wide rather than scoped to panel: the band moved into #scoreDetailSheet, which
+  // wireSheet relocates to document.body on first use, so it is no longer a descendant of
+  // #panel-insights by the time this runs.
+  const gauge = document.querySelector('.gauge-wrap');
   const trace = document.getElementById('scoreTrace');
   // todayBlockContext is deliberately not in this list any more: it is hidden for good, and
   // handing it back a display of '' here would have undone that on the first render.
@@ -28844,7 +28866,7 @@ async function applyTodayStage(){
      stand without one. Nothing asks now, so there is nothing to rehome. */
   // The band is the score's own ground. Emptied but still standing it is a black hole at the
   // top of the page, so it collapses with what it was holding.
-  const band = panel.querySelector('.today-open');
+  const band = document.querySelector('.today-open');
   if(band) band.classList.toggle('today-open-empty', !seen);
   if(todayScoreShown !== seen){ todayScoreShown = seen; settleEyes(); }
 }
@@ -33151,6 +33173,7 @@ async function generateRecommendations(){
     const scoreLbl = document.getElementById('overallScoreLabel');
     if(scoreOut){ scoreOut.textContent = '\u2014'; scoreOut.classList.add('score-waiting'); delete scoreOut.dataset.value; }
     if(scoreLbl) scoreLbl.textContent = 'Not logged yet';
+    syncHeaderScore(null);
     // The morning CTA is rendered INTO the card container, and the container now folds — so
     // collapsing the stack hid the one action this state exists to offer. It is not a card
     // and does not belong behind the stack's handle: shown outright, with the counter and
@@ -33190,6 +33213,7 @@ async function generateRecommendations(){
   renderReadinessConfidence(srResult);
   const overallShown = updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, entry, srResult);
   renderScoreTrace(overallShown);
+  syncHeaderScore(overallShown);
 
   /* Whether any of the cut-offs this setting owns is what put a signal on the card. Only then
      does the card say so — a card built entirely from a hard run in the last 48h and a
