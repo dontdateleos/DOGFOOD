@@ -1087,18 +1087,18 @@
   .header-score:active{ background:rgba(var(--ink-rgb),0.15); }
   /* REPLACES THE FULL-WIDTH "LOG THIS MORNING" STRIP.
      That strip was a lime cta-strip sized to the whole page, for a task ("type one number")
-     this tiny instead of the one-line reminder it should be — a dot on the mark you already
+     this tiny instead of the one-line reminder it should be — a mark on the mascot you already
      look at every time you open the app, gone the moment there is something to show instead.
      A sibling of the mark's own svg/eye-gaze rather than a separate element positioned
      against it, so it rides every scroll-collapse and perch move .header-mark already makes
-     without needing any position math of its own. */
-  .header-mark .header-log-badge{ position:absolute; top:-1px; right:-1px; width:11px; height:11px;
+     without needing any position math of its own. Purely visual (aria-hidden, pointer-events
+     none) — the mark itself is the tap target now, see #headerMark's own click wiring, so
+     there is nothing here to compete with .header-mark::after's hit-area expansion for. */
+  .header-mark .header-log-badge{ position:absolute; top:-2px; right:-2px; width:12px; height:12px;
     border-radius:50%; background:var(--block-orange); border:1.5px solid var(--banner);
-    cursor:pointer;
-    /* .header-mark::after is an invisible hit-area expander with no z-index of its own,
-       and a pseudo-element paints after every real child regardless of DOM order — without
-       this, that invisible layer sits on top of the badge and swallows its taps. */
-    z-index:1; }
+    display:flex; align-items:center; justify-content:center; pointer-events:none;
+    font-family:var(--sans); font-size:9px; font-weight:var(--fw-bold); line-height:1;
+    color:var(--banner); }
   .header-mark .header-log-badge[hidden]{ display:none; }
   /* The rest day plate. Same black, same cream rule, same mono caption as a section heading —
      it is the page's way of saying there is nothing here, so it should look like the app
@@ -5073,7 +5073,7 @@
          it has always been until it turns. The .eye-gaze pair stays in the DOM and stays
          hidden here — every other copy of the mark still uses it, and the trip down to the
          score is a cut rather than a morph, so the two never have to agree mid-flight. -->
-    <div class="header-mark eyes mark-solid" id="headerMark" role="button" tabindex="0" aria-label="Back to today"><svg class="mark-cube" id="headerMarkCube" aria-hidden="true"></svg><div class="eye-gaze"><div class="eye-motion"><span></span><span></span></div></div><span class="header-log-badge" id="headerLogBadge" role="button" tabindex="0" aria-label="Log this morning" hidden></span></div>
+    <div class="header-mark eyes mark-solid" id="headerMark" role="button" tabindex="0" aria-label="Log this morning"><svg class="mark-cube" id="headerMarkCube" aria-hidden="true"></svg><div class="eye-gaze"><div class="eye-motion"><span></span><span></span></div></div><span class="header-log-badge" id="headerLogBadge" aria-hidden="true" hidden>!</span></div>
   <div class="tabs">
     <!-- Weekly merged into Today in .659ish — the calendar strip and the week's planning
          controls live on this tab now instead of a separate one. See RETIRED_TABS for the
@@ -10909,6 +10909,9 @@ function activateTab(name, opts){
   }
   if(name==='settings'){ loadTrainingSetup(); renderAppVersion(); applyDevMode(); if(devMode) renderEyeAnimList(); }
   updateFooterVisibility();
+  // The log badge only ever belongs on Today — gone the instant you leave, back the instant
+  // you return if todayNeedsLog is still true.
+  refreshHeaderLogBadge();
   const backdropEl = document.getElementById('scrollBackdrop');
   backdropEl.style.backgroundColor = TAB_BACKDROP_COLOR[name] || TAB_BACKDROP_COLOR.insights;
   const tabButton = document.querySelector(`.tab[data-tab="${name}"]`);
@@ -11836,7 +11839,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.01.673';
+const APP_VERSION = '2026.10.01.674';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12194,6 +12197,7 @@ const APP_NOTES = {
   '2026.10.01.671': 'Warm-up and cooldown lines now match the workout’s own plain look — same size, same weight, the dose rejoined on one line, the stage tags (RAISE/PRIME/ROLL/HOLD/PNF…) read as plain text instead of filled plates.',
   '2026.10.01.672': 'Replace/Reschedule/Skip now sit after the cooldown, not between the workout and it — change what today is after you’ve seen the whole of it, warm-up and cooldown included.',
   '2026.10.01.673': 'The full-width "Log this morning" strip is gone. The same reminder is a tiny orange dot on the mascot in the header now — tap it to jump straight to the logging field, gone the moment there is a real entry for today.',
+  '2026.10.01.674': 'The reminder dot is a "!" now, the whole mascot is the tap target (not just the tiny mark), and it only ever shows on Today — switch tabs and it is gone, come back and it is there again if you still have not logged.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -33223,12 +33227,13 @@ const TENDINOPATHY_PROTOCOL = {
   low: 'Return to sport: plyometric and energy-storage loading (hopping, bounding) reintroduced progressively, criteria-based on pain ≤3/10 next-day — not purely time-based.'
 };
 
-// Wired once — the badge is a permanent child of #headerMark now, not rebuilt on every
-// render the way the old cta-strip was, so attaching this inside generateRecommendations
-// itself would pile up a new listener on every call.
+// Wired once, on the mark itself rather than the tiny badge inside it — the badge marks
+// whether there's something to log, but the whole mark is the tap target, so missing it by a
+// few pixels still works. Set up here rather than inside generateRecommendations, which would
+// pile up a new listener on every render.
 (function wireHeaderLogBadge(){
-  const badge = document.getElementById('headerLogBadge');
-  if(!badge) return;
+  const mark = document.getElementById('headerMark');
+  if(!mark) return;
   const go = ()=>{
     activateTab('settings');
     setTimeout(()=>{
@@ -33240,12 +33245,22 @@ const TENDINOPATHY_PROTOCOL = {
       if(el) setTimeout(()=> el.focus({ preventScroll:true }), 260);
     }, 420);
   };
-  badge.addEventListener('click', e=>{ e.stopPropagation(); go(); });
-  badge.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); e.stopPropagation(); go(); } });
+  mark.addEventListener('click', go);
+  mark.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
 })();
+// Whether today still needs a morning entry, independent of which tab is showing — the badge
+// itself only ever shows on Today, but the flag has to survive a trip to another tab and back
+// since generateRecommendations (the only thing that knows the answer) runs on Today alone.
+let todayNeedsLog = false;
 function setHeaderLogBadge(show){
+  todayNeedsLog = show;
+  refreshHeaderLogBadge();
+}
+// Called on every tab switch as well as whenever todayNeedsLog changes, so the badge is gone
+// the instant you leave Today rather than riding along on a mark that is shared by every tab.
+function refreshHeaderLogBadge(){
   const badge = document.getElementById('headerLogBadge');
-  if(badge) badge.hidden = !show;
+  if(badge) badge.hidden = !(todayNeedsLog && currentTabName() === 'insights');
 }
 
 async function generateRecommendations(){
