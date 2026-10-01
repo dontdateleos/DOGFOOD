@@ -5149,6 +5149,74 @@
              open (.here), so there's nothing lost by dropping the sheet's own title bar. -->
         <div class="week-day-detail-title" id="weekWheelDetailTitle"></div>
         <div class="week-wheel-detail" id="weekWheelDetail"></div>
+        <!-- TODAY'S OWN CARD LIVES HERE TOO, NOT A SECOND TIME FURTHER DOWN.
+             This used to also render below, in its own always-on section — so with today
+             selected (the default) the same workout showed twice: once as a plain card here,
+             once in full below with Replace/Reschedule/Skip and the rest. renderWeekGrid now
+             shows this group instead of #weekWheelDetail when the tapped day is today, and
+             hides it otherwise — every day but today never had those extra features to begin
+             with, so nothing is lost by the simple card standing in for them. -->
+        <div id="todayRichArea" style="display:none;">
+          <div class="session-type" id="todaySessionTypePills">
+            <div class="type-btn active" data-type="strength">Strength</div>
+            <div class="type-btn" data-type="run">Run</div>
+            <div class="type-btn" data-type="mobility">Mobility</div>
+          </div>
+
+          <!-- THE PAGE RUNS IN THE ORDER YOU DO IT: warm up, session, cool down.
+
+               It has been the other way round. The session was moved above the warm-up because
+               the warm-up is the tallest block on the page and pushed the session's own title to
+               y=873 against a viewport of 852 - so on a strength day, finding out what today IS
+               meant scrolling. That is still true, and measured again at this build it is y=913,
+               because the section bands added height above it.
+
+               Kept anyway, deliberately. Numbering the sections made the old order state something
+               false: the band on the session read 01 and the warm-up 02, which is not the order
+               you do them in, and a counter that lies about sequence is worse than a card you
+               scroll to. The score, the mark and the day's flags are all still above the fold;
+               what is below it now is the exercise list, which you scroll to read regardless. -->
+          <div id="warmupSection" style="display:none; margin-top:14px;">
+            <div class="group quiet" style="margin-top:0;">
+              <div class="group-head"><div class="group-title">Warm-up</div><span class="head-est" id="warmupEstimate"></span><button type="button" class="prep-done-btn" id="warmupDoneBtn">Mark done</button></div>
+              <div class="chip-row" id="warmupChips" style="display:none;"></div>
+              <div class="fields">
+                <div id="warmupCards"></div>
+                <details class="glossary">
+                  <summary>what the stages mean</summary>
+                  <div class="gloss-item"><span class="gloss-term">RAISE</span>Get warm and get blood moving — the jog, or the opening kilometre of an easy run.</div>
+                  <div class="gloss-item"><span class="gloss-term">MOVE</span>Take the joints you are about to load through their range, and wake the muscles that hold them.</div>
+                  <div class="gloss-item"><span class="gloss-term">PRIME</span>The last step before the work: strides before a hard run, ramp-up sets before a lift. The one most people skip. Called potentiation.</div>
+                  <div class="gloss-item"><span class="gloss-term">×8-10</span>Reps. <span class="gloss-term">30s</span> is a hold. <span class="gloss-term">/side</span> means that each way, not in total.</div>
+                </details>
+              </div>
+            </div>
+          </div>
+
+
+          <div id="todayWorkoutArea">
+            <div id="todayWorkoutSummary"></div>
+          </div>
+
+          <div id="mobilitySection" style="display:none; margin-top:14px;">
+            <div class="group quiet" style="margin-top:0;">
+              <div class="group-head"><div class="group-title">Cooldown</div><span class="head-est" id="cooldownEstimate"></span><button type="button" class="prep-done-btn" id="cooldownDoneBtn">Mark done</button></div>
+              <div class="chip-row" id="cooldownChips" style="display:none;"></div>
+              <div class="fields">
+                <div id="mobilityCards"></div>
+                <details class="glossary">
+                  <summary>what the stages mean</summary>
+                  <div class="gloss-item"><span class="gloss-term">ROLL</span>Foam roller or ball, slow, pausing where it is sore. Takes the edge off before you move.</div>
+                  <div class="gloss-item"><span class="gloss-term">MOVE</span>Through the range under your own control, no holding. Restores the range the session used up. Called dynamic stretching.</div>
+                  <div class="gloss-item"><span class="gloss-term">HOLD</span>Hold the stretch for the time given &mdash; the one that adds range, which is why it comes last. Static stretching.</div>
+                  <!-- A stage on screen with no line here is a label you have to guess at, which is
+                       what the glossary exists to stop. -->
+                  <div class="gloss-item"><span class="gloss-term">PNF</span>In the stretch: push against your hand or a band for six seconds, let go, sink deeper. Three or four rounds, on one area only.</div>
+                </details>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -5241,65 +5309,6 @@
            the same test the note uses to decide it has no next session to name. -->
       <button type="button" class="rest-build" id="restBuildBtn" hidden>Build the next two weeks</button>
       <button type="button" class="rest-build" id="restNextBtn" hidden>View next workout</button>
-    </div>
-    <div class="session-type" id="todaySessionTypePills">
-      <div class="type-btn active" data-type="strength">Strength</div>
-      <div class="type-btn" data-type="run">Run</div>
-      <div class="type-btn" data-type="mobility">Mobility</div>
-    </div>
-
-    <!-- THE PAGE RUNS IN THE ORDER YOU DO IT: warm up, session, cool down.
-
-         It has been the other way round. The session was moved above the warm-up because
-         the warm-up is the tallest block on the page and pushed the session's own title to
-         y=873 against a viewport of 852 - so on a strength day, finding out what today IS
-         meant scrolling. That is still true, and measured again at this build it is y=913,
-         because the section bands added height above it.
-
-         Kept anyway, deliberately. Numbering the sections made the old order state something
-         false: the band on the session read 01 and the warm-up 02, which is not the order
-         you do them in, and a counter that lies about sequence is worse than a card you
-         scroll to. The score, the mark and the day's flags are all still above the fold;
-         what is below it now is the exercise list, which you scroll to read regardless. -->
-    <div id="warmupSection" style="display:none; margin-top:14px;">
-      <div class="group quiet" style="margin-top:0;">
-        <div class="group-head"><div class="group-title">Warm-up</div><span class="head-est" id="warmupEstimate"></span><button type="button" class="prep-done-btn" id="warmupDoneBtn">Mark done</button></div>
-        <div class="chip-row" id="warmupChips" style="display:none;"></div>
-        <div class="fields">
-          <div id="warmupCards"></div>
-          <details class="glossary">
-            <summary>what the stages mean</summary>
-            <div class="gloss-item"><span class="gloss-term">RAISE</span>Get warm and get blood moving — the jog, or the opening kilometre of an easy run.</div>
-            <div class="gloss-item"><span class="gloss-term">MOVE</span>Take the joints you are about to load through their range, and wake the muscles that hold them.</div>
-            <div class="gloss-item"><span class="gloss-term">PRIME</span>The last step before the work: strides before a hard run, ramp-up sets before a lift. The one most people skip. Called potentiation.</div>
-            <div class="gloss-item"><span class="gloss-term">×8-10</span>Reps. <span class="gloss-term">30s</span> is a hold. <span class="gloss-term">/side</span> means that each way, not in total.</div>
-          </details>
-        </div>
-      </div>
-    </div>
-
-
-    <div id="todayWorkoutArea">
-      <div id="todayWorkoutSummary"></div>
-    </div>
-
-    <div id="mobilitySection" style="display:none; margin-top:14px;">
-      <div class="group quiet" style="margin-top:0;">
-        <div class="group-head"><div class="group-title">Cooldown</div><span class="head-est" id="cooldownEstimate"></span><button type="button" class="prep-done-btn" id="cooldownDoneBtn">Mark done</button></div>
-        <div class="chip-row" id="cooldownChips" style="display:none;"></div>
-        <div class="fields">
-          <div id="mobilityCards"></div>
-          <details class="glossary">
-            <summary>what the stages mean</summary>
-            <div class="gloss-item"><span class="gloss-term">ROLL</span>Foam roller or ball, slow, pausing where it is sore. Takes the edge off before you move.</div>
-            <div class="gloss-item"><span class="gloss-term">MOVE</span>Through the range under your own control, no holding. Restores the range the session used up. Called dynamic stretching.</div>
-            <div class="gloss-item"><span class="gloss-term">HOLD</span>Hold the stretch for the time given &mdash; the one that adds range, which is why it comes last. Static stretching.</div>
-            <!-- A stage on screen with no line here is a label you have to guess at, which is
-                 what the glossary exists to stop. -->
-            <div class="gloss-item"><span class="gloss-term">PNF</span>In the stretch: push against your hand or a band for six seconds, let go, sink deeper. Three or four rounds, on one area only.</div>
-          </details>
-        </div>
-      </div>
     </div>
 
     <!-- Hidden by request. The element stays so refreshRecHistory still has somewhere to
@@ -11765,7 +11774,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.09.29.663';
+const APP_VERSION = '2026.10.01.664';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12113,6 +12122,7 @@ const APP_NOTES = {
   '2026.09.29.661': 'Tapping a day on the calendar no longer opens its sheet before that day’s own workout has actually loaded into it — a fast enough tap could catch it still showing whichever day was open before.',
   '2026.09.29.662': 'Tapping a day on the calendar no longer opens a popup for it at all — the day’s workout shows right below the board instead, updating in place as you tap between days.',
   '2026.09.29.663': '"Plan the week" — goals, split, deload, Generate and the rest — is a single button that opens a sheet now, instead of a whole section always sitting open on the page.',
+  '2026.10.01.664': 'Today’s workout no longer shows twice. Tapping today on the calendar now shows the full card — Replace, Reschedule, Skip and all — right there; every other day still gets the plain one it always had.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -18947,11 +18957,22 @@ async function renderWeekGrid(){
   const activeDate = dates[activeWheelDayIndex];
   const activeDayData = dayBlocks[activeWheelDayIndex];
   const realBlocks = activeDayData.blocks.filter(b => b.block);
-  const detailHtml = weekDayDetailHtml(activeDate, realBlocks, activeDayData.off);
   // Named here now that it isn't a sheet's own title bar — see #weekWheelDetailTitle.
   const titleEl = document.getElementById('weekWheelDetailTitle');
   if(titleEl) titleEl.textContent = WEEK_DAY_FULL[activeWheelDayIndex]
     + (activeDate === todayStr ? ' · today' : '');
+  // TODAY GETS ITS OWN CARD HERE INSTEAD OF THE PLAIN ONE — see #todayRichArea, moved up
+  // from further down the page. Every other day only ever had the plain card, so this is
+  // the one place the two views fork rather than two places showing the same thing.
+  const isToday = activeDate === todayStr;
+  const richArea = document.getElementById('todayRichArea');
+  if(richArea) richArea.style.display = isToday ? '' : 'none';
+  detailCol.style.display = isToday ? 'none' : '';
+  // Re-settles the rest-day shape (pills, workout area, the rest plate's own section)
+  // whenever the tapped day becomes today again — the same call tab activation makes,
+  // needed again here because switching days doesn't re-enter the tab.
+  if(isToday) await applyRestDayShape();
+  const detailHtml = isToday ? '' : weekDayDetailHtml(activeDate, realBlocks, activeDayData.off);
   /* The tallest-day reservation is gone with the pane that needed it. It existed because the
      detail sat on the page under the picker, so a light day next to a heavy one moved the
      load bars and the buttons below it under your thumb while you were still choosing. Inline
