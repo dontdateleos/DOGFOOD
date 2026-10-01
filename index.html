@@ -3977,18 +3977,6 @@
     text-transform:uppercase; letter-spacing:-0.02em; margin-bottom:var(--sp-3); }
   .lift-sheet-x{ width:auto; flex:none; height:30px; padding:0 10px; background:transparent;
     color:var(--bg); border:2px solid rgba(var(--ink-rgb),0.4); font-size:var(--fs-md); }
-  /* MENU ROWS. Nothing already in the app fit a plain tap-to-navigate list — .skill-lane is a
-     3-column grid built for a rung of data trailing the name, .goal-row a bordered card —
-     so this is new: a plain row with a trailing chevron, the same glyph and opacity
-     .wheel-workout-chevron already uses for "tap to open something else". */
-  .menu-sheet .lift-sheet-panel{ height:auto; max-height:70vh; }
-  .menu-row{ display:flex; align-items:center; justify-content:space-between; width:100%;
-    min-height:48px; padding:14px 0; background:transparent; border:none;
-    border-bottom:2px solid rgba(var(--ink-rgb),0.18);
-    font-family:var(--sans); font-size:var(--fs-md); font-weight:var(--fw-bold);
-    color:var(--bg); text-align:left; }
-  .menu-row:last-child{ border-bottom:none; }
-  .menu-row-chevron{ opacity:0.5; font-size:var(--fs-lg); }
   /* Save/Clear were a fixed footer bar that only stood while Settings' Logging section was
      open; inside a sheet they are just the sheet's last two buttons, laid out the same
      side-by-side, joined-edge way the footer always did. */
@@ -5095,7 +5083,7 @@
          it has always been until it turns. The .eye-gaze pair stays in the DOM and stays
          hidden here — every other copy of the mark still uses it, and the trip down to the
          score is a cut rather than a morph, so the two never have to agree mid-flight. -->
-    <div class="header-mark eyes mark-solid" id="headerMark" role="button" tabindex="0" aria-label="Menu"><svg class="mark-cube" id="headerMarkCube" aria-hidden="true"></svg><div class="eye-gaze"><div class="eye-motion"><span></span><span></span></div></div><span class="header-log-badge" id="headerLogBadge" aria-hidden="true" hidden>!</span></div>
+    <div class="header-mark eyes mark-solid" id="headerMark" role="button" tabindex="0" aria-label="Log this morning"><svg class="mark-cube" id="headerMarkCube" aria-hidden="true"></svg><div class="eye-gaze"><div class="eye-motion"><span></span><span></span></div></div><span class="header-log-badge" id="headerLogBadge" aria-hidden="true" hidden>!</span></div>
   <div class="tabs">
     <!-- Weekly merged into Today in .659ish — the calendar strip and the week's planning
          controls live on this tab now instead of a separate one. See RETIRED_TABS for the
@@ -5390,37 +5378,23 @@
       </div>
     </div>
 
-    <!-- THE HEADER MENU. Tapping the mascot used to jump straight into Settings' Logging
-         section; a short menu first now, both because logging moved into a sheet of its own
-         (right below) and because the mark is reachable from every tab, so Body/Data/Settings
-         are each one tap closer from here than finding the tab bar itself. -->
-    <div class="lift-sheet menu-sheet" id="headerMenuSheet" style="display:none;">
-      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Menu">
-        <div class="lift-sheet-head"><span>Menu</span>
-          <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
-        <div class="fields">
-          <button type="button" class="menu-row" id="menuLogBtn">Log this morning<span class="menu-row-chevron">&rsaquo;</span></button>
-          <button type="button" class="menu-row" data-menu-tab="injuries">Body<span class="menu-row-chevron">&rsaquo;</span></button>
-          <button type="button" class="menu-row" data-menu-tab="data">Data<span class="menu-row-chevron">&rsaquo;</span></button>
-          <button type="button" class="menu-row" data-menu-tab="settings">Settings<span class="menu-row-chevron">&rsaquo;</span></button>
-        </div>
-      </div>
-    </div>
-
     <!-- THE MORNING CHECK-IN, ON ITS OWN NOW. It lived as a collapsible section on Settings'
          "Your data" band before this (see the comment that used to sit there) and moves once
-         more, into a sheet reached from the header menu instead — logging this morning's
-         numbers isn't a settings screen's business. #recoveryDataView keeps its id, which its
-         own layout rules and the trace's backfill both go through; every field below keeps
-         its id too, since collectRecoveryEntry/fillRecoveryForm/computeScores all just do
-         document.getElementById and never cared which panel they sat in. Save/Clear used to
-         be a fixed footer bar (#footerRecovery) that only stood while this section was open
-         on Settings; a sheet is already its own modal layer, so the two buttons are just the
-         last thing in it now, the same way Goals' Save sits inside #goalSheet rather than in
-         a footer of its own. -->
+         more, into a sheet the header mark opens directly — a menu sat between the two for one
+         version, offering Body/Data/Settings alongside it, and was cut back out: the mark has
+         exactly one job. #recoveryDataView keeps its id, which its own layout rules and the
+         trace's backfill both go through; every field below keeps its id too, since
+         collectRecoveryEntry/fillRecoveryForm/computeScores all just do document.getElementById
+         and never cared which panel they sat in. Save/Clear used to be a fixed footer bar
+         (#footerRecovery) that only stood while this section was open on Settings; a sheet is
+         already its own modal layer, so the two buttons are just the last thing in it now, the
+         same way Goals' Save sits inside #goalSheet rather than in a footer of its own. The
+         title text itself flips between "Log" and "Edit" — see refreshHeaderLogBadge, which
+         already knows whether today has a real entry from the same todayNeedsLog flag that
+         drives the badge. -->
     <div class="lift-sheet" id="morningLogSheet" style="display:none;">
       <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Log this morning">
-        <div class="lift-sheet-head"><span>Log this morning</span>
+        <div class="lift-sheet-head"><span id="morningLogSheetTitle">Log this morning</span>
           <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
         <div class="fields">
     <div id="recoveryDataView">
@@ -11884,7 +11858,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.01.677';
+const APP_VERSION = '2026.10.01.678';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12246,6 +12220,7 @@ const APP_NOTES = {
   '2026.10.01.675': 'Tapping any day on the week calendar now shows its reps, sets and weight too, the same plain dose Today already prints under each name — warm-up and cooldown still only generate for today itself.',
   '2026.10.01.676': 'The reminder mark on the mascot is bigger — easier to spot, easier to tap.',
   '2026.10.01.677': 'Tapping the mascot opens a menu now — log this morning, or jump to Body, Data or Settings. Logging moved into its own popup and is gone from Settings entirely.',
+  '2026.10.01.678': 'The menu is gone — tapping the mascot opens the morning log straight away again, titled Log this morning or Edit this morning depending on whether today is already done.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -25186,26 +25161,18 @@ document.getElementById('headerScoreBtn')?.addEventListener('click', ()=>{
   settleEyes();
 });
 
-/* The header menu, and the morning log sheet it opens into. Tapping the mark used to jump
-   straight to Settings' Logging section; a menu first now, since that section is gone from
-   Settings entirely (see the comment where it used to sit) and the mark's reminder badge is
-   only one of several things worth reaching from here. refreshRecoveryLog is called by hand
+/* The morning log sheet the header mark opens directly. refreshRecoveryLog is called by hand
    on the way in — it used to run from setCollapsed('logging', false), which no longer exists
-   for this key. */
-const headerMenuSheet = wireSheet('headerMenuSheet');
+   for this key. The title flips between "Log" and "Edit" off todayNeedsLog, the same flag the
+   badge itself reads, so the two always agree on whether today already has a real entry. */
 const morningLogSheet = wireSheet('morningLogSheet');
-document.getElementById('menuLogBtn')?.addEventListener('click', ()=>{
-  headerMenuSheet.close();
+function openMorningLogSheet(){
+  const title = document.getElementById('morningLogSheetTitle');
+  if(title) title.textContent = todayNeedsLog ? 'Log this morning' : 'Edit this morning';
   refreshRecoveryLog();
   morningLogSheet.open();
   setTimeout(()=> document.getElementById('durationHrs')?.focus({ preventScroll:true }), 280);
-});
-document.querySelectorAll('#headerMenuSheet [data-menu-tab]').forEach(row=>{
-  row.addEventListener('click', ()=>{
-    headerMenuSheet.close();
-    activateTab(row.dataset.menuTab);
-  });
-});
+}
 
 /* The mobility test. setMobilityAssessmentOpen still owns the state — this only gives the
    sheet the three ways out that do not go through the header button, and hands each of them
@@ -33328,15 +33295,14 @@ const TENDINOPATHY_PROTOCOL = {
 // Wired once, on the mark itself rather than the tiny badge inside it — the badge marks
 // whether there's something to log, but the whole mark is the tap target, so missing it by a
 // few pixels still works. Set up here rather than inside generateRecommendations, which would
-// pile up a new listener on every render. Opens the header menu now rather than jumping
-// straight to Settings' old Logging section, which doesn't exist any more — see
-// headerMenuSheet/morningLogSheet, wired alongside the app's other sheets.
+// pile up a new listener on every render. Opens the morning log sheet straight away — a menu
+// sat in between for one version, offering Body/Data/Settings alongside it, and was cut back
+// out: the mark has exactly one job, logging or editing today's entry.
 (function wireHeaderLogBadge(){
   const mark = document.getElementById('headerMark');
   if(!mark) return;
-  const go = ()=> headerMenuSheet.open();
-  mark.addEventListener('click', go);
-  mark.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
+  mark.addEventListener('click', openMorningLogSheet);
+  mark.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openMorningLogSheet(); } });
 })();
 // Whether today still needs a morning entry, independent of which tab is showing — the badge
 // itself only ever shows on Today, but the flag has to survive a trip to another tab and back
@@ -33348,9 +33314,12 @@ function setHeaderLogBadge(show){
 }
 // Called on every tab switch as well as whenever todayNeedsLog changes, so the badge is gone
 // the instant you leave Today rather than riding along on a mark that is shared by every tab.
+// The mark's own aria-label rides along with it, since a screen reader has no badge to read.
 function refreshHeaderLogBadge(){
   const badge = document.getElementById('headerLogBadge');
   if(badge) badge.hidden = !(todayNeedsLog && currentTabName() === 'insights');
+  const mark = document.getElementById('headerMark');
+  if(mark) mark.setAttribute('aria-label', todayNeedsLog ? 'Log this morning' : 'Edit this morning');
 }
 
 async function generateRecommendations(){
