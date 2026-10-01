@@ -5452,7 +5452,12 @@
            BLOCK look like a footnote to the controls that build a single week. Everything
            else on the screen is a numbered section; the counter is per-panel and automatic,
            so the sections below simply renumber. -->
-      <div class="group form-panel">
+      <!-- Hidden by request. The children stay in the DOM rather than being removed:
+           renderBlockLoadChart bails out the moment #weekBlockStrip doesn't exist, and its
+           side effect of setting wheelBlockPos is what the separate Week group's "N of M"
+           header badge (#weekBlockPos) reads — removing this section's nodes would have
+           silently blanked that badge too. Visual hide only. -->
+      <div class="group form-panel" style="display:none;">
         <div class="group-head"><div class="group-title">Training load</div></div>
         <div class="fields">
           <div id="weekConsistency"></div>
@@ -11761,7 +11766,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.01.665';
+const APP_VERSION = '2026.10.01.666';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12111,6 +12116,7 @@ const APP_NOTES = {
   '2026.09.29.663': '"Plan the week" — goals, split, deload, Generate and the rest — is a single button that opens a sheet now, instead of a whole section always sitting open on the page.',
   '2026.10.01.664': 'Today’s workout no longer shows twice. Tapping today on the calendar now shows the full card — Replace, Reschedule, Skip and all — right there; every other day still gets the plain one it always had.',
   '2026.10.01.665': 'The score and the mascot moved into the header, compact — tap the number for the full detail (yesterday’s ghost, the week’s trend, the block position) in a sheet instead of it all sitting below the calendar.',
+  '2026.10.01.666': 'Training load is hidden by request.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
