@@ -3478,6 +3478,8 @@
        as 3.62 on bone. 0.7 measures 9.26 and 7.27. */
     color:rgba(var(--ink-rgb),0.7); }
   .fr-day.on{ background:var(--bg); border-color:var(--bg); color:var(--ground); }
+  .fr-twosession{ margin-top:14px; }
+  .fr-twosession label{ font-family:var(--prose); font-size:var(--fs-sm); color:rgba(var(--ink-rgb),0.8); }
   /* DOGFOOD's own line, and the only thing on the screen it says rather than asks. The rule
      down its left is what makes it a quotation instead of a fourth question. */
   .fr-says{ font-family:var(--wordmark); font-weight:var(--fw-bold); font-size:24px;
@@ -5123,6 +5125,14 @@
           <div class="fr-aside" id="firstRunDaysAside" hidden>
             <span class="fr-aside-lead">so — <b id="firstRunDaysSaid"></b>. tap to change which.</span>
             <div class="fr-days" id="firstRunDays"></div>
+            <!-- Same question and the same storage flag (multiSessionOk) the Training Setup
+                 checkbox asks later — asked once, here, instead of only reachable afterwards
+                 in Settings, since a plan that could have used a two-a-day was already built
+                 without one by the time anyone found that checkbox. -->
+            <div class="field-row fr-twosession">
+              <input type="checkbox" id="firstRunTwoSessionOk" style="width:auto; flex:none;">
+              <label for="firstRunTwoSessionOk">I'm okay with two sessions on the same day sometimes</label>
+            </div>
           </div>
         </li>
 
@@ -11792,7 +11802,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.01.668';
+const APP_VERSION = '2026.10.01.669';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12145,6 +12155,7 @@ const APP_NOTES = {
   '2026.10.01.666': 'Training load is hidden by request.',
   '2026.10.01.667': 'Today’s own workout card reads plainer now — closer to the text-only card every other day gets — with the filled pill tags on exercise rows and the week-position chip stripped back to plain text. Replace/Reschedule/Skip, Mark done and the duration estimate all still work exactly as before.',
   '2026.10.01.668': 'First run lets you pick more than one secondary goal now — tap as many as apply, then Continue — instead of the one you were stuck with before.',
+  '2026.10.01.669': 'First run now asks if you’re okay with two sessions on the same day sometimes, right where it asks how often you train — instead of only being reachable afterwards, buried in Training Setup, once a plan had already been built without it.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -29051,10 +29062,11 @@ function firstRunSpread(n){
       if(bw > 0){
         try{ await window.storage.set(`bodymetrics:${todayStr}`, JSON.stringify({ date: todayStr, weight: bw })); } catch(e){}
       }
+      const twoSessionOk = !!document.getElementById('firstRunTwoSessionOk')?.checked;
       await window.storage.set('settings:trainingSetup', JSON.stringify({
         availableDays: chosen,
         sessionLength: len ? len.dataset.len : '45',
-        multiSessionOk:false, bodyweightAll:false, bodyweightMobility:false,
+        multiSessionOk:twoSessionOk, bodyweightAll:false, bodyweightMobility:false,
         useSupersets:false, useDropSets:false
       }));
       // The same record shape the Goals form writes, so the goal shows up there as a normal
