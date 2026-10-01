@@ -3492,6 +3492,11 @@
   .fr-extra-note{ flex:1 1 150px; font-family:var(--prose); font-size:var(--fs-sm);
     letter-spacing:0; color:var(--dim); }
   #firstRunBuildBtn{ width:100%; }
+  #firstRunSecondaryContinue{ width:100%; margin-top:18px; }
+  /* Same reason .fr-step[hidden]/.rest-build[hidden] exist: the base button rule sets its own
+     display:flex, which — author CSS beats the UA stylesheet's [hidden] rule regardless of
+     specificity — would otherwise keep this button visible while its hidden property is true. */
+  #firstRunSecondaryContinue[hidden]{ display:none; }
   .fr-note{ margin-top:10px; }
   .fr-note:empty{ display:none; }
   .fr-after{ font-family:var(--prose); font-size:var(--fs-sm); letter-spacing:0;
@@ -5088,12 +5093,18 @@
 
         <li class="fr-step" data-step="secondary" hidden>
           <p class="fr-q">What is your secondary goal?</p>
-          <div class="fr-answers" id="firstRunSecondaryGoal" role="radiogroup" aria-label="What is your secondary goal?">
-            <button type="button" class="fr-a" role="radio" aria-checked="false" data-goal="strength">Get stronger</button>
-            <button type="button" class="fr-a" role="radio" aria-checked="false" data-goal="hypertrophy">Build muscle</button>
-            <button type="button" class="fr-a" role="radio" aria-checked="false" data-goal="running">Run better</button>
-            <button type="button" class="fr-a" role="radio" aria-checked="false" data-goal="">No secondary goal yet</button>
+          <!-- CHECKBOXES, NOT RADIOS — this is the one question in the thread with more than
+               one true answer. "No secondary goal yet" stays exclusive with the rest (and
+               still answers outright, so it advances on its own tap); picking a real goal
+               toggles it and waits for Continue, since there is no single tap that means
+               "done choosing" the way there is everywhere else in this flow. -->
+          <div class="fr-answers" id="firstRunSecondaryGoal" role="group" aria-label="What is your secondary goal? Choose as many as apply.">
+            <button type="button" class="fr-a" role="checkbox" aria-checked="false" data-goal="strength">Get stronger</button>
+            <button type="button" class="fr-a" role="checkbox" aria-checked="false" data-goal="hypertrophy">Build muscle</button>
+            <button type="button" class="fr-a" role="checkbox" aria-checked="false" data-goal="running">Run better</button>
+            <button type="button" class="fr-a" role="checkbox" aria-checked="false" data-goal="">No secondary goal yet</button>
           </div>
+          <button type="button" class="primary" id="firstRunSecondaryContinue" hidden>Continue</button>
         </li>
 
         <li class="fr-step" data-step="often" hidden>
@@ -11781,7 +11792,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.01.667';
+const APP_VERSION = '2026.10.01.668';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12133,6 +12144,7 @@ const APP_NOTES = {
   '2026.10.01.665': 'The score and the mascot moved into the header, compact — tap the number for the full detail (yesterday’s ghost, the week’s trend, the block position) in a sheet instead of it all sitting below the calendar.',
   '2026.10.01.666': 'Training load is hidden by request.',
   '2026.10.01.667': 'Today’s own workout card reads plainer now — closer to the text-only card every other day gets — with the filled pill tags on exercise rows and the week-position chip stripped back to plain text. Replace/Reschedule/Skip, Mark done and the duration estimate all still work exactly as before.',
+  '2026.10.01.668': 'First run lets you pick more than one secondary goal now — tap as many as apply, then Continue — instead of the one you were stuck with before.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -28973,9 +28985,36 @@ function firstRunSpread(n){
       const sameGoal = !!x.dataset.goal && x.dataset.goal === b.dataset.goal;
       x.hidden = sameGoal;
     });
+    // A changed primary clears every secondary pick above, so Continue goes back to hidden
+    // with them rather than staying up over a row of now-unchecked boxes.
+    const cont = document.getElementById('firstRunSecondaryContinue');
+    if(cont) cont.hidden = true;
     reveal('secondary');
   });
-  askOne('firstRunSecondaryGoal', ()=> reveal('often'));
+  // Not askOne: this is the one question with more than one true answer, so a tap toggles
+  // rather than replaces. "No secondary goal yet" is still a single, complete answer -- it
+  // clears whatever else was picked and advances on its own, same as every other step -- but
+  // a real goal only turns itself on and waits, since there is no tap that means "done" when
+  // more than one can be true. Continue is that tap, shown only once something is.
+  (function wireSecondaryGoals(){
+    const box = document.getElementById('firstRunSecondaryGoal');
+    const cont = document.getElementById('firstRunSecondaryContinue');
+    if(!box || !cont) return;
+    box.addEventListener('click', e=>{
+      const b = e.target.closest('.fr-a');
+      if(!b) return;
+      box.classList.add('answered');
+      if(!b.dataset.goal){
+        box.querySelectorAll('.fr-a').forEach(x=> x.setAttribute('aria-checked', String(x === b)));
+        reveal('often');
+        return;
+      }
+      b.setAttribute('aria-checked', String(b.getAttribute('aria-checked') !== 'true'));
+      box.querySelector('.fr-a[data-goal=""]')?.setAttribute('aria-checked', 'false');
+      cont.hidden = ![...box.querySelectorAll('.fr-a')].some(x=> x.getAttribute('aria-checked') === 'true');
+    });
+    cont.addEventListener('click', ()=> reveal('often'));
+  })();
   askOne('firstRunFreq', b=>{
     const spread = firstRunSpread(parseInt(b.dataset.freq, 10) || 3);
     root.querySelectorAll('.fr-day').forEach(x=>{
@@ -28993,7 +29032,8 @@ function firstRunSpread(n){
   if(build) build.addEventListener('click', async ()=>{
     const out = document.getElementById('firstRunResult');
     const goal = document.querySelector('#firstRunGoal .fr-a[aria-checked="true"]');
-    const secondary = document.querySelector('#firstRunSecondaryGoal .fr-a[aria-checked="true"]');
+    const secondaries = [...document.querySelectorAll('#firstRunSecondaryGoal .fr-a[aria-checked="true"]')]
+      .filter(x=> x.dataset.goal);
     const chosen = chosenDays();
     const len = document.querySelector('#firstRunLength .fr-a[aria-checked="true"]');
     /* The thread makes two of these unreachable — this step does not exist until the first
@@ -29024,8 +29064,8 @@ function firstRunSpread(n){
         list: [
           { type: goal.dataset.goal, role:'main', detail:'', targetExercise:'', targetWeight:null,
             targetDistance:null, targetTime:null, targetDate:null, isMaintenance:false },
-          ...(secondary && secondary.dataset.goal ? [{ type: secondary.dataset.goal, role:'also', detail:'', targetExercise:'', targetWeight:null,
-            targetDistance:null, targetTime:null, targetDate:null, isMaintenance:false }] : [])
+          ...secondaries.map(s=> ({ type: s.dataset.goal, role:'also', detail:'', targetExercise:'', targetWeight:null,
+            targetDistance:null, targetTime:null, targetDate:null, isMaintenance:false }))
         ]
       }));
       // Two weeks, not one: build your first week on a Friday and a single week puts every

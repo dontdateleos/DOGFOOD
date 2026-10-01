@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.01.667",
+ "generatedFrom": "2026.10.01.668",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1092,7 +1092,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.01.667",
+  "APP_VERSION": "2026.10.01.668",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1426,6 +1426,7 @@
    "2026.10.01.665": "The score and the mascot moved into the header, compact — tap the number for the full detail (yesterday’s ghost, the week’s trend, the block position) in a sheet instead of it all sitting below the calendar.",
    "2026.10.01.666": "Training load is hidden by request.",
    "2026.10.01.667": "Today’s own workout card reads plainer now — closer to the text-only card every other day gets — with the filled pill tags on exercise rows and the week-position chip stripped back to plain text. Replace/Reschedule/Skip, Mark done and the duration estimate all still work exactly as before.",
+   "2026.10.01.668": "First run lets you pick more than one secondary goal now — tap as many as apply, then Continue — instead of the one you were stuck with before.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
