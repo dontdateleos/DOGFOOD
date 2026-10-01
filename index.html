@@ -2788,6 +2788,10 @@
      item, which it does. Single-line rows, which is most of them, look the same either way. */
   .wheel-ex-line{ display:flex; gap:10px; align-items:flex-end; justify-content:space-between; }
   .wheel-ex-name{ min-width:0; }
+  /* The dose this comment block already asked for, same recipe .today-session .plan-dose
+     uses -- small, dim, mono -- so a tapped day's numbers read the same as today's own. */
+  .wheel-ex-dose{ flex:none; font-family:var(--mono); font-size:var(--fs-tag);
+    font-weight:var(--fw-medium); color:var(--dim); white-space:nowrap; }
   /* One workout takes the width of both columns rather than sitting in the left half with
      its names wrapping at 50%. Two keep the split — that is what the rule between them is
      for, and am/pm side by side is the comparison you want.
@@ -11839,7 +11843,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.01.674';
+const APP_VERSION = '2026.10.01.675';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12198,6 +12202,7 @@ const APP_NOTES = {
   '2026.10.01.672': 'Replace/Reschedule/Skip now sit after the cooldown, not between the workout and it — change what today is after you’ve seen the whole of it, warm-up and cooldown included.',
   '2026.10.01.673': 'The full-width "Log this morning" strip is gone. The same reminder is a tiny orange dot on the mascot in the header now — tap it to jump straight to the logging field, gone the moment there is a real entry for today.',
   '2026.10.01.674': 'The reminder dot is a "!" now, the whole mascot is the tap target (not just the tiny mark), and it only ever shows on Today — switch tabs and it is gone, come back and it is there again if you still have not logged.',
+  '2026.10.01.675': 'Tapping any day on the week calendar now shows its reps, sets and weight too, the same plain dose Today already prints under each name — warm-up and cooldown still only generate for today itself.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -18422,32 +18427,65 @@ document.getElementById('clearAllWeekBtn').addEventListener('click', async (e)=>
 
 let activeWheelDayIndex = null; // set to today's index on first render each session
 
-/* NO DOSE ON THE WEEK'S CARDS. There was a blockLineDose here that turned a planned
-   exercise into "3×8-12", and every card carried a column of them. Weekly is the view where
-   you ask WHAT is on Thursday and whether the week is shaped right — the sets and the reps
-   are what you read on the day you do it, and Today prints them under every name. Two
-   sessions on one day have to share the width, and the numbers were the half of each line
-   that could go. Nothing else called that function, so it is gone rather than left unused. */
-function extractBlockLines(block){
+/* THE DOSE IS BACK ON THE WEEK'S CARDS. A blockLineDose that turned a planned exercise into
+   "3x8-12" lived here once and was removed on the reasoning that Weekly is the view where you
+   ask WHAT is on Thursday, not what to lift -- the numbers were what today's card alone owed
+   you. Reversed by request: extractBlockLines now builds that same dose itself (see its own
+   comment), tapping any day's workout is as informative as tapping today's, and the two-session
+   width squeeze that argued against it is handled the same way today's own rows are, not by
+   leaving the day's plan illegible. */
+/* ASYNC NOW, FOR THE SAME REASON blockSummaryHtml IS: the strength branch asks
+   suggestProgression for a weight, which reads the exercise's own logged history rather than
+   anything about which day you tapped -- asking it for a Saturday's plan is the same question
+   as asking it for today's, "what should this lift hold right now." What it deliberately
+   skips is anything that is actually ABOUT today: the deload cut, an accepted
+   recommendation's adjustment delta, injury/fatigue flags, superset and drop-set tags. Those
+   are today's own reasoning about today's session, not facts about the plan, and showing them
+   on a day nothing has run against yet would be speaking for a recommendation engine that
+   has not spoken. */
+async function extractBlockLines(block){
   /* A block with no details at all. Every writer in the app sets it, so this should not
      happen -- but the whole week grid is rendered from these, and one malformed record was
      enough to throw out of here, up through weekDayDetailHtml and out of
      leave renderWeekGrid half-drawn. A card with no names under it is a far better failure
      than a week that does not finish rendering. */
   if(!block || !block.details) return [];
-  if(block.type==='strength') return (block.details.exercises||[]).filter(e=> e && e.name)
-    .map(e=>({ name:e.name }));
+  if(block.type==='strength'){
+    const focusInfo = block.details.plannedFocus && SESSION_FOCUS_INFO[block.details.plannedFocus];
+    const out = [];
+    for(const ex of (block.details.exercises||[])){
+      if(!ex || !ex.name) continue;
+      // Skill work carries its own prescription text rather than a sets/reps/weight ladder.
+      if(ex.isSkillWork){ out.push({ name: ex.name }); continue; }
+      const sets = ex.sets != null ? ex.sets : 3;
+      const repLow = ex.repLow != null ? ex.repLow : (focusInfo ? focusInfo.repLow : 8);
+      const repHigh = ex.repHigh != null ? ex.repHigh : (focusInfo ? focusInfo.repHigh : 12);
+      const repsLabel = repHigh !== repLow ? `${repLow}-${repHigh}` : `${repLow}`;
+      let weightLabel = '?kg';
+      try{
+        const progression = await suggestProgression(ex, focusInfo);
+        if(progression.weight != null) weightLabel = `${progression.weight}kg`;
+      } catch(e){}
+      out.push({ name: ex.name, dose: `${sets}×${repsLabel} @ ${weightLabel}` });
+    }
+    return out;
+  }
   if(block.type==='run'){
     const d = block.details;
     const typeLabel = d.runType ? d.runType.charAt(0).toUpperCase()+d.runType.slice(1) : 'Run';
-    // Long and race runs deliberately carry no auto-solved distance — they're governed
-    // by weekly volume, not session length. Rendering that absence as "—km" looked like
-    // a failed lookup rather than an intentional blank, so omit the distance entirely.
-    return [{ name: d.distanceKm ? `${typeLabel} \u00b7 ${d.distanceKm}km` : typeLabel }];
+    // Walk-run intervals carry no distance and no single pace, and the dose that actually
+    // describes them (level/duration) doesn't fit a one-line card -- named plainly instead.
+    if(d.walkRun) return [{ name: typeLabel }];
+    // Long and race runs deliberately carry no auto-solved distance -- they're governed
+    // by weekly volume, not session length -- so the dose is just whatever pace is set,
+    // or blank, rather than a failed-looking "undefinedkm".
+    const paceLabel = d.targetPace ? ` @ ${formatPace(d.targetPace)}` : '';
+    const dose = `${d.distanceKm ? d.distanceKm + 'km' : ''}${paceLabel}`.trim();
+    return [{ name: typeLabel, dose: dose || undefined }];
   }
   if(block.type==='mobility') return (block.details.stretches||[])
     .filter(st=> st && st.name && !st.skippedForInjury)
-    .map(st=>({ name:st.name }));
+    .map(st=>({ name:st.name, dose: mobilityDoseLabel(st) }));
   return [];
 }
 
@@ -18461,7 +18499,7 @@ let wheelBlockPos = null;
 // this tab had to be re-solved against that boundary. This is a list.
 // One day's two cards. Shared, because the pane's height is set from the tallest day in
 // the week and that means building all seven, not just the one on screen.
-function weekDayDetailHtml(date, realBlocks, isOff){
+async function weekDayDetailHtml(date, realBlocks, isOff){
   if(isOff){
     // A day you have marked off says so and offers the way back, rather than looking like
     // any other empty day the generator simply has not reached yet.
@@ -18487,8 +18525,8 @@ function weekDayDetailHtml(date, realBlocks, isOff){
     ? `<div class="wheel-add-slot" data-add-date="${date}" data-add-slot="${freeSlot}">`
       + `+ Add a second session</div>`
     : '';
-  return realBlocks.map(({slot, block}) => {
-    const lines = extractBlockLines(block);
+  const cards = await Promise.all(realBlocks.map(async ({slot, block}) => {
+    const lines = await extractBlockLines(block);
     const typeLabel = block.type.charAt(0).toUpperCase()+block.type.slice(1);
     // Two cards side by side with nothing to say which is the morning one and which is the
     // evening one is the same gap the board had. The slot leads the head, in the quiet ink,
@@ -18496,10 +18534,11 @@ function weekDayDetailHtml(date, realBlocks, isOff){
     return `<div class="wheel-workout-card${realBlocks.length === 1 ? ' solo' : ''}" data-edit-date="${date}" data-edit-slot="${slot}">
         <div class="wheel-workout-type"><i class="wk-slot">${slot}</i>${typeLabel}<span class="wheel-workout-chevron">\u203a</span></div>
         <div class="wheel-ex-names">${lines.length
-          ? lines.map(l=> `<div class="wheel-ex-line"><span class="wheel-ex-name">${l.name}</span></div>`).join('')
+          ? lines.map(l=> `<div class="wheel-ex-line"><span class="wheel-ex-name">${l.name}</span>${l.dose ? `<span class="wheel-ex-dose">${l.dose}</span>` : ''}</div>`).join('')
           : '<em>No details yet</em>'}</div>
       </div>`;
-  }).join('') + addStrip;
+  }));
+  return cards.join('') + addStrip;
 }
 
 /* SEVEN CELLS, THE SAME .skill-lane COMPONENT THE SKILLS AND THE MOBILITY TEST USE — laid out
@@ -19047,7 +19086,7 @@ async function renderWeekGrid(){
   // whenever the tapped day becomes today again — the same call tab activation makes,
   // needed again here because switching days doesn't re-enter the tab.
   if(isToday) await applyRestDayShape();
-  const detailHtml = isToday ? '' : weekDayDetailHtml(activeDate, realBlocks, activeDayData.off);
+  const detailHtml = isToday ? '' : await weekDayDetailHtml(activeDate, realBlocks, activeDayData.off);
   /* The tallest-day reservation is gone with the pane that needed it. It existed because the
      detail sat on the page under the picker, so a light day next to a heavy one moved the
      load bars and the buttons below it under your thumb while you were still choosing. Inline
