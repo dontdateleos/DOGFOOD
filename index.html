@@ -4190,16 +4190,20 @@
      that the three lists match. Inline-block also keeps the plate out of the strike-through,
      which a plain inline span would have been drawn through.
      Absent on most rows, so it collapses rather than leaving a gap. */
+  /* Plain text, not a filled plate — the same destyle the session's own stage/skill labels
+     got (.today-session .plan-key), so RAISE/MOVE/PRIME/ROLL/HOLD/PNF read the same way the
+     workout's own tags now do. */
   .drill-stage{ display:inline-block; vertical-align:baseline; margin-right:9px;
-    font-family:var(--mono); font-size:9.5px; font-weight:var(--fw-bold);
+    font-family:var(--mono); font-size:9.5px; font-weight:var(--fw-medium);
     letter-spacing:0.09em; text-transform:uppercase;
-    background:var(--bg); color:var(--ground); padding:4px 6px; border-radius:3px; }
+    background:transparent; color:var(--dim); padding:0; border-radius:0; }
   .drill-stage:empty{ display:none; }
-  /* --fs-md is the scale's "primary content — exercise names, list rows", and a drill is an
-     exercise name. It sat on --fs-sm, which the scale calls secondary text and captions, so
-     the warm-up and cool-down read a step quieter than the session they bracket. The size
-     belongs here rather than on .drill-list: the row is what .drill-text inherits from, and
-     the list also holds the notes and area labels, which really are secondary. */
+  /* SAME SHAPE AS THE SESSION IT BRACKETS, STILL. This used to sit at --fs-md/var(--text)/
+     bold specifically to match the session's own exercise rows at that size and weight — see
+     renderDrillList's own comment: "the same shape as the session's own exercise rows... the
+     one place all three should agree." The session rows went plainer and smaller
+     (.today-session .plan-item), so a drill follows them here rather than being left behind
+     at the heavier size the session no longer uses. */
   /* height:auto undoes the base button rule, which sets a flat height:31px for every
      control in the app. A drill is the one button whose text wraps, and an explicit height
      does not grow: the three-line PRIME row was laid out in a 31px box with 61px of content
@@ -4209,8 +4213,8 @@
      giving the rows a rule is what made a four-year-old overflow visible. */
   .drill{ display:flex; align-items:flex-start; gap:10px; width:100%; margin:0; height:auto;
     background:transparent; border:0; border-radius:0; text-align:left;
-    font-family:var(--sans); font-size:var(--fs-md); letter-spacing:0.005em;
-    text-transform:none; font-weight:var(--fw-normal); color:var(--text); cursor:pointer; }
+    font-family:var(--sans); font-size:var(--fs-sm); letter-spacing:0.005em;
+    text-transform:none; font-weight:var(--fw-normal); color:rgba(var(--ink-rgb),0.8); cursor:pointer; }
   /* The drill hairline used to be border-top:1px solid rgba(12,13,11,0.12) — ink, written
      as a literal, so it did not follow the ground and measured 1.03:1 against what sat
      behind it on black. It is gone with the plan rows' rule rather than fixed; noted here
@@ -4218,11 +4222,14 @@
   /* No checkbox. The row is the control and the strike is the state — a box beside a line
      that already crosses itself out was saying it twice. aria-pressed on the button carries
      the same state for anything that cannot see the strike. */
-  .drill-text{ flex:1; min-width:0; font-weight:var(--fw-bold); letter-spacing:-0.01em; }
+  .drill-text{ flex:1; min-width:0; font-weight:var(--fw-normal); letter-spacing:0; }
   /* Unbold only. .plan-dose also drops to --dim, and these could follow it, but a drill row
      is a tick target rather than a reading and the number is half of what you are ticking
      against -- greying it as well would push it behind the strike-through. */
-  .drill-dose{ font-weight:var(--fw-normal); }
+  /* Rejoined on one line with the name, the same change .today-session .plan-dose got and for
+     the same reason — the shared base rule two-lines it by default (display:block), which the
+     session's own rows no longer do. */
+  .drill-dose{ font-weight:var(--fw-normal); display:inline; margin-top:0; margin-left:6px; }
   /* Struck through AND faded: the strike says done, the fade takes it out of the way of the
      ones that are not. */
   .drill.on .drill-text{ text-decoration:line-through; opacity:0.42; }
@@ -11812,7 +11819,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.01.670';
+const APP_VERSION = '2026.10.01.671';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12167,6 +12174,7 @@ const APP_NOTES = {
   '2026.10.01.668': 'First run lets you pick more than one secondary goal now — tap as many as apply, then Continue — instead of the one you were stuck with before.',
   '2026.10.01.669': 'First run now asks if you’re okay with two sessions on the same day sometimes, right where it asks how often you train — instead of only being reachable afterwards, buried in Training Setup, once a plan had already been built without it.',
   '2026.10.01.670': 'The previous pass at simplifying today’s card only touched tags most plans never show. This time it’s the exercise lines themselves — bold, two-line name-and-dose — now the same plain, regular-weight, single line every other day’s card already uses.',
+  '2026.10.01.671': 'Warm-up and cooldown lines now match the workout’s own plain look — same size, same weight, the dose rejoined on one line, the stage tags (RAISE/PRIME/ROLL/HOLD/PNF…) read as plain text instead of filled plates.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
