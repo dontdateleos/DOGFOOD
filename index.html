@@ -1094,10 +1094,10 @@
      without needing any position math of its own. Purely visual (aria-hidden, pointer-events
      none) — the mark itself is the tap target now, see #headerMark's own click wiring, so
      there is nothing here to compete with .header-mark::after's hit-area expansion for. */
-  .header-mark .header-log-badge{ position:absolute; top:-2px; right:-2px; width:12px; height:12px;
-    border-radius:50%; background:var(--block-orange); border:1.5px solid var(--banner);
+  .header-mark .header-log-badge{ position:absolute; top:-4px; right:-4px; width:17px; height:17px;
+    border-radius:50%; background:var(--block-orange); border:2px solid var(--banner);
     display:flex; align-items:center; justify-content:center; pointer-events:none;
-    font-family:var(--sans); font-size:9px; font-weight:var(--fw-bold); line-height:1;
+    font-family:var(--sans); font-size:12px; font-weight:var(--fw-bold); line-height:1;
     color:var(--banner); }
   .header-mark .header-log-badge[hidden]{ display:none; }
   /* The rest day plate. Same black, same cream rule, same mono caption as a section heading —
@@ -11843,7 +11843,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.01.675';
+const APP_VERSION = '2026.10.01.676';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12203,6 +12203,7 @@ const APP_NOTES = {
   '2026.10.01.673': 'The full-width "Log this morning" strip is gone. The same reminder is a tiny orange dot on the mascot in the header now — tap it to jump straight to the logging field, gone the moment there is a real entry for today.',
   '2026.10.01.674': 'The reminder dot is a "!" now, the whole mascot is the tap target (not just the tiny mark), and it only ever shows on Today — switch tabs and it is gone, come back and it is there again if you still have not logged.',
   '2026.10.01.675': 'Tapping any day on the week calendar now shows its reps, sets and weight too, the same plain dose Today already prints under each name — warm-up and cooldown still only generate for today itself.',
+  '2026.10.01.676': 'The reminder mark on the mascot is bigger — easier to spot, easier to tap.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
