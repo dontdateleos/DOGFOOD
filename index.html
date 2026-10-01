@@ -5287,6 +5287,13 @@
               </div>
             </div>
           </div>
+          <!-- MOVED HERE BY REQUEST, FROM INSIDE THE SESSION CARD ABOVE WARM-UP/COOLDOWN.
+               Replace/Reschedule/Skip change what today IS, not how it goes, so they sit after
+               the whole session you'd be changing — warm-up and cooldown included — rather
+               than between the session and the cooldown that follows it. renderTodayWorkoutSummary
+               still builds this HTML and wires these same button ids; only where it writes
+               them changed. -->
+          <div id="todayPlanActions"></div>
         </div>
       </div>
     </div>
@@ -11819,7 +11826,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.01.671';
+const APP_VERSION = '2026.10.01.672';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12175,6 +12182,7 @@ const APP_NOTES = {
   '2026.10.01.669': 'First run now asks if you’re okay with two sessions on the same day sometimes, right where it asks how often you train — instead of only being reachable afterwards, buried in Training Setup, once a plan had already been built without it.',
   '2026.10.01.670': 'The previous pass at simplifying today’s card only touched tags most plans never show. This time it’s the exercise lines themselves — bold, two-line name-and-dose — now the same plain, regular-weight, single line every other day’s card already uses.',
   '2026.10.01.671': 'Warm-up and cooldown lines now match the workout’s own plain look — same size, same weight, the dose rejoined on one line, the stage tags (RAISE/PRIME/ROLL/HOLD/PNF…) read as plain text instead of filled plates.',
+  '2026.10.01.672': 'Replace/Reschedule/Skip now sit after the cooldown, not between the workout and it — change what today is after you’ve seen the whole of it, warm-up and cooldown included.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -32722,6 +32730,9 @@ async function renderTodayWorkoutSummary(){
     // this card, so this scrolls up to it instead — today's own cell is already the board's
     // default-open day.
     document.getElementById('viewWeeklyPlanBtn')?.addEventListener('click', ()=>document.getElementById('weekBoard')?.scrollIntoView({ behavior:'smooth', block:'start' }));
+    // Nothing to replace, reschedule, or skip on a day with no block for this type.
+    const actionsEl = document.getElementById('todayPlanActions');
+    if(actionsEl) actionsEl.innerHTML = '';
     return;
   }
   const rows = await blockSummaryHtml(block);
@@ -32812,12 +32823,16 @@ async function renderTodayWorkoutSummary(){
         ${focusNote}
         ${deloadNote}
         ${adjustmentNote}
-        <div class="today-plan-actions">
-          <button type="button" class="outline" id="replaceTodayWorkoutBtn">Replace / edit</button>
-          <button type="button" class="outline" id="rescheduleTodayWorkoutBtn">Reschedule</button>
-          <button type="button" class="outline" id="skipTodayWorkoutBtn">Skip today</button>
-        </div>
       </div>
+    </div>`;
+  // After the cooldown now, not between the session and it — see #todayPlanActions, a
+  // sibling of #mobilitySection further down the static markup.
+  const actionsEl = document.getElementById('todayPlanActions');
+  if(actionsEl) actionsEl.innerHTML = `
+    <div class="today-plan-actions">
+      <button type="button" class="outline" id="replaceTodayWorkoutBtn">Replace / edit</button>
+      <button type="button" class="outline" id="rescheduleTodayWorkoutBtn">Reschedule</button>
+      <button type="button" class="outline" id="skipTodayWorkoutBtn">Skip today</button>
     </div>`;
   budgetBar(container);
   container.querySelectorAll('.ex-flag').forEach(el=>{

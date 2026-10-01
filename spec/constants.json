@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.01.671",
+ "generatedFrom": "2026.10.01.672",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1092,7 +1092,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.01.671",
+  "APP_VERSION": "2026.10.01.672",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1430,6 +1430,7 @@
    "2026.10.01.669": "First run now asks if you’re okay with two sessions on the same day sometimes, right where it asks how often you train — instead of only being reachable afterwards, buried in Training Setup, once a plan had already been built without it.",
    "2026.10.01.670": "The previous pass at simplifying today’s card only touched tags most plans never show. This time it’s the exercise lines themselves — bold, two-line name-and-dose — now the same plain, regular-weight, single line every other day’s card already uses.",
    "2026.10.01.671": "Warm-up and cooldown lines now match the workout’s own plain look — same size, same weight, the dose rejoined on one line, the stage tags (RAISE/PRIME/ROLL/HOLD/PNF…) read as plain text instead of filled plates.",
+   "2026.10.01.672": "Replace/Reschedule/Skip now sit after the cooldown, not between the workout and it — change what today is after you’ve seen the whole of it, warm-up and cooldown included.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
