@@ -3977,6 +3977,24 @@
     text-transform:uppercase; letter-spacing:-0.02em; margin-bottom:var(--sp-3); }
   .lift-sheet-x{ width:auto; flex:none; height:30px; padding:0 10px; background:transparent;
     color:var(--bg); border:2px solid rgba(var(--ink-rgb),0.4); font-size:var(--fs-md); }
+  /* MENU ROWS. Nothing already in the app fit a plain tap-to-navigate list — .skill-lane is a
+     3-column grid built for a rung of data trailing the name, .goal-row a bordered card —
+     so this is new: a plain row with a trailing chevron, the same glyph and opacity
+     .wheel-workout-chevron already uses for "tap to open something else". */
+  .menu-sheet .lift-sheet-panel{ height:auto; max-height:70vh; }
+  .menu-row{ display:flex; align-items:center; justify-content:space-between; width:100%;
+    min-height:48px; padding:14px 0; background:transparent; border:none;
+    border-bottom:2px solid rgba(var(--ink-rgb),0.18);
+    font-family:var(--sans); font-size:var(--fs-md); font-weight:var(--fw-bold);
+    color:var(--bg); text-align:left; }
+  .menu-row:last-child{ border-bottom:none; }
+  .menu-row-chevron{ opacity:0.5; font-size:var(--fs-lg); }
+  /* Save/Clear were a fixed footer bar that only stood while Settings' Logging section was
+     open; inside a sheet they are just the sheet's last two buttons, laid out the same
+     side-by-side, joined-edge way the footer always did. */
+  .sheet-actions{ display:flex; gap:0; margin-top:var(--sp-4); }
+  .sheet-actions button{ flex:1 1 0; border-radius:0; margin:0; }
+  .sheet-actions button + button{ margin-left:-2px; }
   .lift-row{ display:flex; align-items:baseline; gap:10px; padding:7px 0;
     border-top:1px solid rgba(var(--ink-rgb),0.18); font-family:var(--mono); font-size:var(--fs-tag); }
   .lift-date{ flex:0 0 62px; opacity:0.6; }
@@ -5077,7 +5095,7 @@
          it has always been until it turns. The .eye-gaze pair stays in the DOM and stays
          hidden here — every other copy of the mark still uses it, and the trip down to the
          score is a cut rather than a morph, so the two never have to agree mid-flight. -->
-    <div class="header-mark eyes mark-solid" id="headerMark" role="button" tabindex="0" aria-label="Log this morning"><svg class="mark-cube" id="headerMarkCube" aria-hidden="true"></svg><div class="eye-gaze"><div class="eye-motion"><span></span><span></span></div></div><span class="header-log-badge" id="headerLogBadge" aria-hidden="true" hidden>!</span></div>
+    <div class="header-mark eyes mark-solid" id="headerMark" role="button" tabindex="0" aria-label="Menu"><svg class="mark-cube" id="headerMarkCube" aria-hidden="true"></svg><div class="eye-gaze"><div class="eye-motion"><span></span><span></span></div></div><span class="header-log-badge" id="headerLogBadge" aria-hidden="true" hidden>!</span></div>
   <div class="tabs">
     <!-- Weekly merged into Today in .659ish — the calendar strip and the week's planning
          controls live on this tab now instead of a separate one. See RETIRED_TABS for the
@@ -5368,6 +5386,167 @@
          padding there, which would have left the last 16px above the head undotted. -->
     <div id="acceptanceStats" class="log" style="margin-top:0;"></div>
     </div><!-- /.today-field -->
+        </div>
+      </div>
+    </div>
+
+    <!-- THE HEADER MENU. Tapping the mascot used to jump straight into Settings' Logging
+         section; a short menu first now, both because logging moved into a sheet of its own
+         (right below) and because the mark is reachable from every tab, so Body/Data/Settings
+         are each one tap closer from here than finding the tab bar itself. -->
+    <div class="lift-sheet menu-sheet" id="headerMenuSheet" style="display:none;">
+      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Menu">
+        <div class="lift-sheet-head"><span>Menu</span>
+          <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
+        <div class="fields">
+          <button type="button" class="menu-row" id="menuLogBtn">Log this morning<span class="menu-row-chevron">&rsaquo;</span></button>
+          <button type="button" class="menu-row" data-menu-tab="injuries">Body<span class="menu-row-chevron">&rsaquo;</span></button>
+          <button type="button" class="menu-row" data-menu-tab="data">Data<span class="menu-row-chevron">&rsaquo;</span></button>
+          <button type="button" class="menu-row" data-menu-tab="settings">Settings<span class="menu-row-chevron">&rsaquo;</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- THE MORNING CHECK-IN, ON ITS OWN NOW. It lived as a collapsible section on Settings'
+         "Your data" band before this (see the comment that used to sit there) and moves once
+         more, into a sheet reached from the header menu instead — logging this morning's
+         numbers isn't a settings screen's business. #recoveryDataView keeps its id, which its
+         own layout rules and the trace's backfill both go through; every field below keeps
+         its id too, since collectRecoveryEntry/fillRecoveryForm/computeScores all just do
+         document.getElementById and never cared which panel they sat in. Save/Clear used to
+         be a fixed footer bar (#footerRecovery) that only stood while this section was open
+         on Settings; a sheet is already its own modal layer, so the two buttons are just the
+         last thing in it now, the same way Goals' Save sits inside #goalSheet rather than in
+         a footer of its own. -->
+    <div class="lift-sheet" id="morningLogSheet" style="display:none;">
+      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Log this morning">
+        <div class="lift-sheet-head"><span>Log this morning</span>
+          <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
+        <div class="fields">
+    <div id="recoveryDataView">
+    <div id="morningBanner" class="morning-banner" style="display:none;">Morning check-in. Three numbers and today&rsquo;s plan reads them.</div>
+
+    <div class="date-row">
+      <input type="date" id="entryDate" aria-label="Date of this morning's entry">
+      <span class="status" id="loadStatus" style="margin:0;"></span>
+    </div>
+
+    <div class="score-box" style="display:none;">
+      <div class="score-card">
+        <div class="score-num" id="adaptiveScoreOut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.5" y1="4.5" x2="19.5" y2="19.5"/><line x1="19.5" y1="4.5" x2="4.5" y2="19.5"/></svg></div>
+        <div class="score-label">Adaptive</div>
+      </div>
+      <div class="score-card">
+        <div class="score-num" id="targetScoreOut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.5" y1="4.5" x2="19.5" y2="19.5"/><line x1="19.5" y1="4.5" x2="4.5" y2="19.5"/></svg></div>
+        <div class="score-label">Target</div>
+      </div>
+    </div>
+    <div class="note-head">How the two scores differ</div>
+        <div class="score-note" style="display:none;">Adaptive compares today against <em>your trailing 7-day average</em>. Target compares against <em>fixed goals</em> (8hr sleep, ≤1 wake event, HRV at rolling baseline). Equal-weighted v1 — <em>placeholder until backtested</em>.</div>
+    <div class="score-note note-live" id="sleepDebtOut">Sleep debt: —</div>
+
+    <!-- THE MORNING CHECK-IN. It used to open with eighteen fields, six of which were three
+         facts asked twice — a Garmin box and an Oura box for the same sleep score, the same
+         wake time, the same HRV — and none of them marked as more or less worth filling in.
+         The three that carry the score come first and are a complete entry on their own;
+         everything else is behind one line, and opens itself if it is holding a value so
+         nothing is ever hidden AND set. -->
+
+    <div class="group form-panel">
+      <div class="group-head"><div class="group-title">Last night&rsquo;s context</div><div class="group-sub">so it is attributed, not read as fatigue</div></div>
+      <div class="fields"><div class="subj-row">
+        <div class="subj-head"><span class="subj-name">Alcohol</span></div>
+        <div class="subj-scale" id="alcoholScale">
+          <button type="button" class="subj-dot" data-v="0">None</button>
+          <button type="button" class="subj-dot" data-v="1">A drink or two</button>
+          <button type="button" class="subj-dot" data-v="2">More</button>
+        </div>
+        <input type="hidden" id="alcohol">
+      </div>
+      <div class="subj-row">
+        <div class="subj-head"><span class="subj-name">Illness</span></div>
+        <div class="subj-scale" id="unwellScale">
+          <button type="button" class="subj-dot" data-v="0">Fine</button>
+          <button type="button" class="subj-dot" data-v="1">Unwell</button>
+        </div>
+        <input type="hidden" id="unwell">
+      </div></div>
+    </div>
+
+    <div class="group form-panel">
+      <div class="group-head"><div class="group-title">Last night</div><div class="group-sub">the sensor half &mdash; three numbers is plenty</div></div>
+      <div class="fields">
+        <div class="field-row"><span class="field-label">Sleep (hrs)</span><input type="number" step="0.1" id="durationHrs" placeholder="e.g. 7.5"></div>
+        <!-- One field, two things nothing else could give us. Windred (2023, n=60,977) found
+             sleep REGULARITY predicts all-cause mortality about as well as duration does
+             (SRI HR 0.70 vs duration 0.76) and independently of it — and the app stored
+             minutes-awake, which cannot see regularity at all. And Facer-Childs (2018): peak
+             force tracks hours-since-wake rather than clock time, so habitual wake time alone
+             predicts the daily performance window, with no chronotype questionnaire. -->
+        <div class="field-row"><span class="field-label">Woke at</span><input type="time" id="wakeClock"></div>
+        <div>
+          <div class="field-row"><span class="field-label">HRV (ms)</span><span class="src-tag garmin">GARMIN</span><input type="number" id="hrvGarmin" placeholder="ms" step="any" inputmode="decimal"></div>
+          <div class="field-row" style="display:none;"><span class="field-label"></span><span class="src-tag secondary">OURA</span><input type="number" id="hrvOura" placeholder="ms" step="any" inputmode="decimal"></div>
+          <div class="disagree-note" id="hrvFlag">&#9888; delta exceeds &plusmn;10ms &mdash; logged for review</div>
+        </div>
+        <div class="field-row"><span class="field-label">Resting HR</span><input type="number" id="restingHR" placeholder="bpm"></div>
+      </div>
+    </div>
+
+    <div class="more-toggle" id="recoveryMoreToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="recoveryMore">
+      <span>Everything else</span>
+      <span class="more-toggle-sub" id="recoveryMoreSummary">device readings and load</span>
+      <span class="more-toggle-chev">&#9662;</span>
+    </div>
+
+    <div id="recoveryMore" style="display:none;">
+
+    <div class="group form-panel">
+      <div class="group-head"><div class="group-title">Device readings</div><div class="group-sub">whatever your watch or ring will tell you — all optional</div></div>
+      <div class="fields">
+        <div>
+          <div class="field-row" style="display:none;"><span class="field-label">Sleep score</span><span class="src-tag oura">OURA</span><input type="number" id="sleepScoreOura" placeholder="0-100"></div>
+          <div class="field-row"><span class="field-label">Sleep score</span><span class="src-tag secondary">GARMIN</span><input type="number" id="sleepScoreGarmin" placeholder="0-100"></div>
+          <div class="disagree-note" id="sleepScoreFlag">⚠ delta exceeds ±10 — logged for review</div>
+        </div>
+        <div>
+          <!-- "Wake time" on a form that already has "Woke at" invited a clock reading into
+               a field that holds minutes spent awake during the night. It takes a number, so
+               7:15 or 715 would both have gone in and been read as a duration. -->
+          <div class="field-row" style="display:none;"><span class="field-label">Time awake</span><span class="src-tag oura">OURA</span><input type="number" id="wakeTimeOura" placeholder="minutes"></div>
+          <div class="field-row"><span class="field-label">Time awake</span><span class="src-tag secondary">GARMIN</span><input type="number" id="wakeTimeGarmin" placeholder="minutes"></div>
+          <div class="disagree-note" id="wakeTimeFlag">⚠ delta exceeds ±10min — logged for review</div>
+        </div>
+        <div class="field-row"><span class="field-label">HRV baseline</span><input type="number" id="hrvBaseline" placeholder="your rolling normal" step="any" inputmode="decimal"></div>
+        <div class="field-row"><span class="field-label">HRV status</span>
+          <select id="hrvStatus"><option value="">—</option><option>balanced</option><option>unbalanced</option><option>low</option><option>poor</option></select>
+        </div>
+        <div class="field-row"><span class="field-label">Load ratio</span><input type="number" step="0.1" id="loadRatio" placeholder="e.g. 1.2"></div>
+        <div class="field-row"><span class="field-label">Training status</span>
+          <select id="trainingStatus"><option value="">—</option><option>productive</option><option>maintaining</option><option>peaking</option><option>overreaching</option><option>detraining</option><option>unproductive</option><option>recovery</option></select>
+        </div>
+        <div class="field-row" style="display:none;"><span class="field-label">Readiness</span><span class="src-tag oura">OURA</span><input type="number" id="readinessOura" placeholder="0-100"></div>
+        <div class="field-row"><span class="field-label">Body Battery</span><span class="src-tag secondary">GARMIN</span><input type="number" id="bodyBattery" placeholder="0-100"></div>
+      </div>
+    </div>
+
+    </div><!-- /recoveryMore -->
+
+    <!-- A readout, so it follows the forms rather than splitting them: it sat between
+         Readiness and Body metrics and put a stripe of tab colour through the black.
+         It lives on Recovery rather than Trends because tapping a row loads that day into
+         the form above it, and on Trends that form was display:none — the tap looked
+         inert and quietly repointed a screen you were not on. -->
+    <div class="log">
+      <div class="log-title">Recent entries</div>
+      <div id="logListRecovery"></div>
+    </div>
+
+    </div><!-- /recoveryDataView -->
+          <div class="sheet-actions">
+            <button id="clearBtnRecovery" class="outline">Clear</button>
+            <button class="primary" id="saveBtnRecovery">Save entry</button>
+          </div>
         </div>
       </div>
     </div>
@@ -6057,138 +6236,13 @@
     </div>
 
     <div class="set-band">Your data</div>
-    <!-- THE MORNING CHECK-IN, WHERE THE DATA YOU PUT IN LIVES.
-         It was the Data tab's opening view, which meant a tab of readings opened on a form.
-         The readings themselves — the trace, the trends, the history — are what Data is for;
-         this is the other direction, and the other direction is Settings' "Your data" band,
-         beside the export and the import. Collapsed like every section in here, so it costs a
-         heading until you want it. The markup moved whole: #recoveryDataView keeps its id,
-         which its own layout rules and the trace's backfill both go through. -->
-    <div class="group form-panel">
-      <div class="group-head collapsible" data-collapse="logging" style="cursor:pointer;"><div class="group-title">Logging</div><span class="head-est" id="loggingSummary"></span><div class="group-sub">this morning's numbers, and any night you missed</div><span class="collapse-chevron collapsed" data-collapse="logging">&#9662;</span></div>
-      <div class="fields collapsible-body" data-collapse="logging" style="display:none;">
-    <div id="recoveryDataView">
-    <div id="morningBanner" class="morning-banner" style="display:none;">Morning check-in. Three numbers and today&rsquo;s plan reads them.</div>
-
-    <div class="date-row">
-      <input type="date" id="entryDate" aria-label="Date of this morning's entry">
-      <span class="status" id="loadStatus" style="margin:0;"></span>
-    </div>
-
-    <div class="score-box" style="display:none;">
-      <div class="score-card">
-        <div class="score-num" id="adaptiveScoreOut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.5" y1="4.5" x2="19.5" y2="19.5"/><line x1="19.5" y1="4.5" x2="4.5" y2="19.5"/></svg></div>
-        <div class="score-label">Adaptive</div>
-      </div>
-      <div class="score-card">
-        <div class="score-num" id="targetScoreOut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.5" y1="4.5" x2="19.5" y2="19.5"/><line x1="19.5" y1="4.5" x2="4.5" y2="19.5"/></svg></div>
-        <div class="score-label">Target</div>
-      </div>
-    </div>
-    <div class="note-head">How the two scores differ</div>
-        <div class="score-note" style="display:none;">Adaptive compares today against <em>your trailing 7-day average</em>. Target compares against <em>fixed goals</em> (8hr sleep, ≤1 wake event, HRV at rolling baseline). Equal-weighted v1 — <em>placeholder until backtested</em>.</div>
-    <div class="score-note note-live" id="sleepDebtOut">Sleep debt: —</div>
-
-    <!-- THE MORNING CHECK-IN. It used to open with eighteen fields, six of which were three
-         facts asked twice — a Garmin box and an Oura box for the same sleep score, the same
-         wake time, the same HRV — and none of them marked as more or less worth filling in.
-         The three that carry the score come first and are a complete entry on their own;
-         everything else is behind one line, and opens itself if it is holding a value so
-         nothing is ever hidden AND set. -->
-
-    <div class="group form-panel">
-      <div class="group-head"><div class="group-title">Last night&rsquo;s context</div><div class="group-sub">so it is attributed, not read as fatigue</div></div>
-      <div class="fields"><div class="subj-row">
-        <div class="subj-head"><span class="subj-name">Alcohol</span></div>
-        <div class="subj-scale" id="alcoholScale">
-          <button type="button" class="subj-dot" data-v="0">None</button>
-          <button type="button" class="subj-dot" data-v="1">A drink or two</button>
-          <button type="button" class="subj-dot" data-v="2">More</button>
-        </div>
-        <input type="hidden" id="alcohol">
-      </div>
-      <div class="subj-row">
-        <div class="subj-head"><span class="subj-name">Illness</span></div>
-        <div class="subj-scale" id="unwellScale">
-          <button type="button" class="subj-dot" data-v="0">Fine</button>
-          <button type="button" class="subj-dot" data-v="1">Unwell</button>
-        </div>
-        <input type="hidden" id="unwell">
-      </div></div>
-    </div>
-
-    <div class="group form-panel">
-      <div class="group-head"><div class="group-title">Last night</div><div class="group-sub">the sensor half &mdash; three numbers is plenty</div></div>
-      <div class="fields">
-        <div class="field-row"><span class="field-label">Sleep (hrs)</span><input type="number" step="0.1" id="durationHrs" placeholder="e.g. 7.5"></div>
-        <!-- One field, two things nothing else could give us. Windred (2023, n=60,977) found
-             sleep REGULARITY predicts all-cause mortality about as well as duration does
-             (SRI HR 0.70 vs duration 0.76) and independently of it — and the app stored
-             minutes-awake, which cannot see regularity at all. And Facer-Childs (2018): peak
-             force tracks hours-since-wake rather than clock time, so habitual wake time alone
-             predicts the daily performance window, with no chronotype questionnaire. -->
-        <div class="field-row"><span class="field-label">Woke at</span><input type="time" id="wakeClock"></div>
-        <div>
-          <div class="field-row"><span class="field-label">HRV (ms)</span><span class="src-tag garmin">GARMIN</span><input type="number" id="hrvGarmin" placeholder="ms" step="any" inputmode="decimal"></div>
-          <div class="field-row" style="display:none;"><span class="field-label"></span><span class="src-tag secondary">OURA</span><input type="number" id="hrvOura" placeholder="ms" step="any" inputmode="decimal"></div>
-          <div class="disagree-note" id="hrvFlag">&#9888; delta exceeds &plusmn;10ms &mdash; logged for review</div>
-        </div>
-        <div class="field-row"><span class="field-label">Resting HR</span><input type="number" id="restingHR" placeholder="bpm"></div>
-      </div>
-    </div>
-
-    <div class="more-toggle" id="recoveryMoreToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="recoveryMore">
-      <span>Everything else</span>
-      <span class="more-toggle-sub" id="recoveryMoreSummary">device readings and load</span>
-      <span class="more-toggle-chev">&#9662;</span>
-    </div>
-
-    <div id="recoveryMore" style="display:none;">
-
-    <div class="group form-panel">
-      <div class="group-head"><div class="group-title">Device readings</div><div class="group-sub">whatever your watch or ring will tell you — all optional</div></div>
-      <div class="fields">
-        <div>
-          <div class="field-row" style="display:none;"><span class="field-label">Sleep score</span><span class="src-tag oura">OURA</span><input type="number" id="sleepScoreOura" placeholder="0-100"></div>
-          <div class="field-row"><span class="field-label">Sleep score</span><span class="src-tag secondary">GARMIN</span><input type="number" id="sleepScoreGarmin" placeholder="0-100"></div>
-          <div class="disagree-note" id="sleepScoreFlag">⚠ delta exceeds ±10 — logged for review</div>
-        </div>
-        <div>
-          <!-- "Wake time" on a form that already has "Woke at" invited a clock reading into
-               a field that holds minutes spent awake during the night. It takes a number, so
-               7:15 or 715 would both have gone in and been read as a duration. -->
-          <div class="field-row" style="display:none;"><span class="field-label">Time awake</span><span class="src-tag oura">OURA</span><input type="number" id="wakeTimeOura" placeholder="minutes"></div>
-          <div class="field-row"><span class="field-label">Time awake</span><span class="src-tag secondary">GARMIN</span><input type="number" id="wakeTimeGarmin" placeholder="minutes"></div>
-          <div class="disagree-note" id="wakeTimeFlag">⚠ delta exceeds ±10min — logged for review</div>
-        </div>
-        <div class="field-row"><span class="field-label">HRV baseline</span><input type="number" id="hrvBaseline" placeholder="your rolling normal" step="any" inputmode="decimal"></div>
-        <div class="field-row"><span class="field-label">HRV status</span>
-          <select id="hrvStatus"><option value="">—</option><option>balanced</option><option>unbalanced</option><option>low</option><option>poor</option></select>
-        </div>
-        <div class="field-row"><span class="field-label">Load ratio</span><input type="number" step="0.1" id="loadRatio" placeholder="e.g. 1.2"></div>
-        <div class="field-row"><span class="field-label">Training status</span>
-          <select id="trainingStatus"><option value="">—</option><option>productive</option><option>maintaining</option><option>peaking</option><option>overreaching</option><option>detraining</option><option>unproductive</option><option>recovery</option></select>
-        </div>
-        <div class="field-row" style="display:none;"><span class="field-label">Readiness</span><span class="src-tag oura">OURA</span><input type="number" id="readinessOura" placeholder="0-100"></div>
-        <div class="field-row"><span class="field-label">Body Battery</span><span class="src-tag secondary">GARMIN</span><input type="number" id="bodyBattery" placeholder="0-100"></div>
-      </div>
-    </div>
-
-    </div><!-- /recoveryMore -->
-
-    <!-- A readout, so it follows the forms rather than splitting them: it sat between
-         Readiness and Body metrics and put a stripe of tab colour through the black.
-         It lives on Recovery rather than Trends because tapping a row loads that day into
-         the form above it, and on Trends that form was display:none — the tap looked
-         inert and quietly repointed a screen you were not on. -->
-    <div class="log">
-      <div class="log-title">Recent entries</div>
-      <div id="logListRecovery"></div>
-    </div>
-
-    </div>
-      </div>
-    </div>
+    <!-- THE MORNING CHECK-IN MOVED HERE ONCE, THEN ONCE MORE. It was the Data tab's opening
+         view, then a collapsible section on this "Your data" band beside the export and the
+         import. It is reached from the header menu now instead (see #morningLogSheet, wired
+         alongside the app's other sheets) — logging this morning's numbers is not a settings
+         screen's business, and the mark that reminds you to do it already sits in the header
+         on every tab. Nothing of the old section is left here; Backup & Restore, right below,
+         is this band's only remaining content. -->
     <div class="group form-panel">
       <div class="group-head collapsible" data-collapse="backupampr" style="cursor:pointer;"><div class="group-title">Backup &amp; Restore</div><span class="head-est" id="backupSummary"></span><div class="group-sub">this browser is the only copy of your data</div><span class="collapse-chevron" data-collapse="backupampr">▾</span></div><div class="fields collapsible-body" data-collapse="backupampr" style="display:none;">
         <!-- Said once, plainly, where the export lives. Everything is in this browser's own
@@ -6702,11 +6756,6 @@
   <span class="log-strip-word" id="logStripWord">Swipe down to log workout</span>
   <span class="log-strip-arrow" aria-hidden="true">▾</span>
 </div>
-
-<footer id="footerRecovery">
-  <button id="clearBtnRecovery" class="outline">Clear</button>
-  <button class="primary" id="saveBtnRecovery">Save entry</button>
-</footer>
 
 <script>
 
@@ -10374,18 +10423,10 @@ function showSkeleton(host, rows){
 const tabs = document.querySelectorAll('.tab');
 
 const panels = document.querySelectorAll('.panel');
-const footerRecoveryEl = document.getElementById('footerRecovery');
 
 // async now: whether the strip stands depends on whether a session is under way, which is
 // a stored answer. Every caller fires and forgets it, so nothing waits on the result.
 async function updateFooterVisibility(){
-  // Save and Clear belong to the recovery form, which is a section on Settings now rather
-  // than a view on Data. So the strip stands when that section is OPEN, not when a tab is
-  // active — setCollapsed calls this, which is what makes the two agree.
-  const settingsActive = document.getElementById('panel-settings').classList.contains('active');
-  const loggingBody = document.querySelector('.collapsible-body[data-collapse="logging"]');
-  const loggingOpen = !!loggingBody && loggingBody.style.display !== 'none';
-  footerRecoveryEl.style.display = (settingsActive && loggingOpen) ? 'flex' : 'none';
   // Today closes in what you do next; every other tab still closes in the definition.
   const onToday = document.getElementById('panel-insights').classList.contains('active');
   const colophon = document.querySelector('.app-colophon');
@@ -11843,7 +11884,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.01.676';
+const APP_VERSION = '2026.10.01.677';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12204,6 +12245,7 @@ const APP_NOTES = {
   '2026.10.01.674': 'The reminder dot is a "!" now, the whole mascot is the tap target (not just the tiny mark), and it only ever shows on Today — switch tabs and it is gone, come back and it is there again if you still have not logged.',
   '2026.10.01.675': 'Tapping any day on the week calendar now shows its reps, sets and weight too, the same plain dose Today already prints under each name — warm-up and cooldown still only generate for today itself.',
   '2026.10.01.676': 'The reminder mark on the mascot is bigger — easier to spot, easier to tap.',
+  '2026.10.01.677': 'Tapping the mascot opens a menu now — log this morning, or jump to Body, Data or Settings. Logging moved into its own popup and is gone from Settings entirely.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -12431,13 +12473,6 @@ try{
 } catch(e){}
 function setCollapsed(key, collapsed){
   if(key === 'scorelog' && !collapsed) renderScoreSamples();
-  /* Recent entries repaints on the way in. It used to be written at page load and after a
-     save and nowhere else, so it sat beside a chart that reads the same storage live: log a
-     night, and the chart gained a point the list never showed. That was hung off entering the
-     recovery view; opening the section is the same moment. */
-  if(key === 'logging' && !collapsed) refreshRecoveryLog();
-  // Both ways: the Save/Clear strip stands with this section and goes with it.
-  if(key === 'logging') setTimeout(updateFooterVisibility, 0);
   // The panel is collapsed by default, so a render-time animation plays to nobody. Same
   // shape as the line above: the section opening is the moment worth spending it on.
   if(key === 'weights' && !collapsed) weightsDrift(document.getElementById('learnedWeights'));
@@ -16525,6 +16560,8 @@ async function saveRecoveryEntry(){
     showToast('Recovery entry saved');
     flashConfirm(document.getElementById('saveBtnRecovery'));
     await refreshRecoveryLog();
+    // A save is the form's own "done" — the sheet closes on every entry, not just today's.
+    morningLogSheet.close();
     if(entry.date === todayStr){
       document.getElementById('morningBanner').style.display = 'none';
       setTimeout(()=>activateTab('insights'), 500);
@@ -25149,6 +25186,27 @@ document.getElementById('headerScoreBtn')?.addEventListener('click', ()=>{
   settleEyes();
 });
 
+/* The header menu, and the morning log sheet it opens into. Tapping the mark used to jump
+   straight to Settings' Logging section; a menu first now, since that section is gone from
+   Settings entirely (see the comment where it used to sit) and the mark's reminder badge is
+   only one of several things worth reaching from here. refreshRecoveryLog is called by hand
+   on the way in — it used to run from setCollapsed('logging', false), which no longer exists
+   for this key. */
+const headerMenuSheet = wireSheet('headerMenuSheet');
+const morningLogSheet = wireSheet('morningLogSheet');
+document.getElementById('menuLogBtn')?.addEventListener('click', ()=>{
+  headerMenuSheet.close();
+  refreshRecoveryLog();
+  morningLogSheet.open();
+  setTimeout(()=> document.getElementById('durationHrs')?.focus({ preventScroll:true }), 280);
+});
+document.querySelectorAll('#headerMenuSheet [data-menu-tab]').forEach(row=>{
+  row.addEventListener('click', ()=>{
+    headerMenuSheet.close();
+    activateTab(row.dataset.menuTab);
+  });
+});
+
 /* The mobility test. setMobilityAssessmentOpen still owns the state — this only gives the
    sheet the three ways out that do not go through the header button, and hands each of them
    back to it so the button label and the aria go with them. */
@@ -33270,21 +33328,13 @@ const TENDINOPATHY_PROTOCOL = {
 // Wired once, on the mark itself rather than the tiny badge inside it — the badge marks
 // whether there's something to log, but the whole mark is the tap target, so missing it by a
 // few pixels still works. Set up here rather than inside generateRecommendations, which would
-// pile up a new listener on every render.
+// pile up a new listener on every render. Opens the header menu now rather than jumping
+// straight to Settings' old Logging section, which doesn't exist any more — see
+// headerMenuSheet/morningLogSheet, wired alongside the app's other sheets.
 (function wireHeaderLogBadge(){
   const mark = document.getElementById('headerMark');
   if(!mark) return;
-  const go = ()=>{
-    activateTab('settings');
-    setTimeout(()=>{
-      setCollapsed('logging', false);
-      const el = document.getElementById('durationHrs');
-      const grp = el && el.closest('.group');
-      if(grp) grp.scrollIntoView({ behavior: eyeMotionOff() ? 'auto' : 'smooth', block:'center' });
-      // After the scroll: focusing first is what makes the browser scroll somewhere else.
-      if(el) setTimeout(()=> el.focus({ preventScroll:true }), 260);
-    }, 420);
-  };
+  const go = ()=> headerMenuSheet.open();
   mark.addEventListener('click', go);
   mark.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
 })();

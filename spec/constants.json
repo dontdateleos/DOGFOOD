@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.01.676",
+ "generatedFrom": "2026.10.01.677",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1092,7 +1092,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.01.676",
+  "APP_VERSION": "2026.10.01.677",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1435,6 +1435,7 @@
    "2026.10.01.674": "The reminder dot is a \"!\" now, the whole mascot is the tap target (not just the tiny mark), and it only ever shows on Today — switch tabs and it is gone, come back and it is there again if you still have not logged.",
    "2026.10.01.675": "Tapping any day on the week calendar now shows its reps, sets and weight too, the same plain dose Today already prints under each name — warm-up and cooldown still only generate for today itself.",
    "2026.10.01.676": "The reminder mark on the mascot is bigger — easier to spot, easier to tap.",
+   "2026.10.01.677": "Tapping the mascot opens a menu now — log this morning, or jump to Body, Data or Settings. Logging moved into its own popup and is gone from Settings entirely.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
