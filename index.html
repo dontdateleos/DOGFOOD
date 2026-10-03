@@ -11858,7 +11858,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.01.678';
+const APP_VERSION = '2026.10.03.679';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12221,6 +12221,7 @@ const APP_NOTES = {
   '2026.10.01.676': 'The reminder mark on the mascot is bigger — easier to spot, easier to tap.',
   '2026.10.01.677': 'Tapping the mascot opens a menu now — log this morning, or jump to Body, Data or Settings. Logging moved into its own popup and is gone from Settings entirely.',
   '2026.10.01.678': 'The menu is gone — tapping the mascot opens the morning log straight away again, titled Log this morning or Edit this morning depending on whether today is already done.',
+  '2026.10.03.679': 'Export calendar now gives every session a real time — 7am for mornings, 5pm for afternoons — and a real length, instead of an all-day block. Drag it to wherever it actually happens.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -18357,16 +18358,47 @@ function icsStamp(d){
 function icsEscapeText(t){
   return String(t).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
 }
+// Floating local time — no Z, no TZID. The app has no timezone concept of its own (every
+// date here is already a local YYYY-MM-DD string), and a bare DTSTART/DTEND is read by every
+// calendar client as "whatever timezone this device is in," which is the one that's actually
+// right for a plan that was never timezone-aware to begin with.
+function icsLocalStamp(d){
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+}
+// Placeholder times, not a scheduling feature. The export used to be all-day, which meant
+// every calendar app showed the whole week as a stack of banners with no sense of when
+// training actually happens — these just give each event a real slot (and a real length) to
+// start from. Nobody's actual AM session is at 7:00 sharp; the point is that it is now
+// draggable to wherever it actually is, instead of being pinned to "all day."
+const ICS_SLOT_HOUR = { am: 7, pm: 17 };
+// Only used when estimateSessionDuration has nothing to go on (an empty or unrecognized
+// block) — the three real branches (strength/run/mobility) return their own estimate.
+const ICS_DEFAULT_DURATION_MIN = 45;
 document.getElementById('exportCalendarBtn').addEventListener('click', async ()=>{
   const stamp = icsStamp(new Date());
   const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//DOGFOOD//Training Plan//EN'];
+  // Same inputs the Today estimate itself uses (see the comment on that call) — your own
+  // pace and set counts, not the placeholder table, so the exported length matches what the
+  // app would tell you about the same session if you looked at it on Today.
+  let sessionLength = null;
+  try{
+    const setup = JSON.parse((await window.storage.get('settings:trainingSetup')).value);
+    sessionLength = parseInt(setup.sessionLength, 10) || null;
+  } catch(e){}
+  const [personalPace, personalSets] = await Promise.all([
+    getPersonalPaceByType(), getPersonalSetsByCategory()
+  ]);
   for(const date of getWeekDatesForOffset(0).concat(getWeekDatesForOffset(1))){
     for(const slot of ['am','pm']){
       try{
         const block = JSON.parse((await window.storage.get(`weekplan:${date}:${slot}`)).value);
-        const stampDate = date.replaceAll('-','');
-        const endStampDate = shiftDateStr(date, 1).replaceAll('-','');
-        lines.push('BEGIN:VEVENT',`UID:dogfood-${date}-${slot}@local`,`DTSTAMP:${stamp}`,`DTSTART;VALUE=DATE:${stampDate}`,`DTEND;VALUE=DATE:${endStampDate}`,`SUMMARY:${icsEscapeText('DOGFOOD — ' + sessionTitle(block))}`,'END:VEVENT');
+        const [y, mo, d] = date.split('-').map(Number);
+        const start = new Date(y, mo - 1, d, ICS_SLOT_HOUR[slot], 0, 0, 0);
+        let mins = estimateSessionDuration(block, personalPace, personalSets, sessionLength);
+        if(mins == null || mins <= 0) mins = ICS_DEFAULT_DURATION_MIN;
+        const end = new Date(start.getTime() + mins * 60000);
+        lines.push('BEGIN:VEVENT',`UID:dogfood-${date}-${slot}@local`,`DTSTAMP:${stamp}`,`DTSTART:${icsLocalStamp(start)}`,`DTEND:${icsLocalStamp(end)}`,`SUMMARY:${icsEscapeText('DOGFOOD — ' + sessionTitle(block))}`,'END:VEVENT');
       }catch(e){}
     }
   }
