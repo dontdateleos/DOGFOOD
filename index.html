@@ -1089,6 +1089,11 @@
     font-weight:var(--fw-bold); color:var(--bg); letter-spacing:var(--track-ui);
     cursor:pointer; white-space:nowrap; }
   .header-mark .header-score:active{ background:rgba(var(--ink-rgb),0.15); }
+  /* Only Today has a use for this — any other tab is somewhere other than the page the score
+     and the reminder are both about. display:flex above means native [hidden] alone loses to
+     it (same cascade-origin gotcha as every other [hidden] override in this file), hence the
+     explicit display:none here. */
+  .header-mark .header-score[hidden]{ display:none; }
   /* REPLACES THE FULL-WIDTH "LOG THIS MORNING" STRIP, AND LATER THE CORNER BADGE.
      That strip was a lime cta-strip sized to the whole page, for a task ("type one number")
      this tiny instead of the one-line reminder it should be. It lived as a dot, then a "!",
@@ -1099,6 +1104,15 @@
   .header-score-sunrise{ display:flex; }
   .header-score-sunrise svg{ width:13px; height:13px; }
   .header-score-sunrise[hidden]{ display:none; }
+  /* LOOKS LIKE IT WANTS A TAP. The outline pill reads as a label everywhere else it is used
+     (today's number, tap for detail) — fine for a readout, wrong for an offer. Filled solid
+     in the same orange the reminder has used since the very first version of it, plus a slow
+     breathe so it is still finding your eye after the first glance, not just at it. */
+  @keyframes headerScorePulse{ 0%,100%{ transform:translateY(-50%) scale(1); }
+    50%{ transform:translateY(-50%) scale(1.08); } }
+  .header-mark .header-score.needs-tap{ background:var(--block-orange); border-color:var(--block-orange);
+    color:var(--banner); animation:headerScorePulse 1800ms ease-in-out infinite; }
+  .header-mark .header-score.needs-tap:active{ background:var(--block-orange); opacity:0.8; }
   /* The rest day plate. Same black, same cream rule, same mono caption as a section heading —
      it is the page's way of saying there is nothing here, so it should look like the app
      rather than like an error. */
@@ -4496,6 +4510,7 @@
     header{ transition:none; }
     .update-banner{ animation:none; }
     .skeleton-row{ animation:none; opacity:0.14; }
+    .header-mark .header-score.needs-tap{ animation:none; }
   }
   /* ---------- CASE, LAST ----------
      This sits at the end of the stylesheet on purpose. Case and its tracking are a rule
@@ -11858,7 +11873,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.04.683';
+const APP_VERSION = '2026.10.04.684';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12226,6 +12241,7 @@ const APP_NOTES = {
   '2026.10.04.681': 'Saving a changed goal now rebuilds the plan itself — every day from today forward that you haven’t logged or started gets regenerated from the new goal, instead of sitting there built from the old one until you remembered to hit Generate.',
   '2026.10.04.682': 'The reminder mark on the mascot is a sunrise now instead of a "!" — same badge, same spot, same tap.',
   '2026.10.04.683': 'The score moved beside the mascot and merged with the reminder — sunrise and a tap opens this morning’s log when nothing’s logged yet, the number and a tap opens the score detail once it is. The mark itself is just the mascot’s face now.',
+  '2026.10.04.684': 'The score/sunrise bubble only shows on Today now — it meant nothing on the other tabs. The sunrise also fills solid orange and breathes gently, so it reads as something to tap instead of a label.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -33436,17 +33452,21 @@ function setHeaderLogBadge(show){
   todayNeedsLog = show;
   refreshHeaderLogBadge();
 }
-// Called on every tab switch as well as whenever todayNeedsLog changes, so the sunrise is
-// gone the instant you leave Today rather than riding along on a bubble that is shared by
-// every tab. Decides which face #headerScoreBtn shows AND what tapping it does — see that
-// button's own click handler, which reads todayNeedsLog the same way.
+// Called on every tab switch as well as whenever todayNeedsLog changes, so the bubble is
+// gone the instant you leave Today rather than riding along on a mark that is shared by
+// every tab — neither the score nor the reminder means anything on a tab that isn't the one
+// they're both about. Decides which face #headerScoreBtn shows AND what tapping it does —
+// see that button's own click handler, which reads todayNeedsLog the same way.
 function refreshHeaderLogBadge(){
-  const needsLog = todayNeedsLog && currentTabName() === 'insights';
+  const onToday = currentTabName() === 'insights';
+  const needsLog = todayNeedsLog && onToday;
   const sunrise = document.getElementById('headerScoreSunrise');
   const out = document.getElementById('headerScoreOut');
   const btn = document.getElementById('headerScoreBtn');
+  if(btn) btn.hidden = !onToday;
   if(sunrise) sunrise.hidden = !needsLog;
   if(out) out.hidden = needsLog;
+  if(btn) btn.classList.toggle('needs-tap', needsLog);
   if(btn) btn.setAttribute('aria-label', needsLog ? 'Log this morning' : "Today's score — tap for detail");
 }
 
