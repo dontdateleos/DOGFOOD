@@ -5666,7 +5666,7 @@
             <div class="week-actions">
               <button id="changeTrainingSetupBtn" class="small outline">Change setup</button>
               <button id="generateProgramFromGoalsBtn" class="small">Generate</button>
-              <button class="small outline" id="clearAllWeekBtn">Clear all</button>
+              <button class="small outline" id="clearAllWeekBtn">Clear everything</button>
             </div>
             <div class="week-actions"><button type="button" class="small outline" id="exportCalendarBtn">Export calendar</button><button type="button" class="small outline" id="rebalanceWeekBtn">Rebalance week</button></div>
             <button type="button" id="undoWeekChangeBtn" class="small outline" style="display:none; margin-top:8px;">Undo last change</button>
@@ -11858,7 +11858,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.03.679';
+const APP_VERSION = '2026.10.04.680';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12222,6 +12222,7 @@ const APP_NOTES = {
   '2026.10.01.677': 'Tapping the mascot opens a menu now — log this morning, or jump to Body, Data or Settings. Logging moved into its own popup and is gone from Settings entirely.',
   '2026.10.01.678': 'The menu is gone — tapping the mascot opens the morning log straight away again, titled Log this morning or Edit this morning depending on whether today is already done.',
   '2026.10.03.679': 'Export calendar now gives every session a real time — 7am for mornings, 5pm for afternoons — and a real length, instead of an all-day block. Drag it to wherever it actually happens.',
+  '2026.10.04.680': '"Clear all" is "Clear everything" now and actually means it — it used to only wipe the current week even if Generate had built 4 or 8 weeks ahead.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -18225,6 +18226,17 @@ function getWeekDatesForOffset(weeksAhead){
     return dt.toISOString().slice(0,10);
   });
 }
+// The longest a single Generate run can reach — matches #programWeeksSelect's own top option
+// (8 weeks). "Clear all" and the goal-rebuild-on-save logic both need "every day the plan
+// could possibly cover," and that ceiling is the only honest bound for it: there is no stored
+// record of how far a past Generate call actually went, so scanning anything less risks
+// leaving weeks behind, and there is nothing beyond this ceiling to find.
+const PROGRAM_WEEKS_MAX = 8;
+function getAllGeneratedWeekDates(){
+  const out = [];
+  for(let w=0; w<PROGRAM_WEEKS_MAX; w++) out.push(...getWeekDatesForOffset(w));
+  return out;
+}
 const WEEK_DAY_LABELS = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
 /* Any date, not just one of this week's seven. WEEK_DAY_LABELS[getWeekDates().indexOf(date)]
    was the only way the editor named a day, and indexOf returns -1 for anything outside the
@@ -18448,9 +18460,11 @@ document.getElementById('rebalanceWeekBtn').addEventListener('click', async e=>{
   offerWeekUndo([...undoByKey.values()],'rebalance'); renderWeekGrid(); renderTodayWorkoutSummary(); showToast('Upcoming sessions rebalanced');
 });
 document.getElementById('clearAllWeekBtn').addEventListener('click', async (e)=>{
-  // Recoverable — you can regenerate the week — so one more tap is the whole guard.
-  if(!await confirmInPlace(e.currentTarget, { mode:'tap', label:'Tap again to clear the week' })) return;
-  const dates = getWeekDates();
+  // Recoverable — you can regenerate the week — so one more tap is the whole guard. Clears
+  // every week Generate could have reached (see getAllGeneratedWeekDates), not just the
+  // current one — clearing a 4- or 8-week plan used to mean coming back here once per week.
+  if(!await confirmInPlace(e.currentTarget, { mode:'tap', label:'Tap again to clear every planned week' })) return;
+  const dates = getAllGeneratedWeekDates();
   let cleared = 0;
   const undoEntries = [];
   for(const date of dates){
