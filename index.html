@@ -1076,30 +1076,29 @@
     font-family:var(--sans); font-size:var(--fs-md); font-weight:var(--fw-bold); color:var(--bg);
     text-transform:uppercase; letter-spacing:0.02em; line-height:1.15; }
   .header-date span{ display:block; }
-  /* The score, compact, stacked under the date rather than carried as its own absolutely-
-     positioned element — it inherits the date block's right alignment and its scroll fade
-     for free that way. 24px tall for the same reason the mark is: WCAG 2.2 AA's floor for a
-     real target, not a label. */
-  .header-score{ display:block; margin-top:6px; margin-left:auto; background:transparent;
-    border:1px solid rgba(var(--ink-rgb),0.4); border-radius:999px; padding:0 10px;
-    min-height:24px; font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold);
-    color:var(--bg); letter-spacing:var(--track-ui); cursor:pointer; }
-  .header-score:active{ background:rgba(var(--ink-rgb),0.15); }
-  /* REPLACES THE FULL-WIDTH "LOG THIS MORNING" STRIP.
+  /* THE SCORE, BESIDE THE MARK NOW. It used to stack under the date, its own element with
+     its own right-aligned column; now it is a child of #headerMark instead, positioned off
+     the mark's own box (which --mc-scale never moves, only what is drawn inside it — see
+     that comment) rather than copying the mark's scroll-collapse math into a second place.
+     24px tall for the same reason the mark's own hit area used to be floored: WCAG 2.2 AA's
+     minimum for a real target, not a label. */
+  .header-mark .header-score{ position:absolute; left:calc(100% + 8px); top:50%;
+    transform:translateY(-50%); display:flex; align-items:center; gap:4px;
+    background:transparent; border:1px solid rgba(var(--ink-rgb),0.4); border-radius:999px;
+    padding:0 10px; min-height:24px; font-family:var(--mono); font-size:var(--fs-tag);
+    font-weight:var(--fw-bold); color:var(--bg); letter-spacing:var(--track-ui);
+    cursor:pointer; white-space:nowrap; }
+  .header-mark .header-score:active{ background:rgba(var(--ink-rgb),0.15); }
+  /* REPLACES THE FULL-WIDTH "LOG THIS MORNING" STRIP, AND LATER THE CORNER BADGE.
      That strip was a lime cta-strip sized to the whole page, for a task ("type one number")
-     this tiny instead of the one-line reminder it should be — a mark on the mascot you already
-     look at every time you open the app, gone the moment there is something to show instead.
-     A sibling of the mark's own svg/eye-gaze rather than a separate element positioned
-     against it, so it rides every scroll-collapse and perch move .header-mark already makes
-     without needing any position math of its own. Purely visual (aria-hidden, pointer-events
-     none) — the mark itself is the tap target now, see #headerMark's own click wiring, so
-     there is nothing here to compete with .header-mark::after's hit-area expansion for. */
-  .header-mark .header-log-badge{ position:absolute; top:-4px; right:-4px; width:17px; height:17px;
-    border-radius:50%; background:var(--block-orange); border:2px solid var(--banner);
-    display:flex; align-items:center; justify-content:center; pointer-events:none;
-    color:var(--banner); }
-  .header-mark .header-log-badge[hidden]{ display:none; }
-  .header-mark .header-log-badge svg{ width:11px; height:11px; }
+     this tiny instead of the one-line reminder it should be. It lived as a dot, then a "!",
+     then a sunrise, in a small badge pinned to the mascot's corner; it lives inside the score
+     bubble now instead — the two were already answering the same question ("is there
+     something to do about today") from two separate places in the header, and one place
+     answering it is the simpler flow. */
+  .header-score-sunrise{ display:flex; }
+  .header-score-sunrise svg{ width:13px; height:13px; }
+  .header-score-sunrise[hidden]{ display:none; }
   /* The rest day plate. Same black, same cream rule, same mono caption as a section heading —
      it is the page's way of saying there is nothing here, so it should look like the app
      rather than like an error. */
@@ -1304,15 +1303,6 @@
   .header-brand > *{ position:relative; z-index:1; }
   /* The plate overlaps the last letter, so it has to paint over the wordmark, not under. */
   .header-brand .header-mark{ z-index:2; }
-  /* THE BOX IS 40; THE FINGER GETS 44.
-     Apple asks 44 and WCAG's AAA target size asks the same, and the box cannot simply grow to
-     meet them — it is what the collapse takes the mark's left from and what the wordmark is
-     laid out against, so widening it moves the mark. An ::after expands the HIT AREA and
-     nothing else, which is the same trick the chip beside the score already uses.
-     It rides the collapse's scale along with everything else, so perched at 0.6 this is 26.4
-     — still clear of the 24 that AA asks for. */
-  .header-brand .header-mark::after{ content:''; position:absolute;
-    left:-2px; right:-2px; top:-2px; bottom:-2px; }
   /* The solid draws the plate, the step and the eyes itself, so the element underneath gives
      up both: applyEyeForm still writes the header form onto it and both are overridden here
      rather than made conditional, so nothing has to know which mark it is dressing. */
@@ -5062,15 +5052,6 @@
          of the width of the whole date. -->
     <div class="header-date" id="headerDate" aria-label="Today's date">
       <span class="hd-dow"></span><span class="hd-day"></span><span class="hd-mon"></span>
-      <!-- THE SCORE, COMPACT, IN THE HEADER NOW — not the hero band it used to be below the
-           calendar. Just the number: the ghost comparison, the trend, the expandable baseline
-           and the block-position line all still exist, unchanged, inside #scoreDetailSheet,
-           which this opens. A sibling of the date rather than its own absolutely-positioned
-           element, so it fades with the date on scroll for free instead of needing its own
-           copy of that math. -->
-      <button type="button" class="header-score" id="headerScoreBtn" aria-label="Today's score — tap for detail">
-        <span id="headerScoreOut">—</span>
-      </button>
     </div>
     <!-- The word is its own span because the tab switch used to write straight over the
          label's contents, and there is now a second thing in this box: one true line about
@@ -5082,8 +5063,27 @@
     <!-- The mark: a solid, drawn face on, which is the same two capsules on the same square
          it has always been until it turns. The .eye-gaze pair stays in the DOM and stays
          hidden here — every other copy of the mark still uses it, and the trip down to the
-         score is a cut rather than a morph, so the two never have to agree mid-flight. -->
-    <div class="header-mark eyes mark-solid" id="headerMark" role="button" tabindex="0" aria-label="Log this morning"><svg class="mark-cube" id="headerMarkCube" aria-hidden="true"></svg><div class="eye-gaze"><div class="eye-motion"><span></span><span></span></div></div><span class="header-log-badge" id="headerLogBadge" aria-hidden="true" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16h16M7 16a5 5 0 0110 0"/><path d="M12 3v3M4.5 7.5l1.8 1.8M19.5 7.5l-1.8 1.8"/></svg></span></div>
+         score is a cut rather than a morph, so the two never have to agree mid-flight.
+         Purely visual now — no role, no tabindex, no click wiring. #headerScoreBtn, its new
+         right-hand neighbor, carries the one interactive job (opening the morning log) the
+         mark used to do alone, so there is nothing left here to expand a hit area for. -->
+    <div class="header-mark eyes mark-solid" id="headerMark" aria-hidden="true"><svg class="mark-cube" id="headerMarkCube" aria-hidden="true"></svg><div class="eye-gaze"><div class="eye-motion"><span></span><span></span></div></div>
+      <!-- THE SCORE, BESIDE THE MARK NOW — a child of it rather than a separately-positioned
+           sibling, so it rides every scroll-collapse and perch move .header-mark already
+           makes, the same reasoning the corner badge it replaces used to rely on. Two faces:
+           the sunrise (nothing logged yet — tap opens #morningLogSheet) or the number (tap
+           opens #scoreDetailSheet, same ghost/trend/baseline/block-position it always has).
+           refreshHeaderLogBadge decides which face shows and what the tap does, off the same
+           todayNeedsLog flag the old badge read. Divs, not spans, for the two faces — .eyes
+           span is the rule that draws an eye capsule (width/height off --eye-w/--eye-h) and
+           applies to any span anywhere under an .eyes-classed ancestor, headerMark included,
+           so a bare span here would be drawn and blink-animated as a third eye instead of
+           showing its own content. -->
+      <button type="button" class="header-score" id="headerScoreBtn" aria-label="Today's score — tap for detail">
+        <div class="header-score-sunrise" id="headerScoreSunrise" aria-hidden="true" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16h16M7 16a5 5 0 0110 0"/><path d="M12 3v3M4.5 7.5l1.8 1.8M19.5 7.5l-1.8 1.8"/></svg></div>
+        <div id="headerScoreOut">—</div>
+      </button>
+    </div>
   <div class="tabs">
     <!-- Weekly merged into Today in .659ish — the calendar strip and the week's planning
          controls live on this tab now instead of a separate one. See RETIRED_TABS for the
@@ -11858,7 +11858,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.04.682';
+const APP_VERSION = '2026.10.04.683';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12225,6 +12225,7 @@ const APP_NOTES = {
   '2026.10.04.680': '"Clear all" is "Clear everything" now and actually means it — it used to only wipe the current week even if Generate had built 4 or 8 weeks ahead.',
   '2026.10.04.681': 'Saving a changed goal now rebuilds the plan itself — every day from today forward that you haven’t logged or started gets regenerated from the new goal, instead of sitting there built from the old one until you remembered to hit Generate.',
   '2026.10.04.682': 'The reminder mark on the mascot is a sunrise now instead of a "!" — same badge, same spot, same tap.',
+  '2026.10.04.683': 'The score moved beside the mascot and merged with the reminder — sunrise and a tap opens this morning’s log when nothing’s logged yet, the number and a tap opens the score detail once it is. The mark itself is just the mascot’s face now.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -25202,7 +25203,14 @@ document.getElementById('saveGoalsBtn').addEventListener('click', async ()=>{
    compact in the header, is new. No reload on open, for the same reason the two sheets above
    don't: the band keeps itself current independently of whether this happens to be open. */
 const scoreDetailSheet = wireSheet('scoreDetailSheet');
+// Two destinations behind one tap, same fork refreshHeaderLogBadge already decided when it
+// picked which face to show: nothing logged yet opens the log sheet instead of the detail
+// one, since there is no "detail" worth showing for a score that has not been computed.
 document.getElementById('headerScoreBtn')?.addEventListener('click', ()=>{
+  // Same condition refreshHeaderLogBadge used to pick the face this button is currently
+  // showing — off tab as well as off todayNeedsLog, so a tap never does the thing the face
+  // it's not currently showing promised.
+  if(todayNeedsLog && currentTabName() === 'insights'){ openMorningLogSheet(); return; }
   scoreDetailSheet.open();
   // Everything inside measures itself off its own box — layoutBandColumn, the trace, the
   // suggestion preview — and while the sheet sits display:none that box is a zero rect, so
@@ -33419,34 +33427,27 @@ const TENDINOPATHY_PROTOCOL = {
   low: 'Return to sport: plyometric and energy-storage loading (hopping, bounding) reintroduced progressively, criteria-based on pain ≤3/10 next-day — not purely time-based.'
 };
 
-// Wired once, on the mark itself rather than the tiny badge inside it — the badge marks
-// whether there's something to log, but the whole mark is the tap target, so missing it by a
-// few pixels still works. Set up here rather than inside generateRecommendations, which would
-// pile up a new listener on every render. Opens the morning log sheet straight away — a menu
-// sat in between for one version, offering Body/Data/Settings alongside it, and was cut back
-// out: the mark has exactly one job, logging or editing today's entry.
-(function wireHeaderLogBadge(){
-  const mark = document.getElementById('headerMark');
-  if(!mark) return;
-  mark.addEventListener('click', openMorningLogSheet);
-  mark.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openMorningLogSheet(); } });
-})();
-// Whether today still needs a morning entry, independent of which tab is showing — the badge
-// itself only ever shows on Today, but the flag has to survive a trip to another tab and back
-// since generateRecommendations (the only thing that knows the answer) runs on Today alone.
+// Whether today still needs a morning entry, independent of which tab is showing — the
+// sunrise face itself only ever shows on Today, but the flag has to survive a trip to
+// another tab and back since generateRecommendations (the only thing that knows the answer)
+// runs on Today alone.
 let todayNeedsLog = false;
 function setHeaderLogBadge(show){
   todayNeedsLog = show;
   refreshHeaderLogBadge();
 }
-// Called on every tab switch as well as whenever todayNeedsLog changes, so the badge is gone
-// the instant you leave Today rather than riding along on a mark that is shared by every tab.
-// The mark's own aria-label rides along with it, since a screen reader has no badge to read.
+// Called on every tab switch as well as whenever todayNeedsLog changes, so the sunrise is
+// gone the instant you leave Today rather than riding along on a bubble that is shared by
+// every tab. Decides which face #headerScoreBtn shows AND what tapping it does — see that
+// button's own click handler, which reads todayNeedsLog the same way.
 function refreshHeaderLogBadge(){
-  const badge = document.getElementById('headerLogBadge');
-  if(badge) badge.hidden = !(todayNeedsLog && currentTabName() === 'insights');
-  const mark = document.getElementById('headerMark');
-  if(mark) mark.setAttribute('aria-label', todayNeedsLog ? 'Log this morning' : 'Edit this morning');
+  const needsLog = todayNeedsLog && currentTabName() === 'insights';
+  const sunrise = document.getElementById('headerScoreSunrise');
+  const out = document.getElementById('headerScoreOut');
+  const btn = document.getElementById('headerScoreBtn');
+  if(sunrise) sunrise.hidden = !needsLog;
+  if(out) out.hidden = needsLog;
+  if(btn) btn.setAttribute('aria-label', needsLog ? 'Log this morning' : "Today's score — tap for detail");
 }
 
 async function generateRecommendations(){
@@ -33475,11 +33476,11 @@ async function generateRecommendations(){
     // costs a tap only to the people it helps. It stops appearing once a ring is connected.
     let ouraOn = false;
     try{ ouraOn = !!JSON.parse((await window.storage.get('oura:tokens')).value); } catch(e){}
-    // THE REMINDER IS A DOT ON THE MARK NOW, NOT A STRIP ON THE PAGE.
+    // THE REMINDER IS THE SCORE BUBBLE NOW, NOT A STRIP ON THE PAGE.
     // A full-width lime cta-strip was a lot of page for "type one number" — the same reminder
-    // now lives as a tiny badge on the mascot in the header (#headerLogBadge, wired once,
-    // above), gone the instant there is a real entry to show instead of a reminder to log
-    // one. See the success branch below, which turns it back off.
+    // now lives as a sunrise face on #headerScoreBtn, beside the mark in the header (see
+    // refreshHeaderLogBadge), gone the instant there is a real entry to show instead of a
+    // reminder to log one. See the success branch below, which turns it back off.
     setHeaderLogBadge(true);
     container.innerHTML = ouraOn ? '' : '<div class="cta-aside" id="insightsRingOffer" role="button" tabindex="0">'
       + 'Wear an Oura ring? Connect it and this fills itself in.</div>';
