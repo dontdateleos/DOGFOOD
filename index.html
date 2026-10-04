@@ -3090,29 +3090,37 @@
      four that is a reading rather than a label, it is the way into the lift's full history,
      and with the boxes now holding the plan it is the only trace of what you actually did
      last time. */
-  /* THE SEPARATOR KEY, OVER THE KEYBOARD. Same reasoning as the hold menu below it: fixed and
-     on the body, because the sheet scrolls and the row clips, and restating the pocket's four
-     tokens, because out here var(--bg) is the page's and comes back near-black on the dark
-     ground. left/right rather than a width, so it centres itself at any screen size; `top` is
-     the only thing the script sets, from visualViewport. */
-  #logSepKey{ position:fixed; z-index:90; left:50%; transform:translateX(-50%);
-    display:flex; align-items:center; gap:10px; height:auto; min-height:0; width:auto;
-    padding:11px 20px; margin:0; border:0; border-radius:999px;
-    color-scheme:dark;
-    --ground:#0c0d0b; --bg:#fbfaf6;
-    --ink-rgb:251,250,246; --ground-rgb:12,13,11;
-    background:var(--bg); color:var(--ground);
-    box-shadow:0 12px 34px rgba(12,13,11,0.55); }
-  #logSepKey[hidden]{ display:none; }
+  /* THE SEPARATOR KEY, DOCKED IN THE SHEET NOW rather than tracking the keyboard. It used to
+     be position:fixed on the body, following visualViewport so it sat above the keyboard
+     wherever that happened to be — correct, but a second positioning system to reason about.
+     This is a plain sticky row inside the sheet's own scroll area instead, right above
+     Save/Put away: no viewport math, in exchange for one known gap it cannot close — on iOS,
+     while the keyboard is open, this is laid out against the same viewport the keyboard does
+     not shrink, so it can sit behind the keyboard in some scroll positions rather than always
+     riding above it the way the tracked version did. Traded on purpose for the simpler rule.
+     Living inside the sheet now, var(--bg)/var(--ground) are already the sheet's own flipped
+     pair — no need to restate them as hardcoded dark-mode values the way the body-level
+     version had to. */
+  /* A full-width, flat-sided shelf behind the pill rather than the pill alone: sticky content
+     scrolls other rows underneath it, and a plain rounded pill has four transparent corners
+     outside its own curve — the row behind shows through exactly there. The shelf is solid
+     edge to edge, so nothing scrolling under it is ever visible around the pill's curve. */
+  .log-sep-dock{ position:sticky; bottom:0; z-index:2; display:flex; align-items:center;
+    justify-content:center; width:100%; margin:var(--sp-2) 0; padding:10px 0;
+    border:0; background:var(--reverse-bg); }
+  .log-sep-dock[hidden]{ display:none; }
+  .log-sep-dock .sep-pill{ display:flex; align-items:center; gap:10px; padding:11px 20px;
+    border-radius:999px; background:var(--bg); color:var(--ground);
+    box-shadow:0 8px 24px rgba(12,13,11,0.35); }
   /* The comma is the key; the words are what it does. Set in the face the boxes are set in,
      at the size a value in one of them is, so the glyph on the key and the glyph it puts in
      the box are the same glyph. */
-  #logSepKey .sep-mark{ font-family:var(--wordmark); font-size:var(--log-write);
+  .log-sep-dock .sep-mark{ font-family:var(--wordmark); font-size:var(--log-write);
     font-weight:var(--fw-bold); line-height:1; min-width:9px; text-align:center;
     position:relative; top:-0.18em; }
-  #logSepKey .sep-word{ font-family:var(--mono); font-size:var(--log-note);
+  .log-sep-dock .sep-word{ font-family:var(--mono); font-size:var(--log-note);
     font-weight:var(--fw-bold); letter-spacing:0.1em; text-transform:uppercase; }
-  #logSepKey:active{ background:#e9e7df; }
+  .log-sep-dock:active .sep-pill{ background:#e9e7df; }
   /* EDIT TAGS, BACK FROM THE TAG BUTTON. The selects are display:none below; this is one class
      more specific and re-states the layout that rule used to carry, so the row they drop onto
      looks the way it always did. A class rather than the inline display the old text toggle
@@ -9888,7 +9896,7 @@ const UI_ANIM = {
   overLands:    { on:true, note:'The plate for beating the plan drops onto the row, and the row takes the weight', ms:300 },
   keyLands:     { on:true, note:'The separator key presses, and the box it wrote into answers', ms:260 },
   countsWithYou:{ on:true, note:'The set breakdown re-counts as you type rather than swapping', ms:220 },
-  sepKeyRides:  { on:true, note:'The separator key rises with the keyboard instead of appearing over it', ms:220 },
+  sepKeyRides:  { on:true, note:'The separator key settles into place instead of just appearing', ms:220 },
   paceWrites:   { on:true, note:'A run\u2019s pace writes itself in the moment both boxes hold a number', ms:420 },
   cutShows:     { on:true, note:'A deload week\u2019s bar draws to last week before dropping to the cut', ms:820 },
   weekTurns:    { on:true, note:'The week the board rolls over, its seven days turn once', ms:460, stagger:38 },
@@ -11873,7 +11881,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.04.684';
+const APP_VERSION = '2026.10.04.685';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12242,6 +12250,7 @@ const APP_NOTES = {
   '2026.10.04.682': 'The reminder mark on the mascot is a sunrise now instead of a "!" — same badge, same spot, same tap.',
   '2026.10.04.683': 'The score moved beside the mascot and merged with the reminder — sunrise and a tap opens this morning’s log when nothing’s logged yet, the number and a tap opens the score detail once it is. The mark itself is just the mascot’s face now.',
   '2026.10.04.684': 'The score/sunrise bubble only shows on Today now — it meant nothing on the other tabs. The sunrise also fills solid orange and breathes gently, so it reads as something to tap instead of a label.',
+  '2026.10.04.685': 'The "another set" comma key no longer floats over the keyboard — it is docked in the log sheet itself, right above Save, so it is always in the same spot.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -19899,56 +19908,30 @@ function refreshOverPlan(row){
    three row controls take 63 — eleven pixels left, against about 45 for two keys with tap
    areas worth having. A key per box does not fit and would not be worth pressing if it did.
 
-   So it goes where the platform puts this kind of thing: a bar over the keyboard, serving
-   whichever of the two boxes has focus. One key, a real target, and no row width at all.
-   Fixed positioning alone would sit UNDER the keyboard on iOS — a fixed element is laid out
-   against the layout viewport, which the keyboard does not shrink. visualViewport is the one
-   that knows, so the bar is placed against it and follows it as it resizes and scrolls.
-   Where there is no visualViewport there is no software keyboard either, and the foot of the
-   window is the right place. */
-let logSepKeyEl = null, logSepField = null;
-function logSepKey(){
-  if(logSepKeyEl) return logSepKeyEl;
-  const el = document.createElement('button');
-  el.type = 'button';
-  el.id = 'logSepKey';
-  el.hidden = true;
-  el.innerHTML = '<span class="sep-mark">,</span><span class="sep-word">another set</span>';
-  // pointerdown, not click, and the default prevented: a button taking focus would close the
-  // keyboard and drop the caret, which is the whole thing this is trying not to do.
-  el.addEventListener('pointerdown', e=>{
-    e.preventDefault();
-    insertSetSeparator(logSepField);
-  });
-  document.body.appendChild(el);
-  logSepKeyEl = el;
-  return el;
-}
-function placeLogSepKey(){
-  const el = logSepKeyEl;
-  if(!el || el.hidden) return;
-  const vv = window.visualViewport;
-  el.style.top = vv ? Math.round(vv.offsetTop + vv.height - el.offsetHeight - 10) + 'px'
-                    : Math.round(window.innerHeight - el.offsetHeight - 10) + 'px';
-}
+   A DEDICATED KEY, not the keyboard's own bar. It used to float over the keyboard itself,
+   tracked against visualViewport so it always sat just above it; now it is #logSepKey,
+   rendered once per strength block right above Save/Put away (see panel.innerHTML, and
+   .log-sep-dock for the CSS) and looked up fresh on every call below rather than cached,
+   since the whole panel -- key included -- is rebuilt on every block render. Simpler, at the
+   cost of the one thing the tracked version bought: see .log-sep-dock's own comment for what
+   that trade gives up on iOS specifically. */
+let logSepField = null;
 function showLogSepKey(field){
   logSepField = field;
-  const el = logSepKey();
+  const el = document.getElementById('logSepKey');
+  if(!el) return;
   const wasHidden = el.hidden;
   el.hidden = false;
-  placeLogSepKey();
-  /* IT BELONGS TO THE KEYBOARD, so it arrives the way the keyboard does. placeLogSepKey already
-     pins it to visualViewport's bottom edge, which is the keyboard's top edge; appearing there
-     fully formed read as a thing dropped on top of the keyboard rather than a row of it.
-     Only on the way in — moving between two list fields keeps the same key in place. */
+  // Only on the way in -- moving between the two list fields keeps the same key in place.
   if(wasHidden && uiAnim('sepKeyRides')){
-    uiPlay(el, [{ transform:'translateY(64px)', opacity:0 }, { transform:'translateY(0)', opacity:1 }],
+    uiPlay(el, [{ transform:'translateY(12px)', opacity:0 }, { transform:'translateY(0)', opacity:1 }],
            { duration:UI_ANIM.sepKeyRides.ms, easing:'cubic-bezier(0.25,0.9,0.25,1)' });
   }
 }
 function hideLogSepKey(){
   logSepField = null;
-  if(logSepKeyEl) logSepKeyEl.hidden = true;
+  const el = document.getElementById('logSepKey');
+  if(el) el.hidden = true;
 }
 /* At the caret, not at the end — you are as likely to be fixing the middle set as adding one
    to the end. A separator against nothing, or against another separator, is not a set, so
@@ -19969,8 +19952,9 @@ function insertSetSeparator(field){
      and the box it wrote into answers, which is the only feedback either of them gets. */
   if(uiAnim('keyLands')){
     const A = UI_ANIM.keyLands;
-    uiPlay(logSepKeyEl, [{ transform:'scale(1)' }, { transform:'scale(0.9)', offset:0.4 },
-                          { transform:'scale(1)' }], { duration:A.ms, easing:'cubic-bezier(0.3,0.9,0.3,1)' });
+    const pillEl = document.querySelector('#logSepKey .sep-pill');
+    if(pillEl) uiPlay(pillEl, [{ transform:'scale(1)' }, { transform:'scale(0.9)', offset:0.4 },
+                              { transform:'scale(1)' }], { duration:A.ms, easing:'cubic-bezier(0.3,0.9,0.3,1)' });
     uiPlay(field, [{ transform:'scale(1)' }, { transform:'scale(1.03)', offset:0.45 },
                    { transform:'scale(1)' }], { duration:A.ms, easing:'cubic-bezier(0.3,1.2,0.4,1)' });
   }
@@ -19991,11 +19975,14 @@ function insertSetSeparator(field){
       if(!a || !a.matches || !a.matches(LIST_FIELDS)) hideLogSepKey();
     }, 0);
   });
-  if(window.visualViewport){
-    visualViewport.addEventListener('resize', placeLogSepKey);
-    visualViewport.addEventListener('scroll', placeLogSepKey);
-  }
-  window.addEventListener('resize', placeLogSepKey);
+  // pointerdown, not click, and the default prevented: a button taking focus would close the
+  // keyboard and drop the caret, which is the whole thing this key is trying not to do.
+  // Delegated, like the two listeners above, since #logSepKey is rebuilt on every block render.
+  sheet.addEventListener('pointerdown', e=>{
+    if(!e.target.closest('.sep-pill')) return;
+    e.preventDefault();
+    insertSetSeparator(logSepField);
+  });
 })();
 
 
@@ -20787,6 +20774,7 @@ async function openBlockEditor(date, slot, block){
      "What did you lift?" and the answer is the row filled in. */
   panel.innerHTML = `
     ${fieldsHtml}
+    ${block.type === 'strength' ? `<div class="log-sep-dock" id="logSepKey" hidden><button type="button" class="sep-pill"><span class="sep-mark">,</span><span class="sep-word">another set</span></button></div>` : ''}
     <div class="log-acts">
       <button id="logWeekSessionBtn" class="log-act go">Save</button>
       <button id="closeWeekBlockBtn" class="log-act">Put away</button>

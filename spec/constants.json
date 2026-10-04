@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.04.684",
+ "generatedFrom": "2026.10.04.685",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -795,7 +795,7 @@
    },
    "sepKeyRides": {
     "on": true,
-    "note": "The separator key rises with the keyboard instead of appearing over it",
+    "note": "The separator key settles into place instead of just appearing",
     "ms": 220
    },
    "paceWrites": {
@@ -1092,7 +1092,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.04.684",
+  "APP_VERSION": "2026.10.04.685",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1443,6 +1443,7 @@
    "2026.10.04.682": "The reminder mark on the mascot is a sunrise now instead of a \"!\" — same badge, same spot, same tap.",
    "2026.10.04.683": "The score moved beside the mascot and merged with the reminder — sunrise and a tap opens this morning’s log when nothing’s logged yet, the number and a tap opens the score detail once it is. The mark itself is just the mascot’s face now.",
    "2026.10.04.684": "The score/sunrise bubble only shows on Today now — it meant nothing on the other tabs. The sunrise also fills solid orange and breathes gently, so it reads as something to tap instead of a label.",
+   "2026.10.04.685": "The \"another set\" comma key no longer floats over the keyboard — it is docked in the log sheet itself, right above Save, so it is always in the same spot.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
