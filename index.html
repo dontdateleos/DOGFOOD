@@ -1097,9 +1097,9 @@
   .header-mark .header-log-badge{ position:absolute; top:-4px; right:-4px; width:17px; height:17px;
     border-radius:50%; background:var(--block-orange); border:2px solid var(--banner);
     display:flex; align-items:center; justify-content:center; pointer-events:none;
-    font-family:var(--sans); font-size:12px; font-weight:var(--fw-bold); line-height:1;
     color:var(--banner); }
   .header-mark .header-log-badge[hidden]{ display:none; }
+  .header-mark .header-log-badge svg{ width:11px; height:11px; }
   /* The rest day plate. Same black, same cream rule, same mono caption as a section heading —
      it is the page's way of saying there is nothing here, so it should look like the app
      rather than like an error. */
@@ -5083,7 +5083,7 @@
          it has always been until it turns. The .eye-gaze pair stays in the DOM and stays
          hidden here — every other copy of the mark still uses it, and the trip down to the
          score is a cut rather than a morph, so the two never have to agree mid-flight. -->
-    <div class="header-mark eyes mark-solid" id="headerMark" role="button" tabindex="0" aria-label="Log this morning"><svg class="mark-cube" id="headerMarkCube" aria-hidden="true"></svg><div class="eye-gaze"><div class="eye-motion"><span></span><span></span></div></div><span class="header-log-badge" id="headerLogBadge" aria-hidden="true" hidden>!</span></div>
+    <div class="header-mark eyes mark-solid" id="headerMark" role="button" tabindex="0" aria-label="Log this morning"><svg class="mark-cube" id="headerMarkCube" aria-hidden="true"></svg><div class="eye-gaze"><div class="eye-motion"><span></span><span></span></div></div><span class="header-log-badge" id="headerLogBadge" aria-hidden="true" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16h16M7 16a5 5 0 0110 0"/><path d="M12 3v3M4.5 7.5l1.8 1.8M19.5 7.5l-1.8 1.8"/></svg></span></div>
   <div class="tabs">
     <!-- Weekly merged into Today in .659ish — the calendar strip and the week's planning
          controls live on this tab now instead of a separate one. See RETIRED_TABS for the
@@ -11858,7 +11858,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.04.681';
+const APP_VERSION = '2026.10.04.682';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12224,6 +12224,7 @@ const APP_NOTES = {
   '2026.10.03.679': 'Export calendar now gives every session a real time — 7am for mornings, 5pm for afternoons — and a real length, instead of an all-day block. Drag it to wherever it actually happens.',
   '2026.10.04.680': '"Clear all" is "Clear everything" now and actually means it — it used to only wipe the current week even if Generate had built 4 or 8 weeks ahead.',
   '2026.10.04.681': 'Saving a changed goal now rebuilds the plan itself — every day from today forward that you haven’t logged or started gets regenerated from the new goal, instead of sitting there built from the old one until you remembered to hit Generate.',
+  '2026.10.04.682': 'The reminder mark on the mascot is a sunrise now instead of a "!" — same badge, same spot, same tap.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
