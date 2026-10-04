@@ -3404,6 +3404,10 @@
   .today-plan-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; }
   .today-plan-actions button:first-child{ grid-column:1 / -1; height:40px; font-size:var(--fs-md); }
   .today-plan-actions .outline{ background:transparent; color:var(--bg); }
+  /* Same look as .today-plan-actions, but both buttons stay side by side — this row never
+     has a lone full-width first button to special-case. */
+  .today-top-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:var(--sp-3); }
+  .today-top-actions .outline{ background:transparent; color:var(--bg); }
   .today-empty-actions{ display:flex; gap:8px; margin-top:12px; }
   .today-empty-actions button{ flex:1 1 0; }
   .prep-done-btn{ margin-left:auto; flex:none; height:28px; padding:0 10px; font-size:11px; }
@@ -5277,6 +5281,14 @@
             <div class="type-btn" data-type="mobility">Mobility</div>
           </div>
 
+          <!-- RESCHEDULE AND SKIP DECIDE WHETHER TODAY HAPPENS AT ALL — so they sit up here,
+               before you've even read the warm-up, instead of waiting at the bottom behind
+               a session you might not do. "Replace / edit" is the opposite kind of decision:
+               it changes what the session CONTAINS, which only makes sense once you've seen
+               the whole thing, so it stays down at #todayPlanActions after the cooldown.
+               renderTodayWorkoutSummary builds both rows; this is just where it writes them. -->
+          <div id="todayTopActions"></div>
+
           <!-- THE PAGE RUNS IN THE ORDER YOU DO IT: warm up, session, cool down.
 
                It has been the other way round. The session was moved above the warm-up because
@@ -5330,12 +5342,12 @@
               </div>
             </div>
           </div>
-          <!-- MOVED HERE BY REQUEST, FROM INSIDE THE SESSION CARD ABOVE WARM-UP/COOLDOWN.
-               Replace/Reschedule/Skip change what today IS, not how it goes, so they sit after
-               the whole session you'd be changing — warm-up and cooldown included — rather
+          <!-- JUST "REPLACE / EDIT" NOW — Reschedule and Skip moved up to #todayTopActions,
+               above the warm-up, since they're a different kind of decision (see there).
+               This still sits after the whole session, warm-up and cooldown included, rather
                than between the session and the cooldown that follows it. renderTodayWorkoutSummary
-               still builds this HTML and wires these same button ids; only where it writes
-               them changed. -->
+               still builds this HTML and wires the same button id; only where it writes it
+               changed. -->
           <div id="todayPlanActions"></div>
         </div>
       </div>
@@ -11881,7 +11893,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.04.685';
+const APP_VERSION = '2026.10.04.686';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12251,6 +12263,7 @@ const APP_NOTES = {
   '2026.10.04.683': 'The score moved beside the mascot and merged with the reminder — sunrise and a tap opens this morning’s log when nothing’s logged yet, the number and a tap opens the score detail once it is. The mark itself is just the mascot’s face now.',
   '2026.10.04.684': 'The score/sunrise bubble only shows on Today now — it meant nothing on the other tabs. The sunrise also fills solid orange and breathes gently, so it reads as something to tap instead of a label.',
   '2026.10.04.685': 'The "another set" comma key no longer floats over the keyboard — it is docked in the log sheet itself, right above Save, so it is always in the same spot.',
+  '2026.10.04.686': 'Reschedule and Skip today moved above the warm-up — they decide whether today happens at all, before you’ve even read the session. Replace / edit stays at the bottom, after the cooldown, since it changes what the session holds, not whether it happens.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -32952,6 +32965,8 @@ async function renderTodayWorkoutSummary(){
     // Nothing to replace, reschedule, or skip on a day with no block for this type.
     const actionsEl = document.getElementById('todayPlanActions');
     if(actionsEl) actionsEl.innerHTML = '';
+    const topActionsEl = document.getElementById('todayTopActions');
+    if(topActionsEl) topActionsEl.innerHTML = '';
     return;
   }
   const rows = await blockSummaryHtml(block);
@@ -33044,14 +33059,19 @@ async function renderTodayWorkoutSummary(){
         ${adjustmentNote}
       </div>
     </div>`;
-  // After the cooldown now, not between the session and it — see #todayPlanActions, a
-  // sibling of #mobilitySection further down the static markup.
+  // Reschedule/Skip decide whether today happens at all, so they're up at #todayTopActions,
+  // above the warm-up. Replace/edit decides what the session contains, which only makes
+  // sense once you've seen the whole thing — after the cooldown, at #todayPlanActions.
+  const topActionsEl = document.getElementById('todayTopActions');
+  if(topActionsEl) topActionsEl.innerHTML = `
+    <div class="today-top-actions">
+      <button type="button" class="outline" id="rescheduleTodayWorkoutBtn">Reschedule</button>
+      <button type="button" class="outline" id="skipTodayWorkoutBtn">Skip today</button>
+    </div>`;
   const actionsEl = document.getElementById('todayPlanActions');
   if(actionsEl) actionsEl.innerHTML = `
     <div class="today-plan-actions">
       <button type="button" class="outline" id="replaceTodayWorkoutBtn">Replace / edit</button>
-      <button type="button" class="outline" id="rescheduleTodayWorkoutBtn">Reschedule</button>
-      <button type="button" class="outline" id="skipTodayWorkoutBtn">Skip today</button>
     </div>`;
   budgetBar(container);
   container.querySelectorAll('.ex-flag').forEach(el=>{
