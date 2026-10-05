@@ -3409,6 +3409,21 @@
   .today-plan-actions .outline{ background:transparent; color:var(--bg); flex:1; }
   .today-top-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:var(--sp-3); }
   .today-top-actions .outline{ background:transparent; color:var(--bg); }
+  /* Plan the week, Reschedule and Skip today — one row of week-level decisions, instead of
+     a full-width button sitting above a separate two-up row. #todayTopActions keeps its own
+     id/content (renderTodayWorkoutSummary still writes a plain .today-top-actions grid into
+     it) but display:contents here drops ITS box out of the layout so its two buttons become
+     direct flex children of the row, sized the same as Plan the week rather than nested in
+     a sub-grid half their width. flex:2 against Plan the week's flex:1 is only right while
+     both of #todayTopActions's buttons are actually there; emptied for a rest day or a day
+     with nothing to reschedule, :empty collapses it to nothing rather than leaving Plan the
+     week squeezed to a third of the row with two-thirds of dead space beside it. */
+  .week-controls-row{ display:flex; gap:8px; margin:var(--sp-3) 0; }
+  .week-controls-row #planWeekOpenBtn{ flex:1; margin:0; }
+  .week-controls-row #todayTopActions{ flex:2; display:flex; gap:8px; }
+  .week-controls-row #todayTopActions:empty{ display:none; }
+  .week-controls-row #todayTopActions .today-top-actions{ display:contents; }
+  .week-controls-row #todayTopActions .today-top-actions .outline{ flex:1; }
   .today-empty-actions{ display:flex; gap:8px; margin-top:12px; }
   .today-empty-actions button{ flex:1 1 0; }
   .prep-done-btn{ margin-left:auto; flex:none; height:28px; padding:0 10px; font-size:11px; }
@@ -5319,16 +5334,25 @@
              always seven, and seeing the shape of it is the whole reason to open this
              view. The board says what is on every day; a tap opens the day. -->
         <div class="skill-board week-board" id="weekBoard"></div>
-        <!-- MOVED UP HERE, BY REQUEST, FROM THE FOOT OF THE PAGE.
+        <!-- ONE ROW: PLAN THE WEEK, RESCHEDULE, SKIP TODAY — ALL WEEK-LEVEL DECISIONS,
+             NEXT TO THE BOARD THEY ACT ON, BY REQUEST.
              Plan the week — goals, split, deload, Generate and the rest, all behind this one
-             button — BUILDS what the board above just showed. It used to sit at the very
-             bottom of Today, below the whole workout, which put it as far as possible from
-             the thing it actually configures. Sitting right under the board instead means
-             cause and effect are next to each other: see the week, then change how it's built,
-             without a scroll between them. The sheet itself (#planWeekSheet) and everything
-             that opens it (renderWeekGrid, restorePlanSummary, "plan it by hand" on a failed
-             generate) are unchanged — only where the trigger sits in the page moved. -->
-        <button type="button" class="small outline" id="planWeekOpenBtn" style="margin:var(--sp-3) 0;">Plan the week</button>
+             button — BUILDS what the board above just showed; it used to sit at the very
+             bottom of Today, below the whole workout, as far as possible from the thing it
+             configures. Reschedule and Skip decide whether TODAY happens at all, which is
+             the same kind of decision at a smaller scale, so the three sit in one row rather
+             than two separate stacks of buttons ahead of the session-type pills.
+             #todayTopActions is still the same element renderTodayWorkoutSummary writes
+             Reschedule/Skip into (see the comment further down, by #warmupSection, for why
+             those two specifically) — only its spot in the page moved, from inside
+             #todayRichArea to here, and renderWeekGrid now shows or hides it by hand
+             alongside #todayRichArea instead of getting that for free by being its child.
+             When a day other than today is tapped, #todayTopActions is empty and hidden,
+             and Plan the week sits alone, full width. -->
+        <div class="week-controls-row" id="weekControlsRow">
+          <button type="button" class="small outline" id="planWeekOpenBtn">Plan the week</button>
+          <div id="todayTopActions"></div>
+        </div>
         <!-- WHAT'S ON THE TAPPED DAY, RIGHT HERE — NOT IN A POPUP.
              This used to open a sheet: a full-screen overlay for what is, most of the time,
              one or two cards. A day's workout isn't a separate task from looking at the week
@@ -5352,13 +5376,13 @@
             <div class="type-btn" data-type="mobility">Mobility</div>
           </div>
 
-          <!-- RESCHEDULE AND SKIP DECIDE WHETHER TODAY HAPPENS AT ALL — so they sit up here,
-               before you've even read the warm-up, instead of waiting at the bottom behind
-               a session you might not do. "Replace / edit" is the opposite kind of decision:
-               it changes what the session CONTAINS, which only makes sense once you've seen
-               the whole thing, so it stays down at #todayPlanActions after the cooldown.
-               renderTodayWorkoutSummary builds both rows; this is just where it writes them. -->
-          <div id="todayTopActions"></div>
+          <!-- RESCHEDULE AND SKIP DECIDE WHETHER TODAY HAPPENS AT ALL, which is why
+               #todayTopActions — not reproduced here — sits up at #weekControlsRow, beside
+               Plan the week, rather than down here among today's own content. "Replace / edit"
+               is the opposite kind of decision: it changes what the session CONTAINS, which
+               only makes sense once you've seen the whole thing, so it stays down at
+               #todayPlanActions after the cooldown. renderTodayWorkoutSummary builds both
+               rows; this comment just explains why they land in two different places. -->
 
           <!-- THE PAGE RUNS IN THE ORDER YOU DO IT: warm up, session, cool down.
 
@@ -11990,7 +12014,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.05.004';
+const APP_VERSION = '2026.10.05.005';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12365,6 +12389,7 @@ const APP_NOTES = {
   '2026.10.05.002': 'The mark rolls between Today and every other tab again — it used to skip that leg, deferring to a flight to the score disc that no longer has anywhere to land now the score lives in the header. Nothing was replacing it, so Today’s own switches got no mark motion at all until now.',
   '2026.10.05.003': 'Plan the week moved up to sit right under the calendar instead of at the very bottom of the page, below the whole workout. It builds what the calendar shows, so it sits next to it now — see the week, then change how it’s built, no scroll between them.',
   '2026.10.05.004': 'Single-number fields are dialed now, not typed — sleep hours and resting heart rate on the morning ask, height/weight/body fat on the Body tab, and an injury’s severity out of ten, each a scroll wheel instead of a keyboard. Logging’s own reps/weight fields are untouched — they still take the comma shorthand a wheel can’t hold.',
+  '2026.10.05.005': 'Plan the week, Reschedule and Skip today now sit in one row under the calendar, instead of a full-width button stacked above a separate two-up row — one cluster of week-level decisions instead of two button-banks ahead of the session-type pills.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -19292,6 +19317,11 @@ async function renderWeekGrid(){
   const isToday = activeDate === todayStr;
   const richArea = document.getElementById('todayRichArea');
   if(richArea) richArea.style.display = isToday ? '' : 'none';
+  // Lives outside #todayRichArea now, at #weekControlsRow beside Plan the week, so it no
+  // longer inherits richArea's own show/hide for free — toggled by hand here instead,
+  // on the same isToday test.
+  const topActionsEl = document.getElementById('todayTopActions');
+  if(topActionsEl) topActionsEl.style.display = isToday ? '' : 'none';
   detailCol.style.display = isToday ? 'none' : '';
   // Re-settles the rest-day shape (pills, workout area, the rest plate's own section)
   // whenever the tapped day becomes today again — the same call tab activation makes,
