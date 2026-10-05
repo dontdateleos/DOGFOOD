@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.05.003",
+ "generatedFrom": "2026.10.05.004",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1092,7 +1092,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.05.003",
+  "APP_VERSION": "2026.10.05.004",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1448,6 +1448,7 @@
    "2026.10.05.001": "Replace / edit was still sized like the old lead button of a three-button row — taller, bigger text, spanning the width on its own. Now that it is the only button down there, it is sized like any other: same height and weight as Reschedule and Skip, just stretched full width.",
    "2026.10.05.002": "The mark rolls between Today and every other tab again — it used to skip that leg, deferring to a flight to the score disc that no longer has anywhere to land now the score lives in the header. Nothing was replacing it, so Today’s own switches got no mark motion at all until now.",
    "2026.10.05.003": "Plan the week moved up to sit right under the calendar instead of at the very bottom of the page, below the whole workout. It builds what the calendar shows, so it sits next to it now — see the week, then change how it’s built, no scroll between them.",
+   "2026.10.05.004": "Single-number fields are dialed now, not typed — sleep hours and resting heart rate on the morning ask, height/weight/body fat on the Body tab, and an injury’s severity out of ten, each a scroll wheel instead of a keyboard. Logging’s own reps/weight fields are untouched — they still take the comma shorthand a wheel can’t hold.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
@@ -2535,6 +2536,7 @@
    "weeks": 12
   },
   "SHEET_MS": 260,
+  "WHEEL_ROW_H": 44,
   "ADAPTATION_WINDOW_DAYS": 18,
   "ADAPTATION_NOISE_THRESHOLD": 0.02,
   "RUNNING_INJURY_AREAS": [

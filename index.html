@@ -3939,6 +3939,66 @@
   button.primary.morning-done{ margin-top:var(--sp-4); width:100%; background:var(--accent);
     color:var(--text); border:2px solid var(--accent); font-weight:var(--fw-bold); }
 
+  /* A SINGLE NUMBER, DIALED RATHER THAN TYPED. wireWheelField turns any plain input into
+     one of these: readonly, so no keyboard fights the wheel for the screen, and styled with
+     a chevron stack so a field that no longer opens a keyboard still reads as a control. */
+  /* ONE STEP ABOVE EVERY OTHER SHEET. The wheel can open from inside another sheet (the
+     morning ask, the recovery form, an injury card) rather than replacing it, which every
+     other nested-sheet case in the app avoids by swapping instead of stacking — this is the
+     one place two genuinely need to stack. wireSheet moves #wheelPickerSheet to the end of
+     body once, at script init; a sheet built fresh each time it opens (the morning ask) ends
+     up appended AFTER it and wins the tie at the shared z-index:70 on DOM order alone. Named
+     explicitly rather than left to win a later append. */
+  #wheelPickerSheet{ z-index:72; }
+  /* .lift-sheet-panel is a fixed 60vh on every sheet in the app, by design — the wheel's own
+     216px doesn't come close to filling that, and top-aligned (the default every other
+     sheet uses, since their content usually does fill it) left a wheel sitting high with a
+     slab of dead black below it. Centred in the space under the head instead, scoped to
+     this one sheet only — flex on the panel itself, not a height:100% on .fields, so the
+     head's own real height is what the centring is measured against rather than guessed. */
+  #wheelPickerSheet .lift-sheet-panel{ display:flex; flex-direction:column; }
+  #wheelPickerSheet .fields{ display:flex; flex-direction:column; justify-content:center; flex:1; min-height:0; }
+  input.wheel-field{ cursor:pointer; background-image:
+      linear-gradient(45deg, transparent 50%, currentColor 50%),
+      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: calc(100% - 16px) calc(50% - 3px), calc(100% - 16px) calc(50% + 3px);
+    background-size:5px 5px, 5px 5px; background-repeat:no-repeat; opacity:1; }
+  /* The wheel itself. A plain scroll-snap column, not a native control, so it looks the same
+     on every browser — the whole reason to build one rather than reach for <input type=range>,
+     which renders as whatever the platform feels like that week. */
+  /* --wheel-row-h lives here, on the common ancestor, not on .wheel-row itself — a custom
+     property only cascades to DESCENDANTS, and .wheel-picker-track needed it for its own
+     padding while being .wheel-row's PARENT. Declared on .wheel-row instead, the track's
+     calc() read nothing, failed silently, and the whole padding declaration was dropped —
+     scrollHeight came up exactly one row short of what a centred first/last row needs, so
+     the picker silently clamped to a max scrollTop that could never actually reach the
+     last couple of values. Caught by a value landing wrong after a real scroll, not by
+     anything visual: the wheel still looked centred: it just could not be dragged all
+     the way to either end. */
+  .wheel-picker{ position:relative; height:216px; margin:var(--sp-2) 0; --wheel-row-h:44px; }
+  .wheel-picker-scroll{ height:100%; overflow-y:auto; scroll-snap-type:y mandatory;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 32%, #000 68%, transparent 100%);
+    mask-image:linear-gradient(to bottom, transparent 0, #000 32%, #000 68%, transparent 100%); }
+  .wheel-picker-scroll::-webkit-scrollbar{ display:none; }
+  /* Half the column's height, minus half a row, top and bottom — the padding a wheel needs
+     so its first and last values can still reach the centre band rather than stopping short
+     of it. Written to match --wheel-row-h above rather than assumed. */
+  .wheel-picker-track{ padding:calc((216px - var(--wheel-row-h)) / 2) 0; }
+  .wheel-row{ height:var(--wheel-row-h); display:flex; align-items:center;
+    justify-content:center; scroll-snap-align:center; font-family:var(--mono);
+    font-size:22px; font-weight:var(--fw-bold); font-variant-numeric:tabular-nums;
+    color:rgba(var(--ink-rgb),0.3); transition:color 0.12s ease; cursor:pointer; }
+  .wheel-row.wheel-near{ color:rgba(var(--ink-rgb),0.6); }
+  .wheel-row.wheel-sel{ color:var(--bg); }
+  .wheel-picker-band{ position:absolute; left:0; right:0; top:50%; transform:translateY(-50%);
+    height:var(--wheel-row-h); border-top:1px solid rgba(var(--ink-rgb),0.25);
+    border-bottom:1px solid rgba(var(--ink-rgb),0.25); pointer-events:none;
+    display:flex; align-items:center; justify-content:center; }
+  .wheel-picker-band span{ position:absolute; left:calc(50% + 48px); font-family:var(--mono);
+    font-size:var(--fs-sm); font-weight:var(--fw-bold); letter-spacing:0.04em;
+    text-transform:uppercase; color:rgba(var(--ink-rgb),0.5); }
+
   /* THE DAILY QUESTIONS, IN THE SAME VOICE THE SETUP ASKS IN.
      ------------------------------------------------------------------
      ONE TYPOGRAPHIC RULE, EVERYWHERE: a question is set in --wordmark, the masthead's face;
@@ -5438,6 +5498,26 @@
          title text itself flips between "Log" and "Edit" — see refreshHeaderLogBadge, which
          already knows whether today has a real entry from the same todayNeedsLog flag that
          drives the badge. -->
+    <!-- ONE WHEEL, EVERY SINGLE-NUMBER FIELD. Typing suits a field that can hold more than one
+         value at once — the log sheet's "8,8,6" shorthand needs a keyboard, a wheel can only
+         ever show one number. These fields never hold more than one: a height, a resting heart
+         rate, an injury's severity out of ten. Built once, generic, and opened with whatever
+         range/step/unit the calling field needs — see openWheelPicker and wireWheelField. -->
+    <div class="lift-sheet" id="wheelPickerSheet" style="display:none;">
+      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Pick a value">
+        <div class="lift-sheet-head"><span id="wheelPickerTitle"></span>
+          <button type="button" class="lift-sheet-x" aria-label="Done">&times;</button></div>
+        <div class="fields">
+          <div class="wheel-picker" id="wheelPickerCol" role="slider" tabindex="0">
+            <div class="wheel-picker-scroll" id="wheelPickerScroll">
+              <div class="wheel-picker-track" id="wheelPickerTrack"></div>
+            </div>
+            <div class="wheel-picker-band" aria-hidden="true"><span id="wheelPickerUnit"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="lift-sheet" id="morningLogSheet" style="display:none;">
       <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Log this morning">
         <div class="lift-sheet-head"><span id="morningLogSheetTitle">Log this morning</span>
@@ -11817,6 +11897,12 @@ async function loadBodyMetricsDisplay(asOfDate){
   try{ const r = await window.storage.get('settings:strengthStandardSex'); if(r && r.value) sel.value = r.value; } catch(e){}
   sel.addEventListener('change', ()=> window.storage.set('settings:strengthStandardSex', sel.value));
 })();
+// Dialed, not typed — these three are entered rarely enough that the old keyboard cost
+// nothing most people noticed, but a height or a weight is exactly one number, never a
+// shorthand list, so the wheel suits it the same as any other single-metric field.
+wireWheelField(document.getElementById('bodyHeight'), { title:'Height', min:100, max:220, step:1, unit:'cm' });
+wireWheelField(document.getElementById('bodyWeight'), { title:'Weight', min:30, max:200, step:0.5, decimals:2, unit:'kg' });
+wireWheelField(document.getElementById('bodyFat'), { title:'Body fat', min:3, max:50, step:0.5, decimals:2, unit:'%' });
 document.getElementById('updateBodyMetricsBtn').addEventListener('click', async ()=>{
   const height = parseFloat(document.getElementById('bodyHeight').value);
   const weight = parseFloat(document.getElementById('bodyWeight').value);
@@ -11904,7 +11990,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.05.003';
+const APP_VERSION = '2026.10.05.004';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12278,6 +12364,7 @@ const APP_NOTES = {
   '2026.10.05.001': 'Replace / edit was still sized like the old lead button of a three-button row — taller, bigger text, spanning the width on its own. Now that it is the only button down there, it is sized like any other: same height and weight as Reschedule and Skip, just stretched full width.',
   '2026.10.05.002': 'The mark rolls between Today and every other tab again — it used to skip that leg, deferring to a flight to the score disc that no longer has anywhere to land now the score lives in the header. Nothing was replacing it, so Today’s own switches got no mark motion at all until now.',
   '2026.10.05.003': 'Plan the week moved up to sit right under the calendar instead of at the very bottom of the page, below the whole workout. It builds what the calendar shows, so it sits next to it now — see the week, then change how it’s built, no scroll between them.',
+  '2026.10.05.004': 'Single-number fields are dialed now, not typed — sleep hours and resting heart rate on the morning ask, height/weight/body fat on the Body tab, and an injury’s severity out of ten, each a scroll wheel instead of a keyboard. Logging’s own reps/weight fields are untouched — they still take the comma shorthand a wheel can’t hold.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -14832,6 +14919,13 @@ async function maybeAskMorning(){
         honestly, it just stops setting what normal looks like for you.</div>
       <button type="button" class="primary morning-done">Done</button>
     </div>`;
+
+  // Dialed, not typed — see the note on wireWheelField. Only when nightRow actually rendered
+  // them; a synced ring skips this question and there is nothing here to wire.
+  if(askNight){
+    wireWheelField(sheet.querySelector('#morningSleepHrs'), { title:'Hours slept', min:0, max:12, step:0.25, decimals:2, unit:'hours' });
+    wireWheelField(sheet.querySelector('#morningRestingHR'), { title:'Resting heart rate', min:30, max:120, step:1, unit:'bpm' });
+  }
 
   /* Down the way it came up, and taken out of the DOM when it has gone rather than on the
      frame you dismissed it. Hand-rolled because this one builds itself; the class and the
@@ -22022,6 +22116,11 @@ async function refreshInjuries(){
       const inj = injuries.find(x=> String(x.id) === btn.dataset.id);
       if(inj) btn.addEventListener('click', ()=> showInjuryDiagnosis(inj));
     });
+    // Dialed, not typed — same fixed 1-10 range as the field this re-rates from, see
+    // #injurySeverity's own wiring. Rebuilt with the rest of the card on every refresh, so
+    // it is wired here rather than once at script init.
+    list.querySelectorAll('.injury-rerate').forEach(el=>
+      wireWheelField(el, { title:'How is it today', min:1, max:10, step:1, unit:'/10' }));
     list.querySelectorAll('.rerate-btn').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         const id = btn.dataset.id;
@@ -25203,6 +25302,139 @@ function wireSheet(id, onClose){
   return api;
 }
 
+/* ONE WHEEL PICKER, SHARED BY EVERY SINGLE-NUMBER FIELD — see the CSS note on .wheel-field
+   for why this exists instead of just leaving these as number inputs.
+
+   openWheelPicker builds the column fresh on every open rather than keeping one cached:
+   the range, step and unit differ per field (a height picker and a severity picker have
+   nothing in common but the mechanism), and a field only opens this rarely enough that
+   rebuilding forty-odd rows costs nothing worth caching against.
+
+   COMMIT ON CLOSE, NOT ON SCROLL. Scrolling is how you choose a value, not how you confirm
+   one — the same distinction the morning sheet's own fields draw between typing and the
+   change event that actually saves. wheelPickerCommit runs from wireSheet's onClose, which
+   already fires on the ×, the backdrop tap and Escape, so every way out of the sheet commits
+   the same way without this needing its own copy of "did they actually leave". */
+const WHEEL_ROW_H = 44;
+let wheelPickerCommit = null;
+let wheelPickerScrollTimer = null;
+const wheelPickerSheetApi = wireSheet('wheelPickerSheet', ()=>{ if(wheelPickerCommit) wheelPickerCommit(); });
+
+function wheelRowLabel(v, decimals){
+  if(!decimals) return String(Math.round(v));
+  // toFixed and then strip back down — 7 reads as "7", not "7.00", and 7.5 keeps its one
+  // real decimal rather than being padded out to match the field's max precision.
+  return v.toFixed(decimals).replace(/0+$/,'').replace(/\.$/,'');
+}
+
+function openWheelPicker({ title, min, max, step = 1, decimals = 0, unit = '', value, onCommit }){
+  const col = document.getElementById('wheelPickerCol');
+  const scrollHost = document.getElementById('wheelPickerScroll');
+  const track = document.getElementById('wheelPickerTrack');
+  const titleEl = document.getElementById('wheelPickerTitle');
+  const unitEl = document.getElementById('wheelPickerUnit');
+  if(!col || !scrollHost || !track) return;
+
+  if(titleEl) titleEl.textContent = title || '';
+  if(unitEl) unitEl.textContent = unit || '';
+
+  const n = Math.round((max - min) / step) + 1;
+  track.innerHTML = Array.from({ length: n }, (_, i)=>{
+    const v = min + i * step;
+    return `<div class="wheel-row" data-i="${i}" data-v="${v}">${wheelRowLabel(v, decimals)}</div>`;
+  }).join('');
+  const rows = [...track.querySelectorAll('.wheel-row')];
+
+  const startAt = value != null && isFinite(value) ? clamp(value, min, max) : (min + max) / 2;
+  let current = Math.max(0, Math.min(n - 1, Math.round((startAt - min) / step)));
+
+  const applyHighlight = idx=>{
+    rows.forEach((r, i)=>{
+      r.classList.toggle('wheel-sel', i === idx);
+      r.classList.toggle('wheel-near', Math.abs(i - idx) === 1);
+    });
+    col.setAttribute('aria-valuenow', rows[idx] ? rows[idx].dataset.v : '');
+  };
+  const scrollToIndex = (idx, smooth)=> scrollHost.scrollTo({ top: idx * WHEEL_ROW_H, behavior: smooth ? 'smooth' : 'auto' });
+
+  applyHighlight(current);
+  // After the sheet's own open frame — a scrollTop written before the panel has display:block
+  // and real layout is a write to an element with nothing to scroll yet, and gets lost.
+  requestAnimationFrame(()=> requestAnimationFrame(()=> scrollToIndex(current, false)));
+
+  const onScroll = ()=>{
+    const idx = Math.max(0, Math.min(n - 1, Math.round(scrollHost.scrollTop / WHEEL_ROW_H)));
+    applyHighlight(idx);
+    clearTimeout(wheelPickerScrollTimer);
+    // Settle-detection by debounce, same as the score band's own relayout: there is no
+    // native "scroll finished" event with reliable support yet, and a fixed quiet window
+    // after the last scroll frame is what every other soft-settle check in this file uses.
+    wheelPickerScrollTimer = setTimeout(()=>{
+      current = idx;
+      scrollToIndex(idx, true);   // snaps it exactly, in case momentum left it a pixel short
+      applyHighlight(idx);
+    }, 90);
+  };
+  scrollHost.addEventListener('scroll', onScroll, { passive:true });
+
+  const onRowTap = e=>{
+    const row = e.target.closest('.wheel-row');
+    if(!row) return;
+    current = parseInt(row.dataset.i, 10);
+    scrollToIndex(current, true);
+    applyHighlight(current);
+  };
+  track.addEventListener('click', onRowTap);
+
+  const onKey = e=>{
+    if(e.key === 'ArrowUp'){ e.preventDefault(); current = Math.max(0, current - 1); scrollToIndex(current, true); applyHighlight(current); }
+    else if(e.key === 'ArrowDown'){ e.preventDefault(); current = Math.min(n - 1, current + 1); scrollToIndex(current, true); applyHighlight(current); }
+  };
+  col.addEventListener('keydown', onKey);
+  col.setAttribute('aria-valuemin', min);
+  col.setAttribute('aria-valuemax', max);
+  col.setAttribute('aria-label', title || 'Pick a value');
+
+  wheelPickerCommit = ()=>{
+    scrollHost.removeEventListener('scroll', onScroll);
+    track.removeEventListener('click', onRowTap);
+    col.removeEventListener('keydown', onKey);
+    clearTimeout(wheelPickerScrollTimer);
+    wheelPickerCommit = null;
+    const row = rows[current];
+    if(onCommit) onCommit(row ? parseFloat(row.dataset.v) : null);
+  };
+
+  wheelPickerSheetApi.open();
+  requestAnimationFrame(()=> col.focus({ preventScroll:true }));
+}
+
+/* Turns a plain text/number field into a wheel trigger: readonly so the keyboard never
+   fights the wheel for the screen, tapping opens openWheelPicker seeded with whatever the
+   field currently holds, and committing writes the result straight back to the same input
+   with real input/change events — so every existing listener (a delegated change handler,
+   a button that reads .value on click) keeps working without knowing the field changed how
+   it gets filled in. */
+function wireWheelField(input, opts){
+  if(!input) return;
+  input.readOnly = true;
+  input.classList.add('wheel-field');
+  input.addEventListener('click', ()=>{
+    const raw = parseFloat(input.value);
+    const value = isFinite(raw) ? raw : null;
+    openWheelPicker({
+      title: opts.title, min: opts.min, max: opts.max, step: opts.step || 1,
+      decimals: opts.decimals || 0, unit: opts.unit || '', value,
+      onCommit: v=>{
+        if(v == null) return;
+        input.value = opts.decimals ? v.toFixed(opts.decimals).replace(/0+$/,'').replace(/\.$/,'') : String(v);
+        input.dispatchEvent(new Event('input', { bubbles:true }));
+        input.dispatchEvent(new Event('change', { bubbles:true }));
+      }
+    });
+  });
+}
+
 /* Plan the week: goals, split, weeks, deload, unavailable dates, Generate and the rest —
    moved from an always-open group to a sheet, the same reasoning #goalSheet already had. No
    reload on open for the same reason Goals doesn't: the controls are already in the DOM with
@@ -25263,6 +25495,10 @@ document.getElementById('headerScoreBtn')?.addEventListener('click', ()=>{
    for this key. The title flips between "Log" and "Edit" off todayNeedsLog, the same flag the
    badge itself reads, so the two always agree on whether today already has a real entry. */
 const morningLogSheet = wireSheet('morningLogSheet');
+// Dialed, not typed — same wheel the quick morning ask uses, on this sheet's own copies of
+// the same two fields (the ones a device doesn't fill in for you).
+wireWheelField(document.getElementById('durationHrs'), { title:'Hours slept', min:0, max:14, step:0.25, decimals:2, unit:'hours' });
+wireWheelField(document.getElementById('restingHR'), { title:'Resting heart rate', min:30, max:120, step:1, unit:'bpm' });
 function openMorningLogSheet(){
   const title = document.getElementById('morningLogSheetTitle');
   if(title) title.textContent = todayNeedsLog ? 'Log this morning' : 'Edit this morning';
@@ -25278,6 +25514,9 @@ wireSheet('mobilityAssessmentSheet', ()=> setMobilityAssessmentOpen(false));
 
 /* Logging an injury. The list stays on the tab; the form comes to you. */
 const injurySheet = wireSheet('injurySheet');
+// A severity out of ten is a fixed, short range — exactly what a wheel suits best, and the
+// one case in this pass where it is a flat improvement over typing rather than a tradeoff.
+wireWheelField(document.getElementById('injurySeverity'), { title:'How bad is it', min:1, max:10, step:1, unit:'/10' });
 const logInjuryBtn = document.getElementById('logInjuryBtn');
 /* Two ways in, one sheet, one handler. The Body tab's head button is where the record
    lives; the disc's own list is where the event happens, which is mid-session and nowhere
