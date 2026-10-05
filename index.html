@@ -3401,11 +3401,12 @@
   .today-session .plan-item{ font-size:var(--fs-sm); color:rgba(var(--ink-rgb),0.8); }
   .today-session .plan-item strong{ font-weight:var(--fw-normal); letter-spacing:0; }
   .today-session .plan-dose{ display:inline; margin-top:0; margin-left:6px; }
-  .today-plan-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; }
-  .today-plan-actions button:first-child{ grid-column:1 / -1; height:40px; font-size:var(--fs-md); }
-  .today-plan-actions .outline{ background:transparent; color:var(--bg); }
-  /* Same look as .today-plan-actions, but both buttons stay side by side — this row never
-     has a lone full-width first button to special-case. */
+  /* Used to be the lead button of a three-button grid (Replace/edit, Reschedule, Skip),
+     hence the taller height and bigger font that made it read as the "main" action. It's
+     alone now — Reschedule/Skip moved to .today-top-actions, above the warm-up — so it's
+     sized like any other outline button, just stretched full width. */
+  .today-plan-actions{ display:flex; margin-top:14px; }
+  .today-plan-actions .outline{ background:transparent; color:var(--bg); flex:1; }
   .today-top-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:var(--sp-3); }
   .today-top-actions .outline{ background:transparent; color:var(--bg); }
   .today-empty-actions{ display:flex; gap:8px; margin-top:12px; }
@@ -11893,7 +11894,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.04.686';
+const APP_VERSION = '2026.10.05.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12264,6 +12265,7 @@ const APP_NOTES = {
   '2026.10.04.684': 'The score/sunrise bubble only shows on Today now — it meant nothing on the other tabs. The sunrise also fills solid orange and breathes gently, so it reads as something to tap instead of a label.',
   '2026.10.04.685': 'The "another set" comma key no longer floats over the keyboard — it is docked in the log sheet itself, right above Save, so it is always in the same spot.',
   '2026.10.04.686': 'Reschedule and Skip today moved above the warm-up — they decide whether today happens at all, before you’ve even read the session. Replace / edit stays at the bottom, after the cooldown, since it changes what the session holds, not whether it happens.',
+  '2026.10.05.001': 'Replace / edit was still sized like the old lead button of a three-button row — taller, bigger text, spanning the width on its own. Now that it is the only button down there, it is sized like any other: same height and weight as Reschedule and Skip, just stretched full width.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
