@@ -5259,6 +5259,16 @@
              always seven, and seeing the shape of it is the whole reason to open this
              view. The board says what is on every day; a tap opens the day. -->
         <div class="skill-board week-board" id="weekBoard"></div>
+        <!-- MOVED UP HERE, BY REQUEST, FROM THE FOOT OF THE PAGE.
+             Plan the week — goals, split, deload, Generate and the rest, all behind this one
+             button — BUILDS what the board above just showed. It used to sit at the very
+             bottom of Today, below the whole workout, which put it as far as possible from
+             the thing it actually configures. Sitting right under the board instead means
+             cause and effect are next to each other: see the week, then change how it's built,
+             without a scroll between them. The sheet itself (#planWeekSheet) and everything
+             that opens it (renderWeekGrid, restorePlanSummary, "plan it by hand" on a failed
+             generate) are unchanged — only where the trigger sits in the page moved. -->
+        <button type="button" class="small outline" id="planWeekOpenBtn" style="margin:var(--sp-3) 0;">Plan the week</button>
         <!-- WHAT'S ON THE TAPPED DAY, RIGHT HERE — NOT IN A POPUP.
              This used to open a sheet: a full-screen overlay for what is, most of the time,
              one or two cards. A day's workout isn't a separate task from looking at the week
@@ -5628,16 +5638,16 @@
        that closes the footer on #whyWeekGroup) and the code that renders into these exact
        element ids don't need to know or care that their parent panel changed. -->
   <div id="weeklyTrainingView">
-      <!-- A BUTTON NOW, NOT A SECTION. This used to sit here as a full group — goals, split,
-           weeks, deload, unavailable dates, five buttons — permanently taking the height of
-           all of it whether or not you were touching any of it today. These are setup: things
-           you visit to change a plan, not things you read on the way past. Goals already knew
-           this (it was a sheet before this group existed), so the rest joins it in one instead
-           of being the one inline holdout in a panel where everything else that isn't daily
-           content already opens on demand. planWeekOpenBtn carries the id "plan it by hand"
-           opens when a generate fails, since that used to mean scrolling to a group and now
-           means opening the sheet that replaced it. -->
-      <button type="button" class="small outline" id="planWeekOpenBtn" style="margin:var(--sp-3) 0;">Plan the week</button>
+      <!-- THE BUTTON ITSELF MOVED UP TO SIT RIGHT AFTER #weekBoard, BY REQUEST — see it there.
+           This was a full group once — goals, split, weeks, deload, unavailable dates, five
+           buttons — permanently taking the height of all of it whether or not you were
+           touching any of it today. These are setup: things you visit to change a plan, not
+           things you read on the way past. Goals already knew this (it was a sheet before this
+           group existed), so the rest joined it in one instead of being the one inline holdout
+           in a panel where everything else that isn't daily content already opens on demand.
+           What's left here is the sheet itself — #planWeekSheet doesn't care where its own
+           trigger sits in the page, so only the button moved and everything below is
+           unchanged. -->
       <!-- Same markup that used to sit inline, in a sheet instead of a section — the pattern
            #goalSheet already used, and every id inside is spoken to from the same places it
            always was (renderWeekGrid, restorePlanSummary, the Generate handler and the rest),
@@ -11894,7 +11904,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.05.002';
+const APP_VERSION = '2026.10.05.003';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12267,6 +12277,7 @@ const APP_NOTES = {
   '2026.10.04.686': 'Reschedule and Skip today moved above the warm-up — they decide whether today happens at all, before you’ve even read the session. Replace / edit stays at the bottom, after the cooldown, since it changes what the session holds, not whether it happens.',
   '2026.10.05.001': 'Replace / edit was still sized like the old lead button of a three-button row — taller, bigger text, spanning the width on its own. Now that it is the only button down there, it is sized like any other: same height and weight as Reschedule and Skip, just stretched full width.',
   '2026.10.05.002': 'The mark rolls between Today and every other tab again — it used to skip that leg, deferring to a flight to the score disc that no longer has anywhere to land now the score lives in the header. Nothing was replacing it, so Today’s own switches got no mark motion at all until now.',
+  '2026.10.05.003': 'Plan the week moved up to sit right under the calendar instead of at the very bottom of the page, below the whole workout. It builds what the calendar shows, so it sits next to it now — see the week, then change how it’s built, no scroll between them.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
