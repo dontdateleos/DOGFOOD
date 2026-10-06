@@ -12014,7 +12014,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.05.005';
+const APP_VERSION = '2026.10.06.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12390,6 +12390,7 @@ const APP_NOTES = {
   '2026.10.05.003': 'Plan the week moved up to sit right under the calendar instead of at the very bottom of the page, below the whole workout. It builds what the calendar shows, so it sits next to it now — see the week, then change how it’s built, no scroll between them.',
   '2026.10.05.004': 'Single-number fields are dialed now, not typed — sleep hours and resting heart rate on the morning ask, height/weight/body fat on the Body tab, and an injury’s severity out of ten, each a scroll wheel instead of a keyboard. Logging’s own reps/weight fields are untouched — they still take the comma shorthand a wheel can’t hold.',
   '2026.10.05.005': 'Plan the week, Reschedule and Skip today now sit in one row under the calendar, instead of a full-width button stacked above a separate two-up row — one cluster of week-level decisions instead of two button-banks ahead of the session-type pills.',
+  '2026.10.06.001': 'Wheels everywhere a field holds one number: first-run weight, goal targets, a run’s distance and duration, sets on a lift or a stretch, a stretch’s hold or reps, and the rest of the recovery sheet’s manual fields. Reps and weight on a lift are still typed — they’re the one place a field holds more than one number at once, for the comma shorthand.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -20783,6 +20784,11 @@ async function wireRunLogging(date, block){
   const dur = document.getElementById('weekRunActualDuration');
   const pace = document.getElementById('weekRunPace');
   const hist = document.getElementById('weekRunHistory');
+  // Dialed, not typed. The pace line below still recomputes live — wireWheelField's commit
+  // fires a real 'input' event, the same one the paint() listener below is already
+  // listening for.
+  wireWheelField(dist, { title:'Distance', min:0, max:60, step:0.1, decimals:2, unit:'km' });
+  wireWheelField(dur, { title:'Duration', min:0, max:240, step:1, unit:'min' });
   // Pace, as you type, from the two boxes above it. Nothing is stored — it is the third
   // number implied by the first two, and it was the only one missing.
   const paint = ()=>{
@@ -21042,6 +21048,9 @@ async function openBlockEditor(date, slot, block){
           <select class="week-ex-movement">${movementOptionsHtml(movement)}</select>
         </div>`;
       row.querySelector('.remove-row').addEventListener('click', ()=>{ removeRowAnimated(row); afterLogRowRemoved(); });
+      // Dialed, not typed — a set count is a single number. Reps and weight stay as typing:
+      // they carry the comma shorthand (12,10,7 / 60,80,100) a wheel can't hold.
+      wireWheelField(row.querySelector('.week-ex-sets'), { title:'Sets', min:0, max:12, step:1, unit:'sets' });
       // Whether a set was taken to failure is the input the effort estimate has been guessing
       // from the rep drop-off. 5,5,4 because you failed and 5,5,4 because you stopped are
       // different sessions, and only you know which.
@@ -21149,6 +21158,16 @@ async function openBlockEditor(date, slot, block){
           </div>`;
       }
       row.querySelector('.remove-row').addEventListener('click', ()=>removeRowAnimated(row));
+      // Dialed, not typed. No-ops on the skill-ladder-test and read-only rows above, which
+      // never had these two fields to begin with.
+      wireWheelField(row.querySelector('.week-st-sets'), { title:'Sets', min:0, max:8, step:1, unit:'sets' });
+      const holdEl = row.querySelector('.week-st-hold');
+      if(holdEl){
+        const isReps = holdEl.dataset.unit === 'reps';
+        wireWheelField(holdEl, isReps
+          ? { title:'Reps', min:1, max:50, step:1, unit:'reps' }
+          : { title:'Hold', min:5, max:180, step:5, unit:'secs' });
+      }
       rowsContainer.appendChild(row);
     }
     const stretchList = block.details.stretches||[];
@@ -25483,6 +25502,11 @@ document.getElementById('planWeekOpenBtn')?.addEventListener('click', ()=> planW
    and Escape all end up going through the sheet's own close(), which is what onClose here
    actually fires on. */
 const goalSheet = wireSheet('goalSheet', ()=> planWeekSheet.open());
+// Dialed, not typed — one reused editor pane (see addGoalRow/commitGoalEdit, both read these
+// by class off the single row), so wiring it once here covers every goal opened into it.
+wireWheelField(document.querySelector('.goal-target-weight'), { title:'Target weight', min:20, max:300, step:0.5, decimals:2, unit:'kg' });
+wireWheelField(document.querySelector('.goal-target-distance'), { title:'Target distance', min:0, max:100, step:0.5, decimals:2, unit:'km' });
+wireWheelField(document.querySelector('.goal-target-time'), { title:'Target time', min:0, max:600, step:1, unit:'min' });
 const updateGoalsBtn = document.getElementById('updateGoalsBtn');
 if(updateGoalsBtn) updateGoalsBtn.addEventListener('click', ()=>{
   const r = document.getElementById('saveGoalsResult');
@@ -25529,6 +25553,18 @@ const morningLogSheet = wireSheet('morningLogSheet');
 // the same two fields (the ones a device doesn't fill in for you).
 wireWheelField(document.getElementById('durationHrs'), { title:'Hours slept', min:0, max:14, step:0.25, decimals:2, unit:'hours' });
 wireWheelField(document.getElementById('restingHR'), { title:'Resting heart rate', min:30, max:120, step:1, unit:'bpm' });
+// The rest of this sheet's manual-entry fallbacks — device-synced normally, but every one
+// of them is still a single number when you do type it by hand.
+wireWheelField(document.getElementById('hrvGarmin'), { title:'HRV', min:10, max:200, step:1, unit:'ms' });
+wireWheelField(document.getElementById('hrvOura'), { title:'HRV', min:10, max:200, step:1, unit:'ms' });
+wireWheelField(document.getElementById('hrvBaseline'), { title:'HRV baseline', min:10, max:200, step:1, unit:'ms' });
+wireWheelField(document.getElementById('sleepScoreOura'), { title:'Sleep score', min:0, max:100, step:1, unit:'' });
+wireWheelField(document.getElementById('sleepScoreGarmin'), { title:'Sleep score', min:0, max:100, step:1, unit:'' });
+wireWheelField(document.getElementById('wakeTimeOura'), { title:'Time awake', min:0, max:180, step:5, unit:'min' });
+wireWheelField(document.getElementById('wakeTimeGarmin'), { title:'Time awake', min:0, max:180, step:5, unit:'min' });
+wireWheelField(document.getElementById('loadRatio'), { title:'Load ratio', min:0.3, max:2.5, step:0.1, decimals:2, unit:'' });
+wireWheelField(document.getElementById('readinessOura'), { title:'Readiness', min:0, max:100, step:1, unit:'' });
+wireWheelField(document.getElementById('bodyBattery'), { title:'Body Battery', min:0, max:100, step:1, unit:'' });
 function openMorningLogSheet(){
   const title = document.getElementById('morningLogSheetTitle');
   if(title) title.textContent = todayNeedsLog ? 'Log this morning' : 'Edit this morning';
@@ -29407,6 +29443,7 @@ function firstRunSpread(n){
   const progressCopy = { goal:'Step 1 of 5 · choose your primary goal', secondary:'Step 2 of 5 · choose your secondary goal', often:'Step 3 of 5 · choose your training days', time:'Step 4 of 5 · choose your session length', done:'Step 5 of 5 · check your plan' };
   const updateProgress = name => { if(progress) progress.textContent = progressCopy[name] || progressCopy.goal; };
   const step = name => root.querySelector(`.fr-step[data-step="${name}"]`);
+  wireWheelField(root.querySelector('#firstRunWeight'), { title:'Weight', min:30, max:200, step:0.5, decimals:2, unit:'kg' });
 
   /* Revealing is the whole interaction, so it is one function. scrollIntoView with 'nearest'
      rather than 'center': the first three steps fit on a phone without moving, and a page
