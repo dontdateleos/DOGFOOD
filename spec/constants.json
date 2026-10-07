@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.07.001",
+ "generatedFrom": "2026.10.07.002",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1082,7 +1082,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.07.001",
+  "APP_VERSION": "2026.10.07.002",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1442,6 +1442,7 @@
    "2026.10.05.005": "Plan the week, Reschedule and Skip today now sit in one row under the calendar, instead of a full-width button stacked above a separate two-up row — one cluster of week-level decisions instead of two button-banks ahead of the session-type pills.",
    "2026.10.06.001": "Wheels everywhere a field holds one number: first-run weight, goal targets, a run’s distance and duration, sets on a lift or a stretch, a stretch’s hold or reps, and the rest of the recovery sheet’s manual fields. Reps and weight on a lift are still typed — they’re the one place a field holds more than one number at once, for the comma shorthand.",
    "2026.10.07.001": "Reps and weight are wheels now too. Dial a number in, tap \"+ another set\" to bank it and start the next — a drop set or a ramp is still one box, just built one set at a time instead of typed as a comma list. Weight gets a \".\" to switch the wheel to tenths for plates that aren’t whole numbers; reps stays whole numbers only. The docked comma key is gone — there is nothing left for it to assist.",
+   "2026.10.07.002": "Sets, reps and weight dial together now, in one sheet — tap any of the three and reps and weight come up as two wheels side by side, \"+ another set\" banking the pair at once. Sets dropped its own dial entirely; it is just how many pairs you have banked. A \"⌫\" undoes the last banked pair back onto the wheels, or — with nothing banked yet — clears the whole thing back to empty, the way backspacing a typed box to nothing always did.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",

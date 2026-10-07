@@ -3983,14 +3983,24 @@
     font-size:var(--fs-sm); font-weight:var(--fw-bold); letter-spacing:0.04em;
     text-transform:uppercase; color:rgba(var(--ink-rgb),0.5); }
 
-  /* THE BANK: every set already dialed in, read left to right in save order — the same
-     plain-text shape ("8 · 8 · 6") the field itself holds as a comma list, so what you see
-     here is a preview of what Done is about to write, not a different notation to learn. */
+  /* THE BANK: every set already dialed in, read left to right in save order, each one its
+     reps×weight pair ("8×60, 8×60, 6×70") — the same shape the two fields underneath save as
+     two separate comma lists, just read back as the pairs they were dialed in. */
   .multi-wheel-bank{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
     margin-bottom:var(--sp-2); }
   .multi-wheel-bank .mw-chip{ font-family:var(--mono); font-size:var(--fs-sm);
     font-weight:var(--fw-bold); color:var(--bg); background:rgba(var(--ink-rgb),0.12);
     border-radius:999px; padding:4px 12px; }
+  /* Two wheels, side by side, one column each — reps on the left reads the same order the
+     row itself does (reps before weight). Each column gets its own small caption instead of
+     the single wheel's floating side label: that label sits at a fixed offset past the
+     wheel's own centre, which assumes the room of a full-width sheet a half-width column
+     does not have. */
+  .multi-wheel-cols{ display:flex; gap:12px; }
+  .multi-wheel-col{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; }
+  .multi-wheel-col-label{ font-family:var(--mono); font-size:var(--fs-sm); font-weight:var(--fw-bold);
+    letter-spacing:0.04em; text-transform:uppercase; color:rgba(var(--ink-rgb),0.5); margin-bottom:2px; }
+  .multi-wheel-col .wheel-picker{ width:100%; margin:0; }
   .multi-wheel-controls{ display:flex; gap:8px; margin-top:var(--sp-2); }
   .multi-wheel-controls .outline{ background:transparent; color:var(--bg); flex:1; }
   /* The decimal toggle is a flip, not a momentary press — it stays lit while the wheel is
@@ -3998,6 +4008,7 @@
   #multiWheelDecimalBtn{ flex:0 0 auto; min-width:44px; font-size:18px; font-weight:var(--fw-bold); }
   #multiWheelDecimalBtn.on{ background:var(--accent); color:var(--text); border-color:var(--accent); }
   #multiWheelDecimalBtn[hidden]{ display:none; }
+  #multiWheelBackBtn{ flex:0 0 auto; min-width:44px; font-size:18px; font-weight:var(--fw-bold); }
 
   /* THE DAILY QUESTIONS, IN THE SAME VOICE THE SETUP ASKS IN.
      ------------------------------------------------------------------
@@ -5527,30 +5538,48 @@
       </div>
     </div>
 
-    <!-- A SECOND WHEEL, FOR THE TWO FIELDS THE FIRST ONE DELIBERATELY SKIPPED. Reps and weight
-         are the one place a field holds more than one number at once — "8,8,6" where they
-         dropped, "60,80,100" for a ramp — which #wheelPickerSheet's single dial can't hold.
-         This is that same mechanism (a scroll-snap column, the same openWheelPicker math)
-         wrapped in a bank of sets already dialed and a + to add another, plus a decimal
-         toggle weight needs and reps never does. Kept as its own sheet rather than bolted
-         onto #wheelPickerSheet: every other field there is a true single value, and threading
-         bank/decimal state through all twenty of those call sites to serve these two would
-         have been the bigger risk. See openMultiWheelPicker/wireMultiWheelField. -->
+    <!-- THE SECOND WHEEL, FOR THE FIELDS THE FIRST ONE DELIBERATELY SKIPPED. Sets, reps and
+         weight are dialed together here rather than as three separate pickers: a set is one
+         number from each of two wheels at once, and sets itself is nothing but a count of how
+         many pairs have been dialed, so it is read off the bank instead of carrying a dial of
+         its own (see wireSetWheelField). + banks the pair on both wheels right now and starts
+         the next on the same two numbers; ⌫ undoes the last banked pair back onto the wheels,
+         or — with nothing banked — clears the whole field back to empty, same as backspacing a
+         typed box down to nothing always did. Kept as its own sheet rather than bolted onto
+         #wheelPickerSheet: every field there is a true single value, and threading bank/pair/
+         decimal state through all twenty of those call sites to serve these three would have
+         been the bigger risk. See openSetWheelPicker/wireSetWheelField. -->
     <div class="lift-sheet" id="multiWheelPickerSheet" style="display:none;">
-      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Pick a value">
+      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Log a set">
         <div class="lift-sheet-head"><span id="multiWheelPickerTitle"></span>
           <button type="button" class="lift-sheet-x" aria-label="Done">&times;</button></div>
         <div class="fields">
-          <!-- Sets already dialed in, read left to right in the order they'll save in. Empty
-               and hidden until the first one lands — an empty bank is nothing to look at. -->
+          <!-- Sets already dialed in, read left to right in the order they'll save in, each
+               one reps×weight. Empty and hidden until the first one lands — an empty bank
+               is nothing to look at. -->
           <div class="multi-wheel-bank" id="multiWheelBank" aria-live="polite" hidden></div>
-          <div class="wheel-picker" id="multiWheelPickerCol" role="slider" tabindex="0">
-            <div class="wheel-picker-scroll" id="multiWheelPickerScroll">
-              <div class="wheel-picker-track" id="multiWheelPickerTrack"></div>
+          <div class="multi-wheel-cols">
+            <div class="multi-wheel-col">
+              <div class="multi-wheel-col-label" id="mwRepsLabel">REPS</div>
+              <div class="wheel-picker" id="mwRepsCol" role="slider" tabindex="0">
+                <div class="wheel-picker-scroll" id="mwRepsScroll">
+                  <div class="wheel-picker-track" id="mwRepsTrack"></div>
+                </div>
+                <div class="wheel-picker-band" aria-hidden="true"></div>
+              </div>
             </div>
-            <div class="wheel-picker-band" aria-hidden="true"><span id="multiWheelPickerUnit"></span></div>
+            <div class="multi-wheel-col">
+              <div class="multi-wheel-col-label" id="mwWeightLabel">KG</div>
+              <div class="wheel-picker" id="mwWeightCol" role="slider" tabindex="0">
+                <div class="wheel-picker-scroll" id="mwWeightScroll">
+                  <div class="wheel-picker-track" id="mwWeightTrack"></div>
+                </div>
+                <div class="wheel-picker-band" aria-hidden="true"></div>
+              </div>
+            </div>
           </div>
           <div class="multi-wheel-controls">
+            <button type="button" class="small outline" id="multiWheelBackBtn" aria-label="Undo the last set, or clear">&#x232b;</button>
             <!-- Hidden outright for reps rather than disabled: a rep count is never a decimal,
                  so the button isn't a choice being withheld, it's a question that doesn't apply. -->
             <button type="button" class="small outline" id="multiWheelDecimalBtn" hidden>.</button>
@@ -12030,7 +12059,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.07.001';
+const APP_VERSION = '2026.10.07.002';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12408,6 +12437,7 @@ const APP_NOTES = {
   '2026.10.05.005': 'Plan the week, Reschedule and Skip today now sit in one row under the calendar, instead of a full-width button stacked above a separate two-up row — one cluster of week-level decisions instead of two button-banks ahead of the session-type pills.',
   '2026.10.06.001': 'Wheels everywhere a field holds one number: first-run weight, goal targets, a run’s distance and duration, sets on a lift or a stretch, a stretch’s hold or reps, and the rest of the recovery sheet’s manual fields. Reps and weight on a lift are still typed — they’re the one place a field holds more than one number at once, for the comma shorthand.',
   '2026.10.07.001': 'Reps and weight are wheels now too. Dial a number in, tap "+ another set" to bank it and start the next — a drop set or a ramp is still one box, just built one set at a time instead of typed as a comma list. Weight gets a "." to switch the wheel to tenths for plates that aren’t whole numbers; reps stays whole numbers only. The docked comma key is gone — there is nothing left for it to assist.',
+  '2026.10.07.002': 'Sets, reps and weight dial together now, in one sheet — tap any of the three and reps and weight come up as two wheels side by side, "+ another set" banking the pair at once. Sets dropped its own dial entirely; it is just how many pairs you have banked. A "⌫" undoes the last banked pair back onto the wheels, or — with nothing banked yet — clears the whole thing back to empty, the way backspacing a typed box to nothing always did.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -20057,7 +20087,7 @@ function refreshOverPlan(row){
 
 /* THE SEPARATOR KEY IS GONE. A comma used to be how you said "and then another set",
    typed -- and a phone has no comma to press, which is what #logSepKey existed to work
-   around. Reps and weight are wheels now (see wireMultiWheelField and its own + button),
+   around. Sets, reps and weight are wheels now (see wireSetWheelField and its own + button),
    so there is no typing left for a dedicated key to assist. */
 
 
@@ -20805,11 +20835,14 @@ async function openBlockEditor(date, slot, block){
            breakdown, the volume load, the effort estimate off the rep drop-off, and "5,5,4
            and 5,5,5 are different sessions and an average of them is neither", which is
            written in three places in this file — and that list used to be typed, comma by
-           comma. wireMultiWheelField replaced the typing: tap a box, dial the number, + for
-           the next set, same comma-joined list underneath either way. Said once, since it's
-           the one thing about these two boxes that isn't self-evident from using them. -->
-      <div class="log-hint">Tap REPS or KG to dial a number in — <b>+ another set</b> on the
-        way out banks it and starts the next, so a drop set or a ramp is still one box.</div>
+           comma. wireSetWheelField replaced the typing: tap any of the three boxes, dial reps
+           and weight together, + banks the pair and starts the next, ⌫ undoes a bank or clears
+           the lot — same comma-joined lists underneath either way, sets just a count of them.
+           Said once, since it's the one thing about these boxes that isn't self-evident from
+           using them. -->
+      <div class="log-hint">Tap SETS, REPS or KG to dial a set in — <b>+ another set</b> banks
+        it and starts the next, <b>⌫</b> undoes the last one or clears the box, so a drop
+        set or a ramp is still one place to look.</div>
       <div class="score-note">For weight, choose a load you can control for every planned rep; leave it blank if you are still finding it out.</div>
       <div id="weekExerciseRows"></div><div class="add-row" id="addWeekExerciseRow">Add a lift</div>
       <!-- The run block has always had one. A strength session did not, so "gym was rammed,
@@ -20933,7 +20966,7 @@ async function openBlockEditor(date, slot, block){
         </span>
         ${lastLoggedLine(name)}
         <div class="log-fields-row">
-          <input type="number" class="week-ex-sets" placeholder="${ph(ghost && ghost.sets, '')}" title="sets actually done">
+          <input type="number" class="week-ex-sets" placeholder="${ph(ghost && ghost.sets, '')}" title="sets actually done — read off reps and weight below, tap any of the three to dial all of it">
           <span class="log-op log-unit">sets</span>
           <input type="text" inputmode="numeric" class="week-ex-reps" placeholder="${ph(ghostReps, '')}" title="reps actually done — one number for all sets (12), or per-set to track effort (12,10,7)">
           <!-- THE OPERATORS BECAME THE NAMES. It was [sets] x [reps] @ [weight] kg, and the
@@ -20965,17 +20998,20 @@ async function openBlockEditor(date, slot, block){
           <select class="week-ex-movement">${movementOptionsHtml(movement)}</select>
         </div>`;
       row.querySelector('.remove-row').addEventListener('click', ()=>{ removeRowAnimated(row); afterLogRowRemoved(); });
-      // Dialed, not typed — all three. Reps and weight get the multi-wheel (see
-      // wireMultiWheelField): a bank of sets with + to add another, rather than the single
-      // dial .week-ex-sets uses, since those two are the fields a comma list ever applied to.
-      wireWheelField(row.querySelector('.week-ex-sets'), { title:'Sets', min:0, max:12, step:1, unit:'sets' });
-      // Seeded from the same ghost the placeholder shows — the last number of it, since
-      // that's the set the wheel opens on either way. Left null (the wheel's own generic
+      // Dialed, not typed — all three, together: tapping sets, reps or weight opens one sheet
+      // with reps and weight as a pair of wheels and + banking a set at a time. Sets carries
+      // no dial of its own since wireSetWheelField reads it straight off how many pairs got
+      // banked (see the function for why).
+      // Seeded from the same ghost the placeholders show — the last number of each, since
+      // that's the set the wheels open on either way. Left null (each wheel's own generic
       // default) when there's no ghost to read one from.
       const lastOf = s => { const n = String(s||'').trim().split(SET_LIST_SEP).map(x=>parseFloat(x)).filter(isFinite); return n.length ? n[n.length-1] : null; };
-      wireMultiWheelField(row.querySelector('.week-ex-reps'), { title:'Reps', min:1, max:50, step:1, decimals:0, allowDecimal:false, unit:'reps', defaultValue: lastOf(ghostReps) });
       const weightUnit = resultUnitFor(name);
-      wireMultiWheelField(row.querySelector('.week-ex-weight'), { title: weightUnit ? 'Result' : 'Weight', min:0, max:weightUnit ? 500 : 400, step:weightUnit ? 1 : 2.5, decimalStep:0.5, decimals:2, allowDecimal:true, unit: weightUnit || 'kg', defaultValue: lastOf(ghostWeight) });
+      wireSetWheelField(row, {
+        title: weightUnit ? 'Reps × Result' : 'Reps × Weight',
+        reps: { title:'Reps', min:1, max:50, step:1, unit:'reps', defaultValue: lastOf(ghostReps) },
+        weight: { title: weightUnit ? 'Result' : 'Weight', min:0, max:weightUnit ? 500 : 400, step:weightUnit ? 1 : 2.5, decimalStep:0.5, decimals:2, allowDecimal:true, unit: weightUnit || 'kg', defaultValue: lastOf(ghostWeight) }
+      });
       // Whether a set was taken to failure is the input the effort estimate has been guessing
       // from the rep drop-off. 5,5,4 because you failed and 5,5,4 because you stopped are
       // different sessions, and only you know which.
@@ -25409,166 +25445,229 @@ function wireWheelField(input, opts){
   });
 }
 
-/* THE SECOND WHEEL — see the HTML comment on #multiWheelPickerSheet for why reps and weight
-   get their own rather than reusing openWheelPicker. Mechanically it's the same scroll-snap
-   column (same row math, same WHEEL_ROW_H); what's new is a bank of sets already dialed and
-   a decimal-step toggle on top of it. */
-let multiWheelCommit = null;
-let multiWheelScrollTimer = null;
-const multiWheelSheetApi = wireSheet('multiWheelPickerSheet', ()=>{ if(multiWheelCommit) multiWheelCommit(); });
+/* THE SECOND WHEEL — see the HTML comment on #multiWheelPickerSheet for why sets, reps and
+   weight get their own rather than reusing openWheelPicker. Mechanically each column is the
+   same scroll-snap machinery as openWheelPicker (same row math, same WHEEL_ROW_H); what's new
+   is two of them side by side banking together as pairs, a decimal-step toggle on the weight
+   one, and ⌫ to undo a bank or clear the field outright. mkSetWheelColumn is the one-column
+   machine both wheels are built from, so the scroll/tap/key handling is written once. */
+let setWheelCommit = null;
+const setWheelSheetApi = wireSheet('multiWheelPickerSheet', ()=>{ if(setWheelCommit) setWheelCommit(); });
 
-function openMultiWheelPicker({ title, min, max, step, decimalStep, decimals = 2, unit = '', allowDecimal, values, defaultValue, onCommit }){
-  const col = document.getElementById('multiWheelPickerCol');
-  const scrollHost = document.getElementById('multiWheelPickerScroll');
-  const track = document.getElementById('multiWheelPickerTrack');
-  const titleEl = document.getElementById('multiWheelPickerTitle');
-  const unitEl = document.getElementById('multiWheelPickerUnit');
-  const bankEl = document.getElementById('multiWheelBank');
-  const decimalBtn = document.getElementById('multiWheelDecimalBtn');
-  const addBtn = document.getElementById('multiWheelAddBtn');
-  if(!col || !scrollHost || !track) return;
-
-  if(titleEl) titleEl.textContent = title || '';
-  if(unitEl) unitEl.textContent = unit || '';
-
-  // Every value but the last is already "banked"; the last is what the wheel opens on, so
-  // reopening a row you've already filled in picks up editing its last set rather than
-  // starting a new one on top of it.
-  const banked = values && values.length ? values.slice(0, -1) : [];
-  let isDecimal = false, rows = [], n = 0, curIdx = 0;
-
-  // wheelRowLabel strips back to a whole number on its own when a value has no fraction, so
-  // this reads right whether it's banked a plain 8 or a dialed-in 62.5 — the caller never
-  // has to track which.
-  const label = v => wheelRowLabel(v, decimals);
-  const currentValue = ()=> rows[curIdx] ? parseFloat(rows[curIdx].dataset.v) : min;
-
-  const renderBank = ()=>{
-    if(!bankEl) return;
-    bankEl.hidden = !banked.length;
-    bankEl.innerHTML = banked.map(v=> `<span class="mw-chip">${label(v)}</span>`).join('');
-  };
-
+function mkSetWheelColumn(ids, opts){
+  const col = document.getElementById(ids.col), scrollHost = document.getElementById(ids.scroll), track = document.getElementById(ids.track);
+  let rows = [], rowN = 0, curIdx = 0, timer = null;
   const applyHighlight = idx=>{
-    rows.forEach((r,i)=>{
-      r.classList.toggle('wheel-sel', i===idx);
-      r.classList.toggle('wheel-near', Math.abs(i-idx)===1);
-    });
+    rows.forEach((r,i)=>{ r.classList.toggle('wheel-sel', i===idx); r.classList.toggle('wheel-near', Math.abs(i-idx)===1); });
     col.setAttribute('aria-valuenow', rows[idx] ? rows[idx].dataset.v : '');
     curIdx = idx;
   };
   const scrollToIndex = (idx, smooth)=> scrollHost.scrollTo({ top: idx * WHEEL_ROW_H, behavior: smooth ? 'smooth' : 'auto' });
-
-  const buildWheel = centerOn=>{
-    const curStep = isDecimal ? decimalStep : step;
-    n = Math.round((max - min) / curStep) + 1;
-    track.innerHTML = Array.from({ length: n }, (_, i)=>{
-      const v = min + i * curStep;
-      return `<div class="wheel-row" data-i="${i}" data-v="${v}">${wheelRowLabel(v, isDecimal ? decimals : 0)}</div>`;
+  const build = (centerOn, step, decimals)=>{
+    rowN = Math.round((opts.max - opts.min) / step) + 1;
+    track.innerHTML = Array.from({ length: rowN }, (_, i)=>{
+      const v = opts.min + i * step;
+      return `<div class="wheel-row" data-i="${i}" data-v="${v}">${wheelRowLabel(v, decimals)}</div>`;
     }).join('');
     rows = [...track.querySelectorAll('.wheel-row')];
-    const idx = Math.max(0, Math.min(n - 1, Math.round((centerOn - min) / curStep)));
+    const idx = Math.max(0, Math.min(rowN - 1, Math.round((centerOn - opts.min) / step)));
     applyHighlight(idx);
     requestAnimationFrame(()=> requestAnimationFrame(()=> scrollToIndex(idx, false)));
   };
-
-  const start = values && values.length ? values[values.length - 1] : (defaultValue != null ? defaultValue : Math.round((min + max) / 2));
-  buildWheel(start);
-  renderBank();
-
   const onScroll = ()=>{
-    const idx = Math.max(0, Math.min(n - 1, Math.round(scrollHost.scrollTop / WHEEL_ROW_H)));
+    const idx = Math.max(0, Math.min(rowN - 1, Math.round(scrollHost.scrollTop / WHEEL_ROW_H)));
     applyHighlight(idx);
-    clearTimeout(multiWheelScrollTimer);
-    multiWheelScrollTimer = setTimeout(()=>{ scrollToIndex(idx, true); applyHighlight(idx); }, 90);
+    if(opts.onInteract) opts.onInteract();
+    clearTimeout(timer);
+    timer = setTimeout(()=>{ scrollToIndex(idx, true); applyHighlight(idx); }, 90);
   };
   scrollHost.addEventListener('scroll', onScroll, { passive:true });
-
   const onRowTap = e=>{
     const row = e.target.closest('.wheel-row');
     if(!row) return;
     const idx = parseInt(row.dataset.i, 10);
     scrollToIndex(idx, true);
     applyHighlight(idx);
+    if(opts.onInteract) opts.onInteract();
   };
   track.addEventListener('click', onRowTap);
-
   const onKey = e=>{
-    if(e.key === 'ArrowUp'){ e.preventDefault(); const idx = Math.max(0, curIdx - 1); scrollToIndex(idx, true); applyHighlight(idx); }
-    else if(e.key === 'ArrowDown'){ e.preventDefault(); const idx = Math.min(n - 1, curIdx + 1); scrollToIndex(idx, true); applyHighlight(idx); }
+    if(e.key === 'ArrowUp'){ e.preventDefault(); const idx = Math.max(0, curIdx - 1); scrollToIndex(idx, true); applyHighlight(idx); if(opts.onInteract) opts.onInteract(); }
+    else if(e.key === 'ArrowDown'){ e.preventDefault(); const idx = Math.min(rowN - 1, curIdx + 1); scrollToIndex(idx, true); applyHighlight(idx); if(opts.onInteract) opts.onInteract(); }
   };
   col.addEventListener('keydown', onKey);
-  col.setAttribute('aria-valuemin', min);
-  col.setAttribute('aria-valuemax', max);
-  col.setAttribute('aria-label', title || 'Pick a value');
+  col.setAttribute('aria-valuemin', opts.min);
+  col.setAttribute('aria-valuemax', opts.max);
+  col.setAttribute('aria-label', opts.label || 'Pick a value');
+  return {
+    col,
+    current: ()=> rows[curIdx] ? parseFloat(rows[curIdx].dataset.v) : opts.min,
+    build,
+    destroy: ()=>{
+      scrollHost.removeEventListener('scroll', onScroll);
+      track.removeEventListener('click', onRowTap);
+      col.removeEventListener('keydown', onKey);
+      clearTimeout(timer);
+    }
+  };
+}
 
-  // Banks the set on the wheel right now and starts the next on the same number — a dropped
-  // set or a ramp is the exception, not the rule, and starting the next dial from the last
-  // one picked is right far more often than typing nothing ever was.
+// Every value is one number from each wheel repeated, or taken, for every banked set. The
+// field has only ever held one shorthand for "the same every time" — a single number, no
+// comma — so a pair where every set agrees collapses back to that instead of writing it out
+// n times over.
+function compactSetList(values, label){
+  return values.every(v=> v === values[0]) ? label(values[0]) : values.map(label).join(',');
+}
+
+function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, setsValue, onCommit }){
+  const titleEl = document.getElementById('multiWheelPickerTitle');
+  const bankEl = document.getElementById('multiWheelBank');
+  const backBtn = document.getElementById('multiWheelBackBtn');
+  const decimalBtn = document.getElementById('multiWheelDecimalBtn');
+  const addBtn = document.getElementById('multiWheelAddBtn');
+  const repsLabelEl = document.getElementById('mwRepsLabel');
+  const weightLabelEl = document.getElementById('mwWeightLabel');
+  if(titleEl) titleEl.textContent = title || 'Log a set';
+  if(repsLabelEl) repsLabelEl.textContent = (reps.unit || 'reps').toUpperCase();
+  if(weightLabelEl) weightLabelEl.textContent = (weight.unit || 'kg').toUpperCase();
+
+  // How many sets this opens on: whichever is widest of what the two fields already hold and
+  // whatever "sets actually done" says on its own — a plan dimming 4 sets of a single rep
+  // number opens on all four pairs, not just the one the rep count alone would imply.
+  const n = Math.max(repsValues.length, weightValues.length, setsValue || 0);
+  const fillTo = (arr, len, fallback)=> Array.from({ length: len }, (_, i)=> arr[i] != null ? arr[i] : (arr.length ? arr[arr.length - 1] : fallback));
+  const repsFull = fillTo(repsValues, n, reps.defaultValue != null ? reps.defaultValue : reps.min);
+  const weightFull = fillTo(weightValues, n, weight.defaultValue != null ? weight.defaultValue : weight.min);
+  let banked = n ? Array.from({ length: n - 1 }, (_, i)=> ({ reps: repsFull[i], weight: weightFull[i] })) : [];
+  let isDecimal = false, cleared = false;
+  // Whether each wheel is carrying a real answer rather than just a filled-in default: true
+  // from the start when the field already had something in it, true the moment that wheel is
+  // actually moved, false otherwise. Tapping in on reps alone and leaving without ever moving
+  // the weight wheel must not write a weight that was never there — see the commit below.
+  let repsTouched = repsValues.length > 0, weightTouched = weightValues.length > 0;
+
+  const repsLabel = v=> wheelRowLabel(v, 0);
+  const weightLabel = v=> wheelRowLabel(v, weight.decimals != null ? weight.decimals : 2);
+  const weightStep = ()=> isDecimal ? (weight.decimalStep || weight.step || 1) : (weight.step || 1);
+  const weightDecimals = ()=> isDecimal ? (weight.decimals != null ? weight.decimals : 2) : 0;
+
+  const renderBank = ()=>{
+    if(!bankEl) return;
+    bankEl.hidden = !banked.length;
+    bankEl.innerHTML = banked.map(p=> `<span class="mw-chip">${repsLabel(p.reps)}×${weightLabel(p.weight)}</span>`).join('');
+  };
+
+  const mid = (lo, hi)=> Math.round((lo + hi) / 2);
+  const repsStart = n ? repsFull[n - 1] : (reps.defaultValue != null ? reps.defaultValue : mid(reps.min, reps.max));
+  const weightStart = n ? weightFull[n - 1] : (weight.defaultValue != null ? weight.defaultValue : mid(weight.min, weight.max));
+
+  const repsWheel = mkSetWheelColumn({ col:'mwRepsCol', scroll:'mwRepsScroll', track:'mwRepsTrack' }, { min:reps.min, max:reps.max, label:reps.title, onInteract:()=>{ repsTouched = true; } });
+  repsWheel.build(repsStart, reps.step || 1, 0);
+  const weightWheel = mkSetWheelColumn({ col:'mwWeightCol', scroll:'mwWeightScroll', track:'mwWeightTrack' }, { min:weight.min, max:weight.max, label:weight.title, onInteract:()=>{ weightTouched = true; } });
+  weightWheel.build(weightStart, weightStep(), weightDecimals());
+  renderBank();
+
+  // Banks the pair on both wheels right now and starts the next set on the same two numbers
+  // — a dropped set or a ramp is the exception, not the rule.
   const onAdd = ()=>{
-    banked.push(currentValue());
+    banked.push({ reps: repsWheel.current(), weight: weightWheel.current() });
     renderBank();
-    buildWheel(currentValue());
+    repsWheel.build(repsWheel.current(), reps.step || 1, 0);
+    weightWheel.build(weightWheel.current(), weightStep(), weightDecimals());
   };
   if(addBtn) addBtn.addEventListener('click', onAdd);
 
-  // A flip, not a momentary press: it stays lit while the wheel is showing tenths, and
-  // rebuilds around wherever you'd already dialed to rather than resetting the pick.
   const onDecimalToggle = ()=>{
     isDecimal = !isDecimal;
     if(decimalBtn) decimalBtn.classList.toggle('on', isDecimal);
-    buildWheel(currentValue());
+    weightWheel.build(weightWheel.current(), weightStep(), weightDecimals());
   };
   if(decimalBtn){
-    decimalBtn.hidden = !allowDecimal;
+    decimalBtn.hidden = !weight.allowDecimal;
     decimalBtn.classList.remove('on');
-    if(allowDecimal) decimalBtn.addEventListener('click', onDecimalToggle);
+    if(weight.allowDecimal) decimalBtn.addEventListener('click', onDecimalToggle);
   }
 
-  multiWheelCommit = ()=>{
-    scrollHost.removeEventListener('scroll', onScroll);
-    track.removeEventListener('click', onRowTap);
-    col.removeEventListener('keydown', onKey);
+  // ⌫ undoes whichever happened most recently: a banked pair pops back onto the wheels to be
+  // redialed, and with nothing banked yet — the first set, untouched or not — it clears the
+  // field outright, same as backspacing a typed box down to nothing always did.
+  const onBack = ()=>{
+    if(banked.length){
+      const last = banked.pop();
+      renderBank();
+      repsWheel.build(last.reps, reps.step || 1, 0);
+      weightWheel.build(last.weight, weightStep(), weightDecimals());
+    } else {
+      cleared = true;
+      setWheelSheetApi.close();
+    }
+  };
+  if(backBtn) backBtn.addEventListener('click', onBack);
+
+  setWheelCommit = ()=>{
+    repsWheel.destroy();
+    weightWheel.destroy();
     if(addBtn) addBtn.removeEventListener('click', onAdd);
     if(decimalBtn) decimalBtn.removeEventListener('click', onDecimalToggle);
-    clearTimeout(multiWheelScrollTimer);
-    multiWheelCommit = null;
-    const finalList = [...banked, currentValue()];
-    if(onCommit) onCommit(finalList.map(label).join(','));
+    if(backBtn) backBtn.removeEventListener('click', onBack);
+    setWheelCommit = null;
+    if(cleared){ if(onCommit) onCommit('', '', 0); return; }
+    const finalReps = [...banked.map(p=> p.reps), repsWheel.current()];
+    const finalWeight = [...banked.map(p=> p.weight), weightWheel.current()];
+    // A side that was never touched and had nothing in it to start with stays blank rather
+    // than publishing the default it was quietly sitting on — tapping into reps alone, never
+    // scrolling weight, must not invent a weight that was never there.
+    const repsOut = repsTouched ? compactSetList(finalReps, repsLabel) : '';
+    const weightOut = weightTouched ? compactSetList(finalWeight, weightLabel) : '';
+    const setCount = (repsTouched || weightTouched) ? finalReps.length : 0;
+    if(onCommit) onCommit(repsOut, weightOut, setCount);
   };
 
-  multiWheelSheetApi.open();
-  requestAnimationFrame(()=> col.focus({ preventScroll:true }));
+  setWheelSheetApi.open();
+  requestAnimationFrame(()=> repsWheel.col.focus({ preventScroll:true }));
 }
 
-/* Turns a reps/weight box into the multi-wheel above. Seeds it from whatever's already in
-   the field — SET_LIST_SEP, the same liberal split the parser downstream uses, so a value
-   that arrived via the old typed shorthand (or a plan/ghost prefill) opens exactly as if it
-   had been dialed in. Commits the same comma-joined string typing always produced, and only
-   writes/dispatches when that string actually changed — an open-then-close peek at an
-   untouched plan value must NOT turn its dim .dataset.planned into a real reading just for
-   having been looked at, the same rule typing already followed (a keystroke was what did
-   that, not a focus). */
-function wireMultiWheelField(input, opts){
-  if(!input) return;
-  input.readOnly = true;
-  input.classList.add('wheel-field');
-  input.addEventListener('click', ()=>{
-    const raw = String(input.value || '').trim();
-    const values = raw ? raw.split(SET_LIST_SEP).map(x=> parseFloat(x)).filter(x=> isFinite(x)) : [];
-    openMultiWheelPicker({
-      title: opts.title, min: opts.min, max: opts.max, step: opts.step || 1,
-      decimalStep: opts.decimalStep || opts.step || 1, decimals: opts.decimals != null ? opts.decimals : 2,
-      unit: opts.unit || '', allowDecimal: !!opts.allowDecimal, defaultValue: opts.defaultValue,
-      values,
-      onCommit: joined=>{
-        if(joined === input.value) return;
-        input.value = joined;
-        input.dispatchEvent(new Event('input', { bubbles:true }));
-        input.dispatchEvent(new Event('change', { bubbles:true }));
+/* Turns a row's sets/reps/weight boxes into the paired wheel above — any of the three opens
+   it, since sets is read off the other two rather than dialed on its own. Seeds it from
+   whatever's already in the three fields — SET_LIST_SEP, the same liberal split the parser
+   downstream uses, so a value that arrived via the old typed shorthand (or a plan/ghost
+   prefill) opens exactly as if it had been dialed in. Commits the same comma-joined strings
+   typing always produced, and only writes/dispatches a field whose value actually changed —
+   an open-then-close peek at an untouched plan must NOT turn its dim .dataset.planned into a
+   real reading just for having been looked at, the same rule typing always followed, now
+   checked per field rather than once, since a peek might leave two of the three untouched and
+   the derived sets count differing from a plan it never promised to leave alone. */
+function wireSetWheelField(row, { title, reps, weight }){
+  const repsInput = row.querySelector('.week-ex-reps');
+  const weightInput = row.querySelector('.week-ex-weight');
+  const setsInput = row.querySelector('.week-ex-sets');
+  if(!repsInput || !weightInput) return;
+  [repsInput, weightInput, setsInput].forEach(el=>{ if(!el) return; el.readOnly = true; el.classList.add('wheel-field'); });
+
+  const parseList = v=>{
+    const raw = String(v || '').trim();
+    return raw ? raw.split(SET_LIST_SEP).map(x=> parseFloat(x)).filter(x=> isFinite(x)) : [];
+  };
+  const openIt = ()=>{
+    const parsedSets = parseInt(String(setsInput && setsInput.value || '').trim(), 10);
+    openSetWheelPicker({
+      title, reps, weight,
+      repsValues: parseList(repsInput.value), weightValues: parseList(weightInput.value),
+      setsValue: isFinite(parsedSets) ? parsedSets : 0,
+      onCommit: (repsJoined, weightJoined, setCount)=>{
+        [[repsInput, repsJoined], [weightInput, weightJoined], [setsInput, setCount ? String(setCount) : '']].forEach(([el, val])=>{
+          if(!el || val === el.value) return;
+          el.value = val;
+          el.dispatchEvent(new Event('input', { bubbles:true }));
+          el.dispatchEvent(new Event('change', { bubbles:true }));
+        });
       }
     });
-  });
+  };
+  repsInput.addEventListener('click', openIt);
+  weightInput.addEventListener('click', openIt);
+  if(setsInput) setsInput.addEventListener('click', openIt);
 }
 
 /* Plan the week: goals, split, weeks, deload, unavailable dates, Generate and the rest —
@@ -36253,7 +36352,7 @@ async function generateMobility(){
    can substitute for one are in as well, because a keyboard quietly turning - into – should
    not change what a row means.
    This stayed this liberal after reps and weight moved to the wheel (see
-   wireMultiWheelField): the wheel only ever writes a clean comma list, but SET_LIST_SEP is
+   wireSetWheelField): the wheel only ever writes a clean comma list, but SET_LIST_SEP is
    also what reads back every row logged before that change, and years of those are still
    dash- and space-separated on disk. */
 const SET_LIST_SEP = /[,\s/\u2013\u2014-]+/;
