@@ -3090,37 +3090,6 @@
      four that is a reading rather than a label, it is the way into the lift's full history,
      and with the boxes now holding the plan it is the only trace of what you actually did
      last time. */
-  /* THE SEPARATOR KEY, DOCKED IN THE SHEET NOW rather than tracking the keyboard. It used to
-     be position:fixed on the body, following visualViewport so it sat above the keyboard
-     wherever that happened to be — correct, but a second positioning system to reason about.
-     This is a plain sticky row inside the sheet's own scroll area instead, right above
-     Save/Put away: no viewport math, in exchange for one known gap it cannot close — on iOS,
-     while the keyboard is open, this is laid out against the same viewport the keyboard does
-     not shrink, so it can sit behind the keyboard in some scroll positions rather than always
-     riding above it the way the tracked version did. Traded on purpose for the simpler rule.
-     Living inside the sheet now, var(--bg)/var(--ground) are already the sheet's own flipped
-     pair — no need to restate them as hardcoded dark-mode values the way the body-level
-     version had to. */
-  /* A full-width, flat-sided shelf behind the pill rather than the pill alone: sticky content
-     scrolls other rows underneath it, and a plain rounded pill has four transparent corners
-     outside its own curve — the row behind shows through exactly there. The shelf is solid
-     edge to edge, so nothing scrolling under it is ever visible around the pill's curve. */
-  .log-sep-dock{ position:sticky; bottom:0; z-index:2; display:flex; align-items:center;
-    justify-content:center; width:100%; margin:var(--sp-2) 0; padding:10px 0;
-    border:0; background:var(--reverse-bg); }
-  .log-sep-dock[hidden]{ display:none; }
-  .log-sep-dock .sep-pill{ display:flex; align-items:center; gap:10px; padding:11px 20px;
-    border-radius:999px; background:var(--bg); color:var(--ground);
-    box-shadow:0 8px 24px rgba(12,13,11,0.35); }
-  /* The comma is the key; the words are what it does. Set in the face the boxes are set in,
-     at the size a value in one of them is, so the glyph on the key and the glyph it puts in
-     the box are the same glyph. */
-  .log-sep-dock .sep-mark{ font-family:var(--wordmark); font-size:var(--log-write);
-    font-weight:var(--fw-bold); line-height:1; min-width:9px; text-align:center;
-    position:relative; top:-0.18em; }
-  .log-sep-dock .sep-word{ font-family:var(--mono); font-size:var(--log-note);
-    font-weight:var(--fw-bold); letter-spacing:0.1em; text-transform:uppercase; }
-  .log-sep-dock:active .sep-pill{ background:#e9e7df; }
   /* EDIT TAGS, BACK FROM THE TAG BUTTON. The selects are display:none below; this is one class
      more specific and re-states the layout that rule used to carry, so the row they drop onto
      looks the way it always did. A class rather than the inline display the old text toggle
@@ -3964,15 +3933,15 @@
      body once, at script init; a sheet built fresh each time it opens (the morning ask) ends
      up appended AFTER it and wins the tie at the shared z-index:70 on DOM order alone. Named
      explicitly rather than left to win a later append. */
-  #wheelPickerSheet{ z-index:72; }
+  #wheelPickerSheet, #multiWheelPickerSheet{ z-index:72; }
   /* .lift-sheet-panel is a fixed 60vh on every sheet in the app, by design — the wheel's own
      216px doesn't come close to filling that, and top-aligned (the default every other
      sheet uses, since their content usually does fill it) left a wheel sitting high with a
      slab of dead black below it. Centred in the space under the head instead, scoped to
-     this one sheet only — flex on the panel itself, not a height:100% on .fields, so the
+     these two sheets only — flex on the panel itself, not a height:100% on .fields, so the
      head's own real height is what the centring is measured against rather than guessed. */
-  #wheelPickerSheet .lift-sheet-panel{ display:flex; flex-direction:column; }
-  #wheelPickerSheet .fields{ display:flex; flex-direction:column; justify-content:center; flex:1; min-height:0; }
+  #wheelPickerSheet .lift-sheet-panel, #multiWheelPickerSheet .lift-sheet-panel{ display:flex; flex-direction:column; }
+  #wheelPickerSheet .fields, #multiWheelPickerSheet .fields{ display:flex; flex-direction:column; justify-content:center; flex:1; min-height:0; }
   input.wheel-field{ cursor:pointer; background-image:
       linear-gradient(45deg, transparent 50%, currentColor 50%),
       linear-gradient(135deg, currentColor 50%, transparent 50%);
@@ -4013,6 +3982,22 @@
   .wheel-picker-band span{ position:absolute; left:calc(50% + 48px); font-family:var(--mono);
     font-size:var(--fs-sm); font-weight:var(--fw-bold); letter-spacing:0.04em;
     text-transform:uppercase; color:rgba(var(--ink-rgb),0.5); }
+
+  /* THE BANK: every set already dialed in, read left to right in save order — the same
+     plain-text shape ("8 · 8 · 6") the field itself holds as a comma list, so what you see
+     here is a preview of what Done is about to write, not a different notation to learn. */
+  .multi-wheel-bank{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+    margin-bottom:var(--sp-2); }
+  .multi-wheel-bank .mw-chip{ font-family:var(--mono); font-size:var(--fs-sm);
+    font-weight:var(--fw-bold); color:var(--bg); background:rgba(var(--ink-rgb),0.12);
+    border-radius:999px; padding:4px 12px; }
+  .multi-wheel-controls{ display:flex; gap:8px; margin-top:var(--sp-2); }
+  .multi-wheel-controls .outline{ background:transparent; color:var(--bg); flex:1; }
+  /* The decimal toggle is a flip, not a momentary press — it stays lit while the wheel is
+     showing tenths, the same way .active reads on every other two-state control in the app. */
+  #multiWheelDecimalBtn{ flex:0 0 auto; min-width:44px; font-size:18px; font-weight:var(--fw-bold); }
+  #multiWheelDecimalBtn.on{ background:var(--accent); color:var(--text); border-color:var(--accent); }
+  #multiWheelDecimalBtn[hidden]{ display:none; }
 
   /* THE DAILY QUESTIONS, IN THE SAME VOICE THE SETUP ASKS IN.
      ------------------------------------------------------------------
@@ -5537,6 +5522,39 @@
               <div class="wheel-picker-track" id="wheelPickerTrack"></div>
             </div>
             <div class="wheel-picker-band" aria-hidden="true"><span id="wheelPickerUnit"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- A SECOND WHEEL, FOR THE TWO FIELDS THE FIRST ONE DELIBERATELY SKIPPED. Reps and weight
+         are the one place a field holds more than one number at once — "8,8,6" where they
+         dropped, "60,80,100" for a ramp — which #wheelPickerSheet's single dial can't hold.
+         This is that same mechanism (a scroll-snap column, the same openWheelPicker math)
+         wrapped in a bank of sets already dialed and a + to add another, plus a decimal
+         toggle weight needs and reps never does. Kept as its own sheet rather than bolted
+         onto #wheelPickerSheet: every other field there is a true single value, and threading
+         bank/decimal state through all twenty of those call sites to serve these two would
+         have been the bigger risk. See openMultiWheelPicker/wireMultiWheelField. -->
+    <div class="lift-sheet" id="multiWheelPickerSheet" style="display:none;">
+      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Pick a value">
+        <div class="lift-sheet-head"><span id="multiWheelPickerTitle"></span>
+          <button type="button" class="lift-sheet-x" aria-label="Done">&times;</button></div>
+        <div class="fields">
+          <!-- Sets already dialed in, read left to right in the order they'll save in. Empty
+               and hidden until the first one lands — an empty bank is nothing to look at. -->
+          <div class="multi-wheel-bank" id="multiWheelBank" aria-live="polite" hidden></div>
+          <div class="wheel-picker" id="multiWheelPickerCol" role="slider" tabindex="0">
+            <div class="wheel-picker-scroll" id="multiWheelPickerScroll">
+              <div class="wheel-picker-track" id="multiWheelPickerTrack"></div>
+            </div>
+            <div class="wheel-picker-band" aria-hidden="true"><span id="multiWheelPickerUnit"></span></div>
+          </div>
+          <div class="multi-wheel-controls">
+            <!-- Hidden outright for reps rather than disabled: a rep count is never a decimal,
+                 so the button isn't a choice being withheld, it's a question that doesn't apply. -->
+            <button type="button" class="small outline" id="multiWheelDecimalBtn" hidden>.</button>
+            <button type="button" class="small outline" id="multiWheelAddBtn">+ another set</button>
           </div>
         </div>
       </div>
@@ -10021,9 +10039,7 @@ const UI_ANIM = {
   weightsDrift: { on:true, note:'Each channel\u2019s bar travels from its starting weight to the one your data learned', ms:760, stagger:55 },
   staggerIn:    { on:true, note:'List entries arrive one after another rather than all at once', ms:260, stagger:32, max:12 },
   overLands:    { on:true, note:'The plate for beating the plan drops onto the row, and the row takes the weight', ms:300 },
-  keyLands:     { on:true, note:'The separator key presses, and the box it wrote into answers', ms:260 },
-  countsWithYou:{ on:true, note:'The set breakdown re-counts as you type rather than swapping', ms:220 },
-  sepKeyRides:  { on:true, note:'The separator key settles into place instead of just appearing', ms:220 },
+  countsWithYou:{ on:true, note:'The set breakdown re-counts as you dial a set in rather than swapping', ms:220 },
   paceWrites:   { on:true, note:'A run\u2019s pace writes itself in the moment both boxes hold a number', ms:420 },
   cutShows:     { on:true, note:'A deload week\u2019s bar draws to last week before dropping to the cut', ms:820 },
   weekTurns:    { on:true, note:'The week the board rolls over, its seven days turn once', ms:460, stagger:38 },
@@ -12014,7 +12030,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.06.001';
+const APP_VERSION = '2026.10.07.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12391,6 +12407,7 @@ const APP_NOTES = {
   '2026.10.05.004': 'Single-number fields are dialed now, not typed — sleep hours and resting heart rate on the morning ask, height/weight/body fat on the Body tab, and an injury’s severity out of ten, each a scroll wheel instead of a keyboard. Logging’s own reps/weight fields are untouched — they still take the comma shorthand a wheel can’t hold.',
   '2026.10.05.005': 'Plan the week, Reschedule and Skip today now sit in one row under the calendar, instead of a full-width button stacked above a separate two-up row — one cluster of week-level decisions instead of two button-banks ahead of the session-type pills.',
   '2026.10.06.001': 'Wheels everywhere a field holds one number: first-run weight, goal targets, a run’s distance and duration, sets on a lift or a stretch, a stretch’s hold or reps, and the rest of the recovery sheet’s manual fields. Reps and weight on a lift are still typed — they’re the one place a field holds more than one number at once, for the comma shorthand.',
+  '2026.10.07.001': 'Reps and weight are wheels now too. Dial a number in, tap "+ another set" to bank it and start the next — a drop set or a ramp is still one box, just built one set at a time instead of typed as a comma list. Weight gets a "." to switch the wheel to tenths for plates that aren’t whole numbers; reps stays whole numbers only. The docked comma key is gone — there is nothing left for it to assist.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -19956,20 +19973,6 @@ function logFieldTop(v){
     .map(x=> parseFloat(x)).filter(x=> isFinite(x));
   return nums.length ? Math.max(...nums) : null;
 }
-/* SHOW WHAT WAS UNDERSTOOD. A liberal parser that never says how it read something is a
-   parser you find out about from a wrong number weeks later. Leaving the box writes the list
-   back in the one form the hint at the top names, so "8 8 6" and "8-8-6" both come to rest as
-   8,8,6 and a dash meant as a range is visibly two sets while you can still fix it.
-   Strict on the way in even though the parser is liberal: anything that is not wholly plain
-   numbers is left exactly as typed rather than half-rewritten into something else. */
-function normaliseSetList(el){
-  if(!el || !el.value) return;
-  const tokens = String(el.value).trim().split(SET_LIST_SEP).filter(t=> t !== '');
-  if(tokens.length < 2) return;
-  if(!tokens.every(t=> /^\d+(\.\d+)?$/.test(t))) return;
-  const joined = tokens.join(',');
-  if(joined !== el.value) el.value = joined;
-}
 /* THE GREEN PLATE. Beating the plan was recorded and never said — you had to remember what
    the target was, and the target line that used to carry it is gone.
    Weight first, then reps, then sets: one plate, because two would be a row of badges next
@@ -20052,93 +20055,10 @@ function refreshOverPlan(row){
   }
 }
 
-/* THE SEPARATOR KEY. A comma is how you say "and then another set", and on a phone there is
-   no comma to press: reps carry inputmode=numeric, which iOS draws as a digit-only pad, and
-   weight carries inputmode=decimal, which adds a full stop and nothing else. The full stop is
-   already spoken for on the weight box — 62.5 is a real load — so it cannot double as a
-   separator there either. Both boxes needed a key and neither had one, which made 8,8,6 a
-   thing the sheet told you about at the top and then would not let you type.
-
-   NOT ON THE ROW. Measured: the row is 346 of content, the boxes take a fixed 272 and the
-   three row controls take 63 — eleven pixels left, against about 45 for two keys with tap
-   areas worth having. A key per box does not fit and would not be worth pressing if it did.
-
-   A DEDICATED KEY, not the keyboard's own bar. It used to float over the keyboard itself,
-   tracked against visualViewport so it always sat just above it; now it is #logSepKey,
-   rendered once per strength block right above Save/Put away (see panel.innerHTML, and
-   .log-sep-dock for the CSS) and looked up fresh on every call below rather than cached,
-   since the whole panel -- key included -- is rebuilt on every block render. Simpler, at the
-   cost of the one thing the tracked version bought: see .log-sep-dock's own comment for what
-   that trade gives up on iOS specifically. */
-let logSepField = null;
-function showLogSepKey(field){
-  logSepField = field;
-  const el = document.getElementById('logSepKey');
-  if(!el) return;
-  const wasHidden = el.hidden;
-  el.hidden = false;
-  // Only on the way in -- moving between the two list fields keeps the same key in place.
-  if(wasHidden && uiAnim('sepKeyRides')){
-    uiPlay(el, [{ transform:'translateY(12px)', opacity:0 }, { transform:'translateY(0)', opacity:1 }],
-           { duration:UI_ANIM.sepKeyRides.ms, easing:'cubic-bezier(0.25,0.9,0.25,1)' });
-  }
-}
-function hideLogSepKey(){
-  logSepField = null;
-  const el = document.getElementById('logSepKey');
-  if(el) el.hidden = true;
-}
-/* At the caret, not at the end — you are as likely to be fixing the middle set as adding one
-   to the end. A separator against nothing, or against another separator, is not a set, so
-   those two cases do nothing rather than leaving ",," for the parser to shrug at. */
-function insertSetSeparator(field){
-  if(!field) return;
-  const v = field.value || '';
-  let at = field.selectionStart;
-  if(at == null || at > v.length) at = v.length;
-  const before = v.slice(0, at);
-  if(!before.trim() || /[,\s/\u2013\u2014-]$/.test(before)) return;
-  field.value = before + ',' + v.slice(at);
-  try{ field.setSelectionRange(at + 1, at + 1); }catch(e){}
-  field.dispatchEvent(new Event('input', { bubbles:true }));
-  /* A KEY WHOSE WHOLE EFFECT IS ONE CHARACTER HAS TO PROVE IT FIRED. The caret does not move
-     on screen in any way a thumb can see, the comma lands among digits, and the key itself
-     never takes focus — by design, since focus would close the keyboard. So the key presses
-     and the box it wrote into answers, which is the only feedback either of them gets. */
-  if(uiAnim('keyLands')){
-    const A = UI_ANIM.keyLands;
-    const pillEl = document.querySelector('#logSepKey .sep-pill');
-    if(pillEl) uiPlay(pillEl, [{ transform:'scale(1)' }, { transform:'scale(0.9)', offset:0.4 },
-                              { transform:'scale(1)' }], { duration:A.ms, easing:'cubic-bezier(0.3,0.9,0.3,1)' });
-    uiPlay(field, [{ transform:'scale(1)' }, { transform:'scale(1.03)', offset:0.45 },
-                   { transform:'scale(1)' }], { duration:A.ms, easing:'cubic-bezier(0.3,1.2,0.4,1)' });
-  }
-}
-(function wireLogSepKey(){
-  const sheet = document.getElementById('logSheet');
-  if(!sheet) return;
-  const LIST_FIELDS = '.week-ex-reps, .week-ex-weight';
-  sheet.addEventListener('focusin', e=>{
-    if(e.target.matches && e.target.matches(LIST_FIELDS)) showLogSepKey(e.target);
-    else hideLogSepKey();
-  });
-  sheet.addEventListener('focusout', e=>{
-    if(!(e.target.matches && e.target.matches(LIST_FIELDS))) return;
-    // After the next field has had its focusin, or moving between the two boxes flickers.
-    setTimeout(()=>{
-      const a = document.activeElement;
-      if(!a || !a.matches || !a.matches(LIST_FIELDS)) hideLogSepKey();
-    }, 0);
-  });
-  // pointerdown, not click, and the default prevented: a button taking focus would close the
-  // keyboard and drop the caret, which is the whole thing this key is trying not to do.
-  // Delegated, like the two listeners above, since #logSepKey is rebuilt on every block render.
-  sheet.addEventListener('pointerdown', e=>{
-    if(!e.target.closest('.sep-pill')) return;
-    e.preventDefault();
-    insertSetSeparator(logSepField);
-  });
-})();
+/* THE SEPARATOR KEY IS GONE. A comma used to be how you said "and then another set",
+   typed -- and a phone has no comma to press, which is what #logSepKey existed to work
+   around. Reps and weight are wheels now (see wireMultiWheelField and its own + button),
+   so there is no typing left for a dedicated key to assist. */
 
 
 // Rows the exercise stepper hid are still rows. Removing the one on screen has to leave you
@@ -20294,7 +20214,6 @@ function wireBlockEditorClose(panel){
      row. */
   panel.addEventListener('focusout', e=>{
     if(!(e.target && e.target.matches && e.target.matches('.week-ex-sets, .week-ex-reps, .week-ex-weight'))) return;
-    if(e.target.matches('.week-ex-reps, .week-ex-weight')) normaliseSetList(e.target);
     const row = e.target.closest('.edit-row');
     if(row){ refreshSetBreakdown(row); refreshOverPlan(row); refreshWeightWhy(row); }
   });
@@ -20882,16 +20801,15 @@ async function openBlockEditor(date, slot, block){
         <span class="ask-q">What did you lift?</span>
         <span class="log-step-pos" id="logPos"></span>
       </div>
-      <!-- A COMMA IS A SET. The reps and weight boxes have always taken a list, and the whole
-           app downstream is built on it — the set breakdown, the volume load, the effort
-           estimate off the rep drop-off, and "5,5,4 and 5,5,5 are different sessions and an
-           average of them is neither", which is written in three places in this file. It was
-           findable only in a title attribute, which a phone never shows, so in practice the
-           boxes looked like they took one number and the feature did not exist.
-           Said once, at the top, where you read before you start typing rather than after. -->
-      <div class="log-hint">A comma is a set — a space, a slash or a dash do the same.
-        <b>8,8,6</b> reps where they dropped, <b>60,80,100</b> kg for a ramp.
-        One number where every set was alike.</div>
+      <!-- A SET IS A DIAL, NOT A SENTENCE. Reps and weight have always taken a list — the set
+           breakdown, the volume load, the effort estimate off the rep drop-off, and "5,5,4
+           and 5,5,5 are different sessions and an average of them is neither", which is
+           written in three places in this file — and that list used to be typed, comma by
+           comma. wireMultiWheelField replaced the typing: tap a box, dial the number, + for
+           the next set, same comma-joined list underneath either way. Said once, since it's
+           the one thing about these two boxes that isn't self-evident from using them. -->
+      <div class="log-hint">Tap REPS or KG to dial a number in — <b>+ another set</b> on the
+        way out banks it and starts the next, so a drop set or a ramp is still one box.</div>
       <div class="score-note">For weight, choose a load you can control for every planned rep; leave it blank if you are still finding it out.</div>
       <div id="weekExerciseRows"></div><div class="add-row" id="addWeekExerciseRow">Add a lift</div>
       <!-- The run block has always had one. A strength session did not, so "gym was rammed,
@@ -20934,7 +20852,6 @@ async function openBlockEditor(date, slot, block){
      "What did you lift?" and the answer is the row filled in. */
   panel.innerHTML = `
     ${fieldsHtml}
-    ${block.type === 'strength' ? `<div class="log-sep-dock" id="logSepKey" hidden><button type="button" class="sep-pill"><span class="sep-mark">,</span><span class="sep-word">another set</span></button></div>` : ''}
     <div class="log-acts">
       <button id="logWeekSessionBtn" class="log-act go">Save</button>
       <button id="closeWeekBlockBtn" class="log-act">Put away</button>
@@ -21048,9 +20965,17 @@ async function openBlockEditor(date, slot, block){
           <select class="week-ex-movement">${movementOptionsHtml(movement)}</select>
         </div>`;
       row.querySelector('.remove-row').addEventListener('click', ()=>{ removeRowAnimated(row); afterLogRowRemoved(); });
-      // Dialed, not typed — a set count is a single number. Reps and weight stay as typing:
-      // they carry the comma shorthand (12,10,7 / 60,80,100) a wheel can't hold.
+      // Dialed, not typed — all three. Reps and weight get the multi-wheel (see
+      // wireMultiWheelField): a bank of sets with + to add another, rather than the single
+      // dial .week-ex-sets uses, since those two are the fields a comma list ever applied to.
       wireWheelField(row.querySelector('.week-ex-sets'), { title:'Sets', min:0, max:12, step:1, unit:'sets' });
+      // Seeded from the same ghost the placeholder shows — the last number of it, since
+      // that's the set the wheel opens on either way. Left null (the wheel's own generic
+      // default) when there's no ghost to read one from.
+      const lastOf = s => { const n = String(s||'').trim().split(SET_LIST_SEP).map(x=>parseFloat(x)).filter(isFinite); return n.length ? n[n.length-1] : null; };
+      wireMultiWheelField(row.querySelector('.week-ex-reps'), { title:'Reps', min:1, max:50, step:1, decimals:0, allowDecimal:false, unit:'reps', defaultValue: lastOf(ghostReps) });
+      const weightUnit = resultUnitFor(name);
+      wireMultiWheelField(row.querySelector('.week-ex-weight'), { title: weightUnit ? 'Result' : 'Weight', min:0, max:weightUnit ? 500 : 400, step:weightUnit ? 1 : 2.5, decimalStep:0.5, decimals:2, allowDecimal:true, unit: weightUnit || 'kg', defaultValue: lastOf(ghostWeight) });
       // Whether a set was taken to failure is the input the effort estimate has been guessing
       // from the rep drop-off. 5,5,4 because you failed and 5,5,4 because you stopped are
       // different sessions, and only you know which.
@@ -25477,6 +25402,168 @@ function wireWheelField(input, opts){
       onCommit: v=>{
         if(v == null) return;
         input.value = opts.decimals ? v.toFixed(opts.decimals).replace(/0+$/,'').replace(/\.$/,'') : String(v);
+        input.dispatchEvent(new Event('input', { bubbles:true }));
+        input.dispatchEvent(new Event('change', { bubbles:true }));
+      }
+    });
+  });
+}
+
+/* THE SECOND WHEEL — see the HTML comment on #multiWheelPickerSheet for why reps and weight
+   get their own rather than reusing openWheelPicker. Mechanically it's the same scroll-snap
+   column (same row math, same WHEEL_ROW_H); what's new is a bank of sets already dialed and
+   a decimal-step toggle on top of it. */
+let multiWheelCommit = null;
+let multiWheelScrollTimer = null;
+const multiWheelSheetApi = wireSheet('multiWheelPickerSheet', ()=>{ if(multiWheelCommit) multiWheelCommit(); });
+
+function openMultiWheelPicker({ title, min, max, step, decimalStep, decimals = 2, unit = '', allowDecimal, values, defaultValue, onCommit }){
+  const col = document.getElementById('multiWheelPickerCol');
+  const scrollHost = document.getElementById('multiWheelPickerScroll');
+  const track = document.getElementById('multiWheelPickerTrack');
+  const titleEl = document.getElementById('multiWheelPickerTitle');
+  const unitEl = document.getElementById('multiWheelPickerUnit');
+  const bankEl = document.getElementById('multiWheelBank');
+  const decimalBtn = document.getElementById('multiWheelDecimalBtn');
+  const addBtn = document.getElementById('multiWheelAddBtn');
+  if(!col || !scrollHost || !track) return;
+
+  if(titleEl) titleEl.textContent = title || '';
+  if(unitEl) unitEl.textContent = unit || '';
+
+  // Every value but the last is already "banked"; the last is what the wheel opens on, so
+  // reopening a row you've already filled in picks up editing its last set rather than
+  // starting a new one on top of it.
+  const banked = values && values.length ? values.slice(0, -1) : [];
+  let isDecimal = false, rows = [], n = 0, curIdx = 0;
+
+  // wheelRowLabel strips back to a whole number on its own when a value has no fraction, so
+  // this reads right whether it's banked a plain 8 or a dialed-in 62.5 — the caller never
+  // has to track which.
+  const label = v => wheelRowLabel(v, decimals);
+  const currentValue = ()=> rows[curIdx] ? parseFloat(rows[curIdx].dataset.v) : min;
+
+  const renderBank = ()=>{
+    if(!bankEl) return;
+    bankEl.hidden = !banked.length;
+    bankEl.innerHTML = banked.map(v=> `<span class="mw-chip">${label(v)}</span>`).join('');
+  };
+
+  const applyHighlight = idx=>{
+    rows.forEach((r,i)=>{
+      r.classList.toggle('wheel-sel', i===idx);
+      r.classList.toggle('wheel-near', Math.abs(i-idx)===1);
+    });
+    col.setAttribute('aria-valuenow', rows[idx] ? rows[idx].dataset.v : '');
+    curIdx = idx;
+  };
+  const scrollToIndex = (idx, smooth)=> scrollHost.scrollTo({ top: idx * WHEEL_ROW_H, behavior: smooth ? 'smooth' : 'auto' });
+
+  const buildWheel = centerOn=>{
+    const curStep = isDecimal ? decimalStep : step;
+    n = Math.round((max - min) / curStep) + 1;
+    track.innerHTML = Array.from({ length: n }, (_, i)=>{
+      const v = min + i * curStep;
+      return `<div class="wheel-row" data-i="${i}" data-v="${v}">${wheelRowLabel(v, isDecimal ? decimals : 0)}</div>`;
+    }).join('');
+    rows = [...track.querySelectorAll('.wheel-row')];
+    const idx = Math.max(0, Math.min(n - 1, Math.round((centerOn - min) / curStep)));
+    applyHighlight(idx);
+    requestAnimationFrame(()=> requestAnimationFrame(()=> scrollToIndex(idx, false)));
+  };
+
+  const start = values && values.length ? values[values.length - 1] : (defaultValue != null ? defaultValue : Math.round((min + max) / 2));
+  buildWheel(start);
+  renderBank();
+
+  const onScroll = ()=>{
+    const idx = Math.max(0, Math.min(n - 1, Math.round(scrollHost.scrollTop / WHEEL_ROW_H)));
+    applyHighlight(idx);
+    clearTimeout(multiWheelScrollTimer);
+    multiWheelScrollTimer = setTimeout(()=>{ scrollToIndex(idx, true); applyHighlight(idx); }, 90);
+  };
+  scrollHost.addEventListener('scroll', onScroll, { passive:true });
+
+  const onRowTap = e=>{
+    const row = e.target.closest('.wheel-row');
+    if(!row) return;
+    const idx = parseInt(row.dataset.i, 10);
+    scrollToIndex(idx, true);
+    applyHighlight(idx);
+  };
+  track.addEventListener('click', onRowTap);
+
+  const onKey = e=>{
+    if(e.key === 'ArrowUp'){ e.preventDefault(); const idx = Math.max(0, curIdx - 1); scrollToIndex(idx, true); applyHighlight(idx); }
+    else if(e.key === 'ArrowDown'){ e.preventDefault(); const idx = Math.min(n - 1, curIdx + 1); scrollToIndex(idx, true); applyHighlight(idx); }
+  };
+  col.addEventListener('keydown', onKey);
+  col.setAttribute('aria-valuemin', min);
+  col.setAttribute('aria-valuemax', max);
+  col.setAttribute('aria-label', title || 'Pick a value');
+
+  // Banks the set on the wheel right now and starts the next on the same number — a dropped
+  // set or a ramp is the exception, not the rule, and starting the next dial from the last
+  // one picked is right far more often than typing nothing ever was.
+  const onAdd = ()=>{
+    banked.push(currentValue());
+    renderBank();
+    buildWheel(currentValue());
+  };
+  if(addBtn) addBtn.addEventListener('click', onAdd);
+
+  // A flip, not a momentary press: it stays lit while the wheel is showing tenths, and
+  // rebuilds around wherever you'd already dialed to rather than resetting the pick.
+  const onDecimalToggle = ()=>{
+    isDecimal = !isDecimal;
+    if(decimalBtn) decimalBtn.classList.toggle('on', isDecimal);
+    buildWheel(currentValue());
+  };
+  if(decimalBtn){
+    decimalBtn.hidden = !allowDecimal;
+    decimalBtn.classList.remove('on');
+    if(allowDecimal) decimalBtn.addEventListener('click', onDecimalToggle);
+  }
+
+  multiWheelCommit = ()=>{
+    scrollHost.removeEventListener('scroll', onScroll);
+    track.removeEventListener('click', onRowTap);
+    col.removeEventListener('keydown', onKey);
+    if(addBtn) addBtn.removeEventListener('click', onAdd);
+    if(decimalBtn) decimalBtn.removeEventListener('click', onDecimalToggle);
+    clearTimeout(multiWheelScrollTimer);
+    multiWheelCommit = null;
+    const finalList = [...banked, currentValue()];
+    if(onCommit) onCommit(finalList.map(label).join(','));
+  };
+
+  multiWheelSheetApi.open();
+  requestAnimationFrame(()=> col.focus({ preventScroll:true }));
+}
+
+/* Turns a reps/weight box into the multi-wheel above. Seeds it from whatever's already in
+   the field — SET_LIST_SEP, the same liberal split the parser downstream uses, so a value
+   that arrived via the old typed shorthand (or a plan/ghost prefill) opens exactly as if it
+   had been dialed in. Commits the same comma-joined string typing always produced, and only
+   writes/dispatches when that string actually changed — an open-then-close peek at an
+   untouched plan value must NOT turn its dim .dataset.planned into a real reading just for
+   having been looked at, the same rule typing already followed (a keystroke was what did
+   that, not a focus). */
+function wireMultiWheelField(input, opts){
+  if(!input) return;
+  input.readOnly = true;
+  input.classList.add('wheel-field');
+  input.addEventListener('click', ()=>{
+    const raw = String(input.value || '').trim();
+    const values = raw ? raw.split(SET_LIST_SEP).map(x=> parseFloat(x)).filter(x=> isFinite(x)) : [];
+    openMultiWheelPicker({
+      title: opts.title, min: opts.min, max: opts.max, step: opts.step || 1,
+      decimalStep: opts.decimalStep || opts.step || 1, decimals: opts.decimals != null ? opts.decimals : 2,
+      unit: opts.unit || '', allowDecimal: !!opts.allowDecimal, defaultValue: opts.defaultValue,
+      values,
+      onCommit: joined=>{
+        if(joined === input.value) return;
+        input.value = joined;
         input.dispatchEvent(new Event('input', { bubbles:true }));
         input.dispatchEvent(new Event('change', { bubbles:true }));
       }
@@ -36165,10 +36252,10 @@ async function generateMobility(){
    thing here; 8-8-6 was not, and a dash is what a good many people write. Both dashes iOS
    can substitute for one are in as well, because a keyboard quietly turning - into – should
    not change what a row means.
-   The dash is the one with a cost: 8-10 also reads as "somewhere between eight and ten", and
-   here it becomes two sets of 8 and 10. That is why the field normalises itself on the way
-   out (normaliseSetList) — you see 8,10 in the box and can correct it, rather than finding
-   out from a volume figure a fortnight later. */
+   This stayed this liberal after reps and weight moved to the wheel (see
+   wireMultiWheelField): the wheel only ever writes a clean comma list, but SET_LIST_SEP is
+   also what reads back every row logged before that change, and years of those are still
+   dash- and space-separated on disk. */
 const SET_LIST_SEP = /[,\s/\u2013\u2014-]+/;
 function parseRepsInput(raw){
   const text = String(raw==null ? '' : raw).trim();
