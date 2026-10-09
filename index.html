@@ -11131,22 +11131,23 @@ function activateTab(name, opts){
   const tabButton = document.querySelector(`.tab[data-tab="${name}"]`);
   if(tabButton) document.getElementById('currentTabWord').textContent = tabButton.textContent;
   renderTabInsight(name);
-  /* THE PERCH IS FORGOTTEN BEFORE THE TITLE ROLLS, not after.
+  /* THE PERCH IS FORGOTTEN BEFORE THE TITLE SHIFTS, not after.
 
-     This reset used to sit at the foot of the function, thirty lines below rollMastheadTitle.
+     This reset used to sit at the foot of the function, thirty lines below shiftMastheadTitle.
      Leave Today on a fresh install — no score yet, so the mark is perched beside TODAY — and
-     the roll placed the mark against the new title while `perched` was still true: at the
+     the shift placed the mark against the new title while `perched` was still true: at the
      perch spot, beside THIS WEEK, at 0.6. The reset then cleared the flag without moving
      anything, and the next updateEyePerch found want (false) equal to the flag (false) and
      returned before it could reposition. The mark sat on top of "2 planned · 0 done" until a
-     roll between two other tabs happened to redraw it. Cleared here, the roll below draws the
-     mark where the title's own geometry puts it, and updateEyePerch is free to perch it again
-     if this tab wants that. The class goes with the flag for the same reason the flag does. */
+     shift between two other tabs happened to redraw it. Cleared here, the shift below draws
+     the mark where the title's own geometry puts it, and updateEyePerch is free to perch it
+     again if this tab wants that. The class goes with the flag for the same reason the flag
+     does. */
   eyeCtx.perched = false;
   document.getElementById('currentTabLabel')?.classList.remove('mark-perched');
   // The masthead names the page too, one size up. After the body class above, since the
   // title takes the tab's own hue off it.
-  rollMastheadTitle(name);
+  shiftMastheadTitle(name);
   // Ahead of the scroll it is meant to cover, not after it.
   eyeScrollMuteUntil = Date.now() + 900;
   window.scrollTo(0, 0);
@@ -12059,7 +12060,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.07.002';
+const APP_VERSION = '2026.10.09.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12438,6 +12439,7 @@ const APP_NOTES = {
   '2026.10.06.001': 'Wheels everywhere a field holds one number: first-run weight, goal targets, a run’s distance and duration, sets on a lift or a stretch, a stretch’s hold or reps, and the rest of the recovery sheet’s manual fields. Reps and weight on a lift are still typed — they’re the one place a field holds more than one number at once, for the comma shorthand.',
   '2026.10.07.001': 'Reps and weight are wheels now too. Dial a number in, tap "+ another set" to bank it and start the next — a drop set or a ramp is still one box, just built one set at a time instead of typed as a comma list. Weight gets a "." to switch the wheel to tenths for plates that aren’t whole numbers; reps stays whole numbers only. The docked comma key is gone — there is nothing left for it to assist.',
   '2026.10.07.002': 'Sets, reps and weight dial together now, in one sheet — tap any of the three and reps and weight come up as two wheels side by side, "+ another set" banking the pair at once. Sets dropped its own dial entirely; it is just how many pairs you have banked. A "⌫" undoes the last banked pair back onto the wheels, or — with nothing banked yet — clears the whole thing back to empty, the way backspacing a typed box to nothing always did.',
+  '2026.10.09.001': 'The mark stretches to its new spot now instead of rolling there — a direct move, longer along the way it is travelling and thinner across it, round again the instant it stops. No more spinning through whole turns to cover the distance.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -13639,37 +13641,36 @@ function mastheadTitleHTML(tab){
    the same moment, and two things sliding on the same axis at once read as one thing being
    dragged. Up and down, and the two never argue.
 
-   A GHOST, RATHER THAN DELAYING THE SWAP. rollMastheadTitle writes the new title and measures
+   A GHOST, RATHER THAN DELAYING THE SWAP. shiftMastheadTitle writes the new title and measures
    it in the same breath, because that measurement is what the mark travels to -- so the swap
    cannot wait for an exit animation to finish. The outgoing title is cloned into a layer over
    the top instead and falls away there, while the real new one rises underneath it. The
    measurement path is untouched and the two halves genuinely cross.
 
    BUDGET. Out is 120ms on a 10ms stagger, so the last letter has cleared by 190. In starts
-   there at 170ms on a 22ms stagger, landing at 514. The panel deals in 440 and the mark rolls
+   there at 170ms on a 22ms stagger, landing at 514. The panel deals in 440 and the mark shifts
    for 520: this finishes inside the mark and a little after the page, which is the right order
    -- the masthead is still settling when the page has arrived, not the other way round.
 
    BOTH STAGGERS ARE CAPPED AT SEVEN LETTERS. Without it "Every reading" runs 12 deep and the
    last letter lands 260ms after the first, which stops reading as a cascade and starts reading
    as a queue. Past the seventh they all move together. */
-/* THE ROLL.
+/* THE SHIFT.
 
    The mark's home is already width-driven: updateHeaderCollapse puts it at the end of the
    title's ink, so a title of a different width moves it without anything else being asked.
-   What it would do on its own is teleport. It is a sphere, it is sitting on the end of a
-   word, and the distance it has to cover is the difference between two words -- so it rolls.
+   What it would do on its own is teleport. It travels the distance between two words instead
+   -- a direct move, not a roll along the ground -- and spends that distance stretched, the
+   way anything soft does when it is pushed to cover ground quickly: longer on the axis it is
+   moving along, thinner across it, round again the instant it stops. .582 had it rolling,
+   turning whole rotations to cover the same distance; this reads faster and plainer, and
+   leaves the idle rig nothing to fight on the axis it owns (rz never moves here at all now).
 
    ANIMATED THROUGH logoTextWidth RATHER THAN THROUGH mark.style.left. The collapse writes
    left on every scroll frame from that one number; an animation writing left directly would
    be overwritten by the first scroll event and would have to re-implement the perch, the sag
    and the 40-to-24 shrink to stay correct. Lerping the width instead means the mark travels
-   correctly whatever the scroll is doing underneath it, including mid-roll.
-
-   WHOLE TURNS. A 40px ball crossing 73px genuinely turns 209 degrees, and 209 degrees leaves
-   the eyes upside down at the end of it. Rounding to whole turns is a wheel slipping slightly
-   against the floor, which nobody can see; unwinding to level afterwards reads as a mistake
-   being corrected. Distance still sets the count and the sign still sets the direction.
+   correctly whatever the scroll is doing underneath it, including mid-shift.
 
    EVERY SWITCH NOW, TODAY INCLUDED. This used to skip Today on both ends — leaving or
    arriving, the mark was said to already be making a bigger journey, flying between the
@@ -13678,12 +13679,11 @@ function mastheadTitleHTML(tab){
    #scoreDetailSheet when the score merged into the header, closed by default — so
    todayChipEl() can no longer find a chip to land on, moveEyes('score', ...) returns at its
    own guard before it moves anything, and nothing was calling it on a tab switch regardless.
-   The flight this was deferring to had already stopped happening; skipping the roll for it
+   The flight this was deferring to had already stopped happening; skipping the shift for it
    just left Today's switches with no mark motion at all. */
-const ROLL_MS = 560;
-const ROLL_R = 20;              // the header mark is 40px across; a roll is distance / radius
+const SHIFT_MS = 560;
 let mastheadTab = 'insights';
-let markRollRaf = null;
+let markShiftRaf = null;
 
 let cascadeSeq = 0;
 function cascadeTitle(h1, prevHTML){
@@ -13727,13 +13727,13 @@ function cascadeTitle(h1, prevHTML){
   }, 20);
 }
 
-function rollMastheadTitle(tab){
+function shiftMastheadTitle(tab){
   const { h1 } = headerCollapseCache();
   const html = mastheadTitleHTML(tab);
   mastheadTab = tab;
   if(h1.innerHTML === html) return;
 
-  if(markRollRaf){ cancelAnimationFrame(markRollRaf); markRollRaf = null; }
+  if(markShiftRaf){ cancelAnimationFrame(markShiftRaf); markShiftRaf = null; }
   const fromW = logoTextWidth == null ? measureLogoWidth() : logoTextWidth;
   const prevHTML = h1.innerHTML;
   h1.innerHTML = html;
@@ -13750,61 +13750,55 @@ function rollMastheadTitle(tab){
     return;
   }
 
-  const turns = Math.max(1, Math.round(Math.abs(dx) / (2 * Math.PI * ROLL_R)));
-  const spin = Math.sign(dx) * turns * 360;
-  const rz0 = mcState.rz;
-  /* The idle rig is turning the mark on its own clock, and a queued move lerping rz is the
-     one thing that can fight this. Cleared for the duration, and the next idle move is pushed
-     past the landing so the mark is not picking up a drift on the frame it stops.
+  /* The idle rig is turning and flexing the mark on its own clock, and a queued move lerping
+     any of the same numbers is the one thing that can fight this. Cleared for the duration,
+     and the next idle move is pushed past the landing so the mark is not picking up a drift
+     on the frame it stops.
 
-     .body goes too, and it has to: the squash below writes sx/sy every frame, and the idle
-     rig's own body moves write the same three numbers from MC_BODY on the same frames. One
+     .body goes too, and it has to: the stretch below writes sx/sy every frame, and the idle
+     rig's own body moves write the same two numbers from MC_BODY on the same frames. One
      already in flight would fight this one all the way across. Neutralised here rather than
      left, because dropping .body without resetting its numbers strands whatever deformation
-     it had reached. A NEW one cannot start mid-roll -- nextAt below pushes it past the
+     it had reached. A NEW one cannot start mid-shift -- nextAt below pushes it past the
      landing -- so this only has to deal with one already running. */
   mcState.queue = []; mcState.step = null;
   mcState.body = null; mcState.sx = 1; mcState.sy = 1; mcState.ty = 0;
-  mcState.nextAt = performance.now() + ROLL_MS + 1400;
+  mcState.nextAt = performance.now() + SHIFT_MS + 1400;
   const t0 = performance.now();
   const tick = (now)=>{
-    const f = Math.min(1, (now - t0) / ROLL_MS);
+    const f = Math.min(1, (now - t0) / SHIFT_MS);
     const e = mcEase(f);
-    /* THE SQUASH. A half-sine, so it is 0 at both ends and peaks mid-flight -- the mark leaves
-       and arrives its own shape and is only deformed while it is actually moving. Stretched
-       along the travel and flattened across it, which is the axis a rolling thing deforms on.
-       .16/.14 rather than a matched pair: the eye reads a stretch as larger than the equal
-       squash that accompanies it, so the vertical comes off slightly less to keep the area
-       looking constant. */
+    /* THE STRETCH. A half-sine, so it is 0 at both ends and peaks mid-flight -- the mark
+       leaves and arrives its own round shape and is only elastic while it is actually moving.
+       Longer on the axis it is travelling and thinner across it, the way anything soft reads
+       as moving fast. .34/.26 rather than a matched pair: the eye reads a stretch as larger
+       than the equal squash that accompanies it, so the vertical comes off a little less to
+       keep the area looking roughly constant. No rz here at all -- the old roll spent this
+       same half-sine on a squash ridden alongside a full rotation; the shift spends the whole
+       half-sine on the stretch alone, since there is nothing else happening to read against. */
     const k = Math.sin(Math.PI * f);
     logoTextWidth = fromW + dx * e;
-    mcState.rz = rz0 + spin * e;
-    mcState.sx = 1 + 0.16 * k;
-    mcState.sy = 1 - 0.14 * k;
+    mcState.sx = 1 + 0.34 * k;
+    mcState.sy = 1 - 0.26 * k;
     updateHeaderCollapse();
     drawMarkCube();
-    if(f < 1){ markRollRaf = requestAnimationFrame(tick); return; }
-    /* Put back to the angle it started at rather than left at rz0 + spin. They are the same
-       orientation — spin is a whole number of turns — but rz is a running number that every
-       later move lerps from, and letting it climb by 360 a tab switch means a few minutes of
-       use leaves the idle turns interpolating across thousands of degrees. */
-    markRollRaf = null;
+    if(f < 1){ markShiftRaf = requestAnimationFrame(tick); return; }
+    markShiftRaf = null;
     logoTextWidth = toW;
-    mcState.rz = rz0;
     mcState.sx = 1; mcState.sy = 1; mcState.ty = 0;
     updateHeaderCollapse();
     drawMarkCube();
     /* AND NOTHING ON THE LANDING. .582 tore the mark here — and the title with it — and .583
        narrowed that to the mark alone, landing it exactly the way it lands from a flight.
-       Both are out. The roll already says the mark arrived: it travels, it squashes along the
-       axis it travels on, and it stops. A tear on top of that is a second arrival announcing
-       the same one, on the element the header is supposed to hold still, every time you
-       change tab — which is the same objection that took markTearOnSwitch out below, and it
-       survived the mark starting to move after all.
+       Both are out. The shift already says the mark arrived: it travels, it stretches along
+       the axis it travels on, and it snaps back round. A tear on top of that is a second
+       arrival announcing the same one, on the element the header is supposed to hold still,
+       every time you change tab — which is the same objection that took markTearOnSwitch out
+       below, and it survived the mark starting to move after all.
        The tear stays where the mark goes somewhere it was not: the flight, the perch, and the
        occasional idle. */
   };
-  markRollRaf = requestAnimationFrame(tick);
+  markShiftRaf = requestAnimationFrame(tick);
 }
 
 let headerScrollTicking = false;
