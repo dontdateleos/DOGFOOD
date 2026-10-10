@@ -5159,6 +5159,12 @@
          or the mark would fly out past the end of the line and land on the date. -->
     <div id="currentTabLabel" class="tab-label"><span id="currentTabWord">Today</span><span id="currentTabInsight" class="tab-insight" aria-live="polite"></span></div>
     <h1><div class="logo-line"><span style="margin-right:-0.01em;">D</span><span style="margin-right:-0.03em;">o</span><span>g</span></div><div class="logo-line"><span style="margin-right:-0.04em;">f</span><span style="margin-right:0.005em;">o</span><span style="margin-right:-0.025em;">o</span><span>d</span></div></h1>
+    <!-- WHERE THE SHIFT LEAVES ITS GHOSTS. A plain absolutely-positioned layer, sized to
+         .header-brand and sitting under the mark's own z-index (2) at the stylesheet's
+         default of 1 — every ghost shiftMastheadTitle spawns into it paints behind the live
+         mark, never over its face, whatever order they finish fading in. Empty and inert
+         outside a shift: nothing is ever left in it once the fades below are done. -->
+    <div id="markShiftTrail" style="position:absolute; inset:0; pointer-events:none;" aria-hidden="true"></div>
     <!-- The mark: a solid, drawn face on, which is the same two capsules on the same square
          it has always been until it turns. The .eye-gaze pair stays in the DOM and stays
          hidden here — every other copy of the mark still uses it, and the trip down to the
@@ -12060,7 +12066,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.09.001';
+const APP_VERSION = '2026.10.10.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12440,6 +12446,7 @@ const APP_NOTES = {
   '2026.10.07.001': 'Reps and weight are wheels now too. Dial a number in, tap "+ another set" to bank it and start the next — a drop set or a ramp is still one box, just built one set at a time instead of typed as a comma list. Weight gets a "." to switch the wheel to tenths for plates that aren’t whole numbers; reps stays whole numbers only. The docked comma key is gone — there is nothing left for it to assist.',
   '2026.10.07.002': 'Sets, reps and weight dial together now, in one sheet — tap any of the three and reps and weight come up as two wheels side by side, "+ another set" banking the pair at once. Sets dropped its own dial entirely; it is just how many pairs you have banked. A "⌫" undoes the last banked pair back onto the wheels, or — with nothing banked yet — clears the whole thing back to empty, the way backspacing a typed box to nothing always did.',
   '2026.10.09.001': 'The mark stretches to its new spot now instead of rolling there — a direct move, longer along the way it is travelling and thinner across it, round again the instant it stops. No more spinning through whole turns to cover the distance.',
+  '2026.10.10.001': 'The stretch now blurs slightly as it moves and leaves a handful of fading afterimages behind it — a trail of itself, not a smear of colour, and it paints behind the live mark the whole way, never over its face.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -13728,7 +13735,7 @@ function cascadeTitle(h1, prevHTML){
 }
 
 function shiftMastheadTitle(tab){
-  const { h1 } = headerCollapseCache();
+  const { h1, mark } = headerCollapseCache();
   const html = mastheadTitleHTML(tab);
   mastheadTab = tab;
   if(h1.innerHTML === html) return;
@@ -13765,6 +13772,9 @@ function shiftMastheadTitle(tab){
   mcState.body = null; mcState.sx = 1; mcState.sy = 1; mcState.ty = 0;
   mcState.nextAt = performance.now() + SHIFT_MS + 1400;
   const t0 = performance.now();
+  const markCube = document.getElementById('headerMarkCube');
+  const trailLayer = document.getElementById('markShiftTrail');
+  let lastGhostF = -1;
   const tick = (now)=>{
     const f = Math.min(1, (now - t0) / SHIFT_MS);
     const e = mcEase(f);
@@ -13782,10 +13792,32 @@ function shiftMastheadTitle(tab){
     mcState.sy = 1 - 0.26 * k;
     updateHeaderCollapse();
     drawMarkCube();
+    /* THE BLUR AND THE GHOSTS IT LEAVES. Both read off the same k the stretch does, so all
+       three are saying "moving fast" on the same clock rather than three that happen to
+       agree. The blur sits directly on the live mark's own drawing. The ghosts are a
+       separate, cheap thing: #markShiftTrail's own outerHTML snapshot of #headerMarkCube at
+       this instant, parked where the mark currently is and left to fade. They are spawned
+       into #markShiftTrail rather than given a class the mark itself answers to, because
+       #markShiftTrail sits at the stylesheet's default z-index (1), one below .header-mark's
+       own (2) -- every ghost paints behind the mark it is a memory of, structurally, not by
+       an inline z-index this loop would have to remember to set right. */
+    if(markCube) markCube.style.filter = k > 0.02 ? `blur(${(k * 1.6).toFixed(2)}px)` : '';
+    if(trailLayer && markCube && f - lastGhostF > 0.07 && f < 0.92){
+      lastGhostF = f;
+      const ghost = document.createElement('div');
+      ghost.style.cssText = `position:absolute; left:${mark.style.left}; top:${mark.style.top}; `
+        + `width:${mark.offsetWidth}px; height:${mark.offsetHeight}px; opacity:.16;`;
+      ghost.innerHTML = markCube.outerHTML;
+      trailLayer.appendChild(ghost);
+      const ga = uiPlay(ghost, [{ opacity:.16 }, { opacity:0 }], { duration:420, easing:'linear', fill:'both' });
+      if(ga && ga.finished) ga.finished.then(()=> ghost.remove()).catch(()=> ghost.remove());
+      else setTimeout(()=> ghost.remove(), 420);
+    }
     if(f < 1){ markShiftRaf = requestAnimationFrame(tick); return; }
     markShiftRaf = null;
     logoTextWidth = toW;
     mcState.sx = 1; mcState.sy = 1; mcState.ty = 0;
+    if(markCube) markCube.style.filter = '';
     updateHeaderCollapse();
     drawMarkCube();
     /* AND NOTHING ON THE LANDING. .582 tore the mark here — and the title with it — and .583
