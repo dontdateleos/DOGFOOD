@@ -12060,7 +12060,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.10.002';
+const APP_VERSION = '2026.10.11.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12442,6 +12442,7 @@ const APP_NOTES = {
   '2026.10.09.001': 'The mark stretches to its new spot now instead of rolling there — a direct move, longer along the way it is travelling and thinner across it, round again the instant it stops. No more spinning through whole turns to cover the distance.',
   '2026.10.10.001': 'The stretch now blurs slightly as it moves and leaves a handful of fading afterimages behind it — a trail of itself, not a smear of colour, and it paints behind the live mark the whole way, never over its face.',
   '2026.10.10.002': 'Back to just the stretch — the blur and the afterimages it left behind are gone. The mark shifts, stretches along the way, and arrives plain, the way it did two versions ago.',
+  '2026.10.11.001': 'Logging a planned session on the wheel gives you what you dialed. A plan of 4 sets of 8 used to open with three sets already banked, so the set you were dialing was the fourth \u2014 3 reps at 100 came back as 8,8,8,3 and 20,20,20,100. It now opens on one set, starting at the plan\u2019s numbers, and + adds the rest. Opening the wheel and closing it without touching anything also no longer changes a thing.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -25476,11 +25477,19 @@ function mkSetWheelColumn(ids, opts){
   const onScroll = ()=>{
     const idx = Math.max(0, Math.min(rowN - 1, Math.round(scrollHost.scrollTop / WHEEL_ROW_H)));
     applyHighlight(idx);
-    if(opts.onInteract) opts.onInteract();
     clearTimeout(timer);
     timer = setTimeout(()=>{ scrollToIndex(idx, true); applyHighlight(idx); }, 90);
   };
   scrollHost.addEventListener('scroll', onScroll, { passive:true });
+  /* WHAT COUNTS AS TOUCHING IT. Not a scroll event: build() scrolls the column to its
+     starting row itself, and the settle above snaps it again, and both fire 'scroll' exactly
+     like a finger does. Reading those as interaction meant opening the sheet and closing it
+     untouched still "touched" whichever wheel had to scroll to reach its start. Only real
+     input says a person moved it. */
+  const onUserInput = ()=>{ if(opts.onInteract) opts.onInteract(); };
+  scrollHost.addEventListener('pointerdown', onUserInput, { passive:true });
+  scrollHost.addEventListener('touchstart', onUserInput, { passive:true });
+  scrollHost.addEventListener('wheel', onUserInput, { passive:true });
   const onRowTap = e=>{
     const row = e.target.closest('.wheel-row');
     if(!row) return;
@@ -25504,6 +25513,9 @@ function mkSetWheelColumn(ids, opts){
     build,
     destroy: ()=>{
       scrollHost.removeEventListener('scroll', onScroll);
+      scrollHost.removeEventListener('pointerdown', onUserInput);
+      scrollHost.removeEventListener('touchstart', onUserInput);
+      scrollHost.removeEventListener('wheel', onUserInput);
       track.removeEventListener('click', onRowTap);
       col.removeEventListener('keydown', onKey);
       clearTimeout(timer);
@@ -25545,6 +25557,11 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
   // actually moved, false otherwise. Tapping in on reps alone and leaving without ever moving
   // the weight wheel must not write a weight that was never there — see the commit below.
   let repsTouched = repsValues.length > 0, weightTouched = weightValues.length > 0;
+  /* Whether anything was done in the sheet at all: a wheel moved, a set banked or unbanked.
+     A sheet opened and closed without any of that writes NOTHING — not even values equal to
+     what was already there, since the set count derived on the way out can differ from a
+     sets box that was never this sheet's to change. */
+  let dirty = false;
 
   const repsLabel = v=> wheelRowLabel(v, 0);
   const weightLabel = v=> wheelRowLabel(v, weight.decimals != null ? weight.decimals : 2);
@@ -25561,15 +25578,16 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
   const repsStart = n ? repsFull[n - 1] : (reps.defaultValue != null ? reps.defaultValue : mid(reps.min, reps.max));
   const weightStart = n ? weightFull[n - 1] : (weight.defaultValue != null ? weight.defaultValue : mid(weight.min, weight.max));
 
-  const repsWheel = mkSetWheelColumn({ col:'mwRepsCol', scroll:'mwRepsScroll', track:'mwRepsTrack' }, { min:reps.min, max:reps.max, label:reps.title, onInteract:()=>{ repsTouched = true; } });
+  const repsWheel = mkSetWheelColumn({ col:'mwRepsCol', scroll:'mwRepsScroll', track:'mwRepsTrack' }, { min:reps.min, max:reps.max, label:reps.title, onInteract:()=>{ repsTouched = true; dirty = true; } });
   repsWheel.build(repsStart, reps.step || 1, 0);
-  const weightWheel = mkSetWheelColumn({ col:'mwWeightCol', scroll:'mwWeightScroll', track:'mwWeightTrack' }, { min:weight.min, max:weight.max, label:weight.title, onInteract:()=>{ weightTouched = true; } });
+  const weightWheel = mkSetWheelColumn({ col:'mwWeightCol', scroll:'mwWeightScroll', track:'mwWeightTrack' }, { min:weight.min, max:weight.max, label:weight.title, onInteract:()=>{ weightTouched = true; dirty = true; } });
   weightWheel.build(weightStart, weightStep(), weightDecimals());
   renderBank();
 
   // Banks the pair on both wheels right now and starts the next set on the same two numbers
   // — a dropped set or a ramp is the exception, not the rule.
   const onAdd = ()=>{
+    dirty = true;
     banked.push({ reps: repsWheel.current(), weight: weightWheel.current() });
     renderBank();
     repsWheel.build(repsWheel.current(), reps.step || 1, 0);
@@ -25593,6 +25611,7 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
   // field outright, same as backspacing a typed box down to nothing always did.
   const onBack = ()=>{
     if(banked.length){
+      dirty = true;
       const last = banked.pop();
       renderBank();
       repsWheel.build(last.reps, reps.step || 1, 0);
@@ -25612,6 +25631,7 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
     if(backBtn) backBtn.removeEventListener('click', onBack);
     setWheelCommit = null;
     if(cleared){ if(onCommit) onCommit('', '', 0); return; }
+    if(!dirty) return;
     const finalReps = [...banked.map(p=> p.reps), repsWheel.current()];
     const finalWeight = [...banked.map(p=> p.weight), weightWheel.current()];
     // A side that was never touched and had nothing in it to start with stays blank rather
@@ -25632,11 +25652,10 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
    whatever's already in the three fields — SET_LIST_SEP, the same liberal split the parser
    downstream uses, so a value that arrived via the old typed shorthand (or a plan/ghost
    prefill) opens exactly as if it had been dialed in. Commits the same comma-joined strings
-   typing always produced, and only writes/dispatches a field whose value actually changed —
-   an open-then-close peek at an untouched plan must NOT turn its dim .dataset.planned into a
-   real reading just for having been looked at, the same rule typing always followed, now
-   checked per field rather than once, since a peek might leave two of the three untouched and
-   the derived sets count differing from a plan it never promised to leave alone. */
+   typing always produced. An open-then-close peek writes nothing at all (openSetWheelPicker
+   only commits once something was actually done in the sheet), so an untouched plan keeps
+   its dim .dataset.planned — the same rule typing always followed. Once something WAS done,
+   only the fields whose value actually changed are written. */
 function wireSetWheelField(row, { title, reps, weight }){
   const repsInput = row.querySelector('.week-ex-reps');
   const weightInput = row.querySelector('.week-ex-weight');
@@ -25650,10 +25669,18 @@ function wireSetWheelField(row, { title, reps, weight }){
   };
   const openIt = ()=>{
     const parsedSets = parseInt(String(setsInput && setsInput.value || '').trim(), 10);
+    /* A SETS COUNT FROM THE PLAN IS NOT SETS YOU DID. A logged row's own "3 sets" (typed, or
+       from before per-set entry existed) is real history and opens as that many banked pairs,
+       so editing it does not silently drop sets. A DIMMED one is only the plan's proposal —
+       4 sets of 8 — and fanning it out into three banked copies made the wheel you were
+       dialing the fourth set: dial 3 reps at 100 and close, and the boxes came back reading
+       8,8,8,3 and 20,20,20,100. A planned row now opens on one set, starting at the plan's
+       numbers; + is how you add the rest. */
+    const plannedSets = !!(setsInput && setsInput.dataset.planned);
     openSetWheelPicker({
       title, reps, weight,
       repsValues: parseList(repsInput.value), weightValues: parseList(weightInput.value),
-      setsValue: isFinite(parsedSets) ? parsedSets : 0,
+      setsValue: (!plannedSets && isFinite(parsedSets)) ? parsedSets : 0,
       onCommit: (repsJoined, weightJoined, setCount)=>{
         [[repsInput, repsJoined], [weightInput, weightJoined], [setsInput, setCount ? String(setCount) : '']].forEach(([el, val])=>{
           if(!el || val === el.value) return;
