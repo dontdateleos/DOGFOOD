@@ -3374,8 +3374,15 @@
      hence the taller height and bigger font that made it read as the "main" action. It's
      alone now — Reschedule/Skip moved to .today-top-actions, above the warm-up — so it's
      sized like any other outline button, just stretched full width. */
-  .today-plan-actions{ display:flex; margin-top:14px; }
+  .today-plan-actions{ display:flex; gap:8px; margin-top:14px; }
   .today-plan-actions .outline{ background:transparent; color:var(--bg); flex:1; }
+  /* The rest of this week's sessions, one per line, opened under Swap day. Day on the left in
+     the mono label voice, the session on the right — the same order the calendar reads in. */
+  .swap-choices{ display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+  .swap-choices .swap-choice{ display:flex; justify-content:space-between; align-items:center;
+    gap:12px; background:transparent; color:var(--bg); text-align:left; }
+  .swap-choices .swap-when{ font-family:var(--mono); letter-spacing:0.06em; opacity:0.7; flex:none; }
+  .swap-choices .swap-what{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .today-top-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:var(--sp-3); }
   .today-top-actions .outline{ background:transparent; color:var(--bg); }
   /* Plan the week, Reschedule and Skip today — one row of week-level decisions, instead of
@@ -4466,6 +4473,13 @@
   /* Flex so the mark stays beside a message that now wraps instead of being pushed onto a
      line of its own above it. */
   #toast > *{ flex:none; }
+  /* The toast ignores taps so it never blocks what is under it; its one action opts back in.
+     flex:1 on the message rather than none, so a long "Logged as … moved to …" wraps beside
+     the button instead of pushing it out. */
+  #toast > span:not(.toast-eyes){ flex:1 1 auto; min-width:0; }
+  #toast .toast-undo{ pointer-events:auto; margin-left:12px; padding:4px 10px; font:inherit;
+    background:transparent; color:inherit; border:2px solid currentColor; border-radius:0;
+    cursor:pointer; text-transform:uppercase; letter-spacing:0.05em; }
   @media (prefers-reduced-motion: reduce){ #toast{ transition:opacity 0.1s linear; } }
   #toast.show{ opacity:1; transform:translateY(0); }
   #toast.error{ background:var(--bad); color:var(--text); }
@@ -12060,7 +12074,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.11.003';
+const APP_VERSION = '2026.10.11.004';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12445,6 +12459,7 @@ const APP_NOTES = {
   '2026.10.11.001': 'Logging a planned session on the wheel gives you what you dialed. A plan of 4 sets of 8 used to open with three sets already banked, so the set you were dialing was the fourth \u2014 3 reps at 100 came back as 8,8,8,3 and 20,20,20,100. It now opens on one set, starting at the plan\u2019s numbers, and + adds the rest. Opening the wheel and closing it without touching anything also no longer changes a thing.',
   '2026.10.11.002': 'New versions arrive on their own now. Come back to the app after an update has shipped and it reloads straight into it \u2014 unless something is open or you are mid-entry, in which case you get the banner as before. It also checks every five minutes instead of every thirty.',
   '2026.10.11.003': 'Nothing you can see \u2014 a note in the code about how long the mark takes to move now says 560ms, which is what it actually does.',
+  '2026.10.11.004': 'Did Upper on a Lower day? Log what you did and the app notices from the lifts: it records the session as Upper, and the next planned Upper in the coming week becomes the Lower you skipped \u2014 with an Undo right in the message. Or decide before you start: Swap day, under Replace / edit, trades today\u2019s session with any other planned in the next seven days.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -18610,6 +18625,113 @@ async function restoreWeekUndo(){
   renderTodayWorkoutSummary();
 }
 document.getElementById('undoWeekChangeBtn').addEventListener('click', ()=>{ restoreWeekUndo().catch(()=>showToast('Could not restore that change', true)); });
+
+/* YOU DID A DIFFERENT SESSION. Legs sore, so Upper today instead of the planned Lower — and
+   until now the log recorded it as Lower (the record took the plan's tag whatever the lifts
+   were) and the week carried on as if Lower had happened: the Upper still waiting on Thursday,
+   the Lower gone.
+
+   inferDoneTag reads the lifts you actually entered against TAG_TO_AREAS, the same map the
+   generator builds days from. Core, forearms and neck sit on every tag, so they get no vote.
+   It only answers when it is clear: at least two lifts, under half of them in the planned
+   day's areas, and three quarters or more in another tag's. Anything muddier is the planned
+   session done with some changes, which is what most edits are. Full-body plans are left
+   alone — there is no "other" session for a full-body day to have been. */
+const TAG_NEUTRAL_AREAS = new Set(['core','forearms','neck']);
+/* The next seven days, not "the rest of this Monday-to-Sunday week". On a Sunday the rest of
+   the week is nothing, so a Sunday switch had nowhere to send the session it replaced — and
+   the plan runs across week boundaries anyway; the next Upper is the next Upper whether it
+   falls on Thursday or on Monday. */
+const SWAP_HORIZON_DAYS = 7;
+const DONE_TAG_FALLBACKS = ['upper','lower','push','pull','legs'];
+function inferDoneTag(doneAreas, plannedTag, candidateTags){
+  if(!plannedTag || plannedTag === 'full_body' || !TAG_TO_AREAS[plannedTag]) return null;
+  const areas = (doneAreas || []).filter(a=> a && !TAG_NEUTRAL_AREAS.has(a));
+  if(areas.length < 2) return null;
+  const score = tag => areas.filter(a=> TAG_TO_AREAS[tag].includes(a)).length / areas.length;
+  if(score(plannedTag) >= 0.5) return null;
+  for(const t of candidateTags){
+    if(t === plannedTag || t === 'full_body' || !TAG_TO_AREAS[t]) continue;
+    if(score(t) >= 0.75) return t;
+  }
+  return null;
+}
+
+/* Then put the week right, in three writes:
+   1. the logged session records what you did (its workoutTag),
+   2. that day's plan says it too, so the calendar shows the day as what it was,
+   3. the session you skipped — the plan as it stood BEFORE this save, which the caller
+      snapshots because the save itself overwrites it — takes the place of the next planned
+      session of the kind you did within the following SWAP_HORIZON_DAYS. You have done that
+      one now; the one you skipped is the one still owed.
+   Only days from today on are touched, and never one that already has a session logged. With
+   no matching session in that window, 1 and 2 still happen and the plan is otherwise left as
+   it is. Returns null when nothing changed, else what moved — 2 and 3 go into the same undo
+   the week's other moves use. The record itself is not undone: it is a fact about what you
+   did, whatever the plan ends up saying. */
+async function reconcileLoggedSession({ date, slot, sessionKey, session, plannedTag, doneAreas, planBeforeRaw }){
+  if(!plannedTag || !session || session.type !== 'strength') return null;
+  const horizon = shiftDateStr(date, SWAP_HORIZON_DAYS);
+  let logged = new Set();
+  try{ logged = new Set((await getAllTrainingSessions()).map(s=> `${s.date}:${s.slot || 'am'}`)); } catch(e){}
+  const upcoming = [];
+  for(let d = shiftDateStr(date, 1); d <= horizon; d = shiftDateStr(d, 1)){
+    if(d < todayStr) continue;
+    for(const s of ['am','pm']){
+      if(logged.has(`${d}:${s}`)) continue;
+      try{
+        const raw = (await window.storage.get(`weekplan:${d}:${s}`)).value;
+        const b = JSON.parse(raw);
+        if(b && b.type === 'strength' && b.details && b.details.workoutTag)
+          upcoming.push({ date:d, slot:s, raw, tag:b.details.workoutTag });
+      } catch(e){}
+    }
+  }
+  const done = inferDoneTag(doneAreas, plannedTag, [...new Set(upcoming.map(u=> u.tag)), ...DONE_TAG_FALLBACKS]);
+  if(!done) return null;
+
+  session.workoutTag = done;
+  await window.storage.set(sessionKey, JSON.stringify(session));
+
+  const undo = [];
+  const dayKey = `weekplan:${date}:${slot}`;
+  try{
+    const cur = (await window.storage.get(dayKey)).value;
+    const b = JSON.parse(cur);
+    undo.push({ key:dayKey, value:cur, date });
+    b.details = { ...(b.details || {}), workoutTag: done };
+    await window.storage.set(dayKey, JSON.stringify(b));
+    await syncPlannedSessionMirror(date);
+  } catch(e){}
+
+  const target = planBeforeRaw ? upcoming.find(u=> u.tag === done) : null;
+  if(target){
+    const tKey = `weekplan:${target.date}:${target.slot}`;
+    undo.push({ key:tKey, value:target.raw, date:target.date });
+    await window.storage.set(tKey, planBeforeRaw);
+    await syncPlannedSessionMirror(target.date);
+  }
+  if(undo.length) offerWeekUndo(undo, 'swap');
+  try{ renderWeekGrid(); renderTodayWorkoutSummary(); } catch(e){}
+  return { done, planned: plannedTag, movedTo: target ? target.date : null };
+}
+
+/* Said where you are looking, with the undo in reach. The week's own Undo button lives in the
+   Plan the week sheet — fine for a change you made there, but this one happened as a side
+   effect of saving a log, and finding out about it should not mean going looking. Held for
+   longer than a plain toast because it carries something to read and something to tap. */
+function showSwapToast(swapped){
+  const name = t => WORKOUT_TAG_LABELS[t] || t;
+  if(swapped.movedTo) showUndoToast(`Logged as ${name(swapped.done)} — ${name(swapped.planned)} moved to ${logDateWords(swapped.movedTo)}`);
+  else showToast(`Logged as ${name(swapped.done)}`);
+}
+function showUndoToast(msg){
+  showToast(`<span>${msg}</span> <button type="button" class="toast-undo">Undo</button>`, false, 6000);
+  const btn = document.querySelector('#toast .toast-undo');
+  if(btn) btn.addEventListener('click', ()=>{
+    restoreWeekUndo().catch(()=> showToast('Could not restore that change', true));
+  }, { once:true });
+}
 document.getElementById('changeTrainingSetupBtn').addEventListener('click', ()=>{
   const tab = document.querySelector('.tab[data-tab="settings"]');
   if(tab) tab.click();
@@ -21295,8 +21417,13 @@ async function openBlockEditor(date, slot, block){
     closeBlockEditor();
   });
 
-  async function saveBlockPlanEdits(block, date, slot){
+  /* opts.deferSwaps: hand back the "you typed X over planned Y" pairs instead of recording
+     them as substitutions straight away. The log save needs to look first: typing upper-body
+     lifts over a lower day is doing a different SESSION, not swapping Bench Press in for Back
+     Squat from now on, and only after the save can it tell which of the two happened. */
+  async function saveBlockPlanEdits(block, date, slot, opts){
     let details;
+    let deferred;
     if(block.type==='strength'){
       const exercises = [];
       const swapsToNote = [];
@@ -21328,8 +21455,14 @@ async function openBlockEditor(date, slot, block){
         if(name && row._srcExercise && row._srcExercise.name && !src) swapsToNote.push([row._srcExercise.name, name]);
         if(name) exercises.push(planExerciseFrom(row, { ...(src || {}), name, area, secondaryArea, movement, exerciseId }));
       });
-      details = { exercises };
-      for(const [from, to] of swapsToNote) await noteExerciseSwap(from, to);
+      /* EVERYTHING ELSE THE BLOCK SAID STAYS. This wrote { exercises } and nothing more, so
+         every save dropped the session's workoutTag (and plannedFocus, the deload flag) from
+         the plan: a logged Upper day came back titled "Strength" on the calendar, and nothing
+         could tell afterwards what that day had been planned as. Only the exercises are this
+         form's to replace. */
+      details = { ...(block.details || {}), exercises };
+      if(opts && opts.deferSwaps) deferred = swapsToNote;
+      else for(const [from, to] of swapsToNote) await noteExerciseSwap(from, to);
     } else if(block.type==='run'){
       details = {
         runType: document.getElementById('weekRunType').value,
@@ -21373,11 +21506,20 @@ async function openBlockEditor(date, slot, block){
       // "load plan for date" behavior picks this up automatically when that day arrives
       await syncPlannedSessionMirror(date);
     } catch(e){ /* surfaced by the caller's own toast — see logWeekSessionBtn below */ }
+    return deferred;
   }
 document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=>{
-    await saveBlockPlanEdits(block, date, slot);
+    // The plan as it stood before this save rewrites it with what you logged — the one copy
+    // of "the session you were meant to do" that can still move to a later day if you did a
+    // different one (see reconcileLoggedSession).
+    let planBeforeRaw = null;
+    try{ planBeforeRaw = (await window.storage.get(`weekplan:${date}:${slot}`)).value; } catch(e){}
+    const deferredSwaps = await saveBlockPlanEdits(block, date, slot, { deferSwaps:true });
     if(block.type==='strength'){
       const exercises = [];
+      // Areas of the lifts YOU entered — a dimmed, untouched plan row says what was planned,
+      // not what was done, so it does not get a vote in what the session turned out to be.
+      const doneAreas = [];
       let totalVolume = 0;
       let anyPerformanceEntered = false;
       let _isReintroWeekLog = false;
@@ -21417,6 +21559,10 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         // exercises.length caught only "zero named rows," which is nearly never true and
         // was writing a training-history entry full of zeros for every untouched exercise.
         if(setsRaw.trim() || repsRaw.trim() || weightRaw.trim()) anyPerformanceEntered = true;
+        if(['.week-ex-sets','.week-ex-reps','.week-ex-weight'].some(sel=>{
+          const el = row.querySelector(sel);
+          return el && el.value.trim() && !el.dataset.planned;
+        })) doneAreas.push(area);
         // With per-set reps the true rep total is known, so volume uses it rather than
         // sets × average, which rounds away the drop-off.
         /* A RESULT IS NOT A WEIGHT, AND IT MUST NOT BECOME TONNAGE.
@@ -21446,6 +21592,7 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         totalVolume += volume;
       });
       if(!anyPerformanceEntered){
+        for(const [from, to] of (deferredSwaps || [])) await noteExerciseSwap(from, to);
         showToast('Saved — add sets/reps/weight to also log it to history');
         clearLoggingStarted(date);
         clearLogDraft(date, slot);
@@ -21497,7 +21644,17 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         exSearchIndex = null; exSuggestIndex = null;
         // Said differently for an edit, because "logged" a second time is exactly the thing
         // that used to happen and exactly the thing you would want to know had not.
-        showToast(wasEdit ? 'Session updated' : 'Saved & logged');
+        // Did you do the session that was planned? If the lifts you entered say otherwise,
+        // the record and the week are corrected here (see reconcileLoggedSession), and the
+        // "X over Y" pairs from this save are NOT learned as substitutions.
+        let swapped = null;
+        try{
+          swapped = await reconcileLoggedSession({ date, slot, sessionKey:key, session,
+            plannedTag: block.details && block.details.workoutTag, doneAreas, planBeforeRaw });
+        } catch(e){ swapped = null; }
+        if(!swapped) for(const [from, to] of (deferredSwaps || [])) await noteExerciseSwap(from, to);
+        if(swapped) showSwapToast(swapped);
+        else showToast(wasEdit ? 'Session updated' : 'Saved & logged');
         await showSessionComplete(session);
         clearLoggingStarted(date);
         clearLogDraft(date, slot);
@@ -33645,7 +33802,9 @@ async function renderTodayWorkoutSummary(){
   if(actionsEl) actionsEl.innerHTML = `
     <div class="today-plan-actions">
       <button type="button" class="outline" id="replaceTodayWorkoutBtn">Replace / edit</button>
-    </div>`;
+      <button type="button" class="outline" id="swapTodayWorkoutBtn" aria-expanded="false" aria-controls="swapTodayChoices">Swap day</button>
+    </div>
+    <div class="swap-choices" id="swapTodayChoices" hidden></div>`;
   budgetBar(container);
   container.querySelectorAll('.ex-flag').forEach(el=>{
     const key = decodeURIComponent(el.dataset.exKey || '');
@@ -33693,6 +33852,55 @@ async function renderTodayWorkoutSummary(){
   document.getElementById('replaceTodayWorkoutBtn')?.addEventListener('click', async ()=>{
     const found = await getTodaysBlockAndSlotForType(todaySessionType);
     if(found) await openBlockEditor(todayStr, found.slot, found.block);
+  });
+  /* SWAP DAY: do another of this week's sessions today, and today's on that day instead.
+     Legs sore, Lower planned, Upper on Thursday — tap Thursday's Upper and the two trade places.
+     The counterpart to the after-the-fact fix in reconcileLoggedSession: that one catches it
+     from the lifts once you have logged; this is for deciding before you start. A straight
+     trade, so every day keeps the number of sessions it had and nothing can land somewhere
+     the setup says it should not. Only the next SWAP_HORIZON_DAYS, only ones with nothing
+     logged on them yet. */
+  document.getElementById('swapTodayWorkoutBtn')?.addEventListener('click', async e=>{
+    const btn = e.currentTarget;
+    const list = document.getElementById('swapTodayChoices');
+    if(!list) return;
+    if(!list.hidden){ list.hidden = true; btn.setAttribute('aria-expanded','false'); return; }
+    const found = await getTodaysBlockAndSlotForType(todaySessionType);
+    if(!found) return;
+    const horizon = shiftDateStr(todayStr, SWAP_HORIZON_DAYS);
+    let logged = new Set();
+    try{ logged = new Set((await getAllTrainingSessions()).map(s=> `${s.date}:${s.slot || 'am'}`)); } catch(e){}
+    const options = [];
+    for(let d = shiftDateStr(todayStr, 1); d <= horizon; d = shiftDateStr(d, 1)){
+      for(const s of ['am','pm']){
+        if(logged.has(`${d}:${s}`)) continue;
+        const b = await blockOn(d, s);
+        if(b) options.push({ date:d, slot:s, block:b });
+      }
+    }
+    if(!options.length){ showToast('Nothing planned in the next week to swap with'); return; }
+    list.innerHTML = options.map(o=>
+      `<button type="button" class="outline swap-choice" data-date="${o.date}" data-slot="${o.slot}">`
+      + `<span class="swap-when">${dayLabelFor(o.date)}${o.slot === 'pm' ? ' PM' : ''}</span>`
+      + `<span class="swap-what">${sessionTitle(o.block)}</span></button>`).join('');
+    list.hidden = false;
+    btn.setAttribute('aria-expanded','true');
+    list.querySelectorAll('.swap-choice').forEach(choice=> choice.addEventListener('click', async ()=>{
+      const d = choice.dataset.date, s = choice.dataset.slot;
+      const aKey = `weekplan:${todayStr}:${found.slot}`, bKey = `weekplan:${d}:${s}`;
+      try{
+        const aRaw = (await window.storage.get(aKey)).value;
+        const bRaw = (await window.storage.get(bKey)).value;
+        await window.storage.set(aKey, bRaw);
+        await window.storage.set(bKey, aRaw);
+        await syncPlannedSessionMirror(todayStr);
+        await syncPlannedSessionMirror(d);
+        offerWeekUndo([{ key:aKey, value:aRaw, date:todayStr }, { key:bKey, value:bRaw, date:d }], 'swap');
+        showUndoToast(`${sessionTitle(JSON.parse(bRaw))} today — ${sessionTitle(JSON.parse(aRaw))} on ${logDateWords(d)}`);
+        renderTodayWorkoutSummary();
+        renderWeekGrid();
+      } catch(err){ showToast('Could not swap those two', true); }
+    }));
   });
   document.getElementById('skipTodayWorkoutBtn')?.addEventListener('click', async ()=>{
     const found = await getTodaysBlockAndSlotForType(todaySessionType);
