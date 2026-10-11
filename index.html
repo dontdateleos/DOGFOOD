@@ -12060,7 +12060,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.11.002';
+const APP_VERSION = '2026.10.11.003';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12444,6 +12444,7 @@ const APP_NOTES = {
   '2026.10.10.002': 'Back to just the stretch — the blur and the afterimages it left behind are gone. The mark shifts, stretches along the way, and arrives plain, the way it did two versions ago.',
   '2026.10.11.001': 'Logging a planned session on the wheel gives you what you dialed. A plan of 4 sets of 8 used to open with three sets already banked, so the set you were dialing was the fourth \u2014 3 reps at 100 came back as 8,8,8,3 and 20,20,20,100. It now opens on one set, starting at the plan\u2019s numbers, and + adds the rest. Opening the wheel and closing it without touching anything also no longer changes a thing.',
   '2026.10.11.002': 'New versions arrive on their own now. Come back to the app after an update has shipped and it reloads straight into it \u2014 unless something is open or you are mid-entry, in which case you get the banner as before. It also checks every five minutes instead of every thirty.',
+  '2026.10.11.003': 'Nothing you can see \u2014 a note in the code about how long the mark takes to move now says 560ms, which is what it actually does.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -13689,7 +13690,7 @@ function mastheadTitleHTML(tab){
 
    BUDGET. Out is 120ms on a 10ms stagger, so the last letter has cleared by 190. In starts
    there at 170ms on a 22ms stagger, landing at 514. The panel deals in 440 and the mark shifts
-   for 520: this finishes inside the mark and a little after the page, which is the right order
+   for SHIFT_MS (560): this finishes inside the mark and a little after the page, the right order
    -- the masthead is still settling when the page has arrived, not the other way round.
 
    BOTH STAGGERS ARE CAPPED AT SEVEN LETTERS. Without it "Every reading" runs 12 deep and the

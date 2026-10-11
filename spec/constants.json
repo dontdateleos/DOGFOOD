@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.11.002",
+ "generatedFrom": "2026.10.11.003",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1082,7 +1082,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.11.002",
+  "APP_VERSION": "2026.10.11.003",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1448,6 +1448,7 @@
    "2026.10.10.002": "Back to just the stretch — the blur and the afterimages it left behind are gone. The mark shifts, stretches along the way, and arrives plain, the way it did two versions ago.",
    "2026.10.11.001": "Logging a planned session on the wheel gives you what you dialed. A plan of 4 sets of 8 used to open with three sets already banked, so the set you were dialing was the fourth — 3 reps at 100 came back as 8,8,8,3 and 20,20,20,100. It now opens on one set, starting at the plan’s numbers, and + adds the rest. Opening the wheel and closing it without touching anything also no longer changes a thing.",
    "2026.10.11.002": "New versions arrive on their own now. Come back to the app after an update has shipped and it reloads straight into it — unless something is open or you are mid-entry, in which case you get the banner as before. It also checks every five minutes instead of every thirty.",
+   "2026.10.11.003": "Nothing you can see — a note in the code about how long the mark takes to move now says 560ms, which is what it actually does.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
