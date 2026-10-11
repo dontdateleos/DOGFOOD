@@ -12060,7 +12060,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.11.001';
+const APP_VERSION = '2026.10.11.002';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12443,6 +12443,7 @@ const APP_NOTES = {
   '2026.10.10.001': 'The stretch now blurs slightly as it moves and leaves a handful of fading afterimages behind it — a trail of itself, not a smear of colour, and it paints behind the live mark the whole way, never over its face.',
   '2026.10.10.002': 'Back to just the stretch — the blur and the afterimages it left behind are gone. The mark shifts, stretches along the way, and arrives plain, the way it did two versions ago.',
   '2026.10.11.001': 'Logging a planned session on the wheel gives you what you dialed. A plan of 4 sets of 8 used to open with three sets already banked, so the set you were dialing was the fourth \u2014 3 reps at 100 came back as 8,8,8,3 and 20,20,20,100. It now opens on one set, starting at the plan\u2019s numbers, and + adds the rest. Opening the wheel and closing it without touching anything also no longer changes a thing.',
+  '2026.10.11.002': 'New versions arrive on their own now. Come back to the app after an update has shipped and it reloads straight into it \u2014 unless something is open or you are mid-entry, in which case you get the banner as before. It also checks every five minutes instead of every thirty.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -12527,9 +12528,13 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
 
 // Passive update check. The manual button in Settings only helps if you think to press
 // it, and a home-screen app is RESUMED rather than reloaded — you can go weeks without a
-// cold start. This checks quietly when the app comes back to the foreground and surfaces
-// a dismissible banner only when there's genuinely a newer version deployed.
-const UPDATE_CHECK_INTERVAL_MS = 30 * 60 * 1000;   // don't re-check on every glance
+// cold start. This checks quietly when the app comes back to the foreground; see
+// passiveUpdateCheck for what it does when it finds a newer version.
+// Five minutes, not thirty. The check is a conditional request — a 304 with no body when
+// nothing has changed — so a closer interval costs almost nothing, and at thirty a fix
+// pushed while you were using the app could not reach you for half an hour of switching
+// back to it.
+const UPDATE_CHECK_INTERVAL_MS = 5 * 60 * 1000;
 let lastUpdateCheck = 0;
 /* WHAT THE SERVER IS SERVING, WITHOUT DOWNLOADING IT AGAIN.
 
@@ -12571,13 +12576,45 @@ async function fetchServedVersion(){
   } catch(e){}
   return m[1];
 }
-async function passiveUpdateCheck(){
+/* NOTHING IN THE WAY OF A RELOAD. A reload drops whatever is on screen, so it only happens
+   when nothing on screen is yours yet: no sheet open (the log, the morning ask, a wheel —
+   every one of them is a wireSheet and carries .sheet-open while up), no session minimised
+   to the bar mid-log, no first-run in progress, no text field with the cursor in it. Logging
+   drafts are saved as you go, so even the cases this lets through lose nothing — this is
+   about not yanking the screen out from under someone who is looking at it, not about data. */
+function safeToReloadNow(){
+  if(document.hidden) return false;
+  if(document.querySelector('.sheet-open')) return false;
+  if(logMinimised) return false;
+  const fr = document.getElementById('firstRun');
+  if(fr && fr.style.display !== 'none') return false;
+  const a = document.activeElement;
+  if(a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) return false;
+  return true;
+}
+/* A NEWER VERSION, APPLIED RATHER THAN ANNOUNCED. This only ever put up a banner, and a
+   banner on a home-screen app is easy to miss or dismiss and then forget: the reported case
+   was a fix that had shipped and a phone still running the code before it. Coming back to
+   the app is the natural moment to arrive on the new version — you are not mid-anything yet
+   — so on a resume it now reloads straight into it when safeToReloadNow says nothing is in
+   the way, and falls back to the banner only when something is.
+   Never twice for the same version in one session: if a reload somehow lands back on the old
+   copy, a second automatic one would just repeat it, so the banner takes over instead. */
+const UPDATE_AUTO_KEY = 'dogfood:autoUpdatedTo';
+async function passiveUpdateCheck(opts){
   const now = Date.now();
   if(now - lastUpdateCheck < UPDATE_CHECK_INTERVAL_MS) return;
   lastUpdateCheck = now;
   try{
     const served = await fetchServedVersion();
     if(served === APP_VERSION) return;
+    let triedAlready = false;
+    try{ triedAlready = sessionStorage.getItem(UPDATE_AUTO_KEY) === served; } catch(e){}
+    if(opts && opts.resumed && !triedAlready && safeToReloadNow()){
+      try{ sessionStorage.setItem(UPDATE_AUTO_KEY, served); } catch(e){}
+      applyUpdate(served);
+      return;
+    }
     showUpdateBanner(served);
   } catch(e){ /* offline or blocked — silent by design */ }
 }
@@ -12614,7 +12651,7 @@ function showUpdateBanner(version){
   document.getElementById('updateBannerDismiss').addEventListener('click', ()=> bar.remove());
 }
 
-document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) passiveUpdateCheck(); });
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) passiveUpdateCheck({ resumed:true }); });
 /* And once on load. The check only ever ran on a visibility transition, which sounds like it
    covers a home-screen app — it is resumed rather than started — but it means a cold launch
    checks nothing, and if you open the app, look at it, and close it again, the banner has no
