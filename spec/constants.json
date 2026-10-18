@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.18.004",
+ "generatedFrom": "2026.10.18.005",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1082,7 +1082,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.18.004",
+  "APP_VERSION": "2026.10.18.005",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1455,6 +1455,7 @@
    "2026.10.18.002": "Golf is in. Turn it on under Settings → Training Setup → Sports you play, pick your season and your round days. Round days become a Golf round on the calendar (G): a moving warm-up before you hit — no held stretches, they cost speed and accuracy — and stretches for after, aimed at the lead hip, upper back, lats and wrists. Every lift day gets one fast rotational movement (med-ball throws, woodchops, landmine rotations), the day before a round keeps heavy legs off it where the split allows, and the blocks run Strength then Power off-season, or two short, heavy lifts a week in-season.",
    "2026.10.18.003": "Lift days can end with a 6–8 minute finisher now — bike or rower intervals, an EMOM, a short AMRAP or carries, picked to spare whatever the day already worked. The time comes out of your session length, so a 60-minute day is still 60 minutes. None on a deload, after a power lead, the day before a golf round, or in sessions of 30 minutes or less, and you can switch them off in Training Setup. A new Engine block (Hyrox runs Strength then Engine; anyone can pick it) puts a finisher on every lift day and swaps one lift a week for a 20–24 minute metcon. Everything in them is low-skill on purpose: no cleans or deadlifts against a clock. Also fixed: Today halved the sets of a deload week that had already been halved when it was planned.",
    "2026.10.18.004": "Block length sets itself now, from what the block is for. Muscle and In-season blocks run 6 weeks, Strength and Base 5, Build and Engine 4, Power and Sharpen 3 — deload week included in each. Volume-building blocks run long, peaking blocks short because power fades within about a week, and nothing goes past six weeks without a deload (lifters deload about every 5½ weeks on average). Finished blocks keep the length they ran, so changing a goal or your golf season reshapes the block you are in and the ones ahead, never your history. A fixed length is still there under Training Setup → Block length if you want one.",
+   "2026.10.18.005": "Switching to automatic block lengths no longer moves you. Blocks you had already finished keep the length they actually ran, so you stay in the same block and week you were in — only the block you are in now, and the ones after it, take their length from their type.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",

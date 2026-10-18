@@ -12114,7 +12114,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.18.004';
+const APP_VERSION = '2026.10.18.005';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12505,6 +12505,7 @@ const APP_NOTES = {
   '2026.10.18.002': 'Golf is in. Turn it on under Settings \u2192 Training Setup \u2192 Sports you play, pick your season and your round days. Round days become a Golf round on the calendar (G): a moving warm-up before you hit \u2014 no held stretches, they cost speed and accuracy \u2014 and stretches for after, aimed at the lead hip, upper back, lats and wrists. Every lift day gets one fast rotational movement (med-ball throws, woodchops, landmine rotations), the day before a round keeps heavy legs off it where the split allows, and the blocks run Strength then Power off-season, or two short, heavy lifts a week in-season.',
   '2026.10.18.003': 'Lift days can end with a 6\u20138 minute finisher now \u2014 bike or rower intervals, an EMOM, a short AMRAP or carries, picked to spare whatever the day already worked. The time comes out of your session length, so a 60-minute day is still 60 minutes. None on a deload, after a power lead, the day before a golf round, or in sessions of 30 minutes or less, and you can switch them off in Training Setup. A new Engine block (Hyrox runs Strength then Engine; anyone can pick it) puts a finisher on every lift day and swaps one lift a week for a 20\u201324 minute metcon. Everything in them is low-skill on purpose: no cleans or deadlifts against a clock. Also fixed: Today halved the sets of a deload week that had already been halved when it was planned.',
   '2026.10.18.004': 'Block length sets itself now, from what the block is for. Muscle and In-season blocks run 6 weeks, Strength and Base 5, Build and Engine 4, Power and Sharpen 3 \u2014 deload week included in each. Volume-building blocks run long, peaking blocks short because power fades within about a week, and nothing goes past six weeks without a deload (lifters deload about every 5\u00bd weeks on average). Finished blocks keep the length they ran, so changing a goal or your golf season reshapes the block you are in and the ones ahead, never your history. A fixed length is still there under Training Setup \u2192 Block length if you want one.',
+  '2026.10.18.005': 'Switching to automatic block lengths no longer moves you. Blocks you had already finished keep the length they actually ran, so you stay in the same block and week you were in \u2014 only the block you are in now, and the ones after it, take their length from their type.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -31442,6 +31443,17 @@ async function getBlockConfig(){
        not a choice — so it reads as automatic too. */
     auto = cfg.auto !== false;
     if(Array.isArray(cfg.lengths)) lengths = cfg.lengths.filter(n => n >= BLOCK_LENGTH_MIN && n <= BLOCK_LENGTH_MAX);
+    /* A record from before automatic lengths: every block it has already finished ran at its
+       one fixed length, and that is written down now, once, so switching to automatic
+       changes the block you are in and the ones ahead — not where you are. Without this, an
+       install twelve weeks in on 4-week blocks would be re-measured as a 6 and a 5 and land
+       somewhere else entirely. The block in progress keeps its start; only its length is
+       now set by its type. */
+    if(cfg.auto === undefined && anchor){
+      const done = Math.floor(Math.max(0, weeksBetween(anchor, getWeekStartFor(todayStr))) / length);
+      lengths = Array(done).fill(length);
+      try{ await window.storage.set('settings:blockConfig', JSON.stringify({ ...cfg, auto: true, lengths })); } catch(e){}
+    }
   } catch(e){}
   /* NO ANCHOR YET — AND THE ANCHOR IS THE FIRST SESSION, NOT THE FIRST LAUNCH.
 
