@@ -6396,6 +6396,7 @@
         <div class="field-row"><input type="checkbox" id="bodyweightMobilityCheckbox" style="width:auto; flex:none;"><label for="bodyweightMobilityCheckbox" style="font-size:var(--fs-md);">Bodyweight only — mobility</label></div>
         <div class="field-row"><input type="checkbox" id="useSupersetsCheckbox" style="width:auto; flex:none;"><label for="useSupersetsCheckbox" style="font-size:var(--fs-md);">Allow supersets when short on time</label></div>
         <div class="field-row"><input type="checkbox" id="useDropSetsCheckbox" style="width:auto; flex:none;"><label for="useDropSetsCheckbox" style="font-size:var(--fs-md);">Allow drop sets when short on time</label></div>
+        <div class="field-row"><input type="checkbox" id="finishersCheckbox" checked style="width:auto; flex:none;"><label for="finishersCheckbox" style="font-size:var(--fs-md);">End lift days with a 6–8 min finisher</label></div>
         <div class="field-row"><span class="field-label">Block length</span>
           <select id="blockLengthSelect">
             <option value="3">3 weeks (2 build + deload)</option>
@@ -6414,6 +6415,7 @@
             <option value="base">Base (running)</option>
             <option value="build">Build (running)</option>
             <option value="sharpen">Sharpen (running)</option>
+            <option value="engine">Engine (conditioning)</option>
             <option value="inseason">In-season (sport)</option>
           </select>
         </div>
@@ -12111,7 +12113,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.18.002';
+const APP_VERSION = '2026.10.18.003';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12500,6 +12502,7 @@ const APP_NOTES = {
   '2026.10.15.001': 'Opening from the home screen now shows DOG FOOD and the mark on black while the app loads, instead of a blank screen. iPhone only picks this up when the app is added, so remove it from the home screen and add it again once to see it.',
   '2026.10.18.001': 'Blocks have a purpose now, not only a position. A strength goal runs Muscle, then Strength, then Power \u2014 slow-fading strength first, explosive work last, with a jump or throw leading every lift day in the Power block. A muscle goal runs Muscle, Muscle, Strength. A running goal runs Base, Build, Sharpen: one quality run at most in Base, tempo leading in Build, intervals in Sharpen. Today shows which block you are in; Settings \u2192 Training Setup \u2192 This block lets you pick a different one for the current block and rebuilds the days ahead, with an Undo.',
   '2026.10.18.002': 'Golf is in. Turn it on under Settings \u2192 Training Setup \u2192 Sports you play, pick your season and your round days. Round days become a Golf round on the calendar (G): a moving warm-up before you hit \u2014 no held stretches, they cost speed and accuracy \u2014 and stretches for after, aimed at the lead hip, upper back, lats and wrists. Every lift day gets one fast rotational movement (med-ball throws, woodchops, landmine rotations), the day before a round keeps heavy legs off it where the split allows, and the blocks run Strength then Power off-season, or two short, heavy lifts a week in-season.',
+  '2026.10.18.003': 'Lift days can end with a 6\u20138 minute finisher now \u2014 bike or rower intervals, an EMOM, a short AMRAP or carries, picked to spare whatever the day already worked. The time comes out of your session length, so a 60-minute day is still 60 minutes. None on a deload, after a power lead, the day before a golf round, or in sessions of 30 minutes or less, and you can switch them off in Training Setup. A new Engine block (Hyrox runs Strength then Engine; anyone can pick it) puts a finisher on every lift day and swaps one lift a week for a 20\u201324 minute metcon. Everything in them is low-skill on purpose: no cleans or deadlifts against a clock. Also fixed: Today halved the sets of a deload week that had already been halved when it was planned.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -17620,6 +17623,7 @@ async function loadTrainingSetup(){
     document.getElementById('bodyweightMobilityCheckbox').checked = !!setup.bodyweightMobility;
     document.getElementById('useSupersetsCheckbox').checked = !!setup.useSupersets;
     document.getElementById('useDropSetsCheckbox').checked = !!setup.useDropSets;
+    document.getElementById('finishersCheckbox').checked = setup.finishers !== false;
   } catch(e){}
   try{
     const cfg = await getBlockConfig();
@@ -17789,8 +17793,12 @@ document.getElementById('saveTrainingSetupBtn').addEventListener('click', async 
     bodyweightAll: document.getElementById('bodyweightAllCheckbox').checked,
     bodyweightMobility: document.getElementById('bodyweightMobilityCheckbox').checked,
     useSupersets: document.getElementById('useSupersetsCheckbox').checked,
-    useDropSets: document.getElementById('useDropSetsCheckbox').checked
+    useDropSets: document.getElementById('useDropSetsCheckbox').checked,
+    finishers: document.getElementById('finishersCheckbox').checked
   };
+  let finishersChanged = false;
+  try{ finishersChanged = (JSON.parse((await window.storage.get('settings:trainingSetup')).value).finishers !== false) !== setup.finishers; }
+  catch(e){ finishersChanged = !setup.finishers; }
   try{
     await window.storage.set('settings:trainingSetup', JSON.stringify(setup));
     // Block length lives in its own record alongside the anchor, so changing length
@@ -17806,11 +17814,12 @@ document.getElementById('saveTrainingSetupBtn').addEventListener('click', async 
     // A different block type, or a sport added, dropped or moved to other days, is a
     // different plan for every day left — rebuilt the way a goal change rebuilds them,
     // with an Undo.
-    if(blockTypeChanged || sportChanged){
+    if(blockTypeChanged || sportChanged || finishersChanged){
       const r = await rebuildFutureDaysFromGoals();
       if(r && r.generated) showToast(blockTypeChanged
         ? `Rebuilt the days ahead as a ${blockTypeLabel((await getBlockTypeFor(todayStr)).type) || 'new'} block`
-        : 'Rebuilt the days ahead around your sport');
+        : sportChanged ? 'Rebuilt the days ahead around your sport'
+        : `Rebuilt the days ahead ${setup.finishers ? 'with' : 'without'} finishers`);
     }
     renderSettingsSummaries();
     /* The Split row on Weekly names a split by how many days you train, and this is the one
@@ -19034,6 +19043,12 @@ async function extractBlockLines(block){
   if(block.type==='strength'){
     const focusInfo = block.details.plannedFocus && SESSION_FOCUS_INFO[block.details.plannedFocus];
     const out = [];
+    if(block.details.metcon){
+      const m = block.details.metcon;
+      out.push({ name: `${m.format} ${m.minutes} min` });
+      (block.details.exercises||[]).forEach(ex=>{ if(ex && ex.name) out.push({ name: ex.name, dose: ex.dose || '' }); });
+      return out;
+    }
     for(const ex of (block.details.exercises||[])){
       if(!ex || !ex.name) continue;
       // Skill work carries its own prescription text rather than a sets/reps/weight ladder.
@@ -19049,6 +19064,8 @@ async function extractBlockLines(block){
       } catch(e){}
       out.push({ name: ex.name, dose: `${sets}×${repsLabel} @ ${weightLabel}` });
     }
+    const fin = block.details.finisher;
+    if(fin) out.push({ name: `Finisher: ${fin.format}`, dose: `${fin.minutes} min` });
     return out;
   }
   if(block.type==='run'){
@@ -24124,6 +24141,8 @@ function estimateSessionDuration(block, personalPace, personalSets, sessionLengt
   if(block.type === 'strength'){
     const exercises = block.details.exercises || [];
     if(exercises.length === 0) return null;
+    // A metcon is timed by its clock, not by its sets.
+    if(block.details.metcon) return warmupAllowanceMin(sessionLength) + (block.details.metcon.minutes || 20);
     const focus = block.details.plannedFocus || 'general';
     const workSecPerSet = R.strength.workSecondsPerSetByFocus[focus] || R.strength.workSecondsPerSetByFocus.general;
     let totalSeconds = warmupAllowanceMin(sessionLength) * 60;
@@ -24161,6 +24180,7 @@ function estimateSessionDuration(block, personalPace, personalSets, sessionLengt
         : R.strength.transitionSeconds.default;
       totalSeconds += transitionSec;
     });
+    if(block.details.finisher) totalSeconds += (block.details.finisher.minutes || 0) * 60;
     return Math.round(totalSeconds/60);
   }
   if(block.type === 'run'){
@@ -29505,6 +29525,14 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
   let plan = determineHybridPlan(goals.list, daysLeft, setup.sessionLength);
   const liftCap = blockType && BLOCK_TYPES[blockType] && BLOCK_TYPES[blockType].maxLiftDays;
   if(plan && liftCap && plan.strengthSessions > liftCap) plan = { ...plan, strengthSessions: liftCap };
+  /* An Engine block trades one lift for a metcon — only from three lifts up, so the week
+     never drops below two days of real lifting to make room for it. */
+  const metconWanted = (blockType && BLOCK_TYPES[blockType] && BLOCK_TYPES[blockType].metconDays) || 0;
+  let metconDays = 0;
+  if(plan && metconWanted && plan.strengthSessions >= 3){
+    metconDays = Math.min(metconWanted, plan.strengthSessions - 2);
+    plan = { ...plan, strengthSessions: plan.strengthSessions - metconDays };
+  }
   const hasMobilityGoal = goals.list.some(g=>g.type==='mobility');
 
   // Checkbox overrides apply on top of whatever the goal-derived plan would otherwise be —
@@ -29661,6 +29689,23 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
     const genResult = await generateRunPlan(runTierForSlots, plan.runningSessions, runDates, runSlotByDate, runSlotOverride, blockType);
     result.runPlaced = genResult.placed || 0;
     result.runGoalNote = result.runGoalNote || genResult.goalNote;
+  }
+
+  /* The metcon goes on the latest day still empty, after the lifts and runs have taken
+     theirs — so it sits apart from the heavy days rather than in front of them. Not on a
+     round's eve. */
+  if(metconDays > 0){
+    const eve = new Set(roundDates.map(d => shiftDateStr(d, -1)));
+    const free = (await getAvailableEmptyDates(weekDatesOverride)).filter(d => !eve.has(d));
+    const weekIdx = Math.floor(localDateFrom((weekDatesOverride || getWeekDates())[0]).getTime() / (7*24*60*60*1000));
+    const prefs = await getEquipmentPrefs();
+    for(let k=0; k<metconDays && free.length; k++){
+      const date = free.pop();
+      const block = buildMetconBlock(weekIdx + k, prefs.bodyweightAll, blockType);
+      await window.storage.set(`weekplan:${date}:am`, JSON.stringify(block));
+      await window.storage.set(`planned_session:${date}`, JSON.stringify({ date, exercises: block.details.exercises, workoutTag: 'metcon' }));
+      result.metconPlaced = (result.metconPlaced || 0) + 1;
+    }
   }
 
   result.mobilityHandled = (plan.strengthSessions > 0 && includeMobility) || (goals.skillGoals||[]).some(sg=>sg.category==='mobility');
@@ -31540,13 +31585,21 @@ const BLOCK_TYPES = {
      months in young adults (not re-checked for this change). So: two lifts a week at most,
      heavy, with a third fewer sets each. */
   inseason: { label:'In-season', liftFocus:'strength', maxLiftDays:2, setsKeep:0.67,
-              note:'In-season block — two short, heavy lifts a week to keep the strength the off-season built.' }
+              note:'In-season block — two short, heavy lifts a week to keep the strength the off-season built.' },
+  /* Fitness that lasts a whole race: a finisher on every lift day it fits, and one lift a
+     week becomes a 20–25 minute metcon. Lifting stays at 8–12 — this block is not where
+     heavy work is built, and conditioning does not cost muscle or maximal strength anyway
+     (Schumann 2022); it is power it costs, and power is not this block's job. */
+  engine:   { label:'Engine', liftFocus:'general', finishersAll:true, metconDays:1,
+              note:'Engine block — a short finisher on lift days and one metcon a week.' }
 };
 const BLOCK_SEQUENCES = {
   strength:    ['muscle', 'strength', 'power'],
   // Muscle stays muscle, with a heavier block every third so the heavy end is not left to rust.
   hypertrophy: ['muscle', 'muscle', 'strength'],
-  running:     ['base', 'build', 'sharpen']
+  running:     ['base', 'build', 'sharpen'],
+  // Hyrox is running between strength stations: a strength block, then an engine block.
+  hyrox:       ['strength', 'engine']
 };
 const BLOCK_TYPE_OVERRIDE_KEY = 'settings:blockTypeOverride';
 
@@ -31608,6 +31661,89 @@ async function golfSettings(){
   return (s.golf && s.golf.on) ? { season: s.golf.season === 'in' ? 'in' : 'off', roundDays: s.golf.roundDays || [] } : null;
 }
 function weekdayOf(date){ return WEEKDAY_NAMES[(localDateFrom(date).getDay() + 6) % 7]; }
+
+/* ---------- CONDITIONING: FINISHERS AND METCONS ----------
+   What the evidence does and does not say. Nothing controlled shows a finisher adds muscle,
+   so these are here for fitness and for fitting more work in, not as a growth trick. Done
+   after the lifting they cost neither muscle nor maximal strength (Schumann 2022, 43
+   studies); they do blunt explosive power, so no finisher follows a power lead, and none
+   goes on the day before a round. Injuries in this style of training run about 4.3 per
+   1000 hours — ordinary — but they cluster in shoulders and backs, mostly on Olympic lifts
+   and deadlifts done tired (Knapik 2022). So every movement here is one you can do badly
+   without getting hurt: a bike, a rower, carries, swings, push-ups, squats. No cleans, no
+   snatches, no deadlifts for reps against a clock.
+
+   A finisher is not in the exercise list. It is time at the end of the session, reserved
+   before the lifting is trimmed to fit, so the session length you set still includes it. */
+const FINISHER_MIN_SESSION = 45;  // below this the lifting needs every minute it has
+const FINISHER_NOTE = 'Hard but smooth. Stop a round early rather than let form go.';
+const FINISHERS = {
+  bike_intervals:  { format:'Intervals', minutes:6, title:'6 rounds · 20s hard, 40s easy',
+    moves:[{ name:'Bike, rower or ski erg', dose:'20s hard / 40s easy' }],
+    bw:[{ name:'High knees', dose:'20s hard / 40s easy' }] },
+  rower_intervals: { format:'Intervals', minutes:6, title:'6 rounds · 20s hard, 40s easy',
+    moves:[{ name:'Rower or ski erg', dose:'20s hard / 40s easy' }],
+    bw:[{ name:'Mountain climbers', dose:'20s hard / 40s easy' }] },
+  swing_emom:      { format:'EMOM', minutes:8, title:'Every minute for 8 minutes',
+    moves:[{ name:'Kettlebell Swing', dose:'odd minutes · 12' }, { name:'Push-up', dose:'even minutes · 10' }],
+    bw:[{ name:'Bodyweight squat', dose:'odd minutes · 15' }, { name:'Push-up', dose:'even minutes · 10' }] },
+  upper_emom:      { format:'EMOM', minutes:8, title:'Every minute for 8 minutes',
+    moves:[{ name:'Push-up', dose:'odd minutes · 10' }, { name:'Band pull-apart', dose:'even minutes · 15' }],
+    bw:[{ name:'Push-up', dose:'odd minutes · 10' }, { name:'Band pull-apart', dose:'even minutes · 15' }] },
+  carries:         { format:'Carries', minutes:6, title:'3 rounds · 60s rest between',
+    moves:[{ name:"Farmer's Carry", dose:'40m' }, { name:'Suitcase Carry', dose:'20m each side' }],
+    bw:null },
+  mixed_amrap:     { format:'AMRAP', minutes:7, title:'As many rounds as you can in 7 minutes',
+    moves:[{ name:'Goblet Squat', dose:'10' }, { name:'Push-up', dose:'10' }, { name:'Mountain climbers', dose:'20' }],
+    bw:[{ name:'Bodyweight squat', dose:'15' }, { name:'Push-up', dose:'10' }, { name:'Mountain climbers', dose:'20' }] }
+};
+/* A leg day ends on something that leaves the legs alone; an upper day can use them. */
+const FINISHERS_BY_TAG = {
+  lower: ['carries', 'upper_emom', 'rower_intervals'],
+  legs:  ['carries', 'upper_emom', 'rower_intervals'],
+  upper: ['bike_intervals', 'swing_emom', 'mixed_amrap'],
+  push:  ['bike_intervals', 'swing_emom', 'mixed_amrap'],
+  pull:  ['bike_intervals', 'swing_emom', 'mixed_amrap'],
+  full_body: ['bike_intervals', 'carries', 'mixed_amrap']
+};
+function pickFinisher(tag, idx, bodyweightOnly){
+  const keys = FINISHERS_BY_TAG[tag] || FINISHERS_BY_TAG.full_body;
+  for(let k=0; k<keys.length; k++){
+    const key = keys[(idx + k) % keys.length];
+    const f = FINISHERS[key];
+    const moves = bodyweightOnly ? f.bw : f.moves;
+    if(!moves) continue;
+    return { key, format: f.format, minutes: f.minutes, title: f.title, moves: moves.map(m=>({ ...m })), note: FINISHER_NOTE };
+  }
+  return null;
+}
+/* A metcon day: one lift a week traded for 20–25 minutes of mixed conditioning, logged like
+   any lift — each movement is a row, and the rounds go in the notes. */
+const METCONS = [
+  { format:'AMRAP', minutes:20, title:'As many rounds as you can in 20 minutes',
+    moves:[{ name:'Rower or bike', dose:'250m / 12 cal' }, { name:'Kettlebell Swing', dose:'15', id:'kettlebell_swing' },
+           { name:'Walking Lunge', dose:'10 each leg', id:'walking_lunge' }, { name:'Push-up', dose:'10', id:'push_up' }],
+    bw:[{ name:'High knees', dose:'40s' }, { name:'Bodyweight squat', dose:'20' },
+        { name:'Walking Lunge', dose:'10 each leg', id:'walking_lunge' }, { name:'Push-up', dose:'10', id:'push_up' }] },
+  { format:'EMOM', minutes:24, title:'Every minute for 24 minutes, four stations in turn',
+    moves:[{ name:'Rower or bike', dose:'45s' }, { name:'Goblet Squat', dose:'12', id:'goblet_squat' },
+           { name:"Farmer's Carry", dose:'40m', id:'farmers_carry' }, { name:'Push-up', dose:'10', id:'push_up' }],
+    bw:[{ name:'Mountain climbers', dose:'40s' }, { name:'Bodyweight squat', dose:'20' },
+        { name:'Reverse lunge', dose:'8 each leg' }, { name:'Push-up', dose:'10', id:'push_up' }] }
+];
+function buildMetconBlock(idx, bodyweightOnly, blockType){
+  const m = METCONS[idx % METCONS.length];
+  const moves = bodyweightOnly ? m.bw : m.moves;
+  const exercises = moves.map(mv=>{
+    const lib = mv.id ? EXERCISE_LIBRARY[mv.id] : null;
+    return { name: mv.name, area: lib ? lib.area : '', secondaryArea: lib ? lib.secondaryArea : '',
+      movement: lib ? lib.movement : '', exerciseId: mv.id || null, sets: 1, repLow: null, repHigh: null,
+      dose: mv.dose, isConditioning: true };
+  });
+  return { type:'strength', details:{ workoutTag:'metcon', plannedFocus:'general', blockType: blockType || null,
+    metcon: { format: m.format, minutes: m.minutes, title: m.title, note: FINISHER_NOTE + ' Write your rounds in the notes.' },
+    exercises, notes: 'Metcon — ' + m.title } };
+}
 // Round days in this run of dates, from today on.
 function golfRoundDatesIn(dates, golf){
   if(!golf || !golf.roundDays.length) return [];
@@ -32240,12 +32376,14 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
   // added (a short session can't fit a full main lift + skill work + 4 bulletproofing
   // exercises), and multiSessionOk gates whether a same-day companion mobility block
   // gets added at all.
-  let sessionLength = 45, multiSessionOk = true;
+  let sessionLength = 45, multiSessionOk = true, finishersPref = true;
   try{
     const r = await window.storage.get('settings:trainingSetup');
     const setup = JSON.parse(r.value);
     sessionLength = parseInt(setup.sessionLength, 10) || 45;
     multiSessionOk = !!setup.multiSessionOk;
+    // On unless you turned it off; an Engine block puts them on regardless.
+    finishersPref = setup.finishers !== false;
   } catch(e){}
   // Session length is a CEILING on how much accessory work survives, not what picks it —
   // selection is by need (see rankBulletproofingByNeed). 99 means "no ceiling", i.e. take
@@ -32291,8 +32429,12 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
     : (powerGoals.some(g => !!g.power) ? Infinity : POWER_LEAD_SECONDARY_DAYS);
   let powerLeadDays = 0;
   // Golf puts one fast rotational movement on every lift day, cycling through the list.
-  const golfOn = !!(await golfSettings());
+  const golfForWeek = await golfSettings();
+  const golfOn = !!golfForWeek;
   let golfRotIdx = 0;
+  const bt = blockType && BLOCK_TYPES[blockType];
+  const finishersWanted = !!(bt && bt.finishersAll) || (finishersPref && !(bt && bt.maxLiftDays));
+  let finisherIdx = 0;
   const emphasis = await getBlockEmphasisAreas(topGoalType, todayStr);
   const emphasisAreas = emphasis.areas;
   // getBlockPhase returns null on a deload week rather than a phase name, so resolve it
@@ -32743,13 +32885,23 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
     // buy back time so genuinely useful work survives instead of being cut. Applied only
     // when the session actually overruns — the evidence says they match straight sets
     // rather than beating them, so there's no reason to reach for them otherwise.
+    /* The finisher's minutes come out of the session before the lifting is fitted, so the
+       length you set is still the length of the whole thing. Not on a deload, not after a
+       power lead or in a power block (it blunts exactly that), not on a day shared with a
+       run, not the day before a round, and not in a session too short to spare it. */
+    const roundEve = golfForWeek && golfForWeek.roundDays.includes(weekdayOf(shiftDateStr(date, 1)));
+    const finisherFits = finishersWanted && sessionLength >= FINISHER_MIN_SESSION
+      && blockPhase !== 'deload' && !powerLeadIsPrimary && !exercises.some(e=>e.isPowerLead)
+      && !comboDates.has(date) && !roundEve;
+    const finisher = finisherFits ? pickFinisher(tag, finisherIdx++, equipmentPrefs.bodyweightAll) : null;
+    const liftBudget = sessionLength - (finisher ? finisher.minutes : 0);
     let supersetPairs = 0, dropSetCount = 0;
     let preEstimate = estimateSessionDuration({ type:'strength', details:{ exercises, plannedFocus } }, null, personalSets, sessionLength);
-    if(timeEfficiencyPrefs.supersets && preEstimate != null && preEstimate > sessionLength){
+    if(timeEfficiencyPrefs.supersets && preEstimate != null && preEstimate > liftBudget){
       supersetPairs = applySupersets(exercises);
       preEstimate = estimateSessionDuration({ type:'strength', details:{ exercises, plannedFocus } }, null, personalSets, sessionLength);
     }
-    if(timeEfficiencyPrefs.dropSets && preEstimate != null && preEstimate > sessionLength){
+    if(timeEfficiencyPrefs.dropSets && preEstimate != null && preEstimate > liftBudget){
       // Drop sets go on isolation work only. On a compound they add fatigue and technique
       // risk for the same return, and the research base sits on single-joint movements.
       exercises.forEach(ex=>{
@@ -32763,7 +32915,7 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
 
     const trimmedNames = [];
     let sessionEstimate = estimateSessionDuration({ type:'strength', details:{ exercises, plannedFocus } }, null, personalSets, sessionLength);
-    while(sessionEstimate != null && sessionEstimate > sessionLength && exercises.length > 1){
+    while(sessionEstimate != null && sessionEstimate > liftBudget && exercises.length > 1){
       const cut = trimCandidateIndex(exercises, topGoalType, powerLeadIsPrimary);
       if(cut < 0) break;
       const removed = exercises.splice(cut, 1)[0];
@@ -32773,7 +32925,7 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
       }
       sessionEstimate = estimateSessionDuration({ type:'strength', details:{ exercises, plannedFocus } }, null, personalSets, sessionLength);
     }
-    const trimNote = trimmedNames.length ? ` — trimmed ${trimmedNames.join(', ')} to fit your ${sessionLength}min session length` : '';
+    const trimNote = trimmedNames.length ? ` — trimmed ${trimmedNames.join(', ')} to fit your ${sessionLength}min session length${finisher ? ' with its finisher' : ''}` : '';
 
     // The trim runs after pairing, so it can remove one half of a superset and leave the
     // other showing a meaningless "A1" with nothing to pair with. Drop the marks from any
@@ -32805,7 +32957,7 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
     // session longer than the trim above believed it to be — measured at 62min against a
     // 60min budget. Re-fit once the pairing is final.
     let refit = estimateSessionDuration({ type:'strength', details:{ exercises, plannedFocus } }, null, personalSets, sessionLength);
-    while(refit != null && refit > sessionLength && exercises.length > 1){
+    while(refit != null && refit > liftBudget && exercises.length > 1){
       const cut = trimCandidateIndex(exercises, topGoalType, powerLeadIsPrimary);
       if(cut < 0) break;
       const removed = exercises.splice(cut, 1)[0];
@@ -32845,7 +32997,7 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
       type:'strength',
       details: { exercises: swappedExercises, workoutTag: tag, plannedFocus, deloadApplied: _deloadApplied,
         supersetPairs, dropSetCount, densityMultiplier: appliedDensity,
-        blockType: blockType || null,
+        blockType: blockType || null, finisher: finisher || null,
         notes: 'Auto-generated — adjust weights/reps freely, this is a starting structure' + (volumeWaveNote ? ' — ' + volumeWaveNote : '') + focusNote + trimNote }
     }));
     // Mirror to planned_session — Daily view reads from here, not from weekplan directly.
@@ -32985,12 +33137,12 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
         // These are appended after the per-day trim loop has already run, so without
         // re-fitting they push the last day over its time budget — measured at 95min
         // against a 90min setting. Same rule as the main loop: least goal-relevant first.
-        let fillEstimate = estimateSessionDuration({ type:'strength', details:{ exercises: block.details.exercises, plannedFocus: block.details.plannedFocus } }, null, personalSets, sessionLength);
+        let fillEstimate = estimateSessionDuration({ type:'strength', details:{ exercises: block.details.exercises, plannedFocus: block.details.plannedFocus, finisher: block.details.finisher } }, null, personalSets, sessionLength);
         while(fillEstimate != null && fillEstimate > sessionLength && block.details.exercises.length > 1){
           const cut = trimCandidateIndex(block.details.exercises, topGoalType, powerLeadIsPrimary);
           if(cut < 0) break;
           block.details.exercises.splice(cut, 1);
-          fillEstimate = estimateSessionDuration({ type:'strength', details:{ exercises: block.details.exercises, plannedFocus: block.details.plannedFocus } }, null, personalSets, sessionLength);
+          fillEstimate = estimateSessionDuration({ type:'strength', details:{ exercises: block.details.exercises, plannedFocus: block.details.plannedFocus, finisher: block.details.finisher } }, null, personalSets, sessionLength);
         }
         block.details.notes = (block.details.notes||'') + ' — added to guarantee weekly hamstring/calf coverage';
         await window.storage.set(`weekplan:${lastDate}:am`, JSON.stringify(block));
@@ -33347,7 +33499,11 @@ async function getTodaysBlockForType(type){
     // they make up.
     const d = scheduled.block.details || {};
     return exercises.length
-      ? { type:'strength', details:{ exercises: repairSkillWorkFlags(exercises), workoutTag: d.workoutTag, plannedFocus: d.plannedFocus } }
+      /* The finisher and the metcon ride along: they are part of the session but not rows in
+         it, so the exercise mirror never had them. deloadApplied too — without it a
+         generated deload week, already halved when it was built, was halved again here. */
+      ? { type:'strength', details:{ exercises: repairSkillWorkFlags(exercises), workoutTag: d.workoutTag, plannedFocus: d.plannedFocus,
+          finisher: d.finisher || null, metcon: d.metcon || null, deloadApplied: !!d.deloadApplied } }
       : null;
   }
   for(const slot of ['am','pm']){
@@ -33685,8 +33841,20 @@ function planRow(name, dose, lines, opts){
     + `${opts.lead || ''}<strong>${name}</strong>${opts.trail || ''}${doseHtml}${detail}${opts.tag || ''}</div>`;
 }
 
+/* A finisher or a metcon is a clock and a list: the format and its time, then each movement
+   with its own dose. No sets × reps @ kg — that notation means nothing against a clock. */
+function conditioningHtml(c, heading){
+  const rows = (c.moves || []).map(m => planRow(m.name || '', m.dose || ''));
+  return `<div class="log-title gutter-inset" style="margin-top:16px;">${heading} \u00b7 ${c.format} ${c.minutes} min</div>`
+    + `<div class="plan-list">${planRow(c.title, '')}${rows.join('')}</div>`
+    + (c.note ? `<div class="score-note">${c.note}</div>` : '');
+}
 async function blockSummaryHtml(block){
   const isDeload = await isDeloadWeek(todayStr);
+  if(block.type==='strength' && block.details && block.details.metcon){
+    const m = block.details.metcon;
+    return conditioningHtml({ ...m, moves: (block.details.exercises || []).map(e=>({ name:e.name, dose:e.dose })) }, 'Metcon');
+  }
   if(block.type==='strength'){
     const exercises = block.details.exercises||[];
     if(!exercises.length) return '';
@@ -33860,7 +34028,9 @@ async function blockSummaryHtml(block){
         + `<div class="plan-list">${coolRows}</div>`
         + (block.details.cooldownNote ? `<div class="score-note">${block.details.cooldownNote}</div>` : '');
     }
-    return `<div class="plan-list">${rows.join('')}</div>` + coolHtml;
+    // After the lifting and before the cool-down: the last hard thing, then the range work.
+    const finHtml = block.details.finisher ? conditioningHtml(block.details.finisher, 'Finisher') : '';
+    return `<div class="plan-list">${rows.join('')}</div>` + finHtml + coolHtml;
   }
   if(block.type==='run'){
     const d = block.details||{};
@@ -34025,7 +34195,7 @@ const RUN_TYPE_LABELS = {
 };
 const WORKOUT_TAG_LABELS = {
   full_body:'Full body', upper:'Upper body', lower:'Lower body',
-  push:'Push', pull:'Pull', legs:'Legs'
+  push:'Push', pull:'Pull', legs:'Legs', metcon:'Metcon'
 };
 function sessionTitle(block){
   if(!block) return "Today's plan";
