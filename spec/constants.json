@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.15.001",
+ "generatedFrom": "2026.10.18.001",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1082,7 +1082,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.15.001",
+  "APP_VERSION": "2026.10.18.001",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1451,6 +1451,7 @@
    "2026.10.11.003": "Nothing you can see — a note in the code about how long the mark takes to move now says 560ms, which is what it actually does.",
    "2026.10.11.004": "Did Upper on a Lower day? Log what you did and the app notices from the lifts: it records the session as Upper, and the next planned Upper in the coming week becomes the Lower you skipped — with an Undo right in the message. Or decide before you start: Swap day, under Replace / edit, trades today’s session with any other planned in the next seven days.",
    "2026.10.15.001": "Opening from the home screen now shows DOG FOOD and the mark on black while the app loads, instead of a blank screen. iPhone only picks this up when the app is added, so remove it from the home screen and add it again once to see it.",
+   "2026.10.18.001": "Blocks have a purpose now, not only a position. A strength goal runs Muscle, then Strength, then Power — slow-fading strength first, explosive work last, with a jump or throw leading every lift day in the Power block. A muscle goal runs Muscle, Muscle, Strength. A running goal runs Base, Build, Sharpen: one quality run at most in Base, tempo leading in Build, intervals in Sharpen. Today shows which block you are in; Settings → Training Setup → This block lets you pick a different one for the current block and rebuilds the days ahead, with an Undo.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
@@ -3369,6 +3370,62 @@
   "BLOCK_LENGTH_MAX": 8,
   "REINTRO_LOAD_CUT": 0.1,
   "REINTRO_TARGET_RIR": 3,
+  "BLOCK_TYPES": {
+   "muscle": {
+    "label": "Muscle",
+    "liftFocus": "hypertrophy",
+    "note": "Muscle block — 8–12 reps, volume building week to week."
+   },
+   "strength": {
+    "label": "Strength",
+    "liftFocus": "strength",
+    "note": "Strength block — main lifts heavy at 3–6 reps; accessories stay 8–12."
+   },
+   "power": {
+    "label": "Power",
+    "liftFocus": "strength",
+    "powerLead": true,
+    "note": "Power block — a jump or throw leads every lift day while you are fresh, main lifts stay heavy. Power fades within about a week of stopping, so it comes last."
+   },
+   "base": {
+    "label": "Base",
+    "run": "base",
+    "note": "Base block — easy running volume, one quality run at most."
+   },
+   "build": {
+    "label": "Build",
+    "run": "build",
+    "note": "Build block — tempo leads the quality work."
+   },
+   "sharpen": {
+    "label": "Sharpen",
+    "run": "sharpen",
+    "note": "Sharpen block — intervals lead the quality work."
+   }
+  },
+  "BLOCK_SEQUENCES": {
+   "strength": [
+    "muscle",
+    "strength",
+    "power"
+   ],
+   "hypertrophy": [
+    "muscle",
+    "muscle",
+    "strength"
+   ],
+   "running": [
+    "base",
+    "build",
+    "sharpen"
+   ]
+  },
+  "BLOCK_TYPE_OVERRIDE_KEY": "settings:blockTypeOverride",
+  "RUN_QUALITY_ROTATION": [
+   "tempo",
+   "interval",
+   "fartlek"
+  ],
   "GENERATE_FAULTS": {
    "no-setup": "NO SETUP · SET YOUR TRAINING DAYS",
    "no-goals": "NO GOALS · ADD ONE FIRST",

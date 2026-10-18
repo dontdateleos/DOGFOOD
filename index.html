@@ -6405,6 +6405,17 @@
             <option value="8">8 weeks</option>
           </select>
         </div>
+        <div class="field-row"><span class="field-label">This block</span>
+          <select id="blockTypeSelect">
+            <option value="auto">From your goal</option>
+            <option value="muscle">Muscle</option>
+            <option value="strength">Strength</option>
+            <option value="power">Power</option>
+            <option value="base">Base (running)</option>
+            <option value="build">Build (running)</option>
+            <option value="sharpen">Sharpen (running)</option>
+          </select>
+        </div>
         <div id="blockPositionNote" class="score-note note-live">—</div>
         <div class="field-row"><button class="small outline" id="resetBlockBtn">Start a new block from this week</button></div>
         <div class="score-note">Same results in less time, not better results — applied only when a session won't otherwise fit. Expect sessions to feel harder.</div>
@@ -12086,7 +12097,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.15.001';
+const APP_VERSION = '2026.10.18.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12473,6 +12484,7 @@ const APP_NOTES = {
   '2026.10.11.003': 'Nothing you can see \u2014 a note in the code about how long the mark takes to move now says 560ms, which is what it actually does.',
   '2026.10.11.004': 'Did Upper on a Lower day? Log what you did and the app notices from the lifts: it records the session as Upper, and the next planned Upper in the coming week becomes the Lower you skipped \u2014 with an Undo right in the message. Or decide before you start: Swap day, under Replace / edit, trades today\u2019s session with any other planned in the next seven days.',
   '2026.10.15.001': 'Opening from the home screen now shows DOG FOOD and the mark on black while the app loads, instead of a blank screen. iPhone only picks this up when the app is added, so remove it from the home screen and add it again once to see it.',
+  '2026.10.18.001': 'Blocks have a purpose now, not only a position. A strength goal runs Muscle, then Strength, then Power \u2014 slow-fading strength first, explosive work last, with a jump or throw leading every lift day in the Power block. A muscle goal runs Muscle, Muscle, Strength. A running goal runs Base, Build, Sharpen: one quality run at most in Base, tempo leading in Build, intervals in Sharpen. Today shows which block you are in; Settings \u2192 Training Setup \u2192 This block lets you pick a different one for the current block and rebuilds the days ahead, with an Undo.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -17550,6 +17562,7 @@ async function loadTrainingSetup(){
     const cfg = await getBlockConfig();
     document.getElementById('blockLengthSelect').value = String(cfg.length);
   } catch(e){}
+  await paintBlockTypeSelect();
   await renderBlockPositionNote();
   renderSettingsSummaries();
 }
@@ -17660,8 +17673,12 @@ async function renderBlockPositionNote(){
         progLine += ' Loads start ~10% below last block and ramp back based on how this week goes.';
       }
     }
-    el.textContent = `Block ${blockNo}, week ${pos.weekInBlock} of ${pos.length} — ${phase}.`
-      + (dl ? ' Volume drops to maintenance this week.' : '') + progLine;
+    const btNow = await getBlockTypeFor(todayStr);
+    const typeLine = btNow.type
+      ? ` ${BLOCK_TYPES[btNow.type].note}` + (btNow.chosen ? ' Chosen for this block; the next one goes back to your goal\'s order.' : '')
+      : '';
+    el.textContent = `${btNow.type ? blockTypeLabel(btNow.type) + ' block' : 'Block'} ${blockNo}, week ${pos.weekInBlock} of ${pos.length} — ${phase}.`
+      + (dl ? ' Volume drops to maintenance this week.' : '') + typeLine + progLine;
   } catch(e){ el.textContent = '—'; }
 }
 
@@ -17673,6 +17690,32 @@ document.getElementById('resetBlockBtn').addEventListener('click', async ()=>{
   await renderBlockPositionNote();
   showToast('New block started from this week');
 });
+/* "From your goal" names what that would be, so choosing it is not a guess. */
+async function paintBlockTypeSelect(){
+  const sel = document.getElementById('blockTypeSelect');
+  if(!sel) return;
+  const now = await getBlockTypeFor(todayStr);
+  let auto = null;
+  try{
+    const list = ((await getCurrentGoals(todayStr)) || {}).list || [];
+    const lead = list.find(g => g && !g.isMaintenance && BLOCK_SEQUENCES[g.type]);
+    if(lead){ const seq = BLOCK_SEQUENCES[lead.type]; auto = seq[now.n % seq.length]; }
+  } catch(e){}
+  sel.options[0].textContent = auto ? `From your goal — ${blockTypeLabel(auto)}` : 'From your goal';
+  sel.value = now.chosen ? now.type : 'auto';
+}
+// Returns whether the block's type actually changed, which is what decides a rebuild.
+async function saveBlockTypeSelect(){
+  const sel = document.getElementById('blockTypeSelect');
+  if(!sel) return false;
+  const before = await getBlockTypeFor(todayStr);
+  try{
+    if(sel.value === 'auto') await window.storage.delete(BLOCK_TYPE_OVERRIDE_KEY);
+    else await window.storage.set(BLOCK_TYPE_OVERRIDE_KEY, JSON.stringify({ type: sel.value, block: before.n }));
+  } catch(e){}
+  await paintBlockTypeSelect();
+  return (await getBlockTypeFor(todayStr)).type !== before.type;
+}
 document.getElementById('saveTrainingSetupBtn').addEventListener('click', async ()=>{
   const availableDays = Array.from(document.querySelectorAll('.avail-day')).filter(cb=>cb.checked).map(cb=>cb.value);
   const setup = {
@@ -17691,8 +17734,15 @@ document.getElementById('saveTrainingSetupBtn').addEventListener('click', async 
     const cfg = await getBlockConfig();
     const newLen = parseInt(document.getElementById('blockLengthSelect').value, 10) || BLOCK_LENGTH_DEFAULT;
     await window.storage.set('settings:blockConfig', JSON.stringify({ length:newLen, anchor:cfg.anchor, blockIndex:cfg.blockIndex }));
+    const blockTypeChanged = await saveBlockTypeSelect();
     await renderBlockPositionNote();
     showToast('Training setup saved');
+    // A different block type is a different plan for every day left in it, so the days
+    // ahead are rebuilt the same way a goal change rebuilds them — with an Undo.
+    if(blockTypeChanged){
+      const r = await rebuildFutureDaysFromGoals();
+      if(r && r.generated) showToast(`Rebuilt the days ahead as a ${blockTypeLabel((await getBlockTypeFor(todayStr)).type) || 'new'} block`);
+    }
     renderSettingsSummaries();
     /* The Split row on Weekly names a split by how many days you train, and this is the one
        place that number changes. It only repainted from paintGoalSummary — called when
@@ -27442,9 +27492,15 @@ async function computeStrengthDemandPressure(goal){
   return { pressure: requiredPctPerWeek / realisticPctPerWeek, tier, requiredPctPerWeek, realisticPctPerWeek };
 }
 
-async function distributeSessionFocuses(goalList, strengthSessionCount, blockPhase){
+async function distributeSessionFocuses(goalList, strengthSessionCount, blockPhase, blockType){
   const liftGoals = goalList.filter(g => GOAL_DOMAIN[g.type]==='lift');
   if(liftGoals.length===0 || strengthSessionCount===0) return [];
+  /* The block type speaks for the top lift goal only. A strength block on a muscle goal
+     makes that goal's days heavy; a second goal further down keeps its own rep range,
+     which is the whole reason the days are shared out by goal. */
+  const blockFocus = blockType && BLOCK_TYPES[blockType] && BLOCK_TYPES[blockType].liftFocus;
+  const focusOf = (g, i) => (i === 0 && blockFocus && !g.isMaintenance) ? blockFocus : liftGoalToFocus(g.type);
+  const topFocus = focusOf(liftGoals[0], 0);
 
   const maxRank = goalList.length;
   const weights = liftGoals.map(g => {
@@ -27459,7 +27515,7 @@ async function distributeSessionFocuses(goalList, strengthSessionCount, blockPha
 
   let focusSequence = [];
   liftGoals.forEach((g,i)=>{
-    for(let k=0; k<counts[i]; k++) focusSequence.push(liftGoalToFocus(g.type));
+    for(let k=0; k<counts[i]; k++) focusSequence.push(focusOf(g, i));
   });
 
   // Training Dose Engine (§3): a goal with a genuinely tight timeline relative to its gap
@@ -27468,7 +27524,7 @@ async function distributeSessionFocuses(goalList, strengthSessionCount, blockPha
   // Timeline urgency should never override actual recovery capacity, same principle as
   // the running-tier safety ceiling.
   const topGoal = liftGoals[0];
-  if(topGoal && !topGoal.isMaintenance && liftGoalToFocus(topGoal.type) !== 'strength'){
+  if(topGoal && !topGoal.isMaintenance && topFocus !== 'strength'){
     const demand = await computeStrengthDemandPressure(topGoal);
     if(demand && demand.pressure > 1.5){
       let loadSafe = true;
@@ -27489,8 +27545,11 @@ async function distributeSessionFocuses(goalList, strengthSessionCount, blockPha
 
   if(blockPhase === 'intensification'){
     // Realization/peaking phase — full commitment to the top-priority goal's rep range.
-    focusSequence = focusSequence.map(()=> liftGoalToFocus(liftGoals[0].type));
-  } else if(blockPhase === 'accumulation' && strengthSessionCount > 1 && liftGoalToFocus(liftGoals[0].type) !== 'hypertrophy'){
+    focusSequence = focusSequence.map(()=> topFocus);
+  } else if(blockPhase === 'accumulation' && strengthSessionCount > 1 && topFocus !== 'hypertrophy'
+            && !(blockType && BLOCK_TYPES[blockType] && BLOCK_TYPES[blockType].powerLead)){
+    // Not in a power block: its weeks are short on volume by design, and a high-rep day
+    // is the opposite of what the block is protecting.
     // Volume-accumulation phase — even a pure-strength-goal week gets one higher-rep
     // session early in the block, shifting toward pure strength work by week 3.
     focusSequence[focusSequence.length-1] = 'hypertrophy';
@@ -27829,12 +27888,14 @@ function buildStrengthSlots(strengthCount, splitType, sessionLength, densityMult
 // with a 2-session gap preference, then fill with easy) so slot planning and actual
 // generation stay in agreement — this determines type, generateRunPlan still determines
 // the actual distance/notes per date once dates are assigned.
-async function buildRunSlots(tierKey, maxSessions){
+async function buildRunSlots(tierKey, maxSessions, blockType){
   const tier = { ...RUN_PLAN_TEMPLATES[tierKey] };
   if(maxSessions!=null) tier.runsPerWeek = Math.min(tier.runsPerWeek, maxSessions);
   let goalNote = null;
   const goals = await getCurrentGoals(todayStr);
   goalNote = applyGoalRankToRunTier(tier, goals) || goalNote;
+  // Before the injury ceiling, so an injury can still take away what the block allowed.
+  const QUALITY_ROTATION = applyRunBlockType(tier, blockType);
   // Injury ceiling — strips quality work, and the long run too when severe. Applied
   // after the goal adjustment so an injury note replaces the softer maintenance note
   // rather than the more important signal being silently overwritten.
@@ -27849,8 +27910,7 @@ async function buildRunSlots(tierKey, maxSessions){
   // Quality rotates across tempo / interval / fartlek rather than alternating two types.
   // Fartlek is unstructured speed play: the physiological demand sits between an easy run
   // and a formal interval session, which makes it a lower-cost way to add a third quality
-  // stimulus without a third hard day.
-  const QUALITY_ROTATION = ['tempo','interval','fartlek'];
+  // stimulus without a third hard day. Which of the three leads is the block's call.
   for(let q=0; q<tier.qualityCount; q++) slots.push({ kind:'run', runType: QUALITY_ROTATION[q % QUALITY_ROTATION.length], stressType:'quality_run' });
   const easyNeeded = tier.runsPerWeek - slots.length;
   for(let e=0; e<easyNeeded; e++) slots.push({ kind:'run', runType:'easy', stressType:'easy_run' });
@@ -29405,6 +29465,9 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
   // so an unsaved edit produces a week that contradicts what is on screen with nothing to
   // say why — a running goal you added but did not save reads as "strength-only" here.
   const result = { plan, goalsUsed: goals.list.map(g=>g.type) };
+  const _bt = await getBlockTypeFor((weekDatesOverride || getWeekDates())[0], goals.list);
+  const blockType = blockPhase === 'deload' ? null : _bt.type;
+  result.blockType = _bt.type;
   const topGoalTypeForSplit = (goals.list[0] && goals.list[0].type) || null;
 
   const emptyDates = await getAvailableEmptyDates(weekDatesOverride);
@@ -29425,7 +29488,7 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
     const plannedDensity = (tePrefs.supersets ? SUPERSET_STRESS_MULTIPLIER : 1)
                          * (tePrefs.dropSets ? DROPSET_STRESS_MULTIPLIER : 1);
     const strengthSlots = buildStrengthSlots(plan.strengthSessions, splitType, sessionLength, plannedDensity);
-    const { slots: runSlots, goalNote: runGoalNote } = await buildRunSlots(runTierForSlots, plan.runningSessions);
+    const { slots: runSlots, goalNote: runGoalNote } = await buildRunSlots(runTierForSlots, plan.runningSessions, blockType);
     const placement = assignSlotsWithAdjacency(emptyDates, strengthSlots, runSlots);
     strengthDates = placement.strengthDates;
     strengthDateTags = placement.strengthDateTags;
@@ -29440,8 +29503,8 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
   }
 
   if(plan.strengthSessions > 0){
-    const focusSequence = await distributeSessionFocuses(goals.list, plan.strengthSessions, blockPhase);
-    const genResult = await generateStrengthProgram(plan.strengthSessions, splitType, includeMobility, strengthDates, volumeWaveNote, focusSequence, comboDates, strengthDateTags, blockPhase);
+    const focusSequence = await distributeSessionFocuses(goals.list, plan.strengthSessions, blockPhase, blockType);
+    const genResult = await generateStrengthProgram(plan.strengthSessions, splitType, includeMobility, strengthDates, volumeWaveNote, focusSequence, comboDates, strengthDateTags, blockPhase, blockType);
     result.liftPlaced = genResult.placed || 0;
     result.splitLabel = genResult.splitLabel;
     result.splitType = splitType;
@@ -29449,7 +29512,7 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
   }
 
   if(plan.runningSessions > 0){
-    const genResult = await generateRunPlan(runTierForSlots, plan.runningSessions, runDates, runSlotByDate, runSlotOverride);
+    const genResult = await generateRunPlan(runTierForSlots, plan.runningSessions, runDates, runSlotByDate, runSlotOverride, blockType);
     result.runPlaced = genResult.placed || 0;
     result.runGoalNote = result.runGoalNote || genResult.goalNote;
   }
@@ -30045,7 +30108,9 @@ async function renderTodayBlockContext(forDate){
     const dl = isDeloadPosition(pos.weekInBlock, pos.length);
     const reintro = isBlockReintroWeek(pos.weekInBlock, pos.blocksCompleted);
     const phase = dl ? 'deload' : getBlockPhase(pos.weekInBlock, dl, pos.length);
-    let line = `Block ${pos.blocksCompleted + 1} · week ${pos.weekInBlock}/${pos.length} · ${phase}`;
+    const bt = dl ? null : (await getBlockTypeFor(forDate || todayStr)).type;
+    // The type leads the block number — "Strength block 2" is the thing you can act on.
+    let line = `${bt ? blockTypeLabel(bt) + ' block' : 'Block'} ${pos.blocksCompleted + 1} · week ${pos.weekInBlock}/${pos.length} · ${phase}`;
     let note = '';
     // The notes are all written in the present tense about today. On a day you have swiped
     // back to they would be advice about a week that has already happened, so the line keeps
@@ -30054,6 +30119,7 @@ async function renderTodayBlockContext(forDate){
     else if(dl) note = 'Planned recovery week — a good score today is the deload working, not a reason to add work back.';
     else if(reintro) note = 'First week back — loads are intentionally ~10% down. Ramping, not testing.';
     else if(phase === 'intensification') note = 'Highest planned volume of the block. If the score is low, this is the week to take that seriously.';
+    else if(bt && pos.weekInBlock === 1) note = BLOCK_TYPES[bt].note;
     el.innerHTML = chipRow(line) + (note ? `<div style="opacity:0.75; margin-top:6px;">${note}</div>` : '');
   } catch(e){ el.textContent = ''; }
 }
@@ -31290,6 +31356,85 @@ function getBlockPhase(weekInBlock, isDeload, length){
   return weekInBlock >= length - 1 ? 'intensification' : 'accumulation';
 }
 
+/* WHAT A BLOCK IS FOR, NOT ONLY WHERE YOU ARE IN IT.
+
+   Every block used to run the same: build, push, deload, repeat, with the goal deciding the
+   rep mix and nothing about the block itself changing. Phase says where you are in a block;
+   type says what the block is training, and it changes from one block to the next.
+
+   What the order rests on. No periodisation model beats another for muscle (Grgic 2017, 13
+   studies, linear vs undulating d = -0.02) and undulating has a small edge only for 1RM
+   strength, so this is not a claim that blocks win. What blocks buy is ORDER: qualities fade
+   at different speeds once you stop training them — maximal strength and aerobic base hold
+   for about a month, explosive strength for about a week (Issurin's residual training
+   effects) — so slow-fading work goes first and power goes last, closest to whatever it is
+   for. And power is the one quality concurrent cardio does blunt (Schumann 2022, 43 studies:
+   muscle and maximal strength unaffected, explosive strength reduced, more so in the same
+   session), which is why a power block keeps it at the front of every lift day.
+
+   The goal at the top of your list that has a sequence picks it; a goal you are maintaining
+   does not get to steer the block. Choosing a type yourself in Training Setup sets this one
+   block, and the next block goes back to the sequence. */
+const BLOCK_TYPES = {
+  muscle:   { label:'Muscle',   liftFocus:'hypertrophy',
+              note:'Muscle block — 8–12 reps, volume building week to week.' },
+  strength: { label:'Strength', liftFocus:'strength',
+              note:'Strength block — main lifts heavy at 3–6 reps; accessories stay 8–12.' },
+  power:    { label:'Power',    liftFocus:'strength', powerLead:true,
+              note:'Power block — a jump or throw leads every lift day while you are fresh, main lifts stay heavy. Power fades within about a week of stopping, so it comes last.' },
+  base:     { label:'Base',     run:'base',
+              note:'Base block — easy running volume, one quality run at most.' },
+  build:    { label:'Build',    run:'build',
+              note:'Build block — tempo leads the quality work.' },
+  sharpen:  { label:'Sharpen',  run:'sharpen',
+              note:'Sharpen block — intervals lead the quality work.' }
+};
+const BLOCK_SEQUENCES = {
+  strength:    ['muscle', 'strength', 'power'],
+  // Muscle stays muscle, with a heavier block every third so the heavy end is not left to rust.
+  hypertrophy: ['muscle', 'muscle', 'strength'],
+  running:     ['base', 'build', 'sharpen']
+};
+const BLOCK_TYPE_OVERRIDE_KEY = 'settings:blockTypeOverride';
+
+// The block type in force for the week containing `date`. An override only counts for the
+// block it was chosen in, so it expires by itself when that block ends.
+/* Counted across resets: "Start a new block from this week" moves the anchor, which puts
+   blocksCompleted back to zero, and bumps blockIndex — so the two together are how many
+   blocks have really gone by, and starting a new block early still moves the order on. */
+async function blockOrdinal(date){
+  const pos = await getBlockPosition(date || todayStr);
+  let idx = 0;
+  try{ idx = (await getBlockConfig()).blockIndex || 0; } catch(e){}
+  return { pos, n: pos.blocksCompleted + idx };
+}
+async function getBlockTypeFor(date, goalList){
+  const { pos, n } = await blockOrdinal(date);
+  try{
+    const o = JSON.parse((await window.storage.get(BLOCK_TYPE_OVERRIDE_KEY)).value);
+    if(o && BLOCK_TYPES[o.type] && o.block === n) return { type: o.type, chosen: true, pos, n };
+  } catch(e){}
+  let list = goalList;
+  if(!list){ try{ list = ((await getCurrentGoals(todayStr)) || {}).list || []; } catch(e){ list = []; } }
+  const lead = list.find(g => g && !g.isMaintenance && BLOCK_SEQUENCES[g.type]);
+  if(!lead) return { type: null, chosen: false, pos, n };
+  const seq = BLOCK_SEQUENCES[lead.type];
+  return { type: seq[n % seq.length], chosen: false, pos, n, goalType: lead.type };
+}
+function blockTypeLabel(type){ return (type && BLOCK_TYPES[type]) ? BLOCK_TYPES[type].label : ''; }
+
+// The run side of a run block: how many quality sessions, and which kind leads.
+const RUN_QUALITY_ROTATION = ['tempo', 'interval', 'fartlek'];
+function applyRunBlockType(tier, blockType){
+  const run = blockType && BLOCK_TYPES[blockType] && BLOCK_TYPES[blockType].run;
+  if(run === 'base'){
+    tier.qualityCount = Math.min(tier.qualityCount, 1);
+    return ['tempo'];
+  }
+  if(run === 'sharpen') return ['interval', 'fartlek', 'tempo'];
+  return RUN_QUALITY_ROTATION;
+}
+
 /* GOALS CHANGE, AND THE PLAN DID NOT — saving a goal used to only repaint a summary and the
    mobility progression chart; the days already sitting in weekplan storage kept whatever they
    were built from before the edit, and Generate itself only fills EMPTY days, so nothing
@@ -31851,7 +31996,7 @@ function assignPrescription(ex, plannedFocus, personalSets){
   return ex;
 }
 
-async function generateStrengthProgram(sessionsPerWeek, splitType, includeBulletproofing, forcedDates, volumeWaveNote, focusSequence, comboDates, explicitDayTags, blockPhase){
+async function generateStrengthProgram(sessionsPerWeek, splitType, includeBulletproofing, forcedDates, volumeWaveNote, focusSequence, comboDates, explicitDayTags, blockPhase, blockType){
   comboDates = comboDates || new Set();
   const template = SPLIT_TEMPLATES[splitType];
   const dayTags = explicitDayTags || template.tagsFor(sessionsPerWeek);
@@ -31912,8 +32057,10 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
      alive for a runner who also lifts, not enough to spend a fifth of every session on it.
      An explicit `power` flag on any goal still counts as asking outright. */
   const powerGoals = (goals && goals.list || []).filter(goalWantsPower);
-  const wantsPowerLead = powerGoals.length > 0;
-  const powerLeadIsPrimary = !!(goals && goals.list && goals.list[0] && goalWantsPower(goals.list[0]));
+  // A power block asks for it on every lift day, whatever the goals say on their own.
+  const powerBlock = !!(blockType && BLOCK_TYPES[blockType] && BLOCK_TYPES[blockType].powerLead);
+  const wantsPowerLead = powerGoals.length > 0 || powerBlock;
+  const powerLeadIsPrimary = powerBlock || !!(goals && goals.list && goals.list[0] && goalWantsPower(goals.list[0]));
   const powerLeadDayMax = powerLeadIsPrimary ? Infinity
     : (powerGoals.some(g => !!g.power) ? Infinity : POWER_LEAD_SECONDARY_DAYS);
   let powerLeadDays = 0;
@@ -32450,6 +32597,7 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
       type:'strength',
       details: { exercises: swappedExercises, workoutTag: tag, plannedFocus, deloadApplied: _deloadApplied,
         supersetPairs, dropSetCount, densityMultiplier: appliedDensity,
+        blockType: blockType || null,
         notes: 'Auto-generated — adjust weights/reps freely, this is a starting structure' + (volumeWaveNote ? ' — ' + volumeWaveNote : '') + focusNote + trimNote }
     }));
     // Mirror to planned_session — Daily view reads from here, not from weekplan directly.
@@ -32639,7 +32787,7 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
   return { placed: placedDates.length, mobilityCompanionPlaced, skillMobilityPlaced, splitLabel: template.label };
 }
 
-async function generateRunPlan(tierKey, maxSessions, forcedDates, runSlotByDate, runSlotOverride){
+async function generateRunPlan(tierKey, maxSessions, forcedDates, runSlotByDate, runSlotOverride, blockType){
   let toPlace, goalNote = null;
   // Context for post-run companion mobility (see placement below).
   let multiSessionOkForRuns = false;
@@ -32662,6 +32810,7 @@ async function generateRunPlan(tierKey, maxSessions, forcedDates, runSlotByDate,
     if(maxSessions!=null) tier.runsPerWeek = Math.min(tier.runsPerWeek, maxSessions);
     const goals = await getCurrentGoals(todayStr);
     goalNote = applyGoalRankToRunTier(tier, goals) || goalNote;
+    const qualityRotation = applyRunBlockType(tier, blockType);
     // Same injury ceiling as buildRunSlots — this is the standalone path (no adjacency
     // pre-planning), so it has to resolve it independently.
     const ceiling = await getRunningCapacityCeiling();
@@ -32702,12 +32851,12 @@ async function generateRunPlan(tierKey, maxSessions, forcedDates, runSlotByDate,
     let qualityPlaced = 0;
     for(const d of runDates){
       if(usedDates.has(d) || qualityPlaced >= tier.qualityCount) continue;
-      const lastQualityDate = toPlace.filter(t=>['tempo','interval'].includes(t.runType)).map(t=>t.date).pop();
+      const lastQualityDate = toPlace.filter(t=>RUN_QUALITY_ROTATION.includes(t.runType)).map(t=>t.date).pop();
       if(lastQualityDate){
         const gap = Math.abs(new Date(d) - new Date(lastQualityDate))/(1000*60*60*24);
         if(gap < 2) continue;
       }
-      toPlace.push({ date: d, runType: qualityPlaced===0 ? 'tempo' : 'interval' });
+      toPlace.push({ date: d, runType: qualityRotation[qualityPlaced % qualityRotation.length] });
       usedDates.add(d);
       qualityPlaced++;
     }
