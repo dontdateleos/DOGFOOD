@@ -12114,7 +12114,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.18.005';
+const APP_VERSION = '2026.10.18.006';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12506,6 +12506,7 @@ const APP_NOTES = {
   '2026.10.18.003': 'Lift days can end with a 6\u20138 minute finisher now \u2014 bike or rower intervals, an EMOM, a short AMRAP or carries, picked to spare whatever the day already worked. The time comes out of your session length, so a 60-minute day is still 60 minutes. None on a deload, after a power lead, the day before a golf round, or in sessions of 30 minutes or less, and you can switch them off in Training Setup. A new Engine block (Hyrox runs Strength then Engine; anyone can pick it) puts a finisher on every lift day and swaps one lift a week for a 20\u201324 minute metcon. Everything in them is low-skill on purpose: no cleans or deadlifts against a clock. Also fixed: Today halved the sets of a deload week that had already been halved when it was planned.',
   '2026.10.18.004': 'Block length sets itself now, from what the block is for. Muscle and In-season blocks run 6 weeks, Strength and Base 5, Build and Engine 4, Power and Sharpen 3 \u2014 deload week included in each. Volume-building blocks run long, peaking blocks short because power fades within about a week, and nothing goes past six weeks without a deload (lifters deload about every 5\u00bd weeks on average). Finished blocks keep the length they ran, so changing a goal or your golf season reshapes the block you are in and the ones ahead, never your history. A fixed length is still there under Training Setup \u2192 Block length if you want one.',
   '2026.10.18.005': 'Switching to automatic block lengths no longer moves you. Blocks you had already finished keep the length they actually ran, so you stay in the same block and week you were in \u2014 only the block you are in now, and the ones after it, take their length from their type.',
+  '2026.10.18.006': 'Power blocks have more to work with. Pull days get an explosive pull to open with \u2014 Explosive Pull-up, Explosive Inverted Row, Pendlay Row or Kettlebell High Pull \u2014 where before they had none. Every Power-block day also adds a second fast movement for the other half of the body, a throw on leg days and a jump on upper days, alongside the heavy lift. And two days with the same pattern no longer open with the same jump: the second squat day gets the next one down. New for bodyweight training: the Incline Plyometric Push-up.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -17159,6 +17160,18 @@ const EXERCISE_LIBRARY = {
   cable_woodchop: { name:"Cable Woodchop", aliases:["cable woodchop", "woodchop", "wood chop", "high to low chop", "cable chop", "band woodchop"], category:"bulletproofing", area:"core", secondaryArea:"thoracic", movement:"core", difficulty:"beginner", equipment:["cable", "band"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"B", powerTier:"B", tierEvidence:"limited", tierNote:"High to low across the body, turning from the hips with the chest following — the downswing's direction, under load you control." },
   cable_lift: { name:"Half-Kneeling Cable Lift", aliases:["half kneeling cable lift", "cable lift", "low to high chop", "low to high woodchop"], category:"bulletproofing", area:"core", secondaryArea:"thoracic", movement:"core", difficulty:"beginner", equipment:["cable", "band"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"C", tierEvidence:"limited", tierNote:"Low to high from half-kneeling, which locks the hips so the upper back has to do the turning. The thoracic rotation a backswing needs, without the lower back standing in for it." },
   hip_airplane: { name:"Hip Airplane", aliases:["hip airplane", "hip airplanes", "single leg hip airplane"], category:"bulletproofing", area:"hips", secondaryArea:"glutes", movement:"hinge", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"C", tierEvidence:"limited", tierNote:"Rotating the pelvis over a planted leg, in and out — hip internal rotation under body weight, which is exactly the lead-hip movement golf low-back pain is linked to running short of." },
+  /* EXPLOSIVE PULLS. A pull day was the one day a power lead could not exist: the library
+     had jumps for the legs, throws and presses for the push, and nothing at all that pulls
+     fast — its own lead picker said so in a comment. In a Power block that left every pull
+     day as a plain strength day. What makes these power work is intent: moving the load as
+     fast as you can on every rep builds more strength and power than the same load at a
+     comfortable speed (Pareja-Blanco 2014), so each is done for few reps, fully rested,
+     and stopped the moment a rep slows down. */
+  explosive_pull_up: { name:"Explosive Pull-up", loadFactor:1.0, aliases:["explosive pull up", "explosive pull-up", "speed pull up", "speed pull-up"], category:"power", area:"thoracic", secondaryArea:"biceps", movement:"pull", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"A", hypertrophyTier:"B", powerTier:"A", tierEvidence:"limited", tierNote:"Pull as fast as possible, aiming the chest at the bar, lower under control. Three to five reps; the set ends when one is visibly slower than the first." },
+  explosive_inverted_row: { name:"Explosive Inverted Row", loadFactor:0.55, aliases:["explosive inverted row", "speed inverted row", "explosive australian pull up"], category:"power", area:"thoracic", secondaryArea:"biceps", movement:"pull", difficulty:"beginner", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"B", hypertrophyTier:"B", powerTier:"B", tierEvidence:"limited", tierNote:"The entry point: the same intent as the explosive pull-up at about half the load, so anyone who cannot yet pull fast from a hang still gets a fast pull." },
+  pendlay_row: { name:"Pendlay Row", aliases:["pendlay row", "dead stop row", "explosive barbell row"], category:"power", area:"thoracic", secondaryArea:"biceps", movement:"pull", difficulty:"intermediate", equipment:["barbell"], evidenceConfidence:"coaching_consensus", strengthTier:"A", hypertrophyTier:"B", powerTier:"A", tierEvidence:"limited", tierNote:"Every rep starts dead on the floor, so there is no stretch to bounce out of — each one has to be produced from rest, as fast as you can. Back flat, torso near parallel." },
+  kettlebell_high_pull: { name:"Kettlebell High Pull", aliases:["kettlebell high pull", "kb high pull"], category:"power", area:"shoulders", secondaryArea:"thoracic", movement:"pull", difficulty:"beginner", equipment:["kettlebell"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"B", tierEvidence:"limited", tierNote:"A swing that finishes with the elbow driving high, so the hips make the speed and the upper back has to catch and steer it." },
+  incline_plyo_push_up: { name:"Incline Plyometric Push-up", loadFactor:0.45, aliases:["incline plyo push up", "incline plyometric push up", "bench plyo push up", "box plyo push up"], category:"power", area:"chest", secondaryArea:"triceps", movement:"push", difficulty:"beginner", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Hands on a bench or box, push hard enough that they leave it. The incline takes roughly half the load and most of the landing off the wrists, which is what keeps the full plyometric push-up advanced and this one not." },
   /* UPPER-BODY BALLISTIC, LOADED. */
   plyo_push_up: { name:"Plyometric Push-up", loadFactor:1.0, aliases:["plyo push up", "plyometric push up", "clap push up"], category:"power", area:"chest", secondaryArea:"triceps", movement:"push", difficulty:"advanced", equipment:["bodyweight"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate", tierNote:"Upper-body reactive strength, and the only one of these that needs no equipment at all. Advanced because the landing goes through the wrists and elbows at bodyweight." },
   bench_throw: { name:"Bench Throw", aliases:["bench throw", "ballistic bench press", "smith bench throw"], category:"power", area:"chest", secondaryArea:"triceps", movement:"push", difficulty:"intermediate", equipment:["machine", "barbell"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate", tierNote:"A bench press where the bar is released at the top, which removes the deceleration that makes a normal fast bench press stop being fast for its last third. Needs a Smith machine or a spotter and is genuinely dangerous without one." },
@@ -27030,8 +27043,8 @@ const POWER_LEAD_SECONDARY_DAYS = 1;
    ISOLATION-PATTERN ENTRIES ARE LOWER-BODY ONLY. The old escape hatch was `category ===
    'running_drill'`, which let anything filed as a drill through on ANY day: a pull day was
    being led by Bounding, which has no relationship to a pull at all. Sprints and bounds are
-   lower-body power and belong on a squat or hinge day; on an upper day the honest answer is
-   that this library has no explosive pull, so the lead is simply absent. */
+   lower-body power and belong on a squat or hinge day. A pull day used to get no lead at all,
+   for want of an explosive pull in the library; it has four now. */
 /* Whether an exercise reports a result rather than a load, answered from the library so the
    logging row, the capacity strand and the progression rule cannot disagree about it. */
 /* The template has a typed name and no exercise id, so it asks by name. Same source of
@@ -27066,6 +27079,32 @@ function powerLeadForMovement(movement, opts){
   const [id, ex] = cands[0];
   return { name: ex.name, area: ex.area, secondaryArea: ex.secondaryArea || '',
     movement: ex.movement || movement || '', exerciseId: id, isPowerLead: true,
+    sets: 3, reps: '3-5', effort: 'explosive — full recovery between sets' };
+}
+
+/* THE OTHER HALF, FAST. A Power block's lead primes the day's own pattern; this is the
+   second explosive movement, for the half of the body the day is not about — a throw on a
+   leg day, a jump on an upper day. Mixing heavy lifting with light, fast work builds power
+   across more of the force-velocity curve than either alone (Cormie, McGuigan & Newton
+   2011), and the heavy half is already the main lift. Throws and bodyweight jumps only, and
+   nothing advanced: this is the second power movement of the session, not the place to
+   learn a depth jump. */
+function secondBallisticFor(movement, opts){
+  const o = opts || {};
+  const upperDay = ['push', 'pull'].includes(movement);
+  const wanted = upperDay ? ['squat'] : ['push', 'core'];
+  const rank = ex => POWER_TIER_RANK[ex.powerTier] || 0;
+  const ask = ex => POWER_LEAD_DIFFICULTY[ex.difficulty] == null ? 1 : POWER_LEAD_DIFFICULTY[ex.difficulty];
+  const cands = Object.entries(EXERCISE_LIBRARY)
+    .filter(([id, ex]) => ex.category === 'power' && wanted.includes(ex.movement) && ex.difficulty !== 'advanced')
+    .filter(([id, ex]) => (ex.equipment || []).some(e => e === 'medicine_ball' || e === 'bodyweight'))
+    .filter(([id, ex]) => !o.bodyweightOnly || isBodyweightExercise(ex))
+    .filter(([id, ex]) => !o.usedNames || !o.usedNames.has(ex.name))
+    .sort((a, b) => (rank(b[1]) - rank(a[1])) || (ask(a[1]) - ask(b[1])));
+  if(!cands.length) return null;
+  const [id, ex] = cands[0];
+  return { name: ex.name, area: ex.area, secondaryArea: ex.secondaryArea || '',
+    movement: ex.movement, exerciseId: id, isPowerLead: true,
     sets: 3, reps: '3-5', effort: 'explosive — full recovery between sets' };
 }
 
@@ -32536,6 +32575,11 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
   const powerLeadDayMax = powerLeadIsPrimary ? Infinity
     : (powerGoals.some(g => !!g.power) ? Infinity : POWER_LEAD_SECONDARY_DAYS);
   let powerLeadDays = 0;
+  /* Two squat days in one week both opened with Squat Jump: the picker always took the top
+     of the list. The week's leads are passed back in, so the second squat day gets the next
+     one down (Countermovement Jump). Across weeks they repeat on purpose — a jump you do
+     every week is a jump whose height you can watch go up. */
+  const powerUsedThisWeek = new Set();
   // Golf puts one fast rotational movement on every lift day, cycling through the list.
   const golfForWeek = await golfSettings();
   const golfOn = !!golfForWeek;
@@ -32677,9 +32721,20 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
        runs over it like anything else — a jump is a high-force movement and a flagged joint
        has no business absorbing one. */
     if(wantsPowerLead && powerLeadDays < powerLeadDayMax){
-      const lead = powerLeadForMovement(movement, { bodyweightOnly: equipmentPrefs.bodyweightAll });
+      const lead = powerLeadForMovement(movement, { bodyweightOnly: equipmentPrefs.bodyweightAll, usedNames: powerUsedThisWeek })
+        || powerLeadForMovement(movement, { bodyweightOnly: equipmentPrefs.bodyweightAll });
       const safeLead = lead ? applyInjurySafety(lead, injuryMovementFlags) : null;
-      if(safeLead){ safeLead.isMainLift = true; exercises.push(safeLead); powerLeadDays++; }
+      if(safeLead){ safeLead.isMainLift = true; exercises.push(safeLead); powerLeadDays++; powerUsedThisWeek.add(safeLead.name); }
+      // In a Power block, a second fast movement for the other half of the body. Golf days
+      // already carry a rotational throw, which is that movement.
+      if(powerBlock && !golfOn){
+        const second = secondBallisticFor(movement, { bodyweightOnly: equipmentPrefs.bodyweightAll, usedNames: powerUsedThisWeek })
+          || secondBallisticFor(movement, { bodyweightOnly: equipmentPrefs.bodyweightAll });
+        const safeSecond = second ? applyInjurySafety(second, injuryMovementFlags) : null;
+        if(safeSecond && !safeSecond.skippedForInjury && !exercises.some(e=>e.name === safeSecond.name)){
+          safeSecond.isMainLift = true; exercises.push(safeSecond); powerUsedThisWeek.add(safeSecond.name);
+        }
+      }
     }
     /* WHERE IT GOES, AND WHY THAT DEPENDS ON WHAT IT IS.
 

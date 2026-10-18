@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.18.005",
+ "generatedFrom": "2026.10.18.006",
  "generatedBy": "tools/spec-dump.mjs",
  "libraries": {
   "EXERCISE_LIBRARY": {
@@ -2643,6 +2643,120 @@
     "powerTier": "C",
     "tierEvidence": "limited",
     "tierNote": "Rotating the pelvis over a planted leg, in and out — hip internal rotation under body weight, which is exactly the lead-hip movement golf low-back pain is linked to running short of."
+   },
+   "explosive_pull_up": {
+    "name": "Explosive Pull-up",
+    "loadFactor": 1,
+    "aliases": [
+     "explosive pull up",
+     "explosive pull-up",
+     "speed pull up",
+     "speed pull-up"
+    ],
+    "category": "power",
+    "area": "thoracic",
+    "secondaryArea": "biceps",
+    "movement": "pull",
+    "difficulty": "intermediate",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "A",
+    "hypertrophyTier": "B",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "Pull as fast as possible, aiming the chest at the bar, lower under control. Three to five reps; the set ends when one is visibly slower than the first."
+   },
+   "explosive_inverted_row": {
+    "name": "Explosive Inverted Row",
+    "loadFactor": 0.55,
+    "aliases": [
+     "explosive inverted row",
+     "speed inverted row",
+     "explosive australian pull up"
+    ],
+    "category": "power",
+    "area": "thoracic",
+    "secondaryArea": "biceps",
+    "movement": "pull",
+    "difficulty": "beginner",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "B",
+    "hypertrophyTier": "B",
+    "powerTier": "B",
+    "tierEvidence": "limited",
+    "tierNote": "The entry point: the same intent as the explosive pull-up at about half the load, so anyone who cannot yet pull fast from a hang still gets a fast pull."
+   },
+   "pendlay_row": {
+    "name": "Pendlay Row",
+    "aliases": [
+     "pendlay row",
+     "dead stop row",
+     "explosive barbell row"
+    ],
+    "category": "power",
+    "area": "thoracic",
+    "secondaryArea": "biceps",
+    "movement": "pull",
+    "difficulty": "intermediate",
+    "equipment": [
+     "barbell"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "A",
+    "hypertrophyTier": "B",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "Every rep starts dead on the floor, so there is no stretch to bounce out of — each one has to be produced from rest, as fast as you can. Back flat, torso near parallel."
+   },
+   "kettlebell_high_pull": {
+    "name": "Kettlebell High Pull",
+    "aliases": [
+     "kettlebell high pull",
+     "kb high pull"
+    ],
+    "category": "power",
+    "area": "shoulders",
+    "secondaryArea": "thoracic",
+    "movement": "pull",
+    "difficulty": "beginner",
+    "equipment": [
+     "kettlebell"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "B",
+    "tierEvidence": "limited",
+    "tierNote": "A swing that finishes with the elbow driving high, so the hips make the speed and the upper back has to catch and steer it."
+   },
+   "incline_plyo_push_up": {
+    "name": "Incline Plyometric Push-up",
+    "loadFactor": 0.45,
+    "aliases": [
+     "incline plyo push up",
+     "incline plyometric push up",
+     "bench plyo push up",
+     "box plyo push up"
+    ],
+    "category": "power",
+    "area": "chest",
+    "secondaryArea": "triceps",
+    "movement": "push",
+    "difficulty": "beginner",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "Hands on a bench or box, push hard enough that they leave it. The incline takes roughly half the load and most of the landing off the wrists, which is what keeps the full plyometric push-up advanced and this one not."
    },
    "plyo_push_up": {
     "name": "Plyometric Push-up",
