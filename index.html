@@ -6414,7 +6414,21 @@
             <option value="base">Base (running)</option>
             <option value="build">Build (running)</option>
             <option value="sharpen">Sharpen (running)</option>
+            <option value="inseason">In-season (sport)</option>
           </select>
+        </div>
+        <div class="field-label" style="margin-top:12px; width:auto;">Sports you play</div>
+        <div class="field-row"><input type="checkbox" id="golfOnCheckbox" style="width:auto; flex:none;"><label for="golfOnCheckbox" style="font-size:var(--fs-md);">Golf</label></div>
+        <div id="golfFields" hidden>
+          <div class="field-row"><span class="field-label">Season</span>
+            <select id="golfSeasonSelect">
+              <option value="off">Off-season</option>
+              <option value="in">In-season</option>
+            </select>
+          </div>
+          <div class="field-label" style="width:auto;">Round days</div>
+          <div id="golfRoundDays" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px;"></div>
+          <div class="score-note">Off-season builds strength, then power; in-season keeps it on two short, heavy lifts a week. Every lift day gets one fast rotational movement. Round days get a moving warm-up and after-round stretches, and nothing else, and the day before keeps heavy legs off it where the split allows.</div>
         </div>
         <div id="blockPositionNote" class="score-note note-live">—</div>
         <div class="field-row"><button class="small outline" id="resetBlockBtn">Start a new block from this week</button></div>
@@ -12097,7 +12111,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.18.001';
+const APP_VERSION = '2026.10.18.002';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12485,6 +12499,7 @@ const APP_NOTES = {
   '2026.10.11.004': 'Did Upper on a Lower day? Log what you did and the app notices from the lifts: it records the session as Upper, and the next planned Upper in the coming week becomes the Lower you skipped \u2014 with an Undo right in the message. Or decide before you start: Swap day, under Replace / edit, trades today\u2019s session with any other planned in the next seven days.',
   '2026.10.15.001': 'Opening from the home screen now shows DOG FOOD and the mark on black while the app loads, instead of a blank screen. iPhone only picks this up when the app is added, so remove it from the home screen and add it again once to see it.',
   '2026.10.18.001': 'Blocks have a purpose now, not only a position. A strength goal runs Muscle, then Strength, then Power \u2014 slow-fading strength first, explosive work last, with a jump or throw leading every lift day in the Power block. A muscle goal runs Muscle, Muscle, Strength. A running goal runs Base, Build, Sharpen: one quality run at most in Base, tempo leading in Build, intervals in Sharpen. Today shows which block you are in; Settings \u2192 Training Setup \u2192 This block lets you pick a different one for the current block and rebuilds the days ahead, with an Undo.',
+  '2026.10.18.002': 'Golf is in. Turn it on under Settings \u2192 Training Setup \u2192 Sports you play, pick your season and your round days. Round days become a Golf round on the calendar (G): a moving warm-up before you hit \u2014 no held stretches, they cost speed and accuracy \u2014 and stretches for after, aimed at the lead hip, upper back, lats and wrists. Every lift day gets one fast rotational movement (med-ball throws, woodchops, landmine rotations), the day before a round keeps heavy legs off it where the split allows, and the blocks run Strength then Power off-season, or two short, heavy lifts a week in-season.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -17128,6 +17143,16 @@ const EXERCISE_LIBRARY = {
   med_ball_rotational_throw: { name:"Medicine Ball Rotational Throw", resultUnit:"m", aliases:["medicine ball rotational throw", "rotational throw", "med ball rotational throw", "shot put throw"], category:"power", area:"core", secondaryArea:"hips", movement:"core", difficulty:"beginner", equipment:["medicine_ball"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"limited", tierNote:"The only rotational power movement in the library. Core work here has been anti-rotation throughout — pallof presses, planks, carries — which trains the ability to resist a twist and never the ability to produce one." },
   med_ball_overhead_slam: { name:"Medicine Ball Overhead Slam", aliases:["medicine ball slam", "overhead slam", "ball slam"], category:"power", area:"core", secondaryArea:"thoracic", movement:"core", difficulty:"beginner", equipment:["medicine_ball"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Trunk flexion at speed against a ball that does not bounce back. Lower ceiling than the rotational throw but needs no space to the side and nowhere to aim." },
   med_ball_scoop_toss: { name:"Medicine Ball Scoop Toss", resultUnit:"m", aliases:["medicine ball scoop toss", "scoop toss", "underhand toss"], category:"power", area:"hips", secondaryArea:"quads_knees", movement:"hinge", difficulty:"beginner", equipment:["medicine_ball"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Triple extension into a throw. The closest thing to a clean that can be taught in one session and missed without consequence." },
+  /* ROTATION THAT MAKES SPEED, FOR A SWING. Golf clubhead speed comes mostly from the legs,
+     hips and trunk turning fast, and a mix of general lifting with fast rotational work
+     added about 4.1% clubhead speed against 1.6% for general lifting alone (Uthoff 2021, 20
+     studies). These are the rotational half of that mix: two throws that release, a loaded
+     rotation that does not, and the two cable patterns golf coaching builds the turn from. */
+  step_behind_rotational_throw: { name:"Step-Behind Rotational Throw", resultUnit:"m", aliases:["step behind rotational throw", "step-behind throw", "step behind med ball throw"], category:"power", area:"core", secondaryArea:"hips", movement:"core", difficulty:"intermediate", equipment:["medicine_ball"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"limited", tierNote:"The rotational throw with a step behind first, so the turn starts from a weight shift into the back leg the way a swing does. Throw into a wall, five a side, full intent." },
+  landmine_rotation: { name:"Landmine Rotation", aliases:["landmine rotation", "landmine twist", "landmine 180", "landmine rainbow"], category:"power", area:"core", secondaryArea:"thoracic", movement:"core", difficulty:"intermediate", equipment:["barbell"], evidenceConfidence:"coaching_consensus", strengthTier:"B", hypertrophyTier:"C", powerTier:"A", tierEvidence:"limited", tierNote:"Loaded rotation that has to be stopped at the end, which the throws never ask for — the hips turn, the arms stay long, and the bar is caught on the far side." },
+  cable_woodchop: { name:"Cable Woodchop", aliases:["cable woodchop", "woodchop", "wood chop", "high to low chop", "cable chop", "band woodchop"], category:"bulletproofing", area:"core", secondaryArea:"thoracic", movement:"core", difficulty:"beginner", equipment:["cable", "band"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"B", powerTier:"B", tierEvidence:"limited", tierNote:"High to low across the body, turning from the hips with the chest following — the downswing's direction, under load you control." },
+  cable_lift: { name:"Half-Kneeling Cable Lift", aliases:["half kneeling cable lift", "cable lift", "low to high chop", "low to high woodchop"], category:"bulletproofing", area:"core", secondaryArea:"thoracic", movement:"core", difficulty:"beginner", equipment:["cable", "band"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"C", tierEvidence:"limited", tierNote:"Low to high from half-kneeling, which locks the hips so the upper back has to do the turning. The thoracic rotation a backswing needs, without the lower back standing in for it." },
+  hip_airplane: { name:"Hip Airplane", aliases:["hip airplane", "hip airplanes", "single leg hip airplane"], category:"bulletproofing", area:"hips", secondaryArea:"glutes", movement:"hinge", difficulty:"intermediate", equipment:["bodyweight"], evidenceConfidence:"coaching_consensus", strengthTier:"C", hypertrophyTier:"C", powerTier:"C", tierEvidence:"limited", tierNote:"Rotating the pelvis over a planted leg, in and out — hip internal rotation under body weight, which is exactly the lead-hip movement golf low-back pain is linked to running short of." },
   /* UPPER-BODY BALLISTIC, LOADED. */
   plyo_push_up: { name:"Plyometric Push-up", loadFactor:1.0, aliases:["plyo push up", "plyometric push up", "clap push up"], category:"power", area:"chest", secondaryArea:"triceps", movement:"push", difficulty:"advanced", equipment:["bodyweight"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate", tierNote:"Upper-body reactive strength, and the only one of these that needs no equipment at all. Advanced because the landing goes through the wrists and elbows at bodyweight." },
   bench_throw: { name:"Bench Throw", aliases:["bench throw", "ballistic bench press", "smith bench throw"], category:"power", area:"chest", secondaryArea:"triceps", movement:"push", difficulty:"intermediate", equipment:["machine", "barbell"], evidenceConfidence:"meta_analysis", strengthTier:"C", hypertrophyTier:"C", powerTier:"S", tierEvidence:"moderate", tierNote:"A bench press where the bar is released at the top, which removes the deceleration that makes a normal fast bench press stop being fast for its last third. Needs a Smith machine or a spotter and is genuinely dangerous without one." },
@@ -17546,6 +17571,44 @@ const WEEKDAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   });
 })();
 
+(function initGolfRoundDays(){
+  const box = document.getElementById('golfRoundDays');
+  if(!box) return;
+  WEEKDAY_NAMES.forEach(day=>{
+    const label = document.createElement('label');
+    // Same 44px target as the training-day row above it, for the same hands.
+    label.style.cssText = 'display:flex; align-items:center; justify-content:center; gap:4px;'
+      + ' font-size:var(--fs-sm); min-height:44px; cursor:pointer;';
+    label.innerHTML = `<input type="checkbox" class="golf-day" value="${day}" style="width:auto;"> ${day}`;
+    box.appendChild(label);
+  });
+  const on = document.getElementById('golfOnCheckbox');
+  on.addEventListener('change', ()=>{ document.getElementById('golfFields').hidden = !on.checked; });
+})();
+async function paintSportFields(){
+  const s = await getSportSettings();
+  const g = s.golf || {};
+  document.getElementById('golfOnCheckbox').checked = !!g.on;
+  document.getElementById('golfFields').hidden = !g.on;
+  document.getElementById('golfSeasonSelect').value = g.season === 'in' ? 'in' : 'off';
+  document.querySelectorAll('.golf-day').forEach(cb=>{ cb.checked = (g.roundDays || []).includes(cb.value); });
+}
+// Returns whether anything about the sport changed, which is what decides a rebuild.
+async function saveSportFields(){
+  const before = JSON.stringify((await getSportSettings()).golf || null);
+  const golf = {
+    on: document.getElementById('golfOnCheckbox').checked,
+    season: document.getElementById('golfSeasonSelect').value === 'in' ? 'in' : 'off',
+    roundDays: Array.from(document.querySelectorAll('.golf-day')).filter(cb=>cb.checked).map(cb=>cb.value)
+  };
+  const s = await getSportSettings();
+  s.golf = golf;
+  try{ await window.storage.set(SPORTS_KEY, JSON.stringify(s)); } catch(e){}
+  const was = before === 'null' ? null : JSON.parse(before);
+  // Off before and off now is no change, whatever the hidden fields say.
+  if(!(was && was.on) && !golf.on) return false;
+  return before !== JSON.stringify(golf);
+}
 async function loadTrainingSetup(){
   try{
     const r = await window.storage.get('settings:trainingSetup');
@@ -17562,6 +17625,7 @@ async function loadTrainingSetup(){
     const cfg = await getBlockConfig();
     document.getElementById('blockLengthSelect').value = String(cfg.length);
   } catch(e){}
+  await paintSportFields();
   await paintBlockTypeSelect();
   await renderBlockPositionNote();
   renderSettingsSummaries();
@@ -17698,8 +17762,8 @@ async function paintBlockTypeSelect(){
   let auto = null;
   try{
     const list = ((await getCurrentGoals(todayStr)) || {}).list || [];
-    const lead = list.find(g => g && !g.isMaintenance && BLOCK_SEQUENCES[g.type]);
-    if(lead){ const seq = BLOCK_SEQUENCES[lead.type]; auto = seq[now.n % seq.length]; }
+    const seq = await blockSequenceFor(list);
+    if(seq) auto = seq.order[now.n % seq.order.length];
   } catch(e){}
   sel.options[0].textContent = auto ? `From your goal — ${blockTypeLabel(auto)}` : 'From your goal';
   sel.value = now.chosen ? now.type : 'auto';
@@ -17734,14 +17798,19 @@ document.getElementById('saveTrainingSetupBtn').addEventListener('click', async 
     const cfg = await getBlockConfig();
     const newLen = parseInt(document.getElementById('blockLengthSelect').value, 10) || BLOCK_LENGTH_DEFAULT;
     await window.storage.set('settings:blockConfig', JSON.stringify({ length:newLen, anchor:cfg.anchor, blockIndex:cfg.blockIndex }));
+    // Sport first: golf's season changes which block type "from your goal" means.
+    const sportChanged = await saveSportFields();
     const blockTypeChanged = await saveBlockTypeSelect();
     await renderBlockPositionNote();
     showToast('Training setup saved');
-    // A different block type is a different plan for every day left in it, so the days
-    // ahead are rebuilt the same way a goal change rebuilds them — with an Undo.
-    if(blockTypeChanged){
+    // A different block type, or a sport added, dropped or moved to other days, is a
+    // different plan for every day left — rebuilt the way a goal change rebuilds them,
+    // with an Undo.
+    if(blockTypeChanged || sportChanged){
       const r = await rebuildFutureDaysFromGoals();
-      if(r && r.generated) showToast(`Rebuilt the days ahead as a ${blockTypeLabel((await getBlockTypeFor(todayStr)).type) || 'new'} block`);
+      if(r && r.generated) showToast(blockTypeChanged
+        ? `Rebuilt the days ahead as a ${blockTypeLabel((await getBlockTypeFor(todayStr)).type) || 'new'} block`
+        : 'Rebuilt the days ahead around your sport');
     }
     renderSettingsSummaries();
     /* The Split row on Weekly names a split by how many days you train, and this is the one
@@ -18612,6 +18681,11 @@ function logDateWords(ds){
 const WEEK_DAY_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 // The letter a session's type reduces to on the calendar board — see renderWeekBoard.
 const WEEK_CAL_MARK_LETTER = { strength:'S', run:'R', mobility:'M' };
+// A golf round is stored as a mobility block (see placeGolfRounds) but is a round, not a
+// mobility session, wherever it is named.
+const isGolfRound = block => !!(block && block.details && block.details.sport === 'golf');
+function calMarkLetter(block){ return isGolfRound(block) ? 'G' : (WEEK_CAL_MARK_LETTER[block.type] || '?'); }
+function blockTypeWord(block){ return isGolfRound(block) ? 'golf round' : block.type; }
 
 // Provisional — within Bell et al.'s 40-60% cut range, same "flagged not fabricated"
 // treatment as every other constant in this app.
@@ -19034,7 +19108,7 @@ async function weekDayDetailHtml(date, realBlocks, isOff){
     : '';
   const cards = await Promise.all(realBlocks.map(async ({slot, block}) => {
     const lines = await extractBlockLines(block);
-    const typeLabel = block.type.charAt(0).toUpperCase()+block.type.slice(1);
+    const typeLabel = isGolfRound(block) ? SPORTS.golf.dayTitle : block.type.charAt(0).toUpperCase()+block.type.slice(1);
     // Two cards side by side with nothing to say which is the morning one and which is the
     // evening one is the same gap the board had. The slot leads the head, in the quiet ink,
     // so the type is still what you read first.
@@ -19081,8 +19155,8 @@ function renderWeekBoard(dayBlocks){
        glyph's title rather than beside it for the same reason — a hover/long-press label costs
        no width, a visible marker would. */
     const sessions = blocks.map(({slot, block})=>
-      `<span class="week-cal-mark" title="${slot === 'am' ? 'morning' : 'evening'} ${block.type}">`
-      + `${WEEK_CAL_MARK_LETTER[block.type] || '?'}</span>`
+      `<span class="week-cal-mark" title="${slot === 'am' ? 'morning' : 'evening'} ${blockTypeWord(block)}">`
+      + `${calMarkLetter(block)}</span>`
     ).join('');
     /* A day you MARKED off says so; that is a decision you took. A rest day is a decision too
        -- the generator's -- and it used to draw blank, on the reasoning that an empty row is
@@ -19102,7 +19176,7 @@ function renderWeekBoard(dayBlocks){
       ? `<span class="week-cal-mark rest" title="rest day">\u2013</span>`
       : sessions;
     const said = day.off ? 'not training'
-      : blocks.length ? blocks.map(b=>`${b.slot === 'am' ? 'morning' : 'evening'} ${b.block.type}`).join(', ')
+      : blocks.length ? blocks.map(b=>`${b.slot === 'am' ? 'morning' : 'evening'} ${blockTypeWord(b.block)}`).join(', ')
       : rest ? 'rest day'
       : 'nothing planned';
     return `<button type="button" class="skill-lane week-lane${here ? ' here' : ''}${date === todayStr ? ' today' : ''}"
@@ -27327,6 +27401,8 @@ function canSuperset(a, b){
   // The main lift is never paired — a heavy compound on long rest is the one place full
   // recovery genuinely matters, and it's also the exercise most degraded by pre-fatigue.
   if(a.isMainLift || b.isMainLift || a.isSkillWork || b.isSkillWork || a.goalNamed || b.goalNamed) return false;
+  // Sport work either is power — wants full rest — or sits there to serve it.
+  if(a.sportWork || b.sportWork) return false;
   // Injury-flagged work isn't rushed; hurrying remedial work defeats its purpose.
   if(a.injuryFlagged || b.injuryFlagged) return false;
   if(!a.area || !b.area || a.area === b.area) return false;
@@ -27739,7 +27815,7 @@ function trimCandidateIndex(exercises, topGoalType, prefersPower){
   exercises.forEach(ex=>{ const g = trimGroupOf(ex); remaining[g] = (remaining[g] || 0) + 1; });
   let pick = -1, pickRank = Infinity, pickCount = -1;
   exercises.forEach((ex, i)=>{
-    if(ex.goalNamed || ex.isSkillWork) return;
+    if(ex.goalNamed || ex.isSkillWork || ex.sportWork) return;
     if(ex.isMainLift && !ex.isPowerLead) return;
     const group = trimGroupOf(ex);
     const rank = ex.skippedForInjury ? -1 : trimRankIn(order, group);
@@ -28701,6 +28777,8 @@ function mobilityDose(name, spec){
   return { ...spec, holdSeconds: null, reps, prescriptionType:'reps' };
 }
 function mobilityDoseLabel(st){
+  // Some doses do not fit sets × time: "3 min", "10 each way".
+  if(st.doseText) return st.doseText;
   const sets = st.sets != null ? st.sets : 2;
   if(st.reps != null) return `${sets}×${st.reps}`;
   return `${sets}×${st.holdSeconds != null ? st.holdSeconds : 30}s`;
@@ -29341,6 +29419,48 @@ async function generateMobilityProgram(numSessions, forcedDates, sessionType){
   return { placed };
 }
 
+/* A ROUND DAY. Stored as a mobility block — the warm-up and the after-round stretches are
+   exactly what a mobility block already holds, logs and edits — marked as golf so it is
+   named and drawn as the round it is. Only onto a day with nothing on it: a day you have
+   already planned is your decision, not the generator's. */
+async function placeGolfRounds(dates){
+  for(const date of dates){
+    let taken = false;
+    for(const slot of ['am','pm']){
+      try{ await window.storage.get(`weekplan:${date}:${slot}`); taken = true; } catch(e){}
+    }
+    if(taken) continue;
+    const stretches = SPORTS.golf.beforeRound.map(st => ({ ...st, category:'before round' }))
+      .concat(SPORTS.golf.afterRound.map(st => ({ ...st, category:'after round' })));
+    await window.storage.set(`weekplan:${date}:am`, JSON.stringify({
+      type:'mobility',
+      details: { sport:'golf', title: SPORTS.golf.dayTitle, stretches,
+        notes: 'Warm up moving, not holding — held stretches before you hit cost speed and accuracy. The held stretches are for after.' }
+    }));
+    // The after-round holds are real stretching time, so the week's mobility counts them.
+    const spent = {};
+    SPORTS.golf.afterRound.forEach(st=>{
+      const secs = romSecondsFor(st); if(!secs || !st.area) return;
+      spent[st.area] = (spent[st.area]||0) + secs;
+    });
+    try{ await saveStretchLedgerFor(date, spent); } catch(e){}
+  }
+}
+/* No heavy legs the day before a round, where the split leaves room to move them: a heavy
+   lower day sitting on a round's eve swaps with an upper day elsewhere in the week. A
+   full-body split has no upper day to swap with, and says so. */
+function keepHeavyOffRoundEve(tags, dates, roundDates){
+  const eve = new Set(roundDates.map(d => shiftDateStr(d, -1)));
+  let stuck = false;
+  tags.forEach((tag, i)=>{
+    if(!eve.has(dates[i]) || !isHeavyStrengthTag(tag)) return;
+    const j = tags.findIndex((t, k)=> k !== i && !isHeavyStrengthTag(t) && !eve.has(dates[k]));
+    if(j < 0){ stuck = true; return; }
+    [tags[i], tags[j]] = [tags[j], tags[i]];
+  });
+  return { tags, stuck };
+}
+
 async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, blockPhase, splitOverride, options){
   options = options || {};
   // A direct single-week generate passes no phase, which used to mean "accumulation"
@@ -29370,10 +29490,21 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
   const goals = await getCurrentGoals(todayStr);
   if(!goals || !goals.list || goals.list.length===0) return { error:'no-goals' };
 
+  // Rounds go in first, so everything after sees those days as taken.
+  const golf = await golfSettings();
+  const roundDates = golfRoundDatesIn(weekDatesOverride || getWeekDates(), golf);
+  if(roundDates.length) await placeGolfRounds(roundDates);
+  const _bt = await getBlockTypeFor((weekDatesOverride || getWeekDates())[0], goals.list);
+  const blockType = blockPhase === 'deload' ? null : _bt.type;
+
   /* Days left this week, not days per week — see availableDaysRemaining. On a Monday
-     generate the two are the same number, which is why this read wrong for so long. */
-  const daysLeft = await availableDaysRemaining(weekDatesOverride);
+     generate the two are the same number, which is why this read wrong for so long.
+     A round on a day you also train on is that day spent. */
+  const daysLeft = Math.max(0, (await availableDaysRemaining(weekDatesOverride))
+    - (await trainableDatesIn(roundDates)).length);
   let plan = determineHybridPlan(goals.list, daysLeft, setup.sessionLength);
+  const liftCap = blockType && BLOCK_TYPES[blockType] && BLOCK_TYPES[blockType].maxLiftDays;
+  if(plan && liftCap && plan.strengthSessions > liftCap) plan = { ...plan, strengthSessions: liftCap };
   const hasMobilityGoal = goals.list.some(g=>g.type==='mobility');
 
   // Checkbox overrides apply on top of whatever the goal-derived plan would otherwise be —
@@ -29465,9 +29596,8 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
   // so an unsaved edit produces a week that contradicts what is on screen with nothing to
   // say why — a running goal you added but did not save reads as "strength-only" here.
   const result = { plan, goalsUsed: goals.list.map(g=>g.type) };
-  const _bt = await getBlockTypeFor((weekDatesOverride || getWeekDates())[0], goals.list);
-  const blockType = blockPhase === 'deload' ? null : _bt.type;
   result.blockType = _bt.type;
+  if(roundDates.length) result.golfRounds = roundDates.length;
   const topGoalTypeForSplit = (goals.list[0] && goals.list[0].type) || null;
 
   const emptyDates = await getAvailableEmptyDates(weekDatesOverride);
@@ -29502,6 +29632,22 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
     result.runGoalNote = runGoalNote;
   }
 
+  /* With days to spare, the lifts take the days that are not a round's eve, and the eve is
+     left for what is lighter. Only on the lift-only path — the hybrid path places lifts and
+     runs together and its spacing is not this function's to undo. Chronological once
+     chosen, because everything downstream reads the dates in order. */
+  if(plan.strengthSessions > 0 && roundDates.length && strengthDates === emptyDates){
+    const eve = new Set(roundDates.map(d => shiftDateStr(d, -1)));
+    const n = plan.strengthSessions;
+    strengthDates = emptyDates.filter(d => !eve.has(d)).concat(emptyDates.filter(d => eve.has(d)))
+      .slice(0, n).sort();
+  }
+  if(plan.strengthSessions > 0 && roundDates.length){
+    const tags = (strengthDateTags || SPLIT_TEMPLATES[splitType].tagsFor(plan.strengthSessions)).slice();
+    const moved = keepHeavyOffRoundEve(tags, strengthDates.slice(0, tags.length), roundDates);
+    strengthDateTags = moved.tags;
+    if(moved.stuck) result.golfNote = 'Full-body days all carry legs, so the day before a round keeps its lift. Go lighter on the legs that day.';
+  }
   if(plan.strengthSessions > 0){
     const focusSequence = await distributeSessionFocuses(goals.list, plan.strengthSessions, blockPhase, blockType);
     const genResult = await generateStrengthProgram(plan.strengthSessions, splitType, includeMobility, strengthDates, volumeWaveNote, focusSequence, comboDates, strengthDateTags, blockPhase, blockType);
@@ -31387,7 +31533,14 @@ const BLOCK_TYPES = {
   build:    { label:'Build',    run:'build',
               note:'Build block — tempo leads the quality work.' },
   sharpen:  { label:'Sharpen',  run:'sharpen',
-              note:'Sharpen block — intervals lead the quality work.' }
+              note:'Sharpen block — intervals lead the quality work.' },
+  /* In season the sport is the training, and the lifting is there to keep what the
+     off-season built. Strength holds on far less work than it took to build if the weight
+     stays heavy — in Bickel 2011 a third of the volume, one day a week, held it for eight
+     months in young adults (not re-checked for this change). So: two lifts a week at most,
+     heavy, with a third fewer sets each. */
+  inseason: { label:'In-season', liftFocus:'strength', maxLiftDays:2, setsKeep:0.67,
+              note:'In-season block — two short, heavy lifts a week to keep the strength the off-season built.' }
 };
 const BLOCK_SEQUENCES = {
   strength:    ['muscle', 'strength', 'power'],
@@ -31396,6 +31549,70 @@ const BLOCK_SEQUENCES = {
   running:     ['base', 'build', 'sharpen']
 };
 const BLOCK_TYPE_OVERRIDE_KEY = 'settings:blockTypeOverride';
+
+/* ---------- SPORTS ----------
+   A sport is not a goal. A goal is something the training is chasing; a sport is something
+   you go and do, on days of its own, that the training has to fit around and feed. So it
+   lives beside Training Setup rather than in the goals list, and what it changes is the
+   week's shape and the work inside it, not what the plan is aiming at.
+
+   Golf first. What it does, and why:
+     - Round days are golf days: nothing else is planned on them, and they get a warm-up to
+       do before the round and stretches for after it.
+     - The day before a round gets no heavy legs or hinge where the split leaves room to move
+       them, so you do not tee off on sore legs.
+     - Every lift day carries one fast rotational movement. Mixing general lifting with
+       golf-specific fast rotation gained ~4.1% clubhead speed against ~1.6% for lifting
+       alone (Uthoff 2021); leg-hip power, trunk power and grip are what the reviews link to
+       swing speed.
+     - Off-season runs Strength then Power blocks; in-season, the In-season block.
+     - The warm-up is moving, never held stretches: stretching on its own before hitting
+       cost clubhead speed, ball speed and carry (Fradkin), and adding static holds to a
+       club warm-up cost ~4% speed and ~31% accuracy in another trial. Held stretches go
+       after the round, aimed at what golf low-back pain is linked to: lead-hip internal
+       rotation, upper-back rotation, lats, and the wrists. */
+const SPORTS_KEY = 'settings:sports';
+const SPORTS = {
+  golf: {
+    label: 'Golf',
+    dayTitle: 'Golf round',
+    sequences: { off: ['strength', 'power'], in: ['inseason'] },
+    // One a lift day, in this order through the week. Throws first: they are the fastest.
+    rotational: ['med_ball_rotational_throw', 'cable_woodchop', 'step_behind_rotational_throw', 'landmine_rotation', 'cable_lift'],
+    beforeRound: [
+      { name:'Brisk walk or easy jog', area:'', sets:1, holdSeconds:180, doseText:'3 min' },
+      { name:'Leg swings, front-to-back and side-to-side', area:'hamstrings', sets:1, reps:10, doseText:'10 each way' },
+      { name:'Walking lunges with a twist', area:'hips', sets:1, reps:8, doseText:'8 each side' },
+      { name:'Standing hip circles', area:'hips', sets:1, reps:8, doseText:'8 each way' },
+      { name:'Arm circles into cross-body swings', area:'shoulders', sets:1, reps:10, doseText:'10' },
+      { name:'Club across the shoulders, turn back and through', area:'thoracic', sets:1, reps:10, doseText:'10 each way' },
+      { name:'Practice swings, wedge up to driver, building speed', area:'', sets:1, reps:10, doseText:'10' }
+    ],
+    afterRound: [
+      { name:'90/90 lift-offs, lead hip', area:'hips', sets:2, reps:6, doseText:'2×6 each side' },
+      { name:'Half-kneeling hip flexor stretch with reach and turn', area:'hips', sets:2, holdSeconds:45 },
+      { name:'Seated thoracic rotation with a club', area:'thoracic', sets:2, reps:8, doseText:'2×8 each side' },
+      { name:'Overhead lat stretch', area:'thoracic', sets:2, holdSeconds:45 },
+      { name:'Cross-body shoulder stretch', area:'shoulders', sets:2, holdSeconds:30 },
+      { name:'Wrist flexor and extensor stretch', area:'forearms', sets:2, holdSeconds:30, doseText:'2×30s each way' },
+      { name:'Figure-4 stretch', area:'hips', sets:2, holdSeconds:45 }
+    ]
+  }
+};
+async function getSportSettings(){
+  try{ return JSON.parse((await window.storage.get(SPORTS_KEY)).value) || {}; } catch(e){ return {}; }
+}
+// The golf settings when golf is switched on, otherwise null — the one question most callers ask.
+async function golfSettings(){
+  const s = await getSportSettings();
+  return (s.golf && s.golf.on) ? { season: s.golf.season === 'in' ? 'in' : 'off', roundDays: s.golf.roundDays || [] } : null;
+}
+function weekdayOf(date){ return WEEKDAY_NAMES[(localDateFrom(date).getDay() + 6) % 7]; }
+// Round days in this run of dates, from today on.
+function golfRoundDatesIn(dates, golf){
+  if(!golf || !golf.roundDays.length) return [];
+  return (dates || []).filter(d => d >= todayStr && golf.roundDays.includes(weekdayOf(d)));
+}
 
 // The block type in force for the week containing `date`. An override only counts for the
 // block it was chosen in, so it expires by itself when that block ends.
@@ -31416,10 +31633,19 @@ async function getBlockTypeFor(date, goalList){
   } catch(e){}
   let list = goalList;
   if(!list){ try{ list = ((await getCurrentGoals(todayStr)) || {}).list || []; } catch(e){ list = []; } }
-  const lead = list.find(g => g && !g.isMaintenance && BLOCK_SEQUENCES[g.type]);
-  if(!lead) return { type: null, chosen: false, pos, n };
-  const seq = BLOCK_SEQUENCES[lead.type];
-  return { type: seq[n % seq.length], chosen: false, pos, n, goalType: lead.type };
+  const seq = await blockSequenceFor(list);
+  if(!seq) return { type: null, chosen: false, pos, n };
+  return { type: seq.order[n % seq.order.length], chosen: false, pos, n, goalType: seq.from };
+}
+/* Which order the blocks follow. Golf takes over from a lifting goal — the lifting is then
+   for the golf — but not from a running goal that leads, which keeps its own run blocks. */
+async function blockSequenceFor(list){
+  const lead = (list || []).find(g => g && !g.isMaintenance && BLOCK_SEQUENCES[g.type]);
+  const golf = await golfSettings();
+  if(golf && !(lead && lead.type === 'running')){
+    return { order: SPORTS.golf.sequences[golf.season], from: 'golf' };
+  }
+  return lead ? { order: BLOCK_SEQUENCES[lead.type], from: lead.type } : null;
 }
 function blockTypeLabel(type){ return (type && BLOCK_TYPES[type]) ? BLOCK_TYPES[type].label : ''; }
 
@@ -32064,6 +32290,9 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
   const powerLeadDayMax = powerLeadIsPrimary ? Infinity
     : (powerGoals.some(g => !!g.power) ? Infinity : POWER_LEAD_SECONDARY_DAYS);
   let powerLeadDays = 0;
+  // Golf puts one fast rotational movement on every lift day, cycling through the list.
+  const golfOn = !!(await golfSettings());
+  let golfRotIdx = 0;
   const emphasis = await getBlockEmphasisAreas(topGoalType, todayStr);
   const emphasisAreas = emphasis.areas;
   // getBlockPhase returns null on a deload week rather than a phase name, so resolve it
@@ -32260,6 +32489,20 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
         } else {
           exercises.push({ name: `${movement} pattern skipped — ${flag.part} flagged high irritability, avoid loading directly today`, area:'', secondaryArea:'', movement:'', skippedForInjury:true });
         }
+      }
+    }
+    /* Straight after the main lift, while still fresh: a throw is only worth doing fast.
+       Skipped if the day already has it, and run through injury safety like any lift. */
+    if(golfOn){
+      const ids = SPORTS.golf.rotational;
+      for(let k=0; k<ids.length; k++){
+        const id = ids[(golfRotIdx + k) % ids.length];
+        const lib = EXERCISE_LIBRARY[id];
+        if(!lib || exercises.some(e=>e.name === lib.name)) continue;
+        if(equipmentPrefs.bodyweightAll && !isBodyweightExercise(lib)) continue;
+        const safe = applyInjurySafety({ name: lib.name, area: lib.area, secondaryArea: lib.secondaryArea,
+          movement: lib.movement, exerciseId: id, sportWork: 'golf' }, injuryMovementFlags);
+        if(safe && !safe.skippedForInjury){ exercises.push(safe); golfRotIdx = (golfRotIdx + k + 1) % ids.length; break; }
       }
     }
     const secondaryMovements = tag==='full_body' ? dayPlan.secondaries
@@ -32582,6 +32825,11 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
         if(e.sets != null) e.sets = Math.max(1, Math.round(e.sets * (1 - DELOAD_CUT)));
       });
     }
+    // In season: fewer sets, same weight. The weight is what keeps the strength.
+    const setsKeep = !_deloadApplied && blockType && BLOCK_TYPES[blockType] && BLOCK_TYPES[blockType].setsKeep;
+    if(setsKeep){
+      exercises.forEach(e=>{ if(e.sets != null) e.sets = Math.max(1, Math.round(e.sets * setsKeep)); });
+    }
 
     exercises.forEach(e=>{ if(e.area) weekAreaCoverage.add(e.area); if(e.secondaryArea) weekAreaCoverage.add(e.secondaryArea); });
 
@@ -32725,7 +32973,14 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
       try{
         const r = await window.storage.get(`weekplan:${lastDate}:am`);
         const block = JSON.parse(r.value);
-        gapFillers.forEach(g=> assignPrescription(g, block.details.plannedFocus, personalSets));
+        /* Appended after the day's own deload and in-season cuts ran, so they take the same
+           cut here — an Overhead Press tacked onto a deload day was going in at full sets. */
+        const fillKeep = block.details.deloadApplied ? (1 - DELOAD_CUT)
+          : (blockType && BLOCK_TYPES[blockType] && BLOCK_TYPES[blockType].setsKeep) || 1;
+        gapFillers.forEach(g=>{
+          assignPrescription(g, block.details.plannedFocus, personalSets);
+          if(g.sets != null && fillKeep < 1) g.sets = Math.max(1, Math.round(g.sets * fillKeep));
+        });
         block.details.exercises.push(...gapFillers);
         // These are appended after the per-day trim loop has already run, so without
         // re-fitting they push the last day over its time budget — measured at 95min
@@ -33670,6 +33925,17 @@ async function blockSummaryHtml(block){
     // to do in the order given, and the two rows that genuinely need naming already carry
     // a SKILL or TEST box.
     const allLines = [];
+    /* Categories past the five are named where they start — a golf round's "before round"
+       and "after round" are the one split in that session you need to see. Same rule the
+       editor follows: an unknown category is never a reason to drop what is in it. */
+    const extraCats = Object.keys(grouped).filter(c=> !categoryOrder.includes(c));
+    extraCats.forEach(cat=>{
+      grouped[cat].forEach((s, k)=>{
+        const cue = mobilityCue(s.name);
+        allLines.push(planRow(s.name, mobilityDoseLabel(s), cue ? [{ text: cue }] : [],
+          k === 0 ? { lead: `<span class="plan-key" data-stage="${cat.toUpperCase()}">${cat.split(' ')[0]}</span>` } : undefined));
+      });
+    });
     categoryOrder.forEach(cat=>{
       const items = grouped[cat];
       if(!items || !items.length) return;
@@ -33773,7 +34039,7 @@ function sessionTitle(block){
     // are already a noun ("Fartlek run", "Race run") read wrong with "run" appended.
     return RUN_TYPE_LABELS[d.runType] || 'Run';
   }
-  if(block.type === 'mobility') return 'Mobility';
+  if(block.type === 'mobility') return isGolfRound(block) ? SPORTS.golf.dayTitle : 'Mobility';
   return "Today's plan";
 }
 
@@ -33883,7 +34149,9 @@ async function renderTodayWorkoutSummary(){
     ? ((SESSION_FOCUS_INFO[block.details && block.details.plannedFocus] || {}).cue || 'Move cleanly and leave a little in reserve.')
     : block.type === 'run'
       ? ({ easy:'Keep the pace conversational.', long:'Settle in; the goal is steady time on your feet.', tempo:'Controlled pressure — hard, but never a sprint.', interval:'Keep each repeat crisp; recover enough to make the next one count.' }[(block.details || {}).runType] || 'Keep the effort controlled and repeatable.')
-      : 'Move slowly, breathe, and stay out of sharp pain.';
+      : isGolfRound(block)
+        ? 'Warm up moving, not holding, before you hit. The held stretches are for after the round.'
+        : 'Move slowly, breathe, and stay out of sharp pain.';
   const focusNote = `<div class="score-note" style="margin-top:8px;"><b>Today’s focus</b> · ${focusText}</div>`;
   let adjustmentNote = '';
   if(adjustment.lever){

@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.18.001",
+ "generatedFrom": "2026.10.18.002",
  "generatedBy": "tools/spec-dump.mjs",
  "libraries": {
   "EXERCISE_LIBRARY": {
@@ -2525,6 +2525,124 @@
     "powerTier": "A",
     "tierEvidence": "limited",
     "tierNote": "Triple extension into a throw. The closest thing to a clean that can be taught in one session and missed without consequence."
+   },
+   "step_behind_rotational_throw": {
+    "name": "Step-Behind Rotational Throw",
+    "resultUnit": "m",
+    "aliases": [
+     "step behind rotational throw",
+     "step-behind throw",
+     "step behind med ball throw"
+    ],
+    "category": "power",
+    "area": "core",
+    "secondaryArea": "hips",
+    "movement": "core",
+    "difficulty": "intermediate",
+    "equipment": [
+     "medicine_ball"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "S",
+    "tierEvidence": "limited",
+    "tierNote": "The rotational throw with a step behind first, so the turn starts from a weight shift into the back leg the way a swing does. Throw into a wall, five a side, full intent."
+   },
+   "landmine_rotation": {
+    "name": "Landmine Rotation",
+    "aliases": [
+     "landmine rotation",
+     "landmine twist",
+     "landmine 180",
+     "landmine rainbow"
+    ],
+    "category": "power",
+    "area": "core",
+    "secondaryArea": "thoracic",
+    "movement": "core",
+    "difficulty": "intermediate",
+    "equipment": [
+     "barbell"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "B",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "Loaded rotation that has to be stopped at the end, which the throws never ask for — the hips turn, the arms stay long, and the bar is caught on the far side."
+   },
+   "cable_woodchop": {
+    "name": "Cable Woodchop",
+    "aliases": [
+     "cable woodchop",
+     "woodchop",
+     "wood chop",
+     "high to low chop",
+     "cable chop",
+     "band woodchop"
+    ],
+    "category": "bulletproofing",
+    "area": "core",
+    "secondaryArea": "thoracic",
+    "movement": "core",
+    "difficulty": "beginner",
+    "equipment": [
+     "cable",
+     "band"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "B",
+    "powerTier": "B",
+    "tierEvidence": "limited",
+    "tierNote": "High to low across the body, turning from the hips with the chest following — the downswing's direction, under load you control."
+   },
+   "cable_lift": {
+    "name": "Half-Kneeling Cable Lift",
+    "aliases": [
+     "half kneeling cable lift",
+     "cable lift",
+     "low to high chop",
+     "low to high woodchop"
+    ],
+    "category": "bulletproofing",
+    "area": "core",
+    "secondaryArea": "thoracic",
+    "movement": "core",
+    "difficulty": "beginner",
+    "equipment": [
+     "cable",
+     "band"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "C",
+    "tierEvidence": "limited",
+    "tierNote": "Low to high from half-kneeling, which locks the hips so the upper back has to do the turning. The thoracic rotation a backswing needs, without the lower back standing in for it."
+   },
+   "hip_airplane": {
+    "name": "Hip Airplane",
+    "aliases": [
+     "hip airplane",
+     "hip airplanes",
+     "single leg hip airplane"
+    ],
+    "category": "bulletproofing",
+    "area": "hips",
+    "secondaryArea": "glutes",
+    "movement": "hinge",
+    "difficulty": "intermediate",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "C",
+    "tierEvidence": "limited",
+    "tierNote": "Rotating the pelvis over a planted leg, in and out — hip internal rotation under body weight, which is exactly the lead-hip movement golf low-back pain is linked to running short of."
    },
    "plyo_push_up": {
     "name": "Plyometric Push-up",

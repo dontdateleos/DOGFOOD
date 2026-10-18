@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.18.001",
+ "generatedFrom": "2026.10.18.002",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1082,7 +1082,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.18.001",
+  "APP_VERSION": "2026.10.18.002",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1452,6 +1452,7 @@
    "2026.10.11.004": "Did Upper on a Lower day? Log what you did and the app notices from the lifts: it records the session as Upper, and the next planned Upper in the coming week becomes the Lower you skipped — with an Undo right in the message. Or decide before you start: Swap day, under Replace / edit, trades today’s session with any other planned in the next seven days.",
    "2026.10.15.001": "Opening from the home screen now shows DOG FOOD and the mark on black while the app loads, instead of a blank screen. iPhone only picks this up when the app is added, so remove it from the home screen and add it again once to see it.",
    "2026.10.18.001": "Blocks have a purpose now, not only a position. A strength goal runs Muscle, then Strength, then Power — slow-fading strength first, explosive work last, with a jump or throw leading every lift day in the Power block. A muscle goal runs Muscle, Muscle, Strength. A running goal runs Base, Build, Sharpen: one quality run at most in Base, tempo leading in Build, intervals in Sharpen. Today shows which block you are in; Settings → Training Setup → This block lets you pick a different one for the current block and rebuilds the days ahead, with an Undo.",
+   "2026.10.18.002": "Golf is in. Turn it on under Settings → Training Setup → Sports you play, pick your season and your round days. Round days become a Golf round on the calendar (G): a moving warm-up before you hit — no held stretches, they cost speed and accuracy — and stretches for after, aimed at the lead hip, upper back, lats and wrists. Every lift day gets one fast rotational movement (med-ball throws, woodchops, landmine rotations), the day before a round keeps heavy legs off it where the split allows, and the blocks run Strength then Power off-season, or two short, heavy lifts a week in-season.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
@@ -3401,6 +3402,13 @@
     "label": "Sharpen",
     "run": "sharpen",
     "note": "Sharpen block — intervals lead the quality work."
+   },
+   "inseason": {
+    "label": "In-season",
+    "liftFocus": "strength",
+    "maxLiftDays": 2,
+    "setsKeep": 0.67,
+    "note": "In-season block — two short, heavy lifts a week to keep the strength the off-season built."
    }
   },
   "BLOCK_SEQUENCES": {
@@ -3421,6 +3429,127 @@
    ]
   },
   "BLOCK_TYPE_OVERRIDE_KEY": "settings:blockTypeOverride",
+  "SPORTS_KEY": "settings:sports",
+  "SPORTS": {
+   "golf": {
+    "label": "Golf",
+    "dayTitle": "Golf round",
+    "sequences": {
+     "off": [
+      "strength",
+      "power"
+     ],
+     "in": [
+      "inseason"
+     ]
+    },
+    "rotational": [
+     "med_ball_rotational_throw",
+     "cable_woodchop",
+     "step_behind_rotational_throw",
+     "landmine_rotation",
+     "cable_lift"
+    ],
+    "beforeRound": [
+     {
+      "name": "Brisk walk or easy jog",
+      "area": "",
+      "sets": 1,
+      "holdSeconds": 180,
+      "doseText": "3 min"
+     },
+     {
+      "name": "Leg swings, front-to-back and side-to-side",
+      "area": "hamstrings",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way"
+     },
+     {
+      "name": "Walking lunges with a twist",
+      "area": "hips",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 each side"
+     },
+     {
+      "name": "Standing hip circles",
+      "area": "hips",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 each way"
+     },
+     {
+      "name": "Arm circles into cross-body swings",
+      "area": "shoulders",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10"
+     },
+     {
+      "name": "Club across the shoulders, turn back and through",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way"
+     },
+     {
+      "name": "Practice swings, wedge up to driver, building speed",
+      "area": "",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10"
+     }
+    ],
+    "afterRound": [
+     {
+      "name": "90/90 lift-offs, lead hip",
+      "area": "hips",
+      "sets": 2,
+      "reps": 6,
+      "doseText": "2×6 each side"
+     },
+     {
+      "name": "Half-kneeling hip flexor stretch with reach and turn",
+      "area": "hips",
+      "sets": 2,
+      "holdSeconds": 45
+     },
+     {
+      "name": "Seated thoracic rotation with a club",
+      "area": "thoracic",
+      "sets": 2,
+      "reps": 8,
+      "doseText": "2×8 each side"
+     },
+     {
+      "name": "Overhead lat stretch",
+      "area": "thoracic",
+      "sets": 2,
+      "holdSeconds": 45
+     },
+     {
+      "name": "Cross-body shoulder stretch",
+      "area": "shoulders",
+      "sets": 2,
+      "holdSeconds": 30
+     },
+     {
+      "name": "Wrist flexor and extensor stretch",
+      "area": "forearms",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "2×30s each way"
+     },
+     {
+      "name": "Figure-4 stretch",
+      "area": "hips",
+      "sets": 2,
+      "holdSeconds": 45
+     }
+    ]
+   }
+  },
   "RUN_QUALITY_ROTATION": [
    "tempo",
    "interval",
