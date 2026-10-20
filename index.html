@@ -12233,7 +12233,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.20.003';
+const APP_VERSION = '2026.10.20.004';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12629,6 +12629,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.10.20.004': 'Cuts are scheduled now, not just gains. When your body fat reads 20% or more (30% for women), or your weight has climbed 5% above its low of the last six months, the next Strength block becomes a cut: lose 0.4\u20130.6 kg a week for four weeks, with the deload as a week-long diet break at maintenance, then straight back to maintenance in the block after. Strength blocks are where a deficit costs least \u2014 strength keeps climbing, only muscle gain slows. Muscle blocks hold weight while a cut is due, and Power, the running sharpen blocks and golf in-season never cut. Plan\u2019s block list shows what weight does in each block ahead.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -26364,12 +26365,24 @@ async function paintPlanBlockSheet(){
   const box = document.getElementById('planTimeline');
   try{
     const list = await planBlockList();
+    // What weight does in each block still to come. Ahead of the current block the cut call
+    // is provisional — it is made for real when that block starts.
+    for(const b of list){
+      if(b.state === 'done') continue;
+      try{
+        const t = await weightTargetFor(b.start);
+        b.weightPlan = t.cut ? 'cut, 4 weeks then a diet-break deload' + (b.state === 'next' ? ' (if still due)' : '')
+          : t.recomp ? 'hold while a cut is due'
+          : t.lo > 0 ? 'slow gain' : t.lo === 0 ? 'steady to slightly up' : 'steady';
+      } catch(e){}
+    }
     box.innerHTML = list.map(b=>{
       const end = shiftDateStr(b.start, b.weeks * 7 - 1);
       const name = b.type ? blockTypeLabel(b.type) : 'Block';
       const note = b.state === 'now' && b.type ? `<span class="plan-tl-note">${BLOCK_TYPES[b.type].note}</span>` : '';
       const when = b.state === 'now' ? 'now' : b.state === 'done' ? 'done' : 'next';
-      return `<div class="plan-tl-row ${b.state}"><b>${dfIcon(b.type && DF_ICONS[b.type] ? b.type : 'block', 16)}${name} · ${b.weeks} wk</b><span>${fmtShortDate(b.start)} – ${fmtShortDate(end)} · ${when}</span>${note}</div>`;
+      const plan = b.weightPlan ? `<span class="plan-tl-note">Weight: ${b.weightPlan}</span>` : '';
+      return `<div class="plan-tl-row ${b.state}"><b>${dfIcon(b.type && DF_ICONS[b.type] ? b.type : 'block', 16)}${name} · ${b.weeks} wk</b><span>${fmtShortDate(b.start)} – ${fmtShortDate(end)} · ${when}</span>${note}${plan}</div>`;
     }).join('');
   } catch(e){ box.innerHTML = ''; }
 }
@@ -26391,10 +26404,11 @@ async function paintPlanWeightSheet(){
   const g = await weightGuidance();
   const t = g.target;
   const recent = (await bodyweightTimeline()).slice(-5).reverse();
-  const why = t.deload ? 'Deload weeks hold weight — recovery, not a cut.'
+  const why = t.deload ? (t.dietBreak ? 'A week at maintenance in the middle of the cut — it keeps strength and lean mass and takes the edge off hunger.' : 'Deload weeks hold weight — recovery, not a cut.')
+    : t.cut ? `A cut, because ${t.why}. Strength blocks are where a deficit costs least — strength keeps climbing, only muscle gain slows. The deload is a break at maintenance, and the block after goes straight back to maintenance.`
+    : t.recomp ? `Holding instead of gaining, because ${t.why}. The next Strength block is the cut.`
     : t.type === 'muscle' ? 'A small surplus is where muscle grows; a deficit costs muscle gain.'
     : t.type === 'strength' ? 'Strength holds up either way; steady or slowly up keeps the lifts climbing.'
-    : t.type === 'base' && t.leanOut ? 'Easy running volume recovers easily, so this is the one place to lose a little — slowly.'
     : 'A fast change either way costs speed and power, so this block holds.';
   document.getElementById('planWeightDetail').innerHTML = `<div class="plan-weigh">
       <div class="plan-weigh-line"><span>Now</span><span>${g.trend.latest ? g.trend.latest.weight.toFixed(1) + ' kg' : '—'}</span></div>
@@ -30717,7 +30731,11 @@ async function renderTodayBlockContext(forDate){
     // on its own line, because it is the one thing here you would act on at dinner.
     let weightNote = '';
     if(!forDate || forDate === todayStr){
-      try{ const g = await weightGuidance(); if(g.status === 'low' || g.status === 'high') weightNote = `Weight: ${g.small}`; } catch(e){}
+      try{
+        const g = await weightGuidance();
+        if(g.status === 'low' || g.status === 'high') weightNote = `Weight: ${g.small}`;
+        else if(g.target.cut && g.target.weekInBlock === 1) weightNote = `Weight: this block is a cut — aim for ${g.band}. The deload week is a break at maintenance.`;
+      } catch(e){}
     }
     el.innerHTML = chipRow(line) + (note ? `<div style="opacity:0.75; margin-top:6px;">${note}</div>` : '')
       + (weightNote ? `<div class="df-title" style="margin-top:6px;">${dfIcon('weight', 14)}<span>${weightNote}</span></div>` : '');
@@ -32321,20 +32339,84 @@ const WEIGHT_TARGETS = {
   power: WEIGHT_HOLD, sharpen: WEIGHT_HOLD, build: WEIGHT_HOLD, engine: WEIGHT_HOLD, inseason: WEIGHT_HOLD
 };
 const WEIGHT_TREND_DAYS = 21, WEIGHT_TREND_MIN_POINTS = 3, WEIGHT_TREND_MIN_SPAN = 10;
-// Body fat above which a Base block allows a slow loss. Coarse on purpose — scales are rough.
-const WEIGHT_BASE_LOSS_BF = { male:20, female:30 };
-async function weightTargetFor(date){
-  const pos = await getBlockPosition(date || todayStr);
-  const deload = isDeloadPosition(pos.weekInBlock, pos.length);
-  const type = (await getBlockTypeFor(date || todayStr)).type;
-  if(deload) return { ...WEIGHT_HOLD, type, deload:true };
-  if(type === 'base'){
-    let bf = null, sex = 'male';
-    try{ const m = await getLatestBodyMetrics(todayStr); bf = m && m.bodyFat; } catch(e){}
-    try{ sex = (await window.storage.get('settings:strengthStandardSex')).value || 'male'; } catch(e){}
-    const high = bf != null && bf > (WEIGHT_BASE_LOSS_BF[sex] || 20);
-    return high ? { lo:-0.5, hi:0, type, leanOut:true } : { ...WEIGHT_HOLD, type };
+
+/* ---------- WHEN A CUT FITS ----------
+   Gaining every Muscle and Strength block, year after year, adds fat as well as muscle — at
+   these rates a strength goal can climb 5–14 kg a year. So cuts are scheduled too, and where
+   they go is decided by what each block can afford to give up:
+
+     IN A STRENGTH BLOCK. A deficit costs muscle gain but not strength gain (Murphy & Koehler
+       2021), so the block built on heavy, low-volume work is the cheap place for one. Rate
+       0.5–0.7% a week: inside the 0.5–1% that preserves muscle (Helms et al. 2014), at the
+       slow end, because athletes losing ~0.7% a week kept improving and those at ~1.4% did
+       not (Garthe 2011). Running's Base block is the other place, at up to 0.5%.
+     NEVER in Muscle (it needs the surplus — while a cut is due a Muscle block holds instead),
+       Power, Build, Sharpen, Engine or in-season golf, where a fast change costs speed.
+     THE DELOAD IS THE DIET BREAK. A week at maintenance inside a cut kept strength, added
+       ~0.7 kg of lean mass and cut hunger in resistance-trained athletes (Peos 2021, ICECAP);
+       two-week breaks made fat loss more efficient in men with obesity (Byrne 2018).
+     STRAIGHT BACK TO MAINTENANCE AFTER. Reverse dieting did no better than going straight to
+       maintenance for regain (2025 trial, 49 lifters), so the block after a cut simply holds
+       — for a strength goal that is Power, the block that most wants you fresh anyway.
+
+   A cut is due when the latest body-fat reading is at or over 20% (men) / 30% (women) — a
+   coaching convention, scales are rough — or when weight has climbed 5% above its low of the
+   last six months, which needs no body-fat reading at all. The answer is fixed once per block,
+   the first time it is known, so a cut that is working does not switch itself off halfway. */
+const CUT_BF = { male:20, female:30 };
+const CUT_GAIN_PCT = 5, CUT_LOOKBACK_DAYS = 180;
+const CUT_RATE = { strength:{ lo:-0.7, hi:-0.5 }, base:{ lo:-0.5, hi:0 } };
+const WEIGHT_PHASE_KEY = 'settings:weightPhase';
+// Seven-day average around each weigh-in, so one low morning is not a "low".
+function rollingWeights(pts){
+  return pts.map((p, i)=>{
+    const from = shiftDateStr(p.date, -6);
+    const win = pts.slice(0, i + 1).filter(q => q.date >= from);
+    return { date: p.date, weight: win.reduce((a, q)=> a + q.weight, 0) / win.length };
+  });
+}
+async function cutSignal(){
+  let sex = 'male', bf = null;
+  try{ sex = (await window.storage.get('settings:strengthStandardSex')).value || 'male'; } catch(e){}
+  try{ const m = await getLatestBodyMetrics(todayStr); bf = m && m.bodyFat != null ? parseFloat(m.bodyFat) : null; } catch(e){}
+  const limit = CUT_BF[sex] || CUT_BF.male;
+  if(bf != null && bf >= limit) return { due:true, known:true, why:`body fat reads ${bf}%, at or over ${limit}%` };
+  const pts = (await bodyweightTimeline()).filter(p => p.date >= shiftDateStr(todayStr, -CUT_LOOKBACK_DAYS) && p.date <= todayStr);
+  if(pts.length >= 6){
+    const roll = rollingWeights(pts);
+    const low = roll.reduce((m, r)=> r.weight < m.weight ? r : m, roll[0]);
+    const now = roll[roll.length - 1];
+    const up = (now.weight / low.weight - 1) * 100;
+    if(up >= CUT_GAIN_PCT) return { due:true, known:true, why:`weight is ${up.toFixed(1)}% above its low on ${fmtShortDate(low.date)}` };
+    return { due:false, known:true };
   }
+  return { due:false, known: bf != null };
+}
+async function cutDueFor(n){
+  let rec = { decided:{} };
+  try{ rec = JSON.parse((await window.storage.get(WEIGHT_PHASE_KEY)).value) || rec; } catch(e){}
+  rec.decided = rec.decided || {};
+  if(rec.decided[n] !== undefined) return rec.decided[n];
+  const live = await cutSignal();
+  let cur = null;
+  try{ cur = (await blockOrdinal(todayStr)).n; } catch(e){}
+  if(n === cur && live.known){
+    rec.decided[n] = live;
+    try{ await window.storage.set(WEIGHT_PHASE_KEY, JSON.stringify(rec)); } catch(e){}
+  }
+  return live;
+}
+async function weightTargetFor(date){
+  const d = date || todayStr;
+  const pos = await getBlockPosition(d);
+  const deload = isDeloadPosition(pos.weekInBlock, pos.length);
+  const bt = await getBlockTypeFor(d);
+  const type = bt.type;
+  const cut = await cutDueFor(bt.n);
+  const cuts = cut.due && CUT_RATE[type];
+  if(deload) return { ...WEIGHT_HOLD, type, deload:true, dietBreak: !!cuts };
+  if(cuts) return { ...CUT_RATE[type], type, cut:true, why: cut.why, weekInBlock: pos.weekInBlock };
+  if(cut.due && type === 'muscle') return { ...WEIGHT_HOLD, type, recomp:true, why: cut.why };
   return { ...(WEIGHT_TARGETS[type] || WEIGHT_HOLD), type };
 }
 // Least-squares slope of the recent weigh-ins, in kg per week.
@@ -32358,13 +32440,15 @@ const kgWeek = v => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(1)
 async function weightGuidance(){
   const target = await weightTargetFor(todayStr);
   const trend = await weightTrend();
-  const name = target.deload ? 'Deload week' : target.type ? `${blockTypeLabel(target.type)} block` : 'This block';
+  const name = target.deload ? (target.dietBreak ? 'Deload week (diet break)' : 'Deload week')
+    : target.type ? `${blockTypeLabel(target.type)} block${target.cut ? ' (cut)' : target.recomp ? ' (holding while a cut is due)' : ''}` : 'This block';
   const w = trend.latest ? trend.latest.weight : null;
+  const kg = v => Math.abs(w * v / 100).toFixed(1);
   const band = w
     ? (target.lo === WEIGHT_HOLD.lo && target.hi === WEIGHT_HOLD.hi ? 'steady weight'
-      : target.lo >= 0 ? (target.lo === 0 ? `steady to +${(w * target.hi / 100).toFixed(1)} kg a week`
-                                          : `+${(w * target.lo / 100).toFixed(1)} to +${(w * target.hi / 100).toFixed(1)} kg a week`)
-      : `${kgWeek(w * target.lo / 100)} to ${target.hi === 0 ? '0' : kgWeek(w * target.hi / 100)} kg a week`)
+      : target.lo >= 0 ? (target.lo === 0 ? `steady to +${kg(target.hi)} kg a week` : `+${kg(target.lo)} to +${kg(target.hi)} kg a week`)
+      : target.hi < 0 ? `a loss of ${kg(target.hi)}–${kg(target.lo)} kg a week`
+      : `steady to a loss of ${kg(target.lo)} kg a week`)
     : '';
   if(!trend.enough){
     return { status:'unknown', target, trend, band,

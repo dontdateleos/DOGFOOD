@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.20.003",
+ "generatedFrom": "2026.10.20.004",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1086,7 +1086,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.20.003",
+  "APP_VERSION": "2026.10.20.004",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1464,6 +1464,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.10.20.004": "Cuts are scheduled now, not just gains. When your body fat reads 20% or more (30% for women), or your weight has climbed 5% above its low of the last six months, the next Strength block becomes a cut: lose 0.4–0.6 kg a week for four weeks, with the deload as a week-long diet break at maintenance, then straight back to maintenance in the block after. Strength blocks are where a deficit costs least — strength keeps climbing, only muscle gain slows. Muscle blocks hold weight while a cut is due, and Power, the running sharpen blocks and golf in-season never cut. Plan’s block list shows what weight does in each block ahead.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
@@ -3902,10 +3903,22 @@
    }
   },
   "WEIGHT_TREND_DAYS": 21,
-  "WEIGHT_BASE_LOSS_BF": {
+  "CUT_BF": {
    "male": 20,
    "female": 30
   },
+  "CUT_GAIN_PCT": 5,
+  "CUT_RATE": {
+   "strength": {
+    "lo": -0.7,
+    "hi": -0.5
+   },
+   "base": {
+    "lo": -0.5,
+    "hi": 0
+   }
+  },
+  "WEIGHT_PHASE_KEY": "settings:weightPhase",
   "RUN_QUALITY_ROTATION": [
    "tempo",
    "interval",
