@@ -2718,6 +2718,45 @@
      tap-through does not still say. Each session becomes the letter its type starts with, the
      same abbreviation this app already reaches for at this size (BW, FAIL, AM/PM) rather than
      a colour code the rest of the app does not use anywhere else. */
+  /* HOLD A DAY. Held, the cell lifts off the strip; dragged, the day under the finger takes a
+     dashed edge to say "drops here"; let go without moving and the day's menu comes up (see
+     wireWeekHold). No callout, no text selection: a long press on a button is otherwise the
+     phone's cue to offer copying a "22". */
+  #weekBoard .week-lane{ -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;
+    transition:transform 140ms ease, box-shadow 140ms ease; }
+  #weekBoard .week-lane.lifted{ position:relative; z-index:2; transform:scale(1.1); border-radius:4px;
+    background:rgba(var(--ink-rgb),0.18); box-shadow:0 6px 16px rgba(0,0,0,0.35); }
+  #weekBoard .week-lane.drop-target{ outline:2px dashed var(--bg); outline-offset:-2px; border-radius:4px; }
+  #weekBoard.holding .week-lane.past{ opacity:0.35; }
+  @media (prefers-reduced-motion: reduce){
+    #weekBoard .week-lane{ transition:none; }
+    #weekBoard .week-lane.lifted{ transform:none; }
+  }
+  /* The day's menu. What is on the day first, then the week as a strip to move it into, then
+     the few things you can do to a day, one per line. */
+  .day-act-now{ display:flex; flex-direction:column; gap:8px; margin:2px 0 18px; font-family:var(--prose); font-size:16px; }
+  .day-act-now > div{ display:flex; align-items:center; gap:10px; }
+  .day-act-now .df-icon{ flex:none; }
+  .day-act-now small{ font-family:var(--mono); font-size:var(--fs-tag); letter-spacing:var(--track-ui); text-transform:uppercase; color:rgba(var(--ink-rgb),0.7); }
+  .day-act-label{ font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold); letter-spacing:var(--track-ui);
+    text-transform:uppercase; color:rgba(var(--ink-rgb),0.7); margin:0 0 8px; }
+  .day-act-days{ display:grid; grid-template-columns:repeat(7, 1fr); gap:3px; margin-bottom:18px; }
+  .day-act-day{ height:auto; flex:none; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    gap:3px; padding:8px 2px 7px; background:transparent; border:1px solid rgba(var(--ink-rgb),0.5); border-radius:4px;
+    color:var(--bg); text-transform:none; letter-spacing:0; box-shadow:none; }
+  .day-act-day[disabled]{ opacity:0.4; border-style:dashed; cursor:default; }
+  .day-act-day.self{ background:rgba(var(--ink-rgb),0.14); border-color:transparent; opacity:1; }
+  .day-act-day .wd{ font-family:var(--mono); font-size:9.5px; opacity:0.75; text-transform:uppercase; }
+  .day-act-day .dn{ font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold); }
+  .day-act-day .mk{ display:flex; gap:2px; min-height:14px; line-height:0; }
+  .day-act-list{ display:flex; flex-direction:column; }
+  .day-act{ display:flex; align-items:center; justify-content:flex-start; gap:12px; width:100%; height:auto; flex:none;
+    padding:14px 0; background:none; border:0; border-top:1px solid rgba(var(--ink-rgb),0.14); border-radius:0; box-shadow:none;
+    color:var(--bg); font-family:var(--prose); font-size:16px; font-weight:var(--fw-normal); text-transform:none; letter-spacing:0; text-align:left; }
+  .day-act:first-child{ border-top:0; }
+  .day-act:focus-visible, .day-act-day:focus-visible{ outline:2px solid var(--bg); outline-offset:2px; }
+  .day-act .day-act-glyph{ width:20px; flex:none; display:grid; place-items:center; font-family:var(--mono); font-size:18px; line-height:1; }
+  .day-act-tip{ font-family:var(--prose); font-size:13px; color:var(--dim); margin:14px 0 0; }
   .week-cal-marks{ display:flex; gap:2px; min-height:16px; }
   /* A session is its icon now; the letter badge is kept only for a type with no icon. */
   .week-cal-mark.icon{ width:16px; height:16px; background:none; color:var(--bg); line-height:0; }
@@ -6203,6 +6242,16 @@
           <div class="field-row"><span class="field-label">Today</span><input type="number" step="0.1" id="planWeightInput" placeholder="kg"></div>
           <button type="button" id="savePlanWeightBtn" class="small" style="margin-top:8px;">Log weight</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Opened by holding a day on Today's week strip (wireWeekHold). Lives here with the
+         other sheets; wireSheet moves it to <body> either way. -->
+    <div class="lift-sheet" id="dayActionSheet" style="display:none;">
+      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="dayActTitle">
+        <div class="lift-sheet-head"><span id="dayActTitle">Day</span>
+          <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
+        <div class="fields" id="dayActBody"></div>
       </div>
     </div>
 
@@ -11817,6 +11866,7 @@ tabs.forEach(t=>{
   function finish(){
     if(!live) return;
     live = false;
+    if(window.__weekHold) return;              // a held day being carried across the strip
     if(Math.abs(dx) < SWIPE_MIN || Math.abs(dx) < Math.abs(dy) * SLOPE) return;
     const here = SWEEP_TABS.indexOf(document.querySelector('.tab.active').dataset.tab);
     const next = here + (dx < 0 ? 1 : -1);      // drag left, go right along the bar
@@ -12233,7 +12283,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.20.004';
+const APP_VERSION = '2026.10.20.005';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12629,6 +12679,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.10.20.005': 'Hold a day on Today\u2019s week strip. Drag it onto another day and it moves there \u2014 if that day has a session too, the two swap. Let go without moving and you get the day\u2019s menu: move it, edit what is on it, add a session, clear it, or mark it as a day you are not training. Every change has an undo. Days that have passed, and days with a session already logged, stay where they are.',
   '2026.10.20.004': 'Cuts are scheduled now, not just gains. When your body fat reads 20% or more (30% for women), or your weight has climbed 5% above its low of the last six months, the next Strength block becomes a cut: lose 0.4\u20130.6 kg a week for four weeks, with the deload as a week-long diet break at maintenance, then straight back to maintenance in the block after. Strength blocks are where a deficit costs least \u2014 strength keeps climbing, only muscle gain slows. Muscle blocks hold weight while a cut is due, and Power, the running sharpen blocks and golf in-season never cut. Plan\u2019s block list shows what weight does in each block ahead.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
@@ -19372,7 +19423,7 @@ function renderWeekBoard(dayBlocks){
       : blocks.length ? blocks.map(b=>`${b.slot === 'am' ? 'morning' : 'evening'} ${blockTypeWord(b.block)}`).join(', ')
       : rest ? 'rest day'
       : 'nothing planned';
-    return `<button type="button" class="skill-lane week-lane${here ? ' here' : ''}${date === todayStr ? ' today' : ''}"
+    return `<button type="button" class="skill-lane week-lane${here ? ' here' : ''}${date === todayStr ? ' today' : ''}${date < todayStr ? ' past' : ''}"
         data-day-at="${i}" aria-label="${WEEK_DAY_FULL[i]}${date === todayStr ? ', today' : ''}, ${said}">
       <span class="skill-lane-name">${WEEKDAY_NAMES[i]}</span>
       <span class="week-cal-date">${localDateFrom(date).getDate()}</span>
@@ -19397,12 +19448,268 @@ function renderWeekBoard(dayBlocks){
     // taps both end up drawing whichever day was tapped last regardless of which one's
     // storage reads happen to finish first.
     board.addEventListener('click', e=>{
+      // A hold ends in a click on most phones; that one already did its job.
+      if(Date.now() < weekHoldSuppressClick) return;
       const lane = e.target.closest('.week-lane');
       if(!lane) return;
       activeWheelDayIndex = parseInt(lane.dataset.dayAt, 10) || 0;
       renderWeekGrid();
     });
+    wireWeekHold(board);
   }
+}
+
+/* HOLD A DAY TO MOVE IT, OR TO GET ITS MENU.
+
+   A tap still opens the day. Held past WEEK_HOLD_MS without wandering, the cell lifts: drag
+   it onto another day and the two trade everything they had (sessions, and a not-training
+   mark), let go where it started and the day's menu comes up. Moving before the hold lands
+   is a scroll or a swipe between tabs, and is left to be one.
+
+   Touch drives the phone and pointer the desktop, for the reason wireTabSwipe gives: on a
+   phone Chromium cancels the pointer before the first move. The tab swipe reads
+   window.__weekHold so a drag across the strip does not also change tab. */
+const WEEK_HOLD_MS = 450;
+const WEEK_HOLD_SLOP = 10;
+let weekHoldSuppressClick = 0;
+function wireWeekHold(board){
+  let timer = null, from = null, held = false, over = null, x0 = 0, y0 = 0;
+  const dateOf = lane => getWeekDates()[parseInt(lane.dataset.dayAt, 10) || 0];
+  const setOver = lane =>{
+    if(over === lane) return;
+    if(over) over.classList.remove('drop-target');
+    over = lane;
+    if(over) over.classList.add('drop-target');
+  };
+  const reset = ()=>{
+    clearTimeout(timer); timer = null;
+    if(from) from.classList.remove('lifted');
+    board.classList.remove('holding');
+    setOver(null);
+    from = null; held = false;
+    // Kept a beat past the release: the tab swipe decides on the same touchend, after this.
+    setTimeout(()=>{ if(!from) window.__weekHold = false; }, 350);
+  };
+  const start = (x, y, target)=>{
+    const lane = target && target.closest('.week-lane');
+    if(!lane) return;
+    reset();
+    from = lane; x0 = x; y0 = y;
+    timer = setTimeout(()=>{
+      timer = null; held = true; window.__weekHold = true;
+      lane.classList.add('lifted'); board.classList.add('holding');
+      try{ if(navigator.vibrate) navigator.vibrate(12); } catch(e){}
+    }, WEEK_HOLD_MS);
+  };
+  const move = (x, y, e)=>{
+    if(!from) return;
+    if(!held){
+      if(Math.hypot(x - x0, y - y0) > WEEK_HOLD_SLOP){ clearTimeout(timer); timer = null; from = null; }
+      return;
+    }
+    if(e && e.cancelable) e.preventDefault();       // held: the finger is carrying a day, not the page
+    const el = document.elementFromPoint(x, y);
+    const lane = el && el.closest('#weekBoard .week-lane');
+    setOver(lane && lane !== from && dateOf(lane) >= todayStr ? lane : null);
+  };
+  const end = ()=>{
+    if(!from) return;
+    const wasHeld = held, src = from, dst = over;
+    reset();
+    if(!wasHeld) return;                            // a tap: the click handler has it
+    weekHoldSuppressClick = Date.now() + 500;
+    if(dst) moveDayPlan(dateOf(src), dateOf(dst)).catch(()=> showToast('Could not move that day', true));
+    else openDayActions(dateOf(src)).catch(()=> showToast('Could not open that day', true));
+  };
+
+  /* The click a phone sends after the finger lifts lands wherever the finger was, and by then
+     that can be the backdrop of the menu the hold just opened, which closes it. Swallowed
+     anywhere on the page for a moment after a hold. */
+  document.addEventListener('click', e=>{
+    if(Date.now() < weekHoldSuppressClick){ e.stopPropagation(); e.preventDefault(); }
+  }, true);
+
+  board.addEventListener('touchstart', e=>{
+    if(e.touches.length !== 1){ reset(); return; }
+    start(e.touches[0].clientX, e.touches[0].clientY, e.target);
+  }, { passive:true });
+  board.addEventListener('touchmove', e=>{
+    if(e.touches.length !== 1){ reset(); return; }
+    move(e.touches[0].clientX, e.touches[0].clientY, e);
+  }, { passive:false });
+  board.addEventListener('touchend', end);
+  board.addEventListener('touchcancel', end);
+
+  board.addEventListener('pointerdown', e=>{
+    if(e.pointerType === 'touch' || e.button !== 0) return;
+    start(e.clientX, e.clientY, e.target);
+  });
+  window.addEventListener('pointermove', e=>{ if(e.pointerType !== 'touch') move(e.clientX, e.clientY, e); });
+  window.addEventListener('pointerup', e=>{ if(e.pointerType !== 'touch') end(); });
+  window.addEventListener('pointercancel', e=>{ if(e.pointerType !== 'touch') end(); });
+
+  // A long press is also the phone's context-menu gesture; this one is ours. A right click or
+  // the menu key, with no hold under way, opens the same menu.
+  board.addEventListener('contextmenu', e=>{
+    e.preventDefault();
+    if(from || window.__weekHold) return;
+    const lane = e.target.closest('.week-lane');
+    if(lane) openDayActions(dateOf(lane)).catch(()=>{});
+  });
+}
+
+const readRaw = async key =>{ try{ return (await window.storage.get(key)).value; } catch(e){ return null; } };
+const putRaw = async (key, value)=>{
+  if(value == null){ try{ await window.storage.delete(key); } catch(e){} }
+  else await window.storage.set(key, value);
+};
+async function loggedDateSet(){
+  try{ return new Set((await getAllTrainingSessions()).map(s=> s.date)); } catch(e){ return new Set(); }
+}
+// The day's sessions as they read on the board: the title, and morning/evening only when
+// there are two to tell apart.
+function dayPlanWords(raws){
+  const blocks = ['am','pm'].map(s=> raws[s] ? JSON.parse(raws[s]) : null).filter(Boolean);
+  return blocks.map(b=> sessionTitle(b)).join(' + ');
+}
+
+/* MOVE A DAY. The two days trade everything: both slots, and a not-training mark, so dragging
+   Tuesday onto a day you had marked off puts Tuesday's sessions there and marks Tuesday off
+   instead. A straight trade for the same reason Swap day is one: every day keeps the shape
+   the other had, so nothing lands twice on one day. Only today and the days ahead, and never
+   a day with a session already logged on it — that day has happened. */
+async function moveDayPlan(from, to){
+  if(!from || !to || from === to) return false;
+  if(from < todayStr || to < todayStr){ showToast('Only today and the days ahead can move'); return false; }
+  const logged = await loggedDateSet();
+  if(logged.has(from) || logged.has(to)){
+    showToast(`${logDateWords(logged.has(from) ? from : to)} already has a session logged`);
+    return false;
+  }
+  const a = {}, b = {};
+  for(const s of ['am','pm']){
+    a[s] = await readRaw(`weekplan:${from}:${s}`);
+    b[s] = await readRaw(`weekplan:${to}:${s}`);
+  }
+  const offA = await isDayOff(from), offB = await isDayOff(to);
+  if(!a.am && !a.pm && !b.am && !b.pm && offA === offB){ showToast('Nothing on either day to move'); return false; }
+  const undo = [];
+  for(const s of ['am','pm']){
+    undo.push({ key:`weekplan:${from}:${s}`, value:a[s], date:from });
+    undo.push({ key:`weekplan:${to}:${s}`, value:b[s], date:to });
+  }
+  undo.push({ key:DAY_OFF_PREFIX + from, value: await readRaw(DAY_OFF_PREFIX + from) });
+  undo.push({ key:DAY_OFF_PREFIX + to, value: await readRaw(DAY_OFF_PREFIX + to) });
+  for(const s of ['am','pm']){
+    await putRaw(`weekplan:${to}:${s}`, a[s]);
+    await putRaw(`weekplan:${from}:${s}`, b[s]);
+  }
+  if(offA !== offB){ await setDayOff(from, offB); await setDayOff(to, offA); }
+  await syncPlannedSessionMirror(from);
+  await syncPlannedSessionMirror(to);
+  offerWeekUndo(undo, 'move');
+  const aWords = dayPlanWords(a), bWords = dayPlanWords(b);
+  showUndoToast(aWords && bWords ? `${logDateWords(from)} and ${logDateWords(to)} swapped`
+    : aWords ? `${aWords} moved to ${logDateWords(to)}`
+    : `${bWords || 'The day'} moved to ${logDateWords(from)}`);
+  const at = getWeekDates().indexOf(to);
+  if(at >= 0 && aWords) activeWheelDayIndex = at;
+  weekDetailLastHtml = '';
+  renderWeekGrid();
+  renderTodayWorkoutSummary();
+  return true;
+}
+
+/* THE DAY'S MENU. What is on it, the week to move it into, and the four things you can do to
+   a day: edit what is on it, add to it, clear it, or say you are not training. Each one is
+   the same action the day's own cards already offer, gathered under the finger that held it. */
+let dayActionSheet = null;
+async function openDayActions(date){
+  if(!dayActionSheet) dayActionSheet = wireSheet('dayActionSheet');
+  const title = document.getElementById('dayActTitle');
+  const body = document.getElementById('dayActBody');
+  if(!title || !body) return;
+  const dates = getWeekDates();
+  const at = dates.indexOf(date);
+  const d = dateFromStr(date);
+  title.textContent = `${at >= 0 ? WEEK_DAY_FULL[at] : dayLabelFor(date)} ${d.getDate()} ${MONTH_SHORT[d.getMonth()]}${date === todayStr ? ' · today' : ''}`;
+  const blocks = [];
+  for(const s of ['am','pm']){ const b = await blockOn(date, s); if(b) blocks.push({ slot:s, block:b }); }
+  const off = await isDayOff(date);
+  const logged = await loggedDateSet();
+  const locked = date < todayStr || logged.has(date);
+  const iconFor = (b, size)=> blockIconKey(b) ? dfIcon(blockIconKey(b), size) : `<span class="week-cal-mark">${calMarkLetter(b)}</span>`;
+
+  const now = off ? `<div><span class="day-act-glyph" aria-hidden="true">×</span>Not training</div>`
+    : blocks.length ? blocks.map(({slot, block})=>
+        `<div>${iconFor(block, 20)}<span>${sessionTitle(block)}</span>${blocks.length > 1 ? `<small>${slot === 'am' ? 'AM' : 'PM'}</small>` : ''}</div>`).join('')
+    : `<div><span class="day-act-glyph" aria-hidden="true">–</span>Nothing planned</div>`;
+
+  let strip = '';
+  if(!locked){
+    const cells = [];
+    for(let i = 0; i < dates.length; i++){
+      const o = dates[i];
+      let marks = '';
+      if(await isDayOff(o)) marks = '×';
+      else for(const s of ['am','pm']){ const b = await blockOn(o, s); if(b) marks += iconFor(b, 14); }
+      const self = o === date;
+      const dis = self || o < todayStr || logged.has(o);
+      cells.push(`<button type="button" class="day-act-day${self ? ' self' : ''}" data-move-to="${o}"${dis ? ' disabled' : ''}
+          aria-label="${self ? 'This day' : `${blocks.length || off ? 'Move to' : 'Swap with'} ${WEEK_DAY_FULL[i]}`}">
+        <span class="wd">${WEEKDAY_NAMES[i]}</span><span class="dn">${dateFromStr(o).getDate()}</span><span class="mk">${marks}</span></button>`);
+    }
+    strip = `<div class="day-act-label">${blocks.length || off ? 'Move to' : 'Swap with'}</div><div class="day-act-days">${cells.join('')}</div>`;
+  }
+
+  const acts = [];
+  blocks.forEach(({slot, block}, i)=> acts.push(
+    `<button type="button" class="day-act" data-act="edit" data-slot="${slot}">${iconFor(block, 20)}<span>Edit ${sessionTitle(block)}</span></button>`));
+  if(!locked && !off && blocks.length < 2) acts.push(
+    `<button type="button" class="day-act" data-act="add" data-slot="${blocks.some(b=> b.slot === 'am') ? 'pm' : 'am'}"><span class="day-act-glyph" aria-hidden="true">+</span><span>${blocks.length ? 'Add a second session' : 'Add a session'}</span></button>`);
+  if(!locked && blocks.length) acts.push(
+    `<button type="button" class="day-act" data-act="clear"><span class="day-act-glyph" aria-hidden="true">–</span><span>Clear the day</span></button>`);
+  if(!locked) acts.push(off
+    ? `<button type="button" class="day-act" data-act="on"><span class="day-act-glyph" aria-hidden="true">✓</span><span>I can train this day</span></button>`
+    : `<button type="button" class="day-act" data-act="off"><span class="day-act-glyph" aria-hidden="true">×</span><span>Not training this day</span></button>`);
+
+  body.innerHTML = `<div class="day-act-now">${now}</div>${strip}
+    <div class="day-act-list">${acts.join('')}</div>
+    <p class="day-act-tip">${locked ? (date < todayStr ? 'This day has been and gone, so it stays where it is.' : 'A session is logged on this day, so it stays where it is.') : 'Quicker: hold a day on the strip and drag it onto another.'}</p>`;
+
+  const done = ()=>{ dayActionSheet.close(); };
+  body.querySelectorAll('[data-move-to]').forEach(btn=> btn.addEventListener('click', async ()=>{
+    done();
+    await moveDayPlan(date, btn.dataset.moveTo);
+  }));
+  body.querySelectorAll('[data-act]').forEach(btn=> btn.addEventListener('click', async ()=>{
+    const act = btn.dataset.act;
+    done();
+    if(at >= 0) activeWheelDayIndex = at;
+    if(act === 'edit'){
+      const found = blocks.find(b=> b.slot === btn.dataset.slot);
+      if(found) await openBlockEditor(date, found.slot, found.block);
+      return;
+    }
+    if(act === 'add'){ await openBlockEditor(date, btn.dataset.slot, null); return; }
+    const undo = [];
+    for(const s of ['am','pm']) undo.push({ key:`weekplan:${date}:${s}`, value: await readRaw(`weekplan:${date}:${s}`), date });
+    undo.push({ key:DAY_OFF_PREFIX + date, value: await readRaw(DAY_OFF_PREFIX + date) });
+    if(act === 'clear' || act === 'off'){
+      for(const s of ['am','pm']) await putRaw(`weekplan:${date}:${s}`, null);
+      await syncPlannedSessionMirror(date);
+    }
+    if(act === 'off') await setDayOff(date, true);
+    if(act === 'on') await setDayOff(date, false);
+    offerWeekUndo(undo, act === 'clear' ? 'clear' : 'day change');
+    showUndoToast(act === 'clear' ? `${logDateWords(date)} cleared`
+      : act === 'off' ? `Nothing will be planned for ${logDateWords(date)}`
+      : `${logDateWords(date)} is available again`);
+    weekDetailLastHtml = '';
+    renderWeekGrid();
+    renderTodayWorkoutSummary();
+  }));
+  dayActionSheet.open();
 }
 
 /* The day, off the board and no longer in a sheet \u2014 see renderWeekGrid, which now writes
