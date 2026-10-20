@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.20.001",
+ "generatedFrom": "2026.10.20.002",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1086,7 +1086,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.20.001",
+  "APP_VERSION": "2026.10.20.002",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1462,6 +1462,7 @@
    "2026.10.18.005": "Switching to automatic block lengths no longer moves you. Blocks you had already finished keep the length they actually ran, so you stay in the same block and week you were in — only the block you are in now, and the ones after it, take their length from their type.",
    "2026.10.18.006": "Power blocks have more to work with. Pull days get an explosive pull to open with — Explosive Pull-up, Explosive Inverted Row, Pendlay Row or Kettlebell High Pull — where before they had none. Every Power-block day also adds a second fast movement for the other half of the body, a throw on leg days and a jump on upper days, alongside the heavy lift. And two days with the same pattern no longer open with the same jump: the second squat day gets the next one down. New for bodyweight training: the Incline Plyometric Push-up.",
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
+   "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
    "2026.09.20.628": "The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.",
    "2026.09.20.627": "Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.",
@@ -2011,6 +2012,31 @@
    "strength": "S",
    "run": "R",
    "mobility": "M"
+  },
+  "DF_ICONS": {
+   "strength": "M2.5 6H7V18H2.5ZM17 6H21.5V18H17ZM7 10.5H17V13.5H7Z",
+   "run": "M3 5H8L15 12L8 19H3L10 12Z M10.5 5H15.5L22.5 12L15.5 19H10.5L17.5 12Z",
+   "mobility": "M3.5 20.5V5.5A15 15 0 0 1 18.5 20.5Z",
+   "golf": "M5.5 2.5H8.3V21.5H5.5ZM8.3 2.5L20 7.6L8.3 12.7ZM14.1 18.6A2.9 2.9 0 1 0 19.9 18.6A2.9 2.9 0 1 0 14.1 18.6Z",
+   "metcon": "M3.5 13.5A8.5 8.5 0 1 0 20.5 13.5A8.5 8.5 0 1 0 3.5 13.5ZM6 13.5A6 6 0 1 0 18 13.5A6 6 0 1 0 6 13.5ZM11 8.5H13V13.5H11ZM9.5 1.5H14.5V4.1H9.5Z",
+   "rest": "M3 12A9 9 0 1 0 21 12A9 9 0 1 0 3 12ZM5.6 12A6.4 6.4 0 1 0 18.4 12A6.4 6.4 0 1 0 5.6 12ZM12 5.6A6.4 6.4 0 0 0 12 18.4Z",
+   "muscle": "M2.5 14H7.5V21.5H2.5ZM9.5 8.5H14.5V21.5H9.5ZM16.5 3H21.5V21.5H16.5Z",
+   "power": "M14.5 1.5L4.5 13.6H11L9 22.5L19.5 9.6H13Z",
+   "base": "M2 21V15L22 11V21Z",
+   "build": "M2 21V15.5L9 10.5L14 13.5L22 7V21Z",
+   "sharpen": "M2 21V17.5L9 11L12 14L17 3L22 12.5V21Z",
+   "engine": "M1.5 10.5H6.6L9.6 3.8L14.4 15.8L16.6 10.5H22.5V13.5H18.6L14.2 22L9.4 9.8L8.6 13.5H1.5Z",
+   "deload": "M2.5 3H7.5V21.5H2.5ZM9.5 8.5H14.5V21.5H9.5ZM16.5 14H21.5V21.5H16.5Z",
+   "inseason": "M5.5 2.5H8.3V19H5.5ZM8.3 2.5L20 7.6L8.3 12.7ZM2.5 19H13.5V21.6H2.5Z",
+   "block": "M1.5 8H5.1V16H1.5ZM6.1 8H9.7V16H6.1ZM10.7 8H14.299999999999999V16H10.7ZM15.3 8H18.900000000000002V16H15.3ZM19.6 8H22.5V16H19.6ZM20.7 9.2H21.4V14.799999999999999H20.7Z",
+   "goals": "M2.5 12A9.5 9.5 0 1 0 21.5 12A9.5 9.5 0 1 0 2.5 12ZM5.4 12A6.6 6.6 0 1 0 18.6 12A6.6 6.6 0 1 0 5.4 12ZM9.2 12A2.8 2.8 0 1 0 14.8 12A2.8 2.8 0 1 0 9.2 12Z",
+   "weight": "M6.5 3.5H17.5L21.5 7.5V17L17.5 21H6.5L2.5 17V7.5ZM7 13A5 5 0 0 1 17 13Z",
+   "protein": "M12 2C7.6 2 4.5 8.6 4.5 14A7.5 7.5 0 0 0 19.5 14C19.5 8.6 16.4 2 12 2Z",
+   "warmup": "M3.5 20A8.5 8.5 0 0 1 20.5 20Z M12 2L16.5 8H7.5Z",
+   "cooldown": "M3.5 20A8.5 8.5 0 0 1 20.5 20Z M7.5 2H16.5L12 8Z",
+   "finisher": "M3.5 13.5A8.5 8.5 0 1 0 20.5 13.5A8.5 8.5 0 1 0 3.5 13.5ZM12 13.5V7A6.5 6.5 0 0 1 18.5 13.5ZM9.5 1.5H14.5V4.1H9.5Z",
+   "ontrack": "M7 2H17L22 7V17L17 22H7L2 17V7ZM6 12.6L8.4 10.2L10.6 12.4L15.6 7.4L18 9.8L10.6 17.2Z",
+   "warning": "M12 1.5L23 21.5H1ZM10.8 8H13.200000000000001V15H10.8ZM10.8 16.6H13.200000000000001V19H10.8Z"
   },
   "DELOAD_CUT": 0.5,
   "SCORE_PLACEHOLDER_SVG": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\"><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"22\"/><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"/><line x1=\"4.5\" y1=\"4.5\" x2=\"19.5\" y2=\"19.5\"/><line x1=\"19.5\" y1=\"4.5\" x2=\"4.5\" y2=\"19.5\"/></svg>",

@@ -2436,7 +2436,7 @@
   /* PLAN ROWS. One answer each: a label, the big line, one sentence under it. The whole row
      is the button into its sheet. */
   .plan-rows{ display:flex; flex-direction:column; margin:8px 0 40px; }
-  .plan-row{ display:grid; grid-template-columns:1fr auto; gap:4px 12px; align-items:center; width:100%;
+  .plan-row{ display:grid; grid-template-columns:36px 1fr auto; gap:2px 14px; align-items:center; width:100%;
     padding:20px 0; background:none; border:0; border-top:1px solid rgba(var(--ink-rgb),0.14); border-radius:0;
     color:var(--bg); font:inherit; text-align:left; cursor:pointer; min-height:0; box-shadow:none;
     /* The app's button rule makes every button a 31px uppercase bar; a row is not one. */
@@ -2444,12 +2444,16 @@
     border-left:0; border-right:0; border-bottom:0; }
   .plan-row:first-child{ border-top:0; }
   .plan-row:focus-visible{ outline:2px solid var(--band); outline-offset:-2px; }
+  .plan-tile{ grid-row:1 / 3; grid-column:1; width:36px; height:36px; display:grid; place-items:center;
+    background:var(--band); color:#0c0d0b; clip-path:polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%); }
+  .plan-tile .df-icon{ width:22px; height:22px; }
   .plan-row-label{ grid-column:1 / 3; font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold);
     letter-spacing:var(--track-ui); text-transform:uppercase; color:rgba(var(--ink-rgb),0.7); }
   .plan-row-big{ font-family:var(--mono); font-size:clamp(18px, 5.6vw, 22px); font-weight:var(--fw-bold); letter-spacing:-0.02em;
     text-transform:none; font-variant-numeric:tabular-nums; line-height:1.15; }
-  .plan-row-small{ grid-column:1 / 2; font-family:var(--prose); font-size:14px; color:var(--dim); text-transform:none; letter-spacing:0; }
-  .plan-row-chev{ grid-row:2 / 4; grid-column:2; font-size:22px; color:rgba(var(--ink-rgb),0.7); }
+  .plan-row-big{ grid-column:2; }
+  .plan-row-small{ grid-column:2; font-family:var(--prose); font-size:14px; color:var(--dim); text-transform:none; letter-spacing:0; }
+  .plan-row-chev{ grid-row:1 / 3; grid-column:3; font-size:22px; color:rgba(var(--ink-rgb),0.7); }
   .plan-weeks{ display:inline-flex; gap:3px; margin-right:8px; vertical-align:1px; }
   .plan-weeks i{ width:18px; height:9px; border-radius:3px; background:rgba(var(--ink-rgb),0.15); }
   .plan-weeks i.done{ background:var(--bg); opacity:0.75; }
@@ -2458,6 +2462,9 @@
     outline:1px solid rgba(var(--ink-rgb),0.3); outline-offset:-1px; }
   .plan-timeline{ display:flex; flex-direction:column; margin-bottom:6px; }
   .plan-tl-row{ display:grid; grid-template-columns:1fr auto; gap:2px 10px; padding:10px 0; border-bottom:1px solid rgba(var(--ink-rgb),0.12); }
+  .df-title{ display:flex; align-items:center; gap:8px; }
+  .df-title .df-icon{ flex:none; }
+  .plan-tl-row b .df-icon{ vertical-align:-3px; margin-right:8px; }
   .plan-tl-row b{ font-family:var(--mono); text-transform:uppercase; letter-spacing:var(--track-ui); font-size:var(--fs-md); }
   .plan-tl-row span{ font-family:var(--mono); font-size:var(--fs-sm); color:rgba(var(--ink-rgb),0.72); text-align:right; font-variant-numeric:tabular-nums; }
   .plan-tl-row.done{ opacity:0.55; }
@@ -2708,7 +2715,10 @@
      tap-through does not still say. Each session becomes the letter its type starts with, the
      same abbreviation this app already reaches for at this size (BW, FAIL, AM/PM) rather than
      a colour code the rest of the app does not use anywhere else. */
-  .week-cal-marks{ display:flex; gap:2px; min-height:13px; }
+  .week-cal-marks{ display:flex; gap:2px; min-height:16px; }
+  /* A session is its icon now; the letter badge is kept only for a type with no icon. */
+  .week-cal-mark.icon{ width:16px; height:16px; background:none; color:var(--bg); line-height:0; }
+  .week-cal-mark.icon .df-icon{ display:block; }
   .week-cal-mark{ font-family:var(--mono); font-size:9px; font-weight:var(--fw-bold);
     line-height:13px; width:13px; height:13px; border-radius:2px; text-align:center;
     color:var(--ground); background:var(--bg); }
@@ -6120,19 +6130,19 @@
   <div class="panel" id="panel-plan">
     <div class="plan-rows">
       <button type="button" class="plan-row" id="planBlockRow">
-        <span class="plan-row-label">Block</span>
+        <span class="plan-tile" id="planBlockRowIcon"></span>
         <span class="plan-row-big" id="planBlockBig">&mdash;</span>
         <span class="plan-row-small" id="planBlockSmall"></span>
         <span class="plan-row-chev" aria-hidden="true">&rsaquo;</span>
       </button>
       <button type="button" class="plan-row" id="planGoalsRow">
-        <span class="plan-row-label">Goals</span>
+        <span class="plan-tile" id="planGoalsRowIcon"></span>
         <span class="plan-row-big" id="planGoalsBig">&mdash;</span>
         <span class="plan-row-small" id="planGoalsSmall"></span>
         <span class="plan-row-chev" aria-hidden="true">&rsaquo;</span>
       </button>
       <button type="button" class="plan-row" id="planSportRow">
-        <span class="plan-row-label">Sport</span>
+        <span class="plan-tile" id="planSportRowIcon"></span>
         <span class="plan-row-big" id="planSportBig">&mdash;</span>
         <span class="plan-row-small" id="planSportSmall"></span>
         <span class="plan-row-chev" aria-hidden="true">&rsaquo;</span>
@@ -12202,7 +12212,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.20.001';
+const APP_VERSION = '2026.10.20.002';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12596,6 +12606,7 @@ const APP_NOTES = {
   '2026.10.18.005': 'Switching to automatic block lengths no longer moves you. Blocks you had already finished keep the length they actually ran, so you stay in the same block and week you were in \u2014 only the block you are in now, and the ones after it, take their length from their type.',
   '2026.10.18.006': 'Power blocks have more to work with. Pull days get an explosive pull to open with \u2014 Explosive Pull-up, Explosive Inverted Row, Pendlay Row or Kettlebell High Pull \u2014 where before they had none. Every Power-block day also adds a second fast movement for the other half of the body, a throw on leg days and a jump on upper days, alongside the heavy lift. And two days with the same pattern no longer open with the same jump: the second squat day gets the next one down. New for bodyweight training: the Incline Plyometric Push-up.',
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
+  '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -18785,7 +18796,57 @@ const WEEK_CAL_MARK_LETTER = { strength:'S', run:'R', mobility:'M' };
 // mobility session, wherever it is named.
 const isGolfRound = block => !!(block && block.details && block.details.sport === 'golf');
 function calMarkLetter(block){ return isGolfRound(block) ? 'G' : (WEEK_CAL_MARK_LETTER[block.type] || '?'); }
-function blockTypeWord(block){ return isGolfRound(block) ? 'golf round' : block.type; }
+function blockTypeWord(block){ return isGolfRound(block) ? 'golf round' : (block.details && block.details.metcon) ? 'metcon' : block.type; }
+/* ---------- ICONS ----------
+   One set, one idea each, two or three shapes and at most one cut — solid geometry in the
+   spirit of Marathon's signage, not illustrations. Every glyph is drawn on a 24 grid in
+   currentColor, so it takes whatever colour the place it sits in already has: ink on the
+   calendar, black on a tab-coloured tile in Plan. Picked from the rev-D sheet, direction A. */
+const IC_R = (x, y, w, h) => `M${x} ${y}H${x+w}V${y+h}H${x}Z`;
+const IC_C = (cx, cy, r) => `M${cx-r} ${cy}A${r} ${r} 0 1 0 ${cx+r} ${cy}A${r} ${r} 0 1 0 ${cx-r} ${cy}Z`;
+const IC_CH = (x, y, w, h, c) => `M${x+c} ${y}H${x+w-c}L${x+w} ${y+c}V${y+h-c}L${x+w-c} ${y+h}H${x+c}L${x} ${y+h-c}V${y+c}Z`;
+const DF_ICONS = {
+  strength: IC_R(2.5,6,4.5,12) + IC_R(17,6,4.5,12) + IC_R(7,10.5,10,3),
+  run:      'M3 5H8L15 12L8 19H3L10 12Z M10.5 5H15.5L22.5 12L15.5 19H10.5L17.5 12Z',
+  mobility: 'M3.5 20.5V5.5A15 15 0 0 1 18.5 20.5Z',
+  golf:     IC_R(5.5,2.5,2.8,19) + 'M8.3 2.5L20 7.6L8.3 12.7Z' + IC_C(17,18.6,2.9),
+  metcon:   IC_C(12,13.5,8.5) + IC_C(12,13.5,6) + IC_R(11,8.5,2,5) + IC_R(9.5,1.5,5,2.6),
+  rest:     IC_C(12,12,9) + IC_C(12,12,6.4) + 'M12 5.6A6.4 6.4 0 0 0 12 18.4Z',
+  muscle:   IC_R(2.5,14,5,7.5) + IC_R(9.5,8.5,5,13) + IC_R(16.5,3,5,18.5),
+  power:    'M14.5 1.5L4.5 13.6H11L9 22.5L19.5 9.6H13Z',
+  base:     'M2 21V15L22 11V21Z',
+  build:    'M2 21V15.5L9 10.5L14 13.5L22 7V21Z',
+  sharpen:  'M2 21V17.5L9 11L12 14L17 3L22 12.5V21Z',
+  engine:   'M1.5 10.5H6.6L9.6 3.8L14.4 15.8L16.6 10.5H22.5V13.5H18.6L14.2 22L9.4 9.8L8.6 13.5H1.5Z',
+  deload:   IC_R(2.5,3,5,18.5) + IC_R(9.5,8.5,5,13) + IC_R(16.5,14,5,7.5),
+  inseason: IC_R(5.5,2.5,2.8,16.5) + 'M8.3 2.5L20 7.6L8.3 12.7Z' + IC_R(2.5,19,11,2.6),
+  block:    IC_R(1.5,8,3.6,8) + IC_R(6.1,8,3.6,8) + IC_R(10.7,8,3.6,8) + IC_R(15.3,8,3.6,8) + IC_R(19.6,8,2.9,8) + IC_R(20.7,9.2,0.7,5.6),
+  goals:    IC_C(12,12,9.5) + IC_C(12,12,6.6) + IC_C(12,12,2.8),
+  weight:   IC_CH(2.5,3.5,19,17.5,4) + 'M7 13A5 5 0 0 1 17 13Z',
+  protein:  'M12 2C7.6 2 4.5 8.6 4.5 14A7.5 7.5 0 0 0 19.5 14C19.5 8.6 16.4 2 12 2Z',
+  warmup:   'M3.5 20A8.5 8.5 0 0 1 20.5 20Z M12 2L16.5 8H7.5Z',
+  cooldown: 'M3.5 20A8.5 8.5 0 0 1 20.5 20Z M7.5 2H16.5L12 8Z',
+  finisher: IC_C(12,13.5,8.5) + 'M12 13.5V7A6.5 6.5 0 0 1 18.5 13.5Z' + IC_R(9.5,1.5,5,2.6),
+  ontrack:  IC_CH(2,2,20,20,5) + 'M6 12.6L8.4 10.2L10.6 12.4L15.6 7.4L18 9.8L10.6 17.2Z',
+  warning:  'M12 1.5L23 21.5H1Z' + IC_R(10.8,8,2.4,7) + IC_R(10.8,16.6,2.4,2.4)
+};
+function dfIcon(key, size, cls){
+  const d = DF_ICONS[key];
+  if(!d) return '';
+  const sz = size || 24;
+  return `<svg class="df-icon${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" width="${sz}" height="${sz}" aria-hidden="true" focusable="false">`
+    + `<path fill="currentColor" fill-rule="evenodd" d="${d}"/></svg>`;
+}
+// Which icon a planned block is: the session it is, not the type it is stored as.
+function blockIconKey(block){
+  if(!block) return null;
+  if(isGolfRound(block)) return 'golf';
+  if(block.type === 'strength') return (block.details && block.details.metcon) ? 'metcon' : 'strength';
+  if(block.type === 'run') return 'run';
+  if(block.type === 'mobility') return 'mobility';
+  return null;
+}
+
 
 // Provisional — within Bell et al.'s 40-60% cut range, same "flagged not fabricated"
 // treatment as every other constant in this app.
@@ -19263,8 +19324,9 @@ function renderWeekBoard(dayBlocks){
        glyph's title rather than beside it for the same reason — a hover/long-press label costs
        no width, a visible marker would. */
     const sessions = blocks.map(({slot, block})=>
-      `<span class="week-cal-mark" title="${slot === 'am' ? 'morning' : 'evening'} ${blockTypeWord(block)}">`
-      + `${calMarkLetter(block)}</span>`
+      (blockIconKey(block)
+        ? `<span class="week-cal-mark icon" title="${slot === 'am' ? 'morning' : 'evening'} ${blockTypeWord(block)}">${dfIcon(blockIconKey(block), 16)}</span>`
+        : `<span class="week-cal-mark" title="${slot === 'am' ? 'morning' : 'evening'} ${blockTypeWord(block)}">${calMarkLetter(block)}</span>`)
     ).join('');
     /* A day you MARKED off says so; that is a decision you took. A rest day is a decision too
        -- the generator's -- and it used to draw blank, on the reasoning that an empty row is
@@ -26219,6 +26281,7 @@ async function renderPlanTab(){
   try{
     const pos = await getBlockPosition(todayStr);
     const bt = (await getBlockTypeFor(todayStr)).type;
+    document.getElementById('planBlockRowIcon').innerHTML = dfIcon(bt && DF_ICONS[bt] ? bt : 'block');
     const big = document.getElementById('planBlockBig'), small = document.getElementById('planBlockSmall');
     if(!pos.started){
       big.textContent = bt ? `${blockTypeLabel(bt)} · first block` : 'First block';
@@ -26239,6 +26302,7 @@ async function renderPlanTab(){
   try{
     const goals = ((await getCurrentGoals(todayStr)) || {}).list || [];
     const big = document.getElementById('planGoalsBig'), small = document.getElementById('planGoalsSmall');
+    document.getElementById('planGoalsRowIcon').innerHTML = dfIcon('goals');
     if(!goals.length){ big.textContent = 'No goals yet'; small.textContent = 'Tap to add one.'; }
     else {
       big.textContent = goals.slice(0, 2).map(planGoalShort).join(' · ');
@@ -26249,6 +26313,7 @@ async function renderPlanTab(){
   try{
     const golf = await golfSettings();
     const big = document.getElementById('planSportBig'), small = document.getElementById('planSportSmall');
+    document.getElementById('planSportRowIcon').innerHTML = dfIcon(golf && golf.season === 'in' ? 'inseason' : 'golf');
     if(!golf){ big.textContent = 'No sport'; small.textContent = 'Tap to add golf.'; }
     else {
       big.textContent = `Golf · ${golf.season === 'in' ? 'In-season' : 'Off-season'}`;
@@ -26275,7 +26340,7 @@ async function paintPlanBlockSheet(){
       const name = b.type ? blockTypeLabel(b.type) : 'Block';
       const note = b.state === 'now' && b.type ? `<span class="plan-tl-note">${BLOCK_TYPES[b.type].note}</span>` : '';
       const when = b.state === 'now' ? 'now' : b.state === 'done' ? 'done' : 'next';
-      return `<div class="plan-tl-row ${b.state}"><b>${name} · ${b.weeks} wk</b><span>${fmtShortDate(b.start)} – ${fmtShortDate(end)} · ${when}</span>${note}</div>`;
+      return `<div class="plan-tl-row ${b.state}"><b>${dfIcon(b.type && DF_ICONS[b.type] ? b.type : 'block', 16)}${name} · ${b.weeks} wk</b><span>${fmtShortDate(b.start)} – ${fmtShortDate(end)} · ${when}</span>${note}</div>`;
     }).join('');
   } catch(e){ box.innerHTML = ''; }
 }
@@ -34228,7 +34293,7 @@ function planRow(name, dose, lines, opts){
    with its own dose. No sets × reps @ kg — that notation means nothing against a clock. */
 function conditioningHtml(c, heading){
   const rows = (c.moves || []).map(m => planRow(m.name || '', m.dose || ''));
-  return `<div class="log-title gutter-inset" style="margin-top:16px;">${heading} \u00b7 ${c.format} ${c.minutes} min</div>`
+  return `<div class="log-title gutter-inset df-title" style="margin-top:16px;">${dfIcon(heading === 'Metcon' ? 'metcon' : 'finisher', 16)}${heading} \u00b7 ${c.format} ${c.minutes} min</div>`
     + `<div class="plan-list">${planRow(c.title, '')}${rows.join('')}</div>`
     + (c.note ? `<div class="score-note">${c.note}</div>` : '');
 }
@@ -34407,7 +34472,7 @@ async function blockSummaryHtml(block){
         const range = st.rangeNote ? ` \u00b7 ${st.rangeNote}` : '';
         return planRow(st.name, `${mobilityDoseLabel(st)}${range}`, cue ? [{ text: cue }] : []);
       }).join('');
-      coolHtml = `<div class="log-title gutter-inset" style="margin-top:16px;">Cool-down</div>`
+      coolHtml = `<div class="log-title gutter-inset df-title" style="margin-top:16px;">${dfIcon('cooldown', 16)}Cool-down</div>`
         + `<div class="plan-list">${coolRows}</div>`
         + (block.details.cooldownNote ? `<div class="score-note">${block.details.cooldownNote}</div>` : '');
     }
