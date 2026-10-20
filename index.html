@@ -2468,6 +2468,9 @@
   .plan-tl-row b{ font-family:var(--mono); text-transform:uppercase; letter-spacing:var(--track-ui); font-size:var(--fs-md); }
   .plan-tl-row span{ font-family:var(--mono); font-size:var(--fs-sm); color:rgba(var(--ink-rgb),0.72); text-align:right; font-variant-numeric:tabular-nums; }
   .plan-tl-row.done{ opacity:0.55; }
+  .plan-weigh{ display:grid; gap:6px; margin-bottom:12px; }
+  .plan-weigh-line{ display:flex; justify-content:space-between; gap:12px; font-family:var(--mono); font-size:var(--fs-sm); }
+  .plan-weigh-line span:last-child{ font-variant-numeric:tabular-nums; text-align:right; }
   .plan-tl-row .plan-tl-note{ grid-column:1 / 3; font-family:var(--prose); font-size:13px; color:var(--dim); text-align:left; }
   body.tab-insights header, body.tab-plan header{ border-bottom-color:transparent; }
   /* The band paints itself the same inside a panel as on the ground; only the bleed differs. */
@@ -6135,6 +6138,12 @@
         <span class="plan-row-small" id="planBlockSmall"></span>
         <span class="plan-row-chev" aria-hidden="true">&rsaquo;</span>
       </button>
+      <button type="button" class="plan-row" id="planWeightRow">
+        <span class="plan-tile" id="planWeightRowIcon"></span>
+        <span class="plan-row-big" id="planWeightBig">&mdash;</span>
+        <span class="plan-row-small" id="planWeightSmall"></span>
+        <span class="plan-row-chev" aria-hidden="true">&rsaquo;</span>
+      </button>
       <button type="button" class="plan-row" id="planGoalsRow">
         <span class="plan-tile" id="planGoalsRowIcon"></span>
         <span class="plan-row-big" id="planGoalsBig">&mdash;</span>
@@ -6181,6 +6190,18 @@
         <div id="blockPositionNote" class="score-note note-live">—</div>
         <div class="field-row"><button class="small outline" id="resetBlockBtn">Start a new block from this week</button></div>
           <button type="button" id="savePlanBlockBtn" class="small" style="margin-top:8px;">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="lift-sheet" id="planWeightSheet" style="display:none;">
+      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Weight">
+        <div class="lift-sheet-head"><span>Weight</span>
+          <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
+        <div class="fields">
+          <div id="planWeightDetail"></div>
+          <div class="field-row"><span class="field-label">Today</span><input type="number" step="0.1" id="planWeightInput" placeholder="kg"></div>
+          <button type="button" id="savePlanWeightBtn" class="small" style="margin-top:8px;">Log weight</button>
         </div>
       </div>
     </div>
@@ -12212,7 +12233,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.20.002';
+const APP_VERSION = '2026.10.20.003';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12607,6 +12628,7 @@ const APP_NOTES = {
   '2026.10.18.006': 'Power blocks have more to work with. Pull days get an explosive pull to open with \u2014 Explosive Pull-up, Explosive Inverted Row, Pendlay Row or Kettlebell High Pull \u2014 where before they had none. Every Power-block day also adds a second fast movement for the other half of the body, a throw on leg days and a jump on upper days, alongside the heavy lift. And two days with the same pattern no longer open with the same jump: the second squat day gets the next one down. New for bodyweight training: the Incline Plyometric Push-up.',
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
+  '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -26298,6 +26320,13 @@ async function renderPlanTab(){
       small.innerHTML = `<span class="plan-weeks" aria-hidden="true">${bars}</span>${nextText}`;
     }
   } catch(e){}
+  // Weight
+  try{
+    const g = await weightGuidance();
+    document.getElementById('planWeightRowIcon').innerHTML = dfIcon('weight');
+    document.getElementById('planWeightBig').textContent = g.big;
+    document.getElementById('planWeightSmall').textContent = g.small;
+  } catch(e){}
   // Goals
   try{
     const goals = ((await getCurrentGoals(todayStr)) || {}).list || [];
@@ -26356,6 +26385,42 @@ async function saveBlockLengthSelect(){
 }
 const planBlockSheet = wireSheet('planBlockSheet', ()=> renderPlanTab().catch(()=>{}));
 const planSportSheet = wireSheet('planSportSheet', ()=> renderPlanTab().catch(()=>{}));
+const planWeightSheet = wireSheet('planWeightSheet', ()=> renderPlanTab().catch(()=>{}));
+wireWheelField(document.getElementById('planWeightInput'), { title:'Weight', min:30, max:200, step:0.1, decimals:2, unit:'kg' });
+async function paintPlanWeightSheet(){
+  const g = await weightGuidance();
+  const t = g.target;
+  const recent = (await bodyweightTimeline()).slice(-5).reverse();
+  const why = t.deload ? 'Deload weeks hold weight — recovery, not a cut.'
+    : t.type === 'muscle' ? 'A small surplus is where muscle grows; a deficit costs muscle gain.'
+    : t.type === 'strength' ? 'Strength holds up either way; steady or slowly up keeps the lifts climbing.'
+    : t.type === 'base' && t.leanOut ? 'Easy running volume recovers easily, so this is the one place to lose a little — slowly.'
+    : 'A fast change either way costs speed and power, so this block holds.';
+  document.getElementById('planWeightDetail').innerHTML = `<div class="plan-weigh">
+      <div class="plan-weigh-line"><span>Now</span><span>${g.trend.latest ? g.trend.latest.weight.toFixed(1) + ' kg' : '—'}</span></div>
+      <div class="plan-weigh-line"><span>Last 3 weeks</span><span>${g.trend.enough ? kgWeek(g.trend.perWeek) + ' kg/wk' : 'not enough weigh-ins'}</span></div>
+      <div class="plan-weigh-line"><span>This block wants</span><span>${g.band || '—'}</span></div>
+    </div>
+    <div class="score-note">${why}</div>
+    ${recent.length ? `<div class="score-note">${recent.map(r => `${fmtShortDate(r.date)} ${r.weight.toFixed(1)}`).join(' · ')}</div>` : ''}`;
+  const inp = document.getElementById('planWeightInput');
+  if(g.trend.latest) inp.value = g.trend.latest.weight;
+}
+document.getElementById('planWeightRow').addEventListener('click', async ()=>{ await paintPlanWeightSheet(); planWeightSheet.open(); });
+document.getElementById('savePlanWeightBtn').addEventListener('click', async ()=>{
+  const w = parseFloat(document.getElementById('planWeightInput').value);
+  if(!(w > 0)){ showToast('Enter a weight', true); return; }
+  // Today's record keeps whatever height and body fat were already true; only weight moves.
+  let base = {};
+  try{ base = (await getLatestBodyMetrics(todayStr)) || {}; } catch(e){}
+  const record = { date: todayStr, height: base.height ?? null, weight: w, bodyFat: base.bodyFat ?? null };
+  try{
+    await window.storage.set(`bodymetrics:${todayStr}`, JSON.stringify(record));
+    invalidateBodyweightTimeline();
+    showToast('Weight logged');
+    planWeightSheet.close();
+  } catch(e){ showToast('Save failed — try again', true); }
+});
 document.getElementById('planBlockRow').addEventListener('click', async ()=>{ await paintPlanBlockSheet(); planBlockSheet.open(); });
 document.getElementById('planSportRow').addEventListener('click', async ()=>{ await paintSportFields(); planSportSheet.open(); });
 document.getElementById('planGoalsRow').addEventListener('click', ()=>{
@@ -30648,7 +30713,14 @@ async function renderTodayBlockContext(forDate){
     else if(reintro) note = 'First week back — loads are intentionally ~10% down. Ramping, not testing.';
     else if(phase === 'intensification') note = 'Highest planned volume of the block. If the score is low, this is the week to take that seriously.';
     else if(bt && pos.weekInBlock === 1) note = BLOCK_TYPES[bt].note;
-    el.innerHTML = chipRow(line) + (note ? `<div style="opacity:0.75; margin-top:6px;">${note}</div>` : '');
+    // Weight only speaks up when it is off what the block wants — on target is not news — and
+    // on its own line, because it is the one thing here you would act on at dinner.
+    let weightNote = '';
+    if(!forDate || forDate === todayStr){
+      try{ const g = await weightGuidance(); if(g.status === 'low' || g.status === 'high') weightNote = `Weight: ${g.small}`; } catch(e){}
+    }
+    el.innerHTML = chipRow(line) + (note ? `<div style="opacity:0.75; margin-top:6px;">${note}</div>` : '')
+      + (weightNote ? `<div class="df-title" style="margin-top:6px;">${dfIcon('weight', 14)}<span>${weightNote}</span></div>` : '');
   } catch(e){ el.textContent = ''; }
 }
 
@@ -32214,6 +32286,100 @@ async function blockSequenceFor(list){
     return { order: SPORTS.golf.sequences[golf.season], from: 'golf' };
   }
   return lead ? { order: BLOCK_SEQUENCES[lead.type], from: lead.type } : null;
+}
+/* ---------- WEIGHT, FROM THE BLOCK ----------
+   There is no weight goal to set. What your weight should be doing follows from what the
+   block is building, for the goal and sport you train for — a performance target, not a
+   body one. Rates are a share of bodyweight per week, so they scale with you.
+
+     Muscle      +0.25 to +0.5%   A small surplus is where muscle grows; 0.25–0.5% a week is
+                                  the rate recommended for novice and intermediate lifters
+                                  (Iraki et al. 2019). Training in a deficit costs muscle
+                                  gain but not strength gain (Murphy & Koehler 2021).
+     Strength      0 to +0.25%    Strength holds up in a deficit, but there is nothing to
+                                  gain from one here; steady or slowly up. Golf off-season
+                                  sits here too — lean mass is the strongest trainable
+                                  predictor of clubhead speed in junior golfers, and body
+                                  mass is moderately linked to it (Brennan et al. 2024).
+     Power, Sharpen, Build, Engine, In-season, deload weeks
+                 hold ±0.25%      Performance blocks and recovery weeks: a fast change in
+                                  either direction costs speed. Athletes losing 1.4% a week
+                                  improved on far fewer tests than those losing 0.7%
+                                  (Garthe 2011), and the realisation blocks are the worst
+                                  place to spend it.
+     Base          hold, or −0.5 to 0% when body fat reads high
+                                  The one place a runner trades a little weight, slowly,
+                                  because easy volume recovers easily. Only when a body-fat
+                                  reading says there is fat to lose; never fast.
+
+   Judged on a trend, not a weigh-in: the slope of the last 21 days, needing at least three
+   weigh-ins across ten. Day-to-day weight swings by more than a week's target. */
+const WEIGHT_HOLD = { lo:-0.25, hi:0.25 };
+const WEIGHT_TARGETS = {
+  muscle:   { lo:0.25, hi:0.5 },
+  strength: { lo:0, hi:0.25 },
+  power: WEIGHT_HOLD, sharpen: WEIGHT_HOLD, build: WEIGHT_HOLD, engine: WEIGHT_HOLD, inseason: WEIGHT_HOLD
+};
+const WEIGHT_TREND_DAYS = 21, WEIGHT_TREND_MIN_POINTS = 3, WEIGHT_TREND_MIN_SPAN = 10;
+// Body fat above which a Base block allows a slow loss. Coarse on purpose — scales are rough.
+const WEIGHT_BASE_LOSS_BF = { male:20, female:30 };
+async function weightTargetFor(date){
+  const pos = await getBlockPosition(date || todayStr);
+  const deload = isDeloadPosition(pos.weekInBlock, pos.length);
+  const type = (await getBlockTypeFor(date || todayStr)).type;
+  if(deload) return { ...WEIGHT_HOLD, type, deload:true };
+  if(type === 'base'){
+    let bf = null, sex = 'male';
+    try{ const m = await getLatestBodyMetrics(todayStr); bf = m && m.bodyFat; } catch(e){}
+    try{ sex = (await window.storage.get('settings:strengthStandardSex')).value || 'male'; } catch(e){}
+    const high = bf != null && bf > (WEIGHT_BASE_LOSS_BF[sex] || 20);
+    return high ? { lo:-0.5, hi:0, type, leanOut:true } : { ...WEIGHT_HOLD, type };
+  }
+  return { ...(WEIGHT_TARGETS[type] || WEIGHT_HOLD), type };
+}
+// Least-squares slope of the recent weigh-ins, in kg per week.
+async function weightTrend(){
+  const all = await bodyweightTimeline();
+  const from = shiftDateStr(todayStr, -WEIGHT_TREND_DAYS);
+  const pts = all.filter(p => p.date >= from && p.date <= todayStr);
+  const latest = all.length ? all[all.length - 1] : null;
+  if(pts.length < WEIGHT_TREND_MIN_POINTS) return { latest, enough:false, count: pts.length };
+  const day = d => Math.round(localDateFrom(d).getTime() / 86400000);
+  const xs = pts.map(p => day(p.date)), ys = pts.map(p => p.weight);
+  if(xs[xs.length - 1] - xs[0] < WEIGHT_TREND_MIN_SPAN) return { latest, enough:false, count: pts.length };
+  const mx = xs.reduce((a,b)=>a+b,0) / xs.length, my = ys.reduce((a,b)=>a+b,0) / ys.length;
+  let num = 0, den = 0;
+  xs.forEach((x, i)=>{ num += (x - mx) * (ys[i] - my); den += (x - mx) * (x - mx); });
+  const perWeek = den ? (num / den) * 7 : 0;
+  return { latest, enough:true, count: pts.length, perWeek, pctPerWeek: latest ? perWeek / latest.weight * 100 : 0 };
+}
+const kgWeek = v => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(1)}`;
+// The one line about weight the app says, wherever it says it.
+async function weightGuidance(){
+  const target = await weightTargetFor(todayStr);
+  const trend = await weightTrend();
+  const name = target.deload ? 'Deload week' : target.type ? `${blockTypeLabel(target.type)} block` : 'This block';
+  const w = trend.latest ? trend.latest.weight : null;
+  const band = w
+    ? (target.lo === WEIGHT_HOLD.lo && target.hi === WEIGHT_HOLD.hi ? 'steady weight'
+      : target.lo >= 0 ? (target.lo === 0 ? `steady to +${(w * target.hi / 100).toFixed(1)} kg a week`
+                                          : `+${(w * target.lo / 100).toFixed(1)} to +${(w * target.hi / 100).toFixed(1)} kg a week`)
+      : `${kgWeek(w * target.lo / 100)} to ${target.hi === 0 ? '0' : kgWeek(w * target.hi / 100)} kg a week`)
+    : '';
+  if(!trend.enough){
+    return { status:'unknown', target, trend, band,
+      big: w ? `${w.toFixed(1)} kg` : 'No weigh-ins yet',
+      small: w ? `Weigh in a few times a week to see if eating matches the ${name.toLowerCase()}.`
+               : 'Log your weight to see what this block wants.' };
+  }
+  const pct = trend.pctPerWeek;
+  const status = pct < target.lo ? 'low' : pct > target.hi ? 'high' : 'on';
+  const arrow = trend.perWeek > 0.05 ? '↑' : trend.perWeek < -0.05 ? '↓' : '→';
+  const big = `${w.toFixed(1)} kg · ${arrow} ${Math.abs(trend.perWeek).toFixed(1)}/wk`;
+  const small = status === 'on' ? `On target — the ${name.toLowerCase()} wants ${band}.`
+    : status === 'low' ? `Below target — the ${name.toLowerCase()} wants ${band}. Eat a little more.`
+    : `Above target — the ${name.toLowerCase()} wants ${band}. Ease back a little.`;
+  return { status, target, trend, band, big, small };
 }
 function blockTypeLabel(type){ return (type && BLOCK_TYPES[type]) ? BLOCK_TYPES[type].label : ''; }
 
