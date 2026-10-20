@@ -677,29 +677,29 @@
      either end, and the bend is what stops a centred row of dashes reading as a rule.
 
      The arc is real geometry rather than guessed angles: a circle through the row's own tick
-     centres, sagitta 8 over the 150px the row spans, which is a radius of 355.6. Four ticks
-     now, not five (Weekly merged into Today) — recomputed from the same construction rather
-     than dropping one angle and leaving the rest: with 150px, four ticks and the same 5px
-     gaps, the centres sit at ±19.375 and ±58.125 from the middle, which puts the inner pair
-     at 3.13 degrees and the outer pair at 9.41. Nothing here is hand-picked; the sagitta is
-     still the one number to change for more or less bend, and the four angles follow from it.
+     centres, sagitta 8 over the 150px the row spans, which is a radius of 355.6. Five ticks
+     again (Plan joined; it was four after Weekly merged into Today) — the same construction:
+     with 150px, five ticks and 5px gaps the centres sit at 0, ±31 and ±62 from the middle,
+     which puts the inner pair at 5 degrees and the outer pair at 10.04. Nothing here is
+     hand-picked; the sagitta is still the one number to change for more or less bend, and
+     the angles follow from it.
 
      It arches rather than dips, and that is the direction with the room in it: dipping puts
      the outer ticks UP toward the wordmark's line box while arching sends them down into
      empty bar. Flip the sign on both the rotate and the translate to swap it.
 
      Each tick is offset so the arc balances on the line the flat row used to sit on — with an
-     even count there is no dead-centre tick to read the balance off, but the same shift still
-     applies: the outer pair rises 2.13 and the inner pair drops the same 2.13, which is what
-     keeping the bar's height means once the arc is symmetric about a point rather than a tick.
+     odd count the middle tick sits highest, the outer pair drops 2.73 and the inner pair
+     1.38, measured from the mean so the bar keeps the height the flat row had.
      Transformed on .tab and not on .tab-seg, so the 30x54 hit area rides with the tick it
      belongs to instead of staying flat behind a tilted line. */
   .header-brand > .tabs{ position:absolute; left:50%; margin-left:-75px; bottom:12px; width:150px;
     display:flex; gap:5px; --lit:var(--bg); z-index:1; }
-  .header-brand > .tabs .tab:nth-child(1){ transform:translateY(2.13px)  rotate(-9.41deg); }
-  .header-brand > .tabs .tab:nth-child(2){ transform:translateY(-2.13px) rotate(-3.13deg); }
-  .header-brand > .tabs .tab:nth-child(3){ transform:translateY(-2.13px) rotate(3.13deg); }
-  .header-brand > .tabs .tab:nth-child(4){ transform:translateY(2.13px)  rotate(9.41deg); }
+  .header-brand > .tabs .tab:nth-child(1){ transform:translateY(2.73px)  rotate(-10.04deg); }
+  .header-brand > .tabs .tab:nth-child(2){ transform:translateY(-1.38px) rotate(-5deg); }
+  .header-brand > .tabs .tab:nth-child(3){ transform:translateY(-2.73px); }
+  .header-brand > .tabs .tab:nth-child(4){ transform:translateY(-1.38px) rotate(5deg); }
+  .header-brand > .tabs .tab:nth-child(5){ transform:translateY(2.73px)  rotate(10.04deg); }
   /* The line is 3px and the target is 40: the box a thumb hits has nothing to do with the
      size of the thing it hits. */
   /* 19 above and 18 below a 3px line is a 40px target. The row used to carry 16px of its own
@@ -743,7 +743,7 @@
   /* A card is a rigid thing. Sticky headings inside one that is mid-flight try to stick to
      the top of the screen while the rest of it is still travelling, which tears it. */
   main.tab-dealing .group-head{ position:static; }  body.tab-insights main{ background:transparent; } body.tab-insights{ background:var(--ground); }
-  body.tab-training main{ background:transparent; } body.tab-training{ background:var(--ground); }
+  body.tab-plan main{ background:transparent; } body.tab-plan{ background:var(--ground); }
   body.tab-injuries main{ background:transparent; } body.tab-injuries{ background:var(--ground); }
   body.tab-data main{ background:transparent; } body.tab-data{ background:var(--ground); }
   body.tab-settings main{ background:transparent; } body.tab-settings{ background:var(--ground); }
@@ -763,7 +763,7 @@
      and it is the one value on these lines that does not follow the ground. The five are the
      dark --field-* values unchanged: that tint was already solved for exactly this job. */
   body.tab-insights{ --band:var(--block-lime); --field:var(--field-lime); --banner:#212515; --hue-faded-dark:#d7f37b; --hue-faded:var(--hue-faded-dark); --mark-shell:#343d17; --mark-lit:#55691d; --page-glyph:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20width%3D%27100%27%20height%3D%27100%27%3E%3Cg%20fill%3D%27%23000%27%20stroke%3D%27%23000%27%3E%3Crect%20x%3D%2727%27%20y%3D%2720%27%20width%3D%2718%27%20height%3D%2760%27%20rx%3D%279%27%2F%3E%3Crect%20x%3D%2755%27%20y%3D%2720%27%20width%3D%2718%27%20height%3D%2760%27%20rx%3D%279%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"); --page-iris:glyphIrisA; }
-  body.tab-training{ --band:var(--block-amber); --field:var(--field-amber); --banner:#251d15; --hue-faded-dark:#f5b87b; --hue-faded:var(--hue-faded-dark); --mark-shell:#503318; --mark-lit:#8b561f; --page-glyph:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20width%3D%27100%27%20height%3D%27100%27%3E%3Cg%20fill%3D%27%23000%27%20stroke%3D%27%23000%27%3E%3Cg%20transform%3D%27translate%288.0%2C56%29%20rotate%28-10%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2717%27%20height%3D%2711%27%20rx%3D%275.5%27%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%27translate%2827.5%2C49%29%20rotate%28-5%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2717%27%20height%3D%2711%27%20rx%3D%275.5%27%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%27translate%2847.0%2C46%29%20rotate%280%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2717%27%20height%3D%2711%27%20rx%3D%275.5%27%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%27translate%2866.5%2C49%29%20rotate%285%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2717%27%20height%3D%2711%27%20rx%3D%275.5%27%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%27translate%2886.0%2C56%29%20rotate%2810%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2717%27%20height%3D%2711%27%20rx%3D%275.5%27%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"); --page-iris:glyphIrisB; }
+  body.tab-plan{ --band:var(--block-amber); --field:var(--field-amber); --banner:#251d15; --hue-faded-dark:#f5b87b; --hue-faded:var(--hue-faded-dark); --mark-shell:#503318; --mark-lit:#8b561f; --page-glyph:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20width%3D%27100%27%20height%3D%27100%27%3E%3Cg%20fill%3D%27%23000%27%20stroke%3D%27%23000%27%3E%3Cg%20transform%3D%27translate%288.0%2C56%29%20rotate%28-10%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2717%27%20height%3D%2711%27%20rx%3D%275.5%27%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%27translate%2827.5%2C49%29%20rotate%28-5%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2717%27%20height%3D%2711%27%20rx%3D%275.5%27%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%27translate%2847.0%2C46%29%20rotate%280%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2717%27%20height%3D%2711%27%20rx%3D%275.5%27%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%27translate%2866.5%2C49%29%20rotate%285%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2717%27%20height%3D%2711%27%20rx%3D%275.5%27%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%27translate%2886.0%2C56%29%20rotate%2810%29%27%3E%3Crect%20x%3D%270%27%20y%3D%270%27%20width%3D%2717%27%20height%3D%2711%27%20rx%3D%275.5%27%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"); --page-iris:glyphIrisB; }
   body.tab-injuries{ --band:var(--block-red); --field:var(--field-red); --banner:#25151b; --hue-faded-dark:#f396b8; --hue-faded:var(--hue-faded-dark); --mark-shell:#5a2a39; --mark-lit:#a1415f; --page-glyph:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20width%3D%27100%27%20height%3D%27100%27%3E%3Cg%20fill%3D%27%23000%27%20stroke%3D%27%23000%27%3E%3Crect%20x%3D%271.5%27%20y%3D%2735%27%20width%3D%2717%27%20height%3D%2730%27%20rx%3D%272%27%2F%3E%3Crect%20x%3D%2721.5%27%20y%3D%2735%27%20width%3D%2717%27%20height%3D%2730%27%20rx%3D%272%27%2F%3E%3Crect%20x%3D%2741.5%27%20y%3D%2735%27%20width%3D%2717%27%20height%3D%2730%27%20rx%3D%272%27%2F%3E%3Crect%20x%3D%2761.5%27%20y%3D%2735%27%20width%3D%2717%27%20height%3D%2730%27%20rx%3D%272%27%2F%3E%3Crect%20x%3D%2781.5%27%20y%3D%2735%27%20width%3D%2717%27%20height%3D%2730%27%20rx%3D%272%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"); --page-iris:glyphIrisC; }
   body.tab-data{ --band:var(--block-purple); --field:var(--field-purple); --banner:#1f1525; --hue-faded-dark:#e9c7fb; --hue-faded:var(--hue-faded-dark); --mark-shell:#473152; --mark-lit:#7e5092; --page-glyph:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20width%3D%27100%27%20height%3D%27100%27%3E%3Cg%20fill%3D%27%23000%27%20stroke%3D%27%23000%27%3E%3Cpolyline%20points%3D%278%2C72%2030%2C54%2052%2C60%2074%2C28%2092%2C16%27%20fill%3D%27none%27%20stroke-width%3D%2717%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"); --page-iris:glyphIrisD; }
   body.tab-settings{ --band:var(--block-blue); --field:var(--field-blue); --banner:#152522; --hue-faded-dark:#afeade; --hue-faded:var(--hue-faded-dark); --mark-shell:#004138; --mark-lit:#006f61; --page-glyph:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20width%3D%27100%27%20height%3D%27100%27%3E%3Cg%20fill%3D%27%23000%27%20stroke%3D%27%23000%27%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%2731%27%20fill%3D%27none%27%20stroke-width%3D%2710%27%2F%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%2716%27%20fill%3D%27none%27%20stroke-width%3D%2710%27%2F%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%275%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"); --page-iris:glyphIrisE; }
@@ -803,6 +803,7 @@
     --field-red:#fbefe9;
     --field-purple:#f4f0f7;
     --field-blue:#e2f5f6;
+    --field-amber:#f8efe2;
     --dot-tile:var(--dot-tile-dark-ink);
     --wave-tile:var(--wave-tile-dark-ink);
     --mk-panel:var(--mk-panel-dark);
@@ -824,7 +825,7 @@
      rather than declared on body — a var() in a custom property resolves where it is declared,
      which is the whole reason the tint could not be fixed the same way. */
   html[data-ground="bone"] body.tab-insights{ --hue-faded:#65772b; }
-  html[data-ground="bone"] body.tab-training{ --hue-faded:#7a522a; }
+  html[data-ground="bone"] body.tab-plan{ --hue-faded:#7a522a; }
   html[data-ground="bone"] body.tab-injuries{ --hue-faded:#8a3453; }
   html[data-ground="bone"] body.tab-data{ --hue-faded:#8d3fb7; }
   /* Set by hand, not by the rule: derived it came out #45887b and 4.0:1 on cream, the only
@@ -2432,7 +2433,36 @@
     color:var(--dim); }
   /* This said the above for one pill row on one tab. It is the base now. */
   body.tab-injuries header, body.tab-settings header, body.tab-data header,
-  body.tab-insights header, body.tab-training header{ border-bottom-color:transparent; }
+  /* PLAN ROWS. One answer each: a label, the big line, one sentence under it. The whole row
+     is the button into its sheet. */
+  .plan-rows{ display:flex; flex-direction:column; margin:8px 0 40px; }
+  .plan-row{ display:grid; grid-template-columns:1fr auto; gap:4px 12px; align-items:center; width:100%;
+    padding:20px 0; background:none; border:0; border-top:1px solid rgba(var(--ink-rgb),0.14); border-radius:0;
+    color:var(--bg); font:inherit; text-align:left; cursor:pointer; min-height:0; box-shadow:none;
+    /* The app's button rule makes every button a 31px uppercase bar; a row is not one. */
+    height:auto; flex:none; justify-content:stretch; text-transform:none; letter-spacing:0; font-weight:var(--fw-normal);
+    border-left:0; border-right:0; border-bottom:0; }
+  .plan-row:first-child{ border-top:0; }
+  .plan-row:focus-visible{ outline:2px solid var(--band); outline-offset:-2px; }
+  .plan-row-label{ grid-column:1 / 3; font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold);
+    letter-spacing:var(--track-ui); text-transform:uppercase; color:rgba(var(--ink-rgb),0.7); }
+  .plan-row-big{ font-family:var(--mono); font-size:clamp(18px, 5.6vw, 22px); font-weight:var(--fw-bold); letter-spacing:-0.02em;
+    text-transform:none; font-variant-numeric:tabular-nums; line-height:1.15; }
+  .plan-row-small{ grid-column:1 / 2; font-family:var(--prose); font-size:14px; color:var(--dim); text-transform:none; letter-spacing:0; }
+  .plan-row-chev{ grid-row:2 / 4; grid-column:2; font-size:22px; color:rgba(var(--ink-rgb),0.7); }
+  .plan-weeks{ display:inline-flex; gap:3px; margin-right:8px; vertical-align:1px; }
+  .plan-weeks i{ width:18px; height:9px; border-radius:3px; background:rgba(var(--ink-rgb),0.15); }
+  .plan-weeks i.done{ background:var(--bg); opacity:0.75; }
+  .plan-weeks i.now{ background:var(--band); opacity:1; }
+  .plan-weeks i.dl{ background:repeating-linear-gradient(135deg, rgba(var(--ink-rgb),0.4) 0 2px, transparent 2px 5px);
+    outline:1px solid rgba(var(--ink-rgb),0.3); outline-offset:-1px; }
+  .plan-timeline{ display:flex; flex-direction:column; margin-bottom:6px; }
+  .plan-tl-row{ display:grid; grid-template-columns:1fr auto; gap:2px 10px; padding:10px 0; border-bottom:1px solid rgba(var(--ink-rgb),0.12); }
+  .plan-tl-row b{ font-family:var(--mono); text-transform:uppercase; letter-spacing:var(--track-ui); font-size:var(--fs-md); }
+  .plan-tl-row span{ font-family:var(--mono); font-size:var(--fs-sm); color:rgba(var(--ink-rgb),0.72); text-align:right; font-variant-numeric:tabular-nums; }
+  .plan-tl-row.done{ opacity:0.55; }
+  .plan-tl-row .plan-tl-note{ grid-column:1 / 3; font-family:var(--prose); font-size:13px; color:var(--dim); text-align:left; }
+  body.tab-insights header, body.tab-plan header{ border-bottom-color:transparent; }
   /* The band paints itself the same inside a panel as on the ground; only the bleed differs. */
   .form-panel .group-head{ margin-left:0; margin-right:0; }
   .form-panel .field-label{ color:var(--dim); }
@@ -4510,6 +4540,7 @@
   .ui-tabIndicator .tab:nth-child(2) .tab-seg{ transition-delay:45ms; }
   .ui-tabIndicator .tab:nth-child(3) .tab-seg{ transition-delay:90ms; }
   .ui-tabIndicator .tab:nth-child(4) .tab-seg{ transition-delay:135ms; }
+  .ui-tabIndicator .tab:nth-child(5) .tab-seg{ transition-delay:180ms; }
 
   /* 5 — A focused field draws its underline in from the left rather than switching a
      border on. Inputs can't hold a pseudo-element, so the line is a background layer and
@@ -5010,8 +5041,8 @@
     background-image:var(--mk-panel); background-repeat:repeat; }
   body.tab-insights .fields, body.tab-insights .today-field,
   body.tab-insights .group-head, body.tab-insights .app-colophon{ background-position:0 0; }
-  body.tab-training .fields, body.tab-training .today-field,
-  body.tab-training .group-head, body.tab-training .app-colophon{ background-position:54px 31px; }
+  body.tab-plan .fields, body.tab-plan .today-field,
+  body.tab-plan .group-head, body.tab-plan .app-colophon{ background-position:54px 31px; }
   body.tab-injuries .fields, body.tab-injuries .today-field,
   body.tab-injuries .group-head, body.tab-injuries .app-colophon{ background-position:103px 88px; }
   body.tab-data .fields, body.tab-data .today-field,
@@ -5065,12 +5096,12 @@
 
   /* Washed -- banner L* 45, C* 28. Title cream at 5.13-5.16:1. */
   html[data-masthead="washed"] body.tab-insights{ --banner:#656f3f; --mark-shell:#868e64; --mark-lit:#aec170; }
-  html[data-masthead="washed"] body.tab-training{ --banner:#8a6241; --mark-shell:#a88365; --mark-lit:#ecab71; }
+  html[data-masthead="washed"] body.tab-plan{ --banner:#8a6241; --mark-shell:#a88365; --mark-lit:#ecab71; }
   html[data-masthead="washed"] body.tab-injuries{ --banner:#96586a; --mark-shell:#b27b89; --mark-lit:#ff9bb6; }
   html[data-masthead="washed"] body.tab-data{ --banner:#7d608b; --mark-shell:#9b81a7; --mark-lit:#daa6ef; }
   html[data-masthead="washed"] body.tab-settings{ --banner:#257769; --mark-shell:#559689; --mark-lit:#3cceb8; }
   html[data-masthead="washed"] body.tab-insights .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#f7e9d4; }
-  html[data-masthead="washed"] body.tab-training .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#f8e9d4; }
+  html[data-masthead="washed"] body.tab-plan .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#f8e9d4; }
   html[data-masthead="washed"] body.tab-injuries .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#f7e9d4; }
   html[data-masthead="washed"] body.tab-data .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#fbecd7; }
   html[data-masthead="washed"] body.tab-settings .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#fbecd7; }
@@ -5078,12 +5109,12 @@
 
   /* Lifted -- banner L* 30, C* 20. Title cream at 8.91-8.95:1. */
   html[data-masthead="lifted"] body.tab-insights{ --banner:#434a2a; --mark-shell:#606840; --mark-lit:#85994b; }
-  html[data-masthead="lifted"] body.tab-training{ --banner:#5c412b; --mark-shell:#7f5d41; --mark-lit:#c0844b; }
+  html[data-masthead="lifted"] body.tab-plan{ --banner:#5c412b; --mark-shell:#7f5d41; --mark-lit:#c0844b; }
   html[data-masthead="lifted"] body.tab-injuries{ --banner:#643b46; --mark-shell:#8a5564; --mark-lit:#d7718e; }
   html[data-masthead="lifted"] body.tab-data{ --banner:#53405c; --mark-shell:#745c80; --mark-lit:#b07ec4; }
   html[data-masthead="lifted"] body.tab-settings{ --banner:#1a4f45; --mark-shell:#2e6f63; --mark-lit:#00a390; }
   html[data-masthead="lifted"] body.tab-insights .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#c2b4a0; }
-  html[data-masthead="lifted"] body.tab-training .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#c2b4a0; }
+  html[data-masthead="lifted"] body.tab-plan .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#c2b4a0; }
   html[data-masthead="lifted"] body.tab-injuries .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#c2b4a1; }
   html[data-masthead="lifted"] body.tab-data .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#c2b4a1; }
   html[data-masthead="lifted"] body.tab-settings .header-brand{ --bg:#fbfaf6; --ink-rgb:251,250,246; --label:#c2b4a0; }
@@ -5091,12 +5122,12 @@
 
   /* Bright -- banner L* 60, C* 34. Title ink at 6.12-6.17:1. */
   html[data-masthead="bright"] body.tab-insights{ --banner:#8a9759; --mark-shell:#afb78a; --mark-lit:#d8eb98; }
-  html[data-masthead="bright"] body.tab-training{ --banner:#b9865b; --mark-shell:#d2aa8b; --mark-lit:#ffdcc0; }
+  html[data-masthead="bright"] body.tab-plan{ --banner:#b9865b; --mark-shell:#d2aa8b; --mark-lit:#ffdcc0; }
   html[data-masthead="bright"] body.tab-injuries{ --banner:#c97990; --mark-shell:#dda2b1; --mark-lit:#ffd9e1; }
   html[data-masthead="bright"] body.tab-data{ --banner:#a883ba; --mark-shell:#c4a8d0; --mark-lit:#f5d9ff; }
   html[data-masthead="bright"] body.tab-settings{ --banner:#39a08e; --mark-shell:#7cbeb0; --mark-lit:#6ff8e1; }
   html[data-masthead="bright"] body.tab-insights .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
-  html[data-masthead="bright"] body.tab-training .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
+  html[data-masthead="bright"] body.tab-plan .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
   html[data-masthead="bright"] body.tab-injuries .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
   html[data-masthead="bright"] body.tab-data .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
   html[data-masthead="bright"] body.tab-settings .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322819; }
@@ -5104,19 +5135,19 @@
 
   /* The three inks the banner repaint does not reach on its own — see the note above. */
   html[data-masthead="lifted"] body.tab-insights .header-brand{ --sand:#ece2c8; }
-  html[data-masthead="lifted"] body.tab-training .header-brand{ --sand:#ece2c8; }
+  html[data-masthead="lifted"] body.tab-plan .header-brand{ --sand:#ece2c8; }
   html[data-masthead="lifted"] body.tab-injuries .header-brand{ --sand:#ece2c8; }
   html[data-masthead="lifted"] body.tab-data .header-brand{ --sand:#ece2c8; }
   html[data-masthead="lifted"] body.tab-settings .header-brand{ --sand:#efe5cb; }
   html[data-masthead="lifted"] body.tab-insights .tab-insight{ opacity:0.72; }
-  html[data-masthead="lifted"] body.tab-training .tab-insight{ opacity:0.72; }
+  html[data-masthead="lifted"] body.tab-plan .tab-insight{ opacity:0.72; }
   html[data-masthead="lifted"] body.tab-injuries .tab-insight{ opacity:0.72; }
   html[data-masthead="lifted"] body.tab-data .tab-insight{ opacity:0.72; }
   html[data-masthead="lifted"] body.tab-settings .tab-insight{ opacity:0.72; }
   html[data-masthead="lifted"] body.tab-insights .header-date .hd-dow,
   html[data-masthead="lifted"] body.tab-insights .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.65); }
-  html[data-masthead="lifted"] body.tab-training .header-date .hd-dow,
-  html[data-masthead="lifted"] body.tab-training .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.65); }
+  html[data-masthead="lifted"] body.tab-plan .header-date .hd-dow,
+  html[data-masthead="lifted"] body.tab-plan .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.65); }
   html[data-masthead="lifted"] body.tab-injuries .header-date .hd-dow,
   html[data-masthead="lifted"] body.tab-injuries .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.65); }
   html[data-masthead="lifted"] body.tab-data .header-date .hd-dow,
@@ -5124,19 +5155,19 @@
   html[data-masthead="lifted"] body.tab-settings .header-date .hd-dow,
   html[data-masthead="lifted"] body.tab-settings .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.65); }
   html[data-masthead="washed"] body.tab-insights .header-brand{ --sand:#fffffe; }
-  html[data-masthead="washed"] body.tab-training .header-brand{ --sand:#f7edd3; }
+  html[data-masthead="washed"] body.tab-plan .header-brand{ --sand:#f7edd3; }
   html[data-masthead="washed"] body.tab-injuries .header-brand{ --sand:#f7edd3; }
   html[data-masthead="washed"] body.tab-data .header-brand{ --sand:#faf0d6; }
   html[data-masthead="washed"] body.tab-settings .header-brand{ --sand:#f8eed3; }
   html[data-masthead="washed"] body.tab-insights .tab-insight{ opacity:0.88; }
-  html[data-masthead="washed"] body.tab-training .tab-insight{ opacity:1.0; }
+  html[data-masthead="washed"] body.tab-plan .tab-insight{ opacity:1.0; }
   html[data-masthead="washed"] body.tab-injuries .tab-insight{ opacity:1.0; }
   html[data-masthead="washed"] body.tab-data .tab-insight{ opacity:1.0; }
   html[data-masthead="washed"] body.tab-settings .tab-insight{ opacity:1.0; }
   html[data-masthead="washed"] body.tab-insights .header-date .hd-dow,
   html[data-masthead="washed"] body.tab-insights .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
-  html[data-masthead="washed"] body.tab-training .header-date .hd-dow,
-  html[data-masthead="washed"] body.tab-training .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
+  html[data-masthead="washed"] body.tab-plan .header-date .hd-dow,
+  html[data-masthead="washed"] body.tab-plan .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
   html[data-masthead="washed"] body.tab-injuries .header-date .hd-dow,
   html[data-masthead="washed"] body.tab-injuries .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
   html[data-masthead="washed"] body.tab-data .header-date .hd-dow,
@@ -5144,19 +5175,19 @@
   html[data-masthead="washed"] body.tab-settings .header-date .hd-dow,
   html[data-masthead="washed"] body.tab-settings .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.95); }
   html[data-masthead="bright"] body.tab-insights .header-brand{ --sand:#010000; }
-  html[data-masthead="bright"] body.tab-training .header-brand{ --sand:#130e00; }
+  html[data-masthead="bright"] body.tab-plan .header-brand{ --sand:#130e00; }
   html[data-masthead="bright"] body.tab-injuries .header-brand{ --sand:#130e00; }
   html[data-masthead="bright"] body.tab-data .header-brand{ --sand:#130e00; }
   html[data-masthead="bright"] body.tab-settings .header-brand{ --sand:#120d00; }
   html[data-masthead="bright"] body.tab-insights .tab-insight{ opacity:0.72; }
-  html[data-masthead="bright"] body.tab-training .tab-insight{ opacity:0.8; }
+  html[data-masthead="bright"] body.tab-plan .tab-insight{ opacity:0.8; }
   html[data-masthead="bright"] body.tab-injuries .tab-insight{ opacity:0.8; }
   html[data-masthead="bright"] body.tab-data .tab-insight{ opacity:0.8; }
   html[data-masthead="bright"] body.tab-settings .tab-insight{ opacity:0.8; }
   html[data-masthead="bright"] body.tab-insights .header-date .hd-dow,
   html[data-masthead="bright"] body.tab-insights .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.8); }
-  html[data-masthead="bright"] body.tab-training .header-date .hd-dow,
-  html[data-masthead="bright"] body.tab-training .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.8); }
+  html[data-masthead="bright"] body.tab-plan .header-date .hd-dow,
+  html[data-masthead="bright"] body.tab-plan .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.8); }
   html[data-masthead="bright"] body.tab-injuries .header-date .hd-dow,
   html[data-masthead="bright"] body.tab-injuries .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.8); }
   html[data-masthead="bright"] body.tab-data .header-date .hd-dow,
@@ -5214,6 +5245,7 @@
          controls live on this tab now instead of a separate one. See RETIRED_TABS for the
          deep-link redirect and #panel-insights for where the content actually landed. -->
     <div class="tab active" data-tab="insights" role="tab" tabindex="0" aria-selected="true" aria-current="page"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Today</span></div>
+    <div class="tab" data-tab="plan" role="tab" tabindex="0" aria-selected="false"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Plan</span></div>
     <div class="tab" data-tab="injuries" role="tab" tabindex="0" aria-selected="false"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Body</span></div>
     <div class="tab" data-tab="data" role="tab" tabindex="0" aria-selected="false"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Data</span></div>
     <div class="tab" data-tab="settings" role="tab" tabindex="0" aria-selected="false"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Settings</span></div>
@@ -6082,6 +6114,90 @@
   </div>
 
   <!-- INJURIES PANEL -->
+  <!-- PLAN. The long view, one row per thing: where you are in the blocks, what the training
+       is chasing, and the sport it fits around. Each row is one answer and a way in — the
+       detail is a sheet, so the tab itself stays a single screen. -->
+  <div class="panel" id="panel-plan">
+    <div class="plan-rows">
+      <button type="button" class="plan-row" id="planBlockRow">
+        <span class="plan-row-label">Block</span>
+        <span class="plan-row-big" id="planBlockBig">&mdash;</span>
+        <span class="plan-row-small" id="planBlockSmall"></span>
+        <span class="plan-row-chev" aria-hidden="true">&rsaquo;</span>
+      </button>
+      <button type="button" class="plan-row" id="planGoalsRow">
+        <span class="plan-row-label">Goals</span>
+        <span class="plan-row-big" id="planGoalsBig">&mdash;</span>
+        <span class="plan-row-small" id="planGoalsSmall"></span>
+        <span class="plan-row-chev" aria-hidden="true">&rsaquo;</span>
+      </button>
+      <button type="button" class="plan-row" id="planSportRow">
+        <span class="plan-row-label">Sport</span>
+        <span class="plan-row-big" id="planSportBig">&mdash;</span>
+        <span class="plan-row-small" id="planSportSmall"></span>
+        <span class="plan-row-chev" aria-hidden="true">&rsaquo;</span>
+      </button>
+    </div>
+
+    <div class="lift-sheet" id="planBlockSheet" style="display:none;">
+      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Blocks">
+        <div class="lift-sheet-head"><span>Blocks</span>
+          <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
+        <div class="fields">
+          <div class="plan-timeline" id="planTimeline"></div>
+        <div class="field-row"><span class="field-label">Block length</span>
+          <select id="blockLengthSelect">
+            <option value="auto" selected>Auto — set by the block</option>
+            <option value="3">3 weeks (2 build + deload)</option>
+            <option value="4">4 weeks (3 build + deload)</option>
+            <option value="5">5 weeks</option>
+            <option value="6">6 weeks</option>
+            <option value="8">8 weeks</option>
+          </select>
+        </div>
+        <div class="field-row"><span class="field-label">This block</span>
+          <select id="blockTypeSelect">
+            <option value="auto">From your goal</option>
+            <option value="muscle">Muscle</option>
+            <option value="strength">Strength</option>
+            <option value="power">Power</option>
+            <option value="base">Base (running)</option>
+            <option value="build">Build (running)</option>
+            <option value="sharpen">Sharpen (running)</option>
+            <option value="engine">Engine (conditioning)</option>
+            <option value="inseason">In-season (sport)</option>
+          </select>
+        </div>
+        <div id="blockPositionNote" class="score-note note-live">—</div>
+        <div class="field-row"><button class="small outline" id="resetBlockBtn">Start a new block from this week</button></div>
+          <button type="button" id="savePlanBlockBtn" class="small" style="margin-top:8px;">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="lift-sheet" id="planSportSheet" style="display:none;">
+      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Sport">
+        <div class="lift-sheet-head"><span>Sport</span>
+          <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
+        <div class="fields">
+        <div class="field-row"><input type="checkbox" id="golfOnCheckbox" style="width:auto; flex:none;"><label for="golfOnCheckbox" style="font-size:var(--fs-md);">Golf</label></div>
+        <div id="golfFields" hidden>
+          <div class="field-row"><span class="field-label">Season</span>
+            <select id="golfSeasonSelect">
+              <option value="off">Off-season</option>
+              <option value="in">In-season</option>
+            </select>
+          </div>
+          <div class="field-label" style="width:auto;">Round days</div>
+          <div id="golfRoundDays" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px;"></div>
+          <div class="score-note">Off-season builds strength, then power; in-season keeps it on two short, heavy lifts a week. Every lift day gets one fast rotational movement. Round days get a moving warm-up and after-round stretches, and nothing else, and the day before keeps heavy legs off it where the split allows.</div>
+        </div>
+          <button type="button" id="savePlanSportBtn" class="small" style="margin-top:8px;">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="panel" id="panel-injuries">
       <!-- The two skill ladders are one system and always were: same skillGoals array, same
            picker, same levels. loadCurrentGoals already seeded both from whichever tab you
@@ -6397,44 +6513,6 @@
         <div class="field-row"><input type="checkbox" id="useSupersetsCheckbox" style="width:auto; flex:none;"><label for="useSupersetsCheckbox" style="font-size:var(--fs-md);">Allow supersets when short on time</label></div>
         <div class="field-row"><input type="checkbox" id="useDropSetsCheckbox" style="width:auto; flex:none;"><label for="useDropSetsCheckbox" style="font-size:var(--fs-md);">Allow drop sets when short on time</label></div>
         <div class="field-row"><input type="checkbox" id="finishersCheckbox" checked style="width:auto; flex:none;"><label for="finishersCheckbox" style="font-size:var(--fs-md);">End lift days with a 6–8 min finisher</label></div>
-        <div class="field-row"><span class="field-label">Block length</span>
-          <select id="blockLengthSelect">
-            <option value="auto" selected>Auto — set by the block</option>
-            <option value="3">3 weeks (2 build + deload)</option>
-            <option value="4">4 weeks (3 build + deload)</option>
-            <option value="5">5 weeks</option>
-            <option value="6">6 weeks</option>
-            <option value="8">8 weeks</option>
-          </select>
-        </div>
-        <div class="field-row"><span class="field-label">This block</span>
-          <select id="blockTypeSelect">
-            <option value="auto">From your goal</option>
-            <option value="muscle">Muscle</option>
-            <option value="strength">Strength</option>
-            <option value="power">Power</option>
-            <option value="base">Base (running)</option>
-            <option value="build">Build (running)</option>
-            <option value="sharpen">Sharpen (running)</option>
-            <option value="engine">Engine (conditioning)</option>
-            <option value="inseason">In-season (sport)</option>
-          </select>
-        </div>
-        <div class="field-label" style="margin-top:12px; width:auto;">Sports you play</div>
-        <div class="field-row"><input type="checkbox" id="golfOnCheckbox" style="width:auto; flex:none;"><label for="golfOnCheckbox" style="font-size:var(--fs-md);">Golf</label></div>
-        <div id="golfFields" hidden>
-          <div class="field-row"><span class="field-label">Season</span>
-            <select id="golfSeasonSelect">
-              <option value="off">Off-season</option>
-              <option value="in">In-season</option>
-            </select>
-          </div>
-          <div class="field-label" style="width:auto;">Round days</div>
-          <div id="golfRoundDays" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px;"></div>
-          <div class="score-note">Off-season builds strength, then power; in-season keeps it on two short, heavy lifts a week. Every lift day gets one fast rotational movement. Round days get a moving warm-up and after-round stretches, and nothing else, and the day before keeps heavy legs off it where the split allows.</div>
-        </div>
-        <div id="blockPositionNote" class="score-note note-live">—</div>
-        <div class="field-row"><button class="small outline" id="resetBlockBtn">Start a new block from this week</button></div>
         <div class="score-note">Same results in less time, not better results — applied only when a session won't otherwise fit. Expect sessions to feel harder.</div>
         <div class="score-note">Bands count as bodyweight; barbells, dumbbells, cables and machines don't.</div>
         <div class="score-note" style="margin-top:12px;">Allocates your days by goal priority, spaces hard sessions apart, and only fills empty days.</div>
@@ -9558,11 +9636,11 @@ function decorateEmptyStates(root){
 // left the pair with nothing to look at, and nothing in the message would have said so.
 // Retired names still resolve, because they appear in copy written before the tabs were
 // renamed: "Goals" points at Weekly, where the goals live, and "Function" at Body.
-const EYE_EMPTY_TABS = { today:'insights', weekly:'training', body:'injuries', function:'injuries',
-                         goals:'training', data:'data', settings:'settings' };
+const EYE_EMPTY_TABS = { today:'insights', weekly:'insights', plan:'plan', body:'injuries', function:'injuries',
+                         goals:'plan', data:'data', settings:'settings' };
 function emptyStateTarget(block){
   const aim = block.dataset.aim
-    || ((block.textContent || '').match(/\b(Today|Weekly|Body|Function|Goals|Data|Settings)\s+tab\b/i) || [])[1];
+    || ((block.textContent || '').match(/\b(Today|Weekly|Plan|Body|Function|Goals|Data|Settings)\s+tab\b/i) || [])[1];
   if(aim){
     const tab = document.querySelector(`.tab[data-tab="${EYE_EMPTY_TABS[aim.toLowerCase()]}"]`);
     if(tab && tab.getBoundingClientRect().width) return tab;
@@ -10013,7 +10091,7 @@ function decorateColophon(){
    feel quite the same because of it. */
 const EYE_TAB_GAZE = {
   insights:{ x:0,    y:-1 },   // up, at the score
-  training:{ x:1.5,  y:0 },
+  plan:{ x:1.5,  y:0 },
   injuries:{ x:-1.5, y:0.5 },
   goals:   { x:0,    y:-1.5 },  // goals are ahead of you
   data:    { x:0,    y:1.5 },   // data is behind you
@@ -10564,7 +10642,7 @@ function toastEntryOffset(){
 /* 1 — Panels arrive from the side the tab they belong to sits on. The tab bar is a row you
    read left to right, and a panel that ignores that makes it a list of buttons rather than
    a place you move through. */
-const UI_TAB_ORDER = ['insights','injuries','data','settings'];
+const UI_TAB_ORDER = ['insights','plan','injuries','data','settings'];
 let uiLastTabIndex = 0;
 let uiPendingSlideDx = 0;
 let uiLastTabDir = 1;   // which way along the tab row the last switch went
@@ -10592,7 +10670,7 @@ function slidePanelIn(panel, name, replay){
 // Settings took the blue when Goals retired. These two maps kept saying red, so the sliding
 // indicator and the tab-switch wipe both went pink on the way to a blue page — the colour
 // was gone from the stylesheet and still in the motion.
-const UI_TAB_COLOUR = { insights:'--block-lime', training:'--block-amber', injuries:'--block-red',
+const UI_TAB_COLOUR = { insights:'--block-lime', plan:'--block-amber', injuries:'--block-red',
                         data:'--block-purple', settings:'--block-blue' };
 
 
@@ -10867,7 +10945,7 @@ async function refreshHeaderLogBtn(){
 // the body.tab-* rules above them, which paint the canvas this backdrop covers, so a
 // rubber-band scroll past the end of the page shows the same colour as the page.
 const TAB_BACKDROP_COLOR = {
-  insights:'var(--ground)',
+  insights:'var(--ground)', plan:'var(--ground)',
   injuries:'var(--ground)', data:'var(--ground)', settings:'var(--ground)'
 };
 // Tabs the app used to have, and where their contents went. Without this a stale caller
@@ -10956,6 +11034,15 @@ async function tabInsightFor(tab){
     if(w.planned) return `${w.done} done · ${w.planned} planned`;
     if(w.done) return `${w.done} logged this week`;
     return `${sr.observedNights} night${sr.observedNights === 1 ? '' : 's'} tracked`;
+  }
+  if(tab === 'plan'){
+    // Where you are in the long view, which is what this tab is for.
+    try{
+      const pos = await getBlockPosition(todayStr);
+      if(!pos.started) return 'first block not started';
+      const bt = (await getBlockTypeFor(todayStr)).type;
+      return `${bt ? blockTypeLabel(bt).toLowerCase() + ' · ' : ''}week ${pos.weekInBlock} of ${pos.length}`;
+    } catch(e){ return ''; }
   }
   if(tab === 'training'){
     const w = await weekSessionCounts();
@@ -11149,6 +11236,7 @@ function activateTab(name, opts){
     );
   }
   if(name==='data') renderDataSnapshot().catch(()=>{});
+  if(name==='plan') renderPlanTab().catch(()=>{});
   if(name==='settings') renderSettingsQuickActions();
   // Both skill ladders and the progression live on Function; the goal list lives on Today now
   // too, since Weekly merged into it. loadCurrentGoals fills every tab's rows — the queries
@@ -11521,7 +11609,7 @@ applyA11yToInteractiveDivs(document);
    of the same sweep reported 307 findings because every descendant of a clickable element
    reported its parent's cursor as its own. Only the outermost element of a pointer subtree
    is a candidate, and with that one line the same sweep reported 35. */
-const SWEEP_TABS = ['insights', 'injuries', 'data', 'settings'];
+const SWEEP_TABS = ['insights', 'plan', 'injuries', 'data', 'settings'];
 const SWEEP_RENDER_MS = 900;
 const SWEEP_NATIVE = new Set(['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA', 'SUMMARY', 'DETAILS']);
 function interfaceSweepFindings(){
@@ -12114,7 +12202,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.18.006';
+const APP_VERSION = '2026.10.20.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12507,6 +12595,7 @@ const APP_NOTES = {
   '2026.10.18.004': 'Block length sets itself now, from what the block is for. Muscle and In-season blocks run 6 weeks, Strength and Base 5, Build and Engine 4, Power and Sharpen 3 \u2014 deload week included in each. Volume-building blocks run long, peaking blocks short because power fades within about a week, and nothing goes past six weeks without a deload (lifters deload about every 5\u00bd weeks on average). Finished blocks keep the length they ran, so changing a goal or your golf season reshapes the block you are in and the ones ahead, never your history. A fixed length is still there under Training Setup \u2192 Block length if you want one.',
   '2026.10.18.005': 'Switching to automatic block lengths no longer moves you. Blocks you had already finished keep the length they actually ran, so you stay in the same block and week you were in \u2014 only the block you are in now, and the ones after it, take their length from their type.',
   '2026.10.18.006': 'Power blocks have more to work with. Pull days get an explosive pull to open with \u2014 Explosive Pull-up, Explosive Inverted Row, Pendlay Row or Kettlebell High Pull \u2014 where before they had none. Every Power-block day also adds a second fast movement for the other half of the body, a throw on leg days and a jump on upper days, alongside the heavy lift. And two days with the same pattern no longer open with the same jump: the second squat day gets the next one down. New for bodyweight training: the Incline Plyometric Push-up.',
+  '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
   '2026.09.20.628': 'The header rule draws, a bar near its top says so, and a learned substitution swaps itself in.',
   '2026.09.20.627': 'Five more motions — the pace writes itself, a deload drops from last week, the rest plate lifts.',
@@ -13710,7 +13799,7 @@ function updateHeaderCollapse(){
    written as second lines that complete their first, which is the same two-line shape Dogfood
    already has, so the lockup is one thing in all five states. */
 const TAB_TITLES = {
-  training: ['This','week'],
+  plan:     ['The','plan'],
   injuries: ['Your','body'],
   data:     ['Every','reading'],
   settings: ['Your','set-up']
@@ -17645,9 +17734,6 @@ async function loadTrainingSetup(){
     const cfg = await getBlockConfig();
     document.getElementById('blockLengthSelect').value = cfg.auto ? 'auto' : String(cfg.length);
   } catch(e){}
-  await paintSportFields();
-  await paintBlockTypeSelect();
-  await renderBlockPositionNote();
   renderSettingsSummaries();
 }
 
@@ -17819,29 +17905,12 @@ document.getElementById('saveTrainingSetupBtn').addEventListener('click', async 
   catch(e){ finishersChanged = !setup.finishers; }
   try{
     await window.storage.set('settings:trainingSetup', JSON.stringify(setup));
-    // Block length lives in its own record alongside the anchor, so changing length
-    // never silently discards where you are in the current block.
-    const cfg = await getBlockConfig();
-    const lenVal = document.getElementById('blockLengthSelect').value;
-    const newAuto = lenVal === 'auto';
-    const newLen = newAuto ? cfg.length : (parseInt(lenVal, 10) || BLOCK_LENGTH_DEFAULT);
-    const lengthChanged = newAuto !== cfg.auto || (!newAuto && newLen !== cfg.length);
-    await saveBlockConfig({ length: newLen, auto: newAuto });
-    // Sport first: golf's season changes which block type "from your goal" means.
-    const sportChanged = await saveSportFields();
-    const blockTypeChanged = await saveBlockTypeSelect();
-    await renderBlockPositionNote();
     showToast('Training setup saved');
-    // A different block type, or a sport added, dropped or moved to other days, is a
-    // different plan for every day left — rebuilt the way a goal change rebuilds them,
-    // with an Undo.
-    if(blockTypeChanged || sportChanged || finishersChanged || lengthChanged){
+    // Blocks and sport moved to the Plan tab and save from there; finishers stay here, and a
+    // change to them is a different session on every day left, so those days are rebuilt.
+    if(finishersChanged){
       const r = await rebuildFutureDaysFromGoals();
-      if(r && r.generated) showToast(blockTypeChanged
-        ? `Rebuilt the days ahead as a ${blockTypeLabel((await getBlockTypeFor(todayStr)).type) || 'new'} block`
-        : sportChanged ? 'Rebuilt the days ahead around your sport'
-        : lengthChanged ? 'Rebuilt the days ahead to the new block length'
-        : `Rebuilt the days ahead ${setup.finishers ? 'with' : 'without'} finishers`);
+      if(r && r.generated) showToast(`Rebuilt the days ahead ${setup.finishers ? 'with' : 'without'} finishers`);
     }
     renderSettingsSummaries();
     /* The Split row on Weekly names a split by how many days you train, and this is the one
@@ -26091,7 +26160,13 @@ document.getElementById('planWeekOpenBtn')?.addEventListener('click', ()=> planW
    and comes back once goals closes, whichever way it closes: save, the ×, a background tap
    and Escape all end up going through the sheet's own close(), which is what onClose here
    actually fires on. */
-const goalSheet = wireSheet('goalSheet', ()=> planWeekSheet.open());
+/* Goals opens from two places now — Plan the week on Today, and the Goals row on Plan — and
+   closing it goes back to the one it came from rather than always to Plan the week. */
+let goalSheetFrom = 'planWeek';
+const goalSheet = wireSheet('goalSheet', ()=>{
+  if(goalSheetFrom === 'plan') renderPlanTab().catch(()=>{});
+  else planWeekSheet.open();
+});
 // Dialed, not typed — one reused editor pane (see addGoalRow/commitGoalEdit, both read these
 // by class off the single row), so wiring it once here covers every goal opened into it.
 wireWheelField(document.querySelector('.goal-target-weight'), { title:'Target weight', min:20, max:300, step:0.5, decimals:2, unit:'kg' });
@@ -26102,7 +26177,152 @@ if(updateGoalsBtn) updateGoalsBtn.addEventListener('click', ()=>{
   const r = document.getElementById('saveGoalsResult');
   if(r) r.textContent = '';
   planWeekSheet.close();
+  goalSheetFrom = 'planWeek';
   goalSheet.open();
+});
+
+/* ---------- PLAN TAB ----------
+   Three rows and two sheets. Each row says one thing in a line you can read at a glance; the
+   sheets are where the choosing happens. Block and Sport settings used to sit in Settings
+   beside session length — they are about the shape of the months ahead, not the app, so
+   they live here now, and Settings keeps what is about you and the app. */
+const fmtShortDate = d => localDateFrom(d).toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+function planGoalShort(g){
+  if(!g) return '';
+  if(g.targetExercise && g.targetWeight){
+    const name = String(g.targetExercise).replace(/^(barbell|back|dumbbell)\s+/i, '');
+    return `${name.charAt(0).toUpperCase() + name.slice(1)} ${g.targetWeight}`;
+  }
+  if(g.type === 'running' && g.targetDistance) return `Run ${g.targetDistance} km`;
+  return (typeof GOAL_TYPE_SHORT !== 'undefined' && GOAL_TYPE_SHORT[g.type]) || (GOAL_TYPE_LABELS[g.type] || g.type);
+}
+/* The blocks behind you and the next few ahead, from the same timeline the generator uses.
+   Ahead is projected week by week, so it already reflects goal, sport and any choice you
+   made for this block. */
+async function planBlockList(){
+  const { spans } = await blockTimeline(todayStr);
+  const out = spans.map((sp, k)=>({ type: sp.type, weeks: sp.weeks, start: sp.start, state: k === spans.length - 1 ? 'now' : 'done' }));
+  let last = out[out.length - 1];
+  for(let w = 1; w <= 40 && out.length < spans.length + 3; w++){
+    const d = getWeekDatesForOffset(w)[0];
+    const pos = await getBlockPosition(d);
+    if(pos.weekInBlock === 1 && d !== last.start){
+      const t = (await getBlockTypeFor(d)).type;
+      last = { type: t, weeks: pos.length, start: d, state: 'next' };
+      out.push(last);
+    }
+  }
+  return out;
+}
+async function renderPlanTab(){
+  // Block
+  try{
+    const pos = await getBlockPosition(todayStr);
+    const bt = (await getBlockTypeFor(todayStr)).type;
+    const big = document.getElementById('planBlockBig'), small = document.getElementById('planBlockSmall');
+    if(!pos.started){
+      big.textContent = bt ? `${blockTypeLabel(bt)} · first block` : 'First block';
+      small.textContent = 'Starts with your first logged session.';
+    } else {
+      big.textContent = `${bt ? blockTypeLabel(bt) : 'Block'} · week ${pos.weekInBlock} of ${pos.length}`;
+      let bars = '';
+      for(let w = 1; w <= pos.length; w++){
+        bars += `<i class="${w === pos.length ? 'dl' : w < pos.weekInBlock ? 'done' : w === pos.weekInBlock ? 'now' : ''}"></i>`;
+      }
+      const nextStart = shiftDateStr(pos.start || getWeekStartFor(todayStr), pos.length * 7);
+      const nextType = (await getBlockTypeFor(nextStart)).type;
+      const nextText = nextType ? `${blockTypeLabel(nextType)} next, from ${fmtShortDate(nextStart)}` : `Next block from ${fmtShortDate(nextStart)}`;
+      small.innerHTML = `<span class="plan-weeks" aria-hidden="true">${bars}</span>${nextText}`;
+    }
+  } catch(e){}
+  // Goals
+  try{
+    const goals = ((await getCurrentGoals(todayStr)) || {}).list || [];
+    const big = document.getElementById('planGoalsBig'), small = document.getElementById('planGoalsSmall');
+    if(!goals.length){ big.textContent = 'No goals yet'; small.textContent = 'Tap to add one.'; }
+    else {
+      big.textContent = goals.slice(0, 2).map(planGoalShort).join(' · ');
+      small.textContent = goals.length > 2 ? `+${goals.length - 2} more · tap to change.` : 'Tap to change.';
+    }
+  } catch(e){}
+  // Sport
+  try{
+    const golf = await golfSettings();
+    const big = document.getElementById('planSportBig'), small = document.getElementById('planSportSmall');
+    if(!golf){ big.textContent = 'No sport'; small.textContent = 'Tap to add golf.'; }
+    else {
+      big.textContent = `Golf · ${golf.season === 'in' ? 'In-season' : 'Off-season'}`;
+      const full = { Mon:'Mondays', Tue:'Tuesdays', Wed:'Wednesdays', Thu:'Thursdays', Fri:'Fridays', Sat:'Saturdays', Sun:'Sundays' };
+      const days = golf.roundDays.map(d => full[d] || d);
+      small.textContent = days.length
+        ? `Rounds on ${days.length > 1 ? days.slice(0, -1).join(', ') + ' and ' + days[days.length - 1] : days[0]}.`
+        : 'No round days set yet.';
+    }
+  } catch(e){}
+}
+async function paintPlanBlockSheet(){
+  try{
+    const cfg = await getBlockConfig();
+    document.getElementById('blockLengthSelect').value = cfg.auto ? 'auto' : String(cfg.length);
+  } catch(e){}
+  await paintBlockTypeSelect();
+  await renderBlockPositionNote();
+  const box = document.getElementById('planTimeline');
+  try{
+    const list = await planBlockList();
+    box.innerHTML = list.map(b=>{
+      const end = shiftDateStr(b.start, b.weeks * 7 - 1);
+      const name = b.type ? blockTypeLabel(b.type) : 'Block';
+      const note = b.state === 'now' && b.type ? `<span class="plan-tl-note">${BLOCK_TYPES[b.type].note}</span>` : '';
+      const when = b.state === 'now' ? 'now' : b.state === 'done' ? 'done' : 'next';
+      return `<div class="plan-tl-row ${b.state}"><b>${name} · ${b.weeks} wk</b><span>${fmtShortDate(b.start)} – ${fmtShortDate(end)} · ${when}</span>${note}</div>`;
+    }).join('');
+  } catch(e){ box.innerHTML = ''; }
+}
+// Returns whether the length setting actually changed.
+async function saveBlockLengthSelect(){
+  const cfg = await getBlockConfig();
+  const lenVal = document.getElementById('blockLengthSelect').value;
+  const newAuto = lenVal === 'auto';
+  const newLen = newAuto ? cfg.length : (parseInt(lenVal, 10) || BLOCK_LENGTH_DEFAULT);
+  const changed = newAuto !== cfg.auto || (!newAuto && newLen !== cfg.length);
+  await saveBlockConfig({ length: newLen, auto: newAuto });
+  return changed;
+}
+const planBlockSheet = wireSheet('planBlockSheet', ()=> renderPlanTab().catch(()=>{}));
+const planSportSheet = wireSheet('planSportSheet', ()=> renderPlanTab().catch(()=>{}));
+document.getElementById('planBlockRow').addEventListener('click', async ()=>{ await paintPlanBlockSheet(); planBlockSheet.open(); });
+document.getElementById('planSportRow').addEventListener('click', async ()=>{ await paintSportFields(); planSportSheet.open(); });
+document.getElementById('planGoalsRow').addEventListener('click', ()=>{
+  const r = document.getElementById('saveGoalsResult');
+  if(r) r.textContent = '';
+  goalSheetFrom = 'plan';
+  goalSheet.open();
+});
+document.getElementById('savePlanBlockBtn').addEventListener('click', async ()=>{
+  const lengthChanged = await saveBlockLengthSelect();
+  const typeChanged = await saveBlockTypeSelect();
+  planBlockSheet.close();
+  showToast('Saved');
+  // A different type or length is a different plan for every day left in it — rebuilt the
+  // way a goal change rebuilds them, with an Undo.
+  if(lengthChanged || typeChanged){
+    const r = await rebuildFutureDaysFromGoals();
+    if(r && r.generated) showToast(typeChanged
+      ? `Rebuilt the days ahead as a ${blockTypeLabel((await getBlockTypeFor(todayStr)).type) || 'new'} block`
+      : 'Rebuilt the days ahead to the new block length');
+  }
+  renderPlanTab().catch(()=>{});
+});
+document.getElementById('savePlanSportBtn').addEventListener('click', async ()=>{
+  const changed = await saveSportFields();
+  planSportSheet.close();
+  showToast('Saved');
+  if(changed){
+    const r = await rebuildFutureDaysFromGoals();
+    if(r && r.generated) showToast('Rebuilt the days ahead around your sport');
+  }
+  renderPlanTab().catch(()=>{});
 });
 document.getElementById('saveGoalsBtn').addEventListener('click', async ()=>{
   if(await saveGoalsFromForm('saveGoalsResult')) goalSheet.close();

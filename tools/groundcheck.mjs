@@ -119,7 +119,7 @@ const applyStates = `(()=>{
 })()`;
 const seen=new Map();
 let stateCount = 0;
-for(const tab of ['insights','training','injuries','data','settings']){
+for(const tab of ['insights','plan','injuries','data','settings']){
   await p.evaluate(x=>activateTab(x), tab); await p.waitForTimeout(1000);
   await p.evaluate(()=>{ document.querySelectorAll('.group-head').forEach(h=>{
       const nb=h.nextElementSibling; if(nb&&getComputedStyle(nb).display==='none') h.click(); });
