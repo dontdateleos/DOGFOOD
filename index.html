@@ -1413,6 +1413,8 @@
     border:1px solid rgba(var(--ink-rgb),0.45); border-radius:4px;
     padding:4px 10px; min-height:0; width:auto; cursor:pointer; }
   .group-head .head-action:hover{ border-color:var(--bg); }
+  /* A tag AND a button: the tag takes the free space, the button sits beside it. */
+  .group-head .head-est:not(:empty) ~ .head-action{ margin-left:10px; }
   .group-head .group-sub{ order:2; }
   .group-sub{ font-family:var(--sans); font-size:var(--fs-tag); color:var(--dim);
     letter-spacing:0.05em; flex-basis:100%; text-align:left; -webkit-text-stroke:0; }
@@ -2458,6 +2460,52 @@
   .plan-weeks i{ width:18px; height:9px; border-radius:3px; background:rgba(var(--ink-rgb),0.15); }
   .plan-weeks i.done{ background:var(--bg); opacity:0.75; }
   .plan-weeks i.now{ background:var(--band); opacity:1; }
+  /* THE PLAN'S SECTIONS. Cells for the block's weeks, drawn like the week strip on Today
+     (the same here/today fill and rule), lanes for what is ahead, the goals and the sports, in
+     the mono label voice the week board uses, and the weight in the display face the Rest
+     plate uses, smaller. */
+  .plan-group .fields{ padding-top:10px; }
+  .plan-cells{ display:grid; grid-template-columns:repeat(var(--n, 6), minmax(0, 1fr)); gap:3px; margin:0 0 12px; }
+  .plan-cell{ display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 2px 7px; border-radius:4px;
+    font-family:var(--mono); color:var(--bg); }
+  .plan-cell .k{ font-size:9.5px; opacity:0.7; text-transform:uppercase; letter-spacing:0.04em; }
+  .plan-cell .n{ font-size:var(--fs-tag); font-weight:var(--fw-bold); }
+  .plan-cell .m{ display:flex; min-height:14px; line-height:0; align-items:center; font-size:9px; font-weight:var(--fw-bold); letter-spacing:0.04em; }
+  .plan-cell.done .n, .plan-cell.done .m{ opacity:0.62; }
+  .plan-cell.now{ background:rgba(var(--ink-rgb),0.12); box-shadow:inset 0 -2px 0 var(--bg); }
+  .plan-cell.dl{ background:repeating-linear-gradient(135deg, rgba(var(--ink-rgb),0.13) 0 2px, transparent 2px 6px); }
+  .plan-cell.dl.now{ box-shadow:inset 0 -2px 0 var(--bg); }
+  .plan-lanes{ display:flex; flex-direction:column; }
+  .plan-lane{ display:flex; align-items:center; gap:10px; min-height:44px; padding:6px 0;
+    border-top:1px solid rgba(var(--ink-rgb),0.12); font-family:var(--mono); color:var(--bg); }
+  .plan-lane:first-child{ border-top:0; }
+  .plan-lane .df-icon{ flex:none; }
+  .plan-lane .nm{ font-size:var(--fs-sm); font-weight:var(--fw-bold); text-transform:uppercase; letter-spacing:0.04em; min-width:0; }
+  .plan-lane .nm small{ display:block; font-family:var(--prose); font-size:13px; font-weight:var(--fw-normal); text-transform:none;
+    letter-spacing:0; color:var(--dim); margin-top:2px; }
+  .plan-lane .r{ margin-left:auto; flex:none; font-size:var(--fs-tag); font-weight:var(--fw-bold); letter-spacing:0.06em;
+    text-transform:uppercase; color:rgba(var(--ink-rgb),0.7); text-align:right; }
+  .plan-lane .r.good{ color:var(--good); }
+  .plan-lane .r.warn{ color:var(--bg); }
+  .plan-lane.empty .nm{ font-weight:var(--fw-normal); color:rgba(var(--ink-rgb),0.7); }
+  .plan-sport{ padding:4px 0 10px; border-top:1px solid rgba(var(--ink-rgb),0.12); }
+  .plan-sport:first-child{ border-top:0; }
+  .plan-sport .plan-lane{ border-top:0; }
+  .plan-sport-days{ display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); gap:3px; }
+  .plan-sport-day{ display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 2px; border-radius:4px;
+    font-family:var(--mono); color:var(--bg); }
+  .plan-sport-day .k{ font-size:9.5px; opacity:0.7; text-transform:uppercase; letter-spacing:0.04em; }
+  .plan-sport-day .m{ display:flex; align-items:center; justify-content:center; min-height:16px; line-height:0; }
+  .plan-sport-day.game{ background:rgba(var(--ink-rgb),0.12); }
+  .plan-sport-day .dot{ width:7px; height:7px; border-radius:50%; border:1.5px solid var(--bg); }
+  .plan-sport-day .none{ font-size:9px; opacity:0.5; line-height:1; }
+  .plan-sport-key{ font-family:var(--mono); font-size:9.5px; letter-spacing:0.04em; text-transform:uppercase;
+    color:rgba(var(--ink-rgb),0.7); margin-top:6px; }
+  .plan-weight-big{ font-size:clamp(34px, 11vw, 46px); font-weight:var(--fw-bold); letter-spacing:-0.045em; line-height:0.95;
+    text-transform:uppercase; color:var(--bg); -webkit-text-stroke:0.5px var(--bg); font-variant-numeric:tabular-nums; }
+  .plan-weight-line{ font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold); letter-spacing:0.06em;
+    text-transform:uppercase; color:var(--bg); margin-top:8px; }
+  .plan-weight-note{ font-family:var(--prose); font-size:14px; color:var(--dim); margin-top:6px; }
   /* THE SPORT LIST. One line per sport — the box, its icon, its name — and the season and days
      open under the ones that are on. 44px rows and day chips, for a thumb. */
   .sport-list{ display:flex; flex-direction:column; }
@@ -6187,31 +6235,37 @@
        is chasing, and the sport it fits around. Each row is one answer and a way in — the
        detail is a sheet, so the tab itself stays a single screen. -->
   <div class="panel" id="panel-plan">
-    <div class="plan-rows">
-      <button type="button" class="plan-row" id="planBlockRow">
-        <span class="plan-tile" id="planBlockRowIcon"></span>
-        <span class="plan-row-big" id="planBlockBig">&mdash;</span>
-        <span class="plan-row-small" id="planBlockSmall"></span>
-        <span class="plan-row-chev" aria-hidden="true">&rsaquo;</span>
-      </button>
-      <button type="button" class="plan-row" id="planWeightRow">
-        <span class="plan-tile" id="planWeightRowIcon"></span>
-        <span class="plan-row-big" id="planWeightBig">&mdash;</span>
-        <span class="plan-row-small" id="planWeightSmall"></span>
-        <span class="plan-row-chev" aria-hidden="true">&rsaquo;</span>
-      </button>
-      <button type="button" class="plan-row" id="planGoalsRow">
-        <span class="plan-tile" id="planGoalsRowIcon"></span>
-        <span class="plan-row-big" id="planGoalsBig">&mdash;</span>
-        <span class="plan-row-small" id="planGoalsSmall"></span>
-        <span class="plan-row-chev" aria-hidden="true">&rsaquo;</span>
-      </button>
-      <button type="button" class="plan-row" id="planSportRow">
-        <span class="plan-tile" id="planSportRowIcon"></span>
-        <span class="plan-row-big" id="planSportBig">&mdash;</span>
-        <span class="plan-row-small" id="planSportSmall"></span>
-        <span class="plan-row-chev" aria-hidden="true">&rsaquo;</span>
-      </button>
+    <!-- THE PLAN IN THE APP'S OWN SECTIONS. The same numbered bands Today and Body use: the
+         tab's box around the title, where-you-are as the tag on the right, the one button that
+         changes it beside that, and the content under the band as rows and strips rather than
+         a sentence about them. -->
+    <div class="group plan-group">
+      <div class="group-head"><div class="group-title">Block</div><span class="head-est" id="planBlockEst"></span>
+        <button type="button" class="head-action" id="planBlockRow">Blocks</button>
+        <div class="group-sub" id="planBlockSub"></div></div>
+      <div class="fields">
+        <div class="plan-cells" id="planBlockWeeks"></div>
+        <div class="plan-lanes" id="planBlockAhead"></div>
+      </div>
+    </div>
+    <div class="group plan-group">
+      <div class="group-head"><div class="group-title">Goals</div><span class="head-est" id="planGoalsEst"></span>
+        <button type="button" class="head-action" id="planGoalsRow">Change</button></div>
+      <div class="fields"><div class="plan-lanes" id="planGoalsList"></div></div>
+    </div>
+    <div class="group plan-group">
+      <div class="group-head"><div class="group-title">Sport</div><span class="head-est" id="planSportEst"></span>
+        <button type="button" class="head-action" id="planSportRow">Sports</button></div>
+      <div class="fields"><div id="planSportList"></div></div>
+    </div>
+    <div class="group plan-group">
+      <div class="group-head"><div class="group-title">Weight</div><span class="head-est" id="planWeightEst"></span>
+        <button type="button" class="head-action" id="planWeightRow">Log</button></div>
+      <div class="fields">
+        <div class="plan-weight-big" id="planWeightBig">&mdash;</div>
+        <div class="plan-weight-line" id="planWeightLine"></div>
+        <div class="plan-weight-note" id="planWeightSmall"></div>
+      </div>
     </div>
 
     <div class="lift-sheet" id="planBlockSheet" style="display:none;">
@@ -12290,7 +12344,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.21.002';
+const APP_VERSION = '2026.10.21.003';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12686,6 +12740,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.10.21.003': 'Plan looks like the rest of the app now: numbered sections, the tag on the right saying where you are, one button to change each. Block shows this block\u2019s weeks as a strip like Today\u2019s calendar, deload hatched, with the blocks coming up under it. Goals lists each goal and whether it is moving. Sport shows each sport you play with its week \u2014 game days filled, training days as rings. Weight shows the number big, the trend against what the block wants, and what to do about it.',
   '2026.10.21.002': 'Eleven more sports, alongside golf: soccer, basketball, tennis, cricket, rugby, AFL, volleyball, combat sports, cycling, swimming and climbing. Turn on as many as you play under Plan \u2192 Sport, with a season and two kinds of day for each. Game days (a match, a fight, a race) are kept for the game, with a warm-up before and stretches after, and heavy lifting stays off the day or two before. Training days share the day: a lift in the morning and your sport in the evening. Every lift day gets one fast movement and one protective one from each sport, picked from what the research says moves performance and injury risk for it: Nordics and Copenhagens for football codes, landing and tendon work for jumping sports, rotator-cuff work for throwing, serving and swimming, neck work for collision and fight sports, finger and antagonist work for climbing. Fifteen new exercises came in with them, and every sport has its own icon.',
   '2026.10.21.001': 'Stalls and deloads act now, not just warn. A lift stuck at one weight for three sessions without reaching the top of its rep range resets about 10% and builds back; if it sticks again at the same weight, it tells you which variation to swap to. When two or more of your main lifts stop improving in the same block (none of the last three sessions beat the best before them, or the last two fall 3% short of it), the deload moves to next week and the block ends there, so you never get a second deload a fortnight later. Marking a deload yourself from week 3 does the same. This covers every main lift you train, goal or no goal. The weeks already planned after it are rebuilt for the new block, and one undo puts it all back.',
   '2026.10.20.005': 'Hold a day on Today\u2019s week strip. Drag it onto another day and it moves there \u2014 if that day has a session too, the two swap. Let go without moving and you get the day\u2019s menu: move it, edit what is on it, add a session, clear it, or mark it as a day you are not training. Every change has an undo. Days that have passed, and days with a session already logged, stay where they are.',
@@ -26717,65 +26772,93 @@ async function planBlockList(){
   }
   return out;
 }
+const GOAL_ICON = { strength:'strength', hypertrophy:'muscle', running:'run', mobility:'mobility', power:'power' };
+const GOAL_STATUS_WORD = { improving_fast:['ahead','good'], improving:['improving','good'], plateauing:['flat',''], declining:['slipping','warn'] };
 async function renderPlanTab(){
-  // Block
+  // BLOCK: this block's weeks as cells, the next blocks as lanes.
   try{
     const pos = await getBlockPosition(todayStr);
     const bt = (await getBlockTypeFor(todayStr)).type;
-    document.getElementById('planBlockRowIcon').innerHTML = dfIcon(bt && DF_ICONS[bt] ? bt : 'block');
-    const big = document.getElementById('planBlockBig'), small = document.getElementById('planBlockSmall');
-    if(!pos.started){
-      big.textContent = bt ? `${blockTypeLabel(bt)} · first block` : 'First block';
-      small.textContent = 'Starts with your first logged session.';
-    } else {
-      big.textContent = `${bt ? blockTypeLabel(bt) : 'Block'} · week ${pos.weekInBlock} of ${pos.length}`;
-      let bars = '';
-      for(let w = 1; w <= pos.length; w++){
-        bars += `<i class="${w === pos.length ? 'dl' : w < pos.weekInBlock ? 'done' : w === pos.weekInBlock ? 'now' : ''}"></i>`;
-      }
-      const nextStart = shiftDateStr(pos.start || getWeekStartFor(todayStr), pos.length * 7);
-      const nextType = (await getBlockTypeFor(nextStart)).type;
-      const nextText = nextType ? `${blockTypeLabel(nextType)} next, from ${fmtShortDate(nextStart)}` : `Next block from ${fmtShortDate(nextStart)}`;
-      small.innerHTML = `<span class="plan-weeks" aria-hidden="true">${bars}</span>${nextText}`;
+    const est = document.getElementById('planBlockEst'), sub = document.getElementById('planBlockSub');
+    const cells = document.getElementById('planBlockWeeks'), ahead = document.getElementById('planBlockAhead');
+    const label = bt ? blockTypeLabel(bt) : 'Block';
+    est.textContent = pos.started ? `${label} · week ${pos.weekInBlock} of ${pos.length}` : `${label} · not started`;
+    sub.textContent = bt && BLOCK_TYPES[bt] ? BLOCK_TYPES[bt].note.replace(/^[^—]*—\s*/, '') : '';
+    let html = '';
+    for(let w = 1; w <= pos.length; w++){
+      const dl = isDeloadPosition(w, pos.length);
+      const state = !pos.started ? '' : w < pos.weekInBlock ? 'done' : w === pos.weekInBlock ? 'now' : '';
+      const start = shiftDateStr(pos.start || getWeekStartFor(todayStr), (w - 1) * 7);
+      const mark = dl ? 'DL' : (bt && DF_ICONS[bt] ? dfIcon(bt, 14) : '');
+      html += `<div class="plan-cell ${state}${dl ? ' dl' : ''}" aria-label="Week ${w}${dl ? ', deload' : ''}${state === 'now' ? ', this week' : ''}">`
+        + `<span class="k">${localDateFrom(start).getDate()} ${MONTH_SHORT[localDateFrom(start).getMonth()]}</span>`
+        + `<span class="n">W${w}</span><span class="m">${mark}</span></div>`;
     }
+    cells.style.setProperty('--n', String(pos.length));
+    cells.innerHTML = html;
+    let list = (await planBlockList()).filter(b => b.state === 'next').slice(0, 3);
+    // In-season repeats itself: one lane that says so, not three that look the same.
+    const repeats = list.length && list.every(b => b.type === bt);
+    if(repeats) list = list.slice(0, 1);
+    ahead.innerHTML = repeats
+      ? `<div class="plan-lane">${dfIcon(bt && DF_ICONS[bt] ? bt : 'block', 18)}<span class="nm">${label} · ${list[0].weeks} wk</span><span class="r">again from ${fmtShortDate(list[0].start)}</span></div>`
+      : list.map((b, i)=>
+      `<div class="plan-lane">${dfIcon(b.type && DF_ICONS[b.type] ? b.type : 'block', 18)}`
+      + `<span class="nm">${b.type ? blockTypeLabel(b.type) : 'Block'} · ${b.weeks} wk</span>`
+      + `<span class="r">${i === 0 ? 'next · ' : ''}${fmtShortDate(b.start)}</span></div>`).join('');
   } catch(e){}
-  // Weight
-  try{
-    const g = await weightGuidance();
-    document.getElementById('planWeightRowIcon').innerHTML = dfIcon('weight');
-    document.getElementById('planWeightBig').textContent = g.big;
-    document.getElementById('planWeightSmall').textContent = g.small;
-  } catch(e){}
-  // Goals
+  // GOALS: one lane each, with how it is going.
   try{
     const goals = ((await getCurrentGoals(todayStr)) || {}).list || [];
-    const big = document.getElementById('planGoalsBig'), small = document.getElementById('planGoalsSmall');
-    document.getElementById('planGoalsRowIcon').innerHTML = dfIcon('goals');
-    if(!goals.length){ big.textContent = 'No goals yet'; small.textContent = 'Tap to add one.'; }
-    else {
-      big.textContent = goals.slice(0, 2).map(planGoalShort).join(' · ');
-      small.textContent = goals.length > 2 ? `+${goals.length - 2} more · tap to change.` : 'Tap to change.';
+    document.getElementById('planGoalsEst').textContent = goals.length ? `${goals.length} set` : 'none set';
+    const rows = [];
+    for(const g of goals){
+      let word = '', cls = '';
+      try{
+        const a = await classifyGoalAdaptation(g);
+        if(GOAL_STATUS_WORD[a.status]) [word, cls] = GOAL_STATUS_WORD[a.status];
+      } catch(e){}
+      if(g.isMaintenance){ word = 'keeping'; cls = ''; }
+      const unit = g.targetWeight ? ' kg' : '';
+      const detail = g.detail && g.detail !== planGoalShort(g) ? `<small>${g.detail}</small>` : '';
+      rows.push(`<div class="plan-lane">${dfIcon(GOAL_ICON[g.type] || 'goals', 18)}<span class="nm">${planGoalShort(g)}${unit}${detail}</span>`
+        + `<span class="r ${cls}">${word}</span></div>`);
     }
+    document.getElementById('planGoalsList').innerHTML = rows.length ? rows.join('')
+      : `<div class="plan-lane empty">${dfIcon('goals', 18)}<span class="nm">Add a goal and the blocks follow from it.</span></div>`;
   } catch(e){}
-  // Sport
+  // SPORT: each sport you play, with its week as seven cells.
   try{
     const sports = await activeSports();
     const main = mainSportOf(sports);
-    const big = document.getElementById('planSportBig'), small = document.getElementById('planSportSmall');
-    document.getElementById('planSportRowIcon').innerHTML = dfIcon(main && DF_ICONS[main.key] ? main.key : 'sport');
-    if(!sports.length){ big.textContent = 'No sport'; small.textContent = 'Tap to add one.'; }
-    else {
-      const full = { Mon:'Mondays', Tue:'Tuesdays', Wed:'Wednesdays', Thu:'Thursdays', Fri:'Fridays', Sat:'Saturdays', Sun:'Sundays' };
-      const and = list => list.length > 1 ? list.slice(0, -1).join(', ') + ' and ' + list[list.length - 1] : (list[0] || '');
-      big.textContent = sports.length === 1
-        ? `${main.def.label} · ${main.season === 'in' ? 'In-season' : 'Off-season'}`
-        : sports.slice(0, 2).map(sp => sp.def.label).join(' · ') + (sports.length > 2 ? ` +${sports.length - 2}` : '');
-      const parts = [];
-      if(main.gameDays.length) parts.push(`${pluralWord(main.def.gameWord || 'Game')} on ${and(main.gameDays.map(d => full[d] || d))}`);
-      if(main.days.length) parts.push(`${parts.length ? 'training' : 'Training'} ${and(main.days.map(d => full[d] || d))}`);
-      const lead = sports.length > 1 ? `${main.def.label} ${main.season === 'in' ? 'in-season' : 'off-season'}: ` : '';
-      small.textContent = parts.length ? `${lead}${parts.join(', ')}.` : `${lead}No days set yet.`;
-    }
+    document.getElementById('planSportEst').textContent = main ? `${main.def.label} · ${main.season === 'in' ? 'in-season' : 'off-season'}` : 'none';
+    const box = document.getElementById('planSportList');
+    box.innerHTML = sports.length ? sports.map(sp =>{
+      const days = WEEKDAY_NAMES.map(d =>{
+        const game = sp.gameDays.includes(d), train = sp.days.includes(d);
+        return `<div class="plan-sport-day${game ? ' game' : ''}"><span class="k">${d.slice(0, 2)}</span><span class="m">`
+          + (game ? dfIcon(DF_ICONS[sp.key] ? sp.key : 'sport', 14) : train ? '<span class="dot"></span>' : '<span class="none">\u2013</span>')
+          + '</span></div>';
+      }).join('');
+      const key = sp.def.gameWord ? `${dfIcon(DF_ICONS[sp.key] ? sp.key : 'sport', 10)} ${pluralWord(sp.def.gameWord)} \u00b7 \u25cb training` : '\u25cb sessions';
+      return `<div class="plan-sport"><div class="plan-lane">${dfIcon(DF_ICONS[sp.key] ? sp.key : 'sport', 18)}<span class="nm">${sp.def.label}</span>`
+        + `<span class="r">${sp.season === 'in' ? 'in-season' : 'off-season'}</span></div>`
+        + `<div class="plan-sport-days">${days}</div>`
+        + `<div class="plan-sport-key">${key}</div></div>`;
+    }).join('')
+      : `<div class="plan-lane empty">${dfIcon('sport', 18)}<span class="nm">Play a sport? Add it and the lifting works around it.</span></div>`;
+  } catch(e){}
+  // WEIGHT: the number, the trend against what the block wants, and the one sentence.
+  try{
+    const g = await weightGuidance();
+    const w = g.trend && g.trend.latest ? g.trend.latest.weight : null;
+    document.getElementById('planWeightEst').textContent = { on:'on target', low:'below target', high:'above target' }[g.status] || (w ? 'not enough yet' : 'no weigh-ins');
+    const bigEl = document.getElementById('planWeightBig');
+    bigEl.textContent = w ? `${w.toFixed(1)} kg` : '';
+    bigEl.hidden = !w;
+    const tr = g.trend && g.trend.enough ? `${g.trend.perWeek > 0.05 ? '\u2191' : g.trend.perWeek < -0.05 ? '\u2193' : '\u2192'} ${Math.abs(g.trend.perWeek).toFixed(1)} kg / wk` : '';
+    document.getElementById('planWeightLine').textContent = [tr, g.band ? `block wants ${g.band}` : ''].filter(Boolean).join(' \u00b7 ');
+    document.getElementById('planWeightSmall').textContent = g.small;
   } catch(e){}
 }
 async function paintPlanBlockSheet(){
