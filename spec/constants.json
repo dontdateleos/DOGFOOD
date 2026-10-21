@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.20.005",
+ "generatedFrom": "2026.10.21.001",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1086,7 +1086,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.20.005",
+  "APP_VERSION": "2026.10.21.001",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1464,6 +1464,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.10.21.001": "Stalls and deloads act now, not just warn. A lift stuck at one weight for three sessions without reaching the top of its rep range resets about 10% and builds back; if it sticks again at the same weight, it tells you which variation to swap to. When two or more of your main lifts stop improving in the same block (none of the last three sessions beat the best before them, or the last two fall 3% short of it), the deload moves to next week and the block ends there, so you never get a second deload a fortnight later. Marking a deload yourself from week 3 does the same. This covers every main lift you train, goal or no goal. The weeks already planned after it are rebuilt for the new block, and one undo puts it all back.",
    "2026.10.20.005": "Hold a day on Today’s week strip. Drag it onto another day and it moves there — if that day has a session too, the two swap. Let go without moving and you get the day’s menu: move it, edit what is on it, add a session, clear it, or mark it as a day you are not training. Every change has an undo. Days that have passed, and days with a session already logged, stay where they are.",
    "2026.10.20.004": "Cuts are scheduled now, not just gains. When your body fat reads 20% or more (30% for women), or your weight has climbed 5% above its low of the last six months, the next Strength block becomes a cut: lose 0.4–0.6 kg a week for four weeks, with the deload as a week-long diet break at maintenance, then straight back to maintenance in the block after. Strength blocks are where a deficit costs least — strength keeps climbing, only muscle gain slows. Muscle blocks hold weight while a cut is due, and Power, the running sharpen blocks and golf in-season never cut. Plan’s block list shows what weight does in each block ahead.",
    "2026.09.20.629": "The header’s drop shadow goes; the drawn rule separates the page on its own.",
@@ -3409,6 +3410,8 @@
   "BLOCK_LENGTH_DEFAULT": 4,
   "BLOCK_LENGTH_MIN": 3,
   "BLOCK_LENGTH_MAX": 8,
+  "EARLY_DELOAD_MIN_SESSIONS": 4,
+  "EARLY_DELOAD_KEY": "settings:earlyDeloads",
   "REINTRO_LOAD_CUT": 0.1,
   "REINTRO_TARGET_RIR": 3,
   "BLOCK_TYPES": {
@@ -3939,6 +3942,7 @@
    "repHigh": 12
   },
   "PROGRESSION_STALL_LIMIT": 2,
+  "STALL_RESET_CUT": 0.1,
   "TISSUE_HOLD_LOAD": 55,
   "TISSUE_FLAG_REDUCE": 40,
   "TISSUE_FLAG_SKIP": 25,

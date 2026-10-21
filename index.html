@@ -12283,7 +12283,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.20.005';
+const APP_VERSION = '2026.10.21.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12679,6 +12679,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.10.21.001': 'Stalls and deloads act now, not just warn. A lift stuck at one weight for three sessions without reaching the top of its rep range resets about 10% and builds back; if it sticks again at the same weight, it tells you which variation to swap to. When two or more of your main lifts stop improving in the same block (none of the last three sessions beat the best before them, or the last two fall 3% short of it), the deload moves to next week and the block ends there, so you never get a second deload a fortnight later. Marking a deload yourself from week 3 does the same. This covers every main lift you train, goal or no goal. The weeks already planned after it are rebuilt for the new block, and one undo puts it all back.',
   '2026.10.20.005': 'Hold a day on Today\u2019s week strip. Drag it onto another day and it moves there \u2014 if that day has a session too, the two swap. Let go without moving and you get the day\u2019s menu: move it, edit what is on it, add a session, clear it, or mark it as a day you are not training. Every change has an undo. Days that have passed, and days with a session already logged, stay where they are.',
   '2026.10.20.004': 'Cuts are scheduled now, not just gains. When your body fat reads 20% or more (30% for women), or your weight has climbed 5% above its low of the last six months, the next Strength block becomes a cut: lose 0.4\u20130.6 kg a week for four weeks, with the deload as a week-long diet break at maintenance, then straight back to maintenance in the block after. Strength blocks are where a deficit costs least \u2014 strength keeps climbing, only muscle gain slows. Muscle blocks hold weight while a cut is due, and Power, the running sharpen blocks and golf in-season never cut. Plan\u2019s block list shows what weight does in each block ahead.',
   '2026.09.20.629': 'The header\u2019s drop shadow goes; the drawn rule separates the page on its own.',
@@ -20066,6 +20067,8 @@ async function renderWeekGrid(){
   // Surface block position where the week is actually planned. Previously the whole
   // periodization model was invisible: an intensification or deload week looked identical
   // to any other, so a sudden volume change had no explanation on screen.
+  // Several main lifts stuck at once moves the deload to next week (see the function).
+  try{ if(await maybePullDeloadForward()) renderTodayWorkoutSummary(); } catch(e){}
   try{
     const r = await window.storage.get('settings:weekLoadUnit');
     const u = JSON.parse(r.value);
@@ -20262,7 +20265,12 @@ document.getElementById('deloadWeekCheckbox').addEventListener('change', async (
   const weekStart = getWeekDates()[0];
   try{
     await window.storage.set(`weekmeta:${weekStart}`, JSON.stringify({ deload: e.target.checked }));
-    showToast(e.target.checked ? 'Deload week set' : 'Deload week cleared');
+    // From week 3 on, a deload ends the block (see endBlockAtThisWeek).
+    let ended = false;
+    try{ ended = await endBlockAtThisWeek(e.target.checked); } catch(err){}
+    showToast(e.target.checked ? (ended ? 'Deload week set — the next block starts Monday' : 'Deload week set')
+      : (ended ? 'Deload week cleared — the block runs its full length again' : 'Deload week cleared'));
+    if(ended){ renderWeekGrid(); renderTodayWorkoutSummary(); }
   } catch(err){
     showToast('Save failed — try again', true);
     e.target.checked = !e.target.checked;
@@ -23498,6 +23506,7 @@ async function logRecDecision(type, meta, decision, card, title){
       await window.storage.set(`weekmeta:${weekDates[0]}`, JSON.stringify({ deload: true }));
       const checkbox = document.getElementById('deloadWeekCheckbox');
       if(checkbox) checkbox.checked = true;
+      try{ if(await endBlockAtThisWeek(true)) renderWeekGrid(); } catch(e){}
     }
     // Only reduce/add map to a real plan change. Tier — and therefore which single
     // lever gets touched — comes from how many signals corroborated the recommendation,
@@ -25711,6 +25720,23 @@ function weekShareText(review, dates){
 }
 
 async function checkDeloadSignal(){
+  /* Straight after a deload every comparison reads the deload as a drop, and load always
+     climbs coming out of one, so the re-entry week and the one after are not judged. With
+     this week the deload, or next week's already pulled forward for this, it has been
+     answered. */
+  try{
+    const pos = await getBlockPosition(todayStr);
+    if(pos.started && pos.blocksCompleted > 0 && pos.weekInBlock <= 2) return null;
+    if(pos.started && pos.weekInBlock >= pos.length) return null;
+    const cfgNow = await getBlockConfig();
+    if(pos.started && cfgNow.early && cfgNow.early[pos.start] && pos.length - pos.weekInBlock <= 1) return null;
+    // The main lifts first, goal or no goal: several stuck at once is the signal.
+    const rep = await liftStallReport();
+    if(rep.trigger){
+      return { strength:'strong', lifts: rep.stuck,
+        reason: `${wordsAnd(rep.stuck)} have stopped improving this block: ${rep.stuck.length} of ${rep.lifts.length} main lifts are stuck or going backwards. That is fatigue rather than one bad lift, and a deload is the fix.` };
+    }
+  } catch(e){}
   const goals = await getCurrentGoals(todayStr);
   if(!goals || !goals.list) return null;
   const trackable = goals.list.filter(g => !g.isMaintenance && (
@@ -26593,7 +26619,7 @@ function planGoalShort(g){
    made for this block. */
 async function planBlockList(){
   const { spans } = await blockTimeline(todayStr);
-  const out = spans.map((sp, k)=>({ type: sp.type, weeks: sp.weeks, start: sp.start, state: k === spans.length - 1 ? 'now' : 'done' }));
+  const out = spans.map((sp, k)=>({ type: sp.type, weeks: sp.weeks, start: sp.start, early: !!sp.early, state: k === spans.length - 1 ? 'now' : 'done' }));
   let last = out[out.length - 1];
   for(let w = 1; w <= 40 && out.length < spans.length + 3; w++){
     const d = getWeekDatesForOffset(w)[0];
@@ -26683,13 +26709,16 @@ async function paintPlanBlockSheet(){
           : t.lo > 0 ? 'slow gain' : t.lo === 0 ? 'steady to slightly up' : 'steady';
       } catch(e){}
     }
+    const earlyLog = await readEarlyDeloads();
     box.innerHTML = list.map(b=>{
       const end = shiftDateStr(b.start, b.weeks * 7 - 1);
+      const e = b.early && earlyLog[b.start];
+      const cut = e ? `<span class="plan-tl-note">Deload brought forward from week ${e.was}${e.lifts && e.lifts.length ? `: ${wordsAnd(e.lifts)} stopped improving` : ', when you marked it'}.</span>` : '';
       const name = b.type ? blockTypeLabel(b.type) : 'Block';
       const note = b.state === 'now' && b.type ? `<span class="plan-tl-note">${BLOCK_TYPES[b.type].note}</span>` : '';
       const when = b.state === 'now' ? 'now' : b.state === 'done' ? 'done' : 'next';
       const plan = b.weightPlan ? `<span class="plan-tl-note">Weight: ${b.weightPlan}</span>` : '';
-      return `<div class="plan-tl-row ${b.state}"><b>${dfIcon(b.type && DF_ICONS[b.type] ? b.type : 'block', 16)}${name} · ${b.weeks} wk</b><span>${fmtShortDate(b.start)} – ${fmtShortDate(end)} · ${when}</span>${note}${plan}</div>`;
+      return `<div class="plan-tl-row ${b.state}"><b>${dfIcon(b.type && DF_ICONS[b.type] ? b.type : 'block', 16)}${name} · ${b.weeks} wk</b><span>${fmtShortDate(b.start)} – ${fmtShortDate(end)} · ${when}</span>${note}${cut}${plan}</div>`;
     }).join('');
   } catch(e){ box.innerHTML = ''; }
 }
@@ -32152,7 +32181,7 @@ async function getBlockProgressionFactor(blocksCompleted, blockLengthWeeks){
 }
 
 async function getBlockConfig(){
-  let length = BLOCK_LENGTH_DEFAULT, anchor = null, blockIndex = 0, auto = true, lengths = [];
+  let length = BLOCK_LENGTH_DEFAULT, anchor = null, blockIndex = 0, auto = true, lengths = [], early = {};
   try{
     const r = await window.storage.get('settings:blockConfig');
     const cfg = JSON.parse(r.value);
@@ -32164,6 +32193,8 @@ async function getBlockConfig(){
        not a choice — so it reads as automatic too. */
     auto = cfg.auto !== false;
     if(Array.isArray(cfg.lengths)) lengths = cfg.lengths.filter(n => n >= BLOCK_LENGTH_MIN && n <= BLOCK_LENGTH_MAX);
+    // Blocks cut short by an early deload, by the Monday they started on (see pullDeloadForward).
+    if(cfg.early && typeof cfg.early === 'object') early = cfg.early;
     /* A record from before automatic lengths: every block it has already finished ran at its
        one fixed length, and that is written down now, once, so switching to automatic
        changes the block you are in and the ones ahead — not where you are. Without this, an
@@ -32204,16 +32235,16 @@ async function getBlockConfig(){
     started = !!first;
     anchor = getWeekStartFor(first || todayStr);
     if(started){
-      try{ await window.storage.set('settings:blockConfig', JSON.stringify({ length, anchor, blockIndex, auto, lengths })); } catch(e){}
+      try{ await window.storage.set('settings:blockConfig', JSON.stringify({ length, anchor, blockIndex, auto, lengths, early })); } catch(e){}
     }
   }
-  return { length, anchor, blockIndex, started, auto, lengths };
+  return { length, anchor, blockIndex, started, auto, lengths, early };
 }
 // Every write of the record goes through here, so a field added later is never dropped by
 // a writer that did not know about it.
 async function saveBlockConfig(patch){
   const cur = await getBlockConfig();
-  const next = { length: cur.length, anchor: cur.anchor, blockIndex: cur.blockIndex, auto: cur.auto, lengths: cur.lengths, ...patch };
+  const next = { length: cur.length, anchor: cur.anchor, blockIndex: cur.blockIndex, auto: cur.auto, lengths: cur.lengths, early: cur.early, ...patch };
   try{ await window.storage.set('settings:blockConfig', JSON.stringify(next)); } catch(e){}
   return next;
 }
@@ -32259,10 +32290,19 @@ async function blockTimeline(date){
   const target = getWeekStartFor(date || todayStr);
   const elapsed = Math.max(0, weeksBetween(cfg.anchor, target));
   const spans = [];
+  /* A block that deloaded early ends at the deload: its length is the week the deload landed
+     on, looked up by the block's first Monday, and every block after it starts a week or more
+     sooner. With no early deloads this is exactly the fixed-length walk it replaced. */
+  const early = cfg.early || {};
   if(!cfg.auto){
-    const i = Math.floor(elapsed / cfg.length);
-    for(let k=0; k<=i; k++) spans.push({ i:k, start: shiftDateStr(cfg.anchor, k * cfg.length * 7), weeks: cfg.length });
-    return { cfg, spans, rest: elapsed - i * cfg.length };
+    let left = elapsed, cum = 0;
+    for(let k=0; ; k++){
+      const start = shiftDateStr(cfg.anchor, cum * 7);
+      const weeks = early[start] || cfg.length;
+      spans.push({ i:k, start, weeks });
+      if(left < weeks || k > 400) return { cfg, spans, rest: left };
+      left -= weeks; cum += weeks;
+    }
   }
   let list = [];
   try{ list = ((await getCurrentGoals(todayStr)) || {}).list || []; } catch(e){}
@@ -32277,8 +32317,9 @@ async function blockTimeline(date){
   for(;;){
     const n = i + (cfg.blockIndex || 0);
     const type = typeAt(n);
-    const weeks = i < frozen.length ? frozen[i] : weeksForBlockType(type);
-    spans.push({ i, start: shiftDateStr(cfg.anchor, cum * 7), weeks, type });
+    const start = shiftDateStr(cfg.anchor, cum * 7);
+    const weeks = i < frozen.length ? frozen[i] : (early[start] || weeksForBlockType(type));
+    spans.push({ i, start, weeks, type, early: !!early[start] });
     if(rest < weeks || i > 400) break;
     // Over and done before this week began: written down, and fixed from now on.
     if(i === frozen.length && cum + weeks <= nowWeeks){ frozen.push(weeks); wroteNew = true; }
@@ -32305,6 +32346,207 @@ async function getBlockPosition(date){
 }
 
 function isDeloadPosition(weekInBlock, length){ return weekInBlock === length; }
+
+/* ARE THE MAIN LIFTS STILL MOVING, THIS BLOCK?
+
+   One lift stalling is that lift: it gets a reset (see suggestProgression). Several stalling
+   together is fatigue, and fatigue is what a deload is for. So this reads every main lift
+   (the library's main_strength lifts: squats, deadlifts, bench, overhead press and kin) on
+   its best set per session, as an estimated max, from the start of the block.
+
+   Read only from inside the block, because the block is what is being judged, and the week
+   either side of a deload is lighter on purpose. Week 1 after a deload is the re-entry
+   week, 10% down by design; a deload week is half the work. Neither is a reading, so
+   neither counts, and a lift needs EARLY_DELOAD_MIN_SESSIONS readings left to be judged.
+
+     stuck      none of the last three sessions beat the best before them
+     backwards  the last two are both 3% or more under the block's best
+     moving     anything else
+
+   It fires when two or more main lifts are stuck or backwards and they are at least half of
+   the main lifts with enough readings: not one bad day on one bar. */
+const EARLY_DELOAD_MIN_SESSIONS = 4;
+const EARLY_DELOAD_KEY = 'settings:earlyDeloads';
+function wordsAnd(list){
+  return list.length < 2 ? (list[0] || '') : `${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}`;
+}
+async function liftStallReport(){
+  const pos = await getBlockPosition(todayStr);
+  const out = { pos, lifts: [], stuck: [], trigger: false };
+  if(!pos.started) return out;
+  const from = shiftDateStr(pos.start, pos.blocksCompleted > 0 ? 7 : 0);
+  const dlWeeks = new Map();
+  const inDeload = async d =>{
+    const w = getWeekStartFor(d);
+    if(!dlWeeks.has(w)) dlWeeks.set(w, await isDeloadWeek(d));
+    return dlWeeks.get(w);
+  };
+  const byLift = new Map();
+  for(const s of await getAllTrainingSessions()){
+    if(!s || s.type !== 'strength' || !s.date || s.date < from || s.date > todayStr || !Array.isArray(s.exercises)) continue;
+    if(await inDeload(s.date)) continue;
+    for(const e of s.exercises){
+      const id = (e.exerciseId && EXERCISE_LIBRARY[e.exerciseId]) ? e.exerciseId : (guessTagsFromLibrary(e.name || '') || {}).exerciseId;
+      const lib = id && EXERCISE_LIBRARY[id];
+      if(!lib || lib.category !== 'main_strength') continue;
+      const reps = Array.isArray(e.repsPerSet) && e.repsPerSet.length ? Math.max(...e.repsPerSet.map(Number)) : parseFloat(e.reps);
+      const v = e1RM(parseFloat(e.weight), reps);
+      if(!v) continue;
+      const pts = byLift.get(lib.name) || [];
+      const same = pts.find(p => p.date === s.date && p.ts === (s.timestamp || 0));
+      if(same) same.v = Math.max(same.v, v);
+      else pts.push({ date: s.date, ts: s.timestamp || 0, v });
+      byLift.set(lib.name, pts);
+    }
+  }
+  for(const [name, pts] of byLift){
+    if(pts.length < EARLY_DELOAD_MIN_SESSIONS) continue;
+    pts.sort((a, b)=> a.date < b.date ? -1 : a.date > b.date ? 1 : a.ts - b.ts);
+    const before = pts.slice(0, -3), recent = pts.slice(-3);
+    const bestBefore = Math.max(...before.map(p => p.v));
+    const bestRecent = Math.max(...recent.map(p => p.v));
+    const best = Math.max(bestBefore, bestRecent);
+    const backwards = pts.slice(-2).every(p => p.v < best * 0.97);
+    const stuck = bestRecent <= bestBefore * 1.005;
+    const status = backwards ? 'backwards' : stuck ? 'stuck' : 'moving';
+    out.lifts.push({ name, status, sessions: pts.length });
+    if(status !== 'moving') out.stuck.push(name);
+  }
+  out.trigger = out.stuck.length >= 2 && out.stuck.length * 2 >= out.lifts.length;
+  return out;
+}
+async function readEarlyDeloads(){
+  try{ return JSON.parse((await window.storage.get(EARLY_DELOAD_KEY)).value) || {}; } catch(e){ return {}; }
+}
+
+/* PULL THE DELOAD FORWARD, AND END THE BLOCK WITH IT.
+
+   The block gets shorter rather than gaining a second deload: it now ends on the week the
+   deload moved to, and the next block starts the Monday after. The deload that was
+   scheduled at the end is unmarked, and any weeks already planned from the new deload on are
+   rebuilt for where they now sit, since every one of them has moved in the block. Days with a
+   session logged, or one in progress, are left alone, as rebuildFutureDaysFromGoals leaves
+   them. One undo puts all of it back. */
+async function pullDeloadForward(pos, newLength, why){
+  if(!pos || !pos.start || newLength < BLOCK_LENGTH_MIN || newLength >= pos.length) return false;
+  const cfg = await getBlockConfig();
+  const newDeload = shiftDateStr(pos.start, (newLength - 1) * 7);
+  const oldDeload = shiftDateStr(pos.start, (pos.length - 1) * 7);
+  const undo = [];
+  for(const key of ['settings:blockConfig', EARLY_DELOAD_KEY, `weekmeta:${newDeload}`, `weekmeta:${oldDeload}`]){
+    undo.push({ key, value: await readRaw(key) });
+  }
+  await saveBlockConfig({ early: { ...(cfg.early || {}), [pos.start]: newLength } });
+  await window.storage.set(`weekmeta:${newDeload}`, JSON.stringify({ deload: true }));
+  try{
+    const m = JSON.parse(await readRaw(`weekmeta:${oldDeload}`));
+    if(m && m.deload) await window.storage.set(`weekmeta:${oldDeload}`, JSON.stringify({ ...m, deload: false }));
+  } catch(e){}
+  const log = await readEarlyDeloads();
+  log[pos.start] = { week: newLength, was: pos.length, on: todayStr, ...(why || {}) };
+  await window.storage.set(EARLY_DELOAD_KEY, JSON.stringify(log));
+  // Only weeks after this one are rebuilt: this week is under way.
+  const offset = weeksBetween(getWeekDates()[0], newDeload);
+  if(offset >= 1) undo.push(...await rebuildPlannedWeeksFrom(offset));
+  offerWeekUndo(undo, 'early deload');
+  return true;
+}
+// Clears and regenerates every already-planned week from `offset` weeks ahead, returning the
+// undo entries: what each cleared day held, and null for a day the rebuild newly filled.
+async function rebuildPlannedWeeksFrom(offset){
+  const logged = await loggedDateSet();
+  const undo = [], before = new Set();
+  let lastWeek = -1;
+  for(let w = offset; w < PROGRAM_WEEKS_MAX; w++){
+    for(const date of getWeekDatesForOffset(w)){
+      if(date < todayStr || logged.has(date)) continue;
+      let busy = false;
+      try{ busy = !!(await loggingStartedAt(date)); } catch(e){}
+      if(busy) continue;
+      for(const slot of ['am','pm']){
+        const key = `weekplan:${date}:${slot}`;
+        const v = await readRaw(key);
+        if(v == null) continue;
+        undo.push({ key, value: v, date });
+        before.add(key);
+        await window.storage.delete(key);
+        lastWeek = w;
+      }
+      await syncPlannedSessionMirror(date);
+    }
+  }
+  if(lastWeek < 0) return undo;
+  const split = document.getElementById('programSplitOverride')?.value || 'auto';
+  const options = {
+    includeStrength: document.getElementById('includeStrengthCheckbox')?.checked ?? true,
+    includeMobility: document.getElementById('includeMobilityCheckbox')?.checked ?? true,
+    includeRunning: document.getElementById('includeRunningCheckbox')?.checked ?? true,
+    fromWeek: offset
+  };
+  try{ await generateMultiWeekProgram(lastWeek + 1, split, options); } catch(e){}
+  for(let w = offset; w <= lastWeek; w++){
+    for(const date of getWeekDatesForOffset(w)){
+      for(const slot of ['am','pm']){
+        const key = `weekplan:${date}:${slot}`;
+        if(!before.has(key) && await readRaw(key) != null) undo.push({ key, value: null, date });
+      }
+    }
+  }
+  return undo;
+}
+
+/* THE TRIGGER. Checked whenever the week is drawn, at most once per day and logged session,
+   and it acts only when acting still changes something: the block is at least in its second
+   week, this is not already a deload week, the deload is two or more weeks away, and this
+   block has not already been cut short. Then the deload moves to next week. Not this week:
+   this week is planned and partly done, and the strip is yours to change if today is the
+   day you want it (the Deload week box does the same thing, for this week). */
+let earlyDeloadCheckedFor = '';
+async function maybePullDeloadForward(){
+  let n = 0;
+  try{ n = (await getAllTrainingSessions()).length; } catch(e){}
+  const stamp = `${todayStr}:${n}`;
+  if(earlyDeloadCheckedFor === stamp) return null;
+  earlyDeloadCheckedFor = stamp;
+  const pos = await getBlockPosition(todayStr);
+  if(!pos.started || pos.weekInBlock < 2 || pos.length - pos.weekInBlock < 2) return null;
+  if(await isDeloadWeek(todayStr)) return null;
+  const cfg = await getBlockConfig();
+  if(cfg.early && cfg.early[pos.start]) return null;
+  const rep = await liftStallReport();
+  if(!rep.trigger) return null;
+  const done = await pullDeloadForward(pos, pos.weekInBlock + 1, { lifts: rep.stuck });
+  if(!done) return null;
+  showUndoToast(`Deload moved to next week: ${wordsAnd(rep.stuck)} stopped improving`);
+  return rep;
+}
+
+/* TICKING THIS WEEK AS A DELOAD ENDS THE BLOCK HERE TOO. Before, the box marked the week and
+   the block carried on to its own deload two or three weeks later: two deloads close
+   together. From week 3 on (a block cannot be shorter than three weeks) it now ends the
+   block on this week; unticking it puts the block back the way it was, if this is what cut
+   it short. Week 1 and 2 keep the old behaviour, a lighter week inside the block. */
+async function endBlockAtThisWeek(on){
+  const pos = await getBlockPosition(todayStr);
+  if(!pos.started) return false;
+  const cfg = await getBlockConfig();
+  const log = await readEarlyDeloads();
+  if(on){
+    if(pos.weekInBlock < BLOCK_LENGTH_MIN || pos.weekInBlock >= pos.length) return false;
+    return pullDeloadForward(pos, pos.weekInBlock, { manual: true });
+  }
+  const mine = cfg.early && cfg.early[pos.start] === pos.weekInBlock && log[pos.start];
+  if(!mine) return false;
+  const early = { ...cfg.early }; delete early[pos.start];
+  await saveBlockConfig({ early });
+  delete log[pos.start];
+  await window.storage.set(EARLY_DELOAD_KEY, JSON.stringify(log));
+  const back = await getBlockPosition(todayStr);
+  await window.storage.set(`weekmeta:${shiftDateStr(back.start, (back.length - 1) * 7)}`, JSON.stringify({ deload: true }));
+  // Next week on had been rebuilt as a new block; rebuilt again as the rest of this one.
+  await rebuildPlannedWeeksFrom(1);
+  return true;
+}
 
 // Week 1 of a block sits directly after a deload. An earlier version prescribed an AMRAP
 // here to recalibrate the load — that was wrong on two counts, and the literature is
@@ -32860,7 +33102,8 @@ async function rebuildFutureDaysFromGoals(){
 
 async function generateMultiWeekProgram(numWeeks, splitOverride, options){
   const weekResults = [];
-  for(let w=0; w<numWeeks; w++){
+  // fromWeek: start further ahead, for a rebuild that must leave the weeks before it alone.
+  for(let w = (options && options.fromWeek) || 0; w<numWeeks; w++){
     const weekDates = getWeekDatesForOffset(w);
     // Position comes from the persisted block anchor, not loop index — so generating a
     // single week knows it's (say) week 3 of 4 and intensifies, instead of always
@@ -34544,6 +34787,7 @@ async function getLoggedHistoryForExercise(exerciseId, name, limit){
 // (hold and repeat) from "missed the target with reps still in reserve" (push harder at
 // the same load before adding any).
 const PROGRESSION_STALL_LIMIT = 2;
+const STALL_RESET_CUT = 0.10;   // the usual 10% reset after a stall
 function progressionIncrementFor(area, focusInfo){
   const inc = focusInfo && focusInfo.increment ? focusInfo.increment : { lower:2.5, upper:1.25 };
   return LOWER_BODY_AREAS.includes(area) ? inc.lower : inc.upper;
@@ -34684,6 +34928,34 @@ async function suggestProgression(ex, focusInfo){
     // Reps flat across sets at this load means the sets weren't near failure, so the
     // limiter is effort rather than load. Adding weight here would mask that.
     return { action:'push_reps', weight: last.weight, noteCaps:true, note: `Reps in reserve — push toward ${repHigh}` };
+  }
+  /* A STALL GETS A RESET, NOT A SHRUG.
+
+     Three sessions at one weight without reaching the top of the range used to say "hold or
+     swap variation" and keep prescribing the same weight, which is the stall described back
+     to you. The standard fix is the reset: take about 10% off, and build back up through the
+     weight that stuck with the extra reps in hand. Most stalls clear on the way back through.
+
+     If it sticks AGAIN at the same weight, a second reset is the same experiment run twice,
+     so the answer changes to the other standard one: swap the variation. "Been here before"
+     is read from the history before the stall: an older session at this weight or above
+     means you reached it once already, dropped, and came back to it. */
+  if(stalled && last.weight > 0){
+    const longer = await getLoggedHistoryForExercise(ex.exerciseId, ex.name, 12);
+    // A dip below this weight and, before the dip, this weight or more: a reset already ran.
+    const older = longer.slice(sameWeightRun);
+    const dip = older.findIndex(h => h.weight && h.weight < last.weight * 0.97);
+    const beenHereBefore = dip >= 0 && older.slice(dip + 1).some(h => h.weight && h.weight >= last.weight);
+    if(beenHereBefore){
+      const alts = VARIATION_LIBRARY[String(ex.name || '').trim().toLowerCase()];
+      return { action:'stalled', weight: last.weight, noteCaps:true,
+        note: alts && alts.length ? `Stuck here twice — swap to ${alts[0]}` : `Stuck here twice — swap the variation` };
+    }
+    const reset = Math.round((last.weight * (1 - STALL_RESET_CUT)) / increment) * increment;
+    if(reset > 0 && reset < last.weight){
+      return { action:'reset', weight: reset, fromWeight: last.weight, noteCaps:true,
+        note: `Stalled ${sameWeightRun} sessions — reset to ${reset}kg, build back` };
+    }
   }
   if(stalled){
     return { action:'stalled', weight: last.weight, noteCaps:true, note: `Stalled ${sameWeightRun} sessions — hold or swap variation` };
@@ -34959,7 +35231,7 @@ async function blockSummaryHtml(block){
           { lead: '<span class="plan-key" data-stage="SKILL">Skill</span>' }));
         continue;
       }
-      const arrow = progression.action==='add_weight' ? ' ↑' : '';
+      const arrow = progression.action==='add_weight' ? ' ↑' : progression.action==='reset' ? ' ↓' : '';
       // A superset only makes sense if you can see which two exercises are paired, so the
       // slot marker leads the name rather than hiding in a note.
       const ssTag = ex.supersetSlot ? `<span class="ss-tag">${ex.supersetSlot}</span>` : '';
