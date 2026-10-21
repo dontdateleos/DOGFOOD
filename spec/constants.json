@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.21.001",
+ "generatedFrom": "2026.10.21.002",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1086,7 +1086,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.21.001",
+  "APP_VERSION": "2026.10.21.002",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1464,6 +1464,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.10.21.002": "Eleven more sports, alongside golf: soccer, basketball, tennis, cricket, rugby, AFL, volleyball, combat sports, cycling, swimming and climbing. Turn on as many as you play under Plan → Sport, with a season and two kinds of day for each. Game days (a match, a fight, a race) are kept for the game, with a warm-up before and stretches after, and heavy lifting stays off the day or two before. Training days share the day: a lift in the morning and your sport in the evening. Every lift day gets one fast movement and one protective one from each sport, picked from what the research says moves performance and injury risk for it: Nordics and Copenhagens for football codes, landing and tendon work for jumping sports, rotator-cuff work for throwing, serving and swimming, neck work for collision and fight sports, finger and antagonist work for climbing. Fifteen new exercises came in with them, and every sport has its own icon.",
    "2026.10.21.001": "Stalls and deloads act now, not just warn. A lift stuck at one weight for three sessions without reaching the top of its rep range resets about 10% and builds back; if it sticks again at the same weight, it tells you which variation to swap to. When two or more of your main lifts stop improving in the same block (none of the last three sessions beat the best before them, or the last two fall 3% short of it), the deload moves to next week and the block ends there, so you never get a second deload a fortnight later. Marking a deload yourself from week 3 does the same. This covers every main lift you train, goal or no goal. The weeks already planned after it are rebuilt for the new block, and one undo puts it all back.",
    "2026.10.20.005": "Hold a day on Today’s week strip. Drag it onto another day and it moves there — if that day has a session too, the two swap. Let go without moving and you get the day’s menu: move it, edit what is on it, add a session, clear it, or mark it as a day you are not training. Every change has an undo. Days that have passed, and days with a session already logged, stay where they are.",
    "2026.10.20.004": "Cuts are scheduled now, not just gains. When your body fat reads 20% or more (30% for women), or your weight has climbed 5% above its low of the last six months, the next Strength block becomes a cut: lose 0.4–0.6 kg a week for four weeks, with the deload as a week-long diet break at maintenance, then straight back to maintenance in the block after. Strength blocks are where a deficit costs least — strength keeps climbing, only muscle gain slows. Muscle blocks hold weight while a cut is due, and Power, the running sharpen blocks and golf in-season never cut. Plan’s block list shows what weight does in each block ahead.",
@@ -2040,7 +2041,19 @@
    "cooldown": "M3.5 20A8.5 8.5 0 0 1 20.5 20Z M7.5 2H16.5L12 8Z",
    "finisher": "M3.5 13.5A8.5 8.5 0 1 0 20.5 13.5A8.5 8.5 0 1 0 3.5 13.5ZM12 13.5V7A6.5 6.5 0 0 1 18.5 13.5ZM9.5 1.5H14.5V4.1H9.5Z",
    "ontrack": "M7 2H17L22 7V17L17 22H7L2 17V7ZM6 12.6L8.4 10.2L10.6 12.4L15.6 7.4L18 9.8L10.6 17.2Z",
-   "warning": "M12 1.5L23 21.5H1ZM10.8 8H13.200000000000001V15H10.8ZM10.8 16.6H13.200000000000001V19H10.8Z"
+   "warning": "M12 1.5L23 21.5H1ZM10.8 8H13.200000000000001V15H10.8ZM10.8 16.6H13.200000000000001V19H10.8Z",
+   "soccer": "M2 12L2 11.1L2.2 10.3L2.3 9.4L2.6 8.6L2.9 7.8L3.3 7L3.8 6.3L4.3 5.6L4.9 4.9L5.6 4.3L6.3 3.8L7 3.3L7.8 2.9L8.6 2.6L9.4 2.3L10.3 2.2L11.1 2L12 2L12.9 2L13.7 2.2L14.6 2.3L15.4 2.6L16.2 2.9L17 3.3L17.7 3.8L18.4 4.3L19.1 4.9L19.7 5.6L20.2 6.3L20.7 7L21.1 7.8L21.4 8.6L21.7 9.4L21.8 10.3L22 11.1L22 12L22 12.9L21.8 13.7L21.7 14.6L21.4 15.4L21.1 16.2L20.7 17L20.2 17.7L19.7 18.4L19.1 19.1L18.4 19.7L17.7 20.2L17 20.7L16.2 21.1L15.4 21.4L14.6 21.7L13.7 21.8L12.9 22L12 22L11.1 22L10.3 21.8L9.4 21.7L8.6 21.4L7.8 21.1L7 20.7L6.3 20.2L5.6 19.7L4.9 19.1L4.3 18.4L3.8 17.7L3.3 17L2.9 16.2L2.6 15.4L2.3 14.6L2.2 13.7L2 12.9ZM3.7 12L3.7 12.7L3.7 12.8L5.5 14.1L4.8 16.2L5.2 16.8L5.6 17.3L6.1 17.9L6.7 18.4L6.7 18.4L9.6 14.5L9.6 14.4L9.8 14.3L9.9 14.3L9 11.4L9 11.4L8.8 11.4L8.6 11.4L4 9.9L3.8 10.6L3.7 11.3ZM4.3 9L8.9 10.5L9 10.5L9.1 10.6L9.2 10.7L11.6 9L11.5 8.8L11.5 8.6L11.5 3.7L11.3 3.7L10.6 3.8L9.9 4L9.2 4.2L8.7 4.4L8 6.5L5.8 6.5L5.6 6.7L5.2 7.2L4.8 7.8L4.5 8.5ZM7.5 19L7.9 19.2L8.5 19.5L9.2 19.8L9.9 20L10.2 20.1L12 18.8L13.8 20.1L14.1 20L14.8 19.8L15.5 19.5L16.2 19.2L16.5 19L13.6 15L13.5 14.9L13.5 14.8L13.5 14.7L10.5 14.7L10.5 14.8L10.5 14.9L10.4 15ZM12.4 9L14.8 10.7L14.9 10.6L15 10.5L15.1 10.5L19.7 9L19.5 8.5L19.2 7.8L18.8 7.2L18.4 6.7L18.2 6.5L16 6.5L15.3 4.4L14.8 4.2L14.1 4L13.4 3.8L12.7 3.7L12.5 3.7L12.5 8.6L12.5 8.8ZM14.1 14.3L14.2 14.3L14.4 14.4L14.4 14.5L17.3 18.4L17.3 18.4L17.9 17.9L18.4 17.3L18.8 16.8L19.2 16.2L18.5 14.1L20.3 12.8L20.3 12.7L20.3 12L20.3 11.3L20.2 10.6L20 9.9L15.4 11.4L15.2 11.4L15 11.4L15 11.4Z",
+   "basketball": "M2 11.3L2 11.1L2.2 10.3L2.3 9.4L2.6 8.6L2.9 7.8L3.3 7L3.8 6.3L4.3 5.6L4.9 4.9L5.2 4.7L5.5 5L5.8 5.3L6.2 5.6L6.5 5.9L6.7 6.2L7 6.6L7.3 7L7.5 7.3L7.7 7.7L7.9 8.1L8.1 8.5L8.2 9L8.4 9.4L8.5 9.8L8.6 10.2L8.7 10.7L8.7 11.1L8.7 11.3ZM2 12.8L8.7 12.8L8.7 12.9L8.7 13.3L8.6 13.8L8.5 14.2L8.4 14.6L8.2 15L8.1 15.5L7.9 15.9L7.7 16.3L7.5 16.7L7.3 17L7 17.4L6.7 17.8L6.5 18.1L6.2 18.4L5.8 18.7L5.5 19L5.2 19.3L4.9 19.1L4.3 18.4L3.8 17.7L3.3 17L2.9 16.2L2.6 15.4L2.3 14.6L2.2 13.7L2 12.9ZM6.4 3.7L7 3.3L7.8 2.9L8.6 2.6L9.4 2.3L10.3 2.2L11.1 2L11.3 2L11.3 11.3L10.2 11.3L10.2 11L10.1 10.5L10.1 9.9L9.9 9.4L9.8 8.9L9.6 8.5L9.5 8L9.3 7.5L9 7L8.8 6.6L8.5 6.1L8.2 5.7L7.9 5.3L7.6 4.9L7.2 4.5L6.9 4.2L6.5 3.8ZM6.4 20.3L6.5 20.2L6.9 19.8L7.2 19.5L7.6 19.1L7.9 18.7L8.2 18.3L8.5 17.9L8.8 17.4L9 17L9.3 16.5L9.5 16L9.6 15.5L9.8 15.1L9.9 14.6L10.1 14.1L10.1 13.5L10.2 13L10.2 12.8L11.3 12.8L11.3 22L11.1 22L10.3 21.8L9.4 21.7L8.6 21.4L7.8 21.1L7 20.7ZM12.8 2L12.9 2L13.7 2.2L14.6 2.3L15.4 2.6L16.2 2.9L17 3.3L17.6 3.7L17.5 3.8L17.1 4.2L16.8 4.5L16.4 4.9L16.1 5.3L15.8 5.7L15.5 6.1L15.2 6.6L15 7L14.7 7.5L14.5 8L14.4 8.5L14.2 8.9L14.1 9.4L13.9 9.9L13.9 10.5L13.8 11L13.8 11.3L12.8 11.3ZM12.8 12.8L13.8 12.8L13.8 13L13.9 13.5L13.9 14.1L14.1 14.6L14.2 15.1L14.4 15.5L14.5 16L14.7 16.5L15 17L15.2 17.4L15.5 17.9L15.8 18.3L16.1 18.7L16.4 19.1L16.8 19.5L17.1 19.8L17.5 20.2L17.6 20.3L17 20.7L16.2 21.1L15.4 21.4L14.6 21.7L13.7 21.8L12.9 22L12.8 22ZM15.3 11.3L15.3 11.1L15.3 10.7L15.4 10.2L15.5 9.8L15.6 9.4L15.8 9L15.9 8.5L16.1 8.1L16.3 7.7L16.5 7.3L16.7 7L17 6.6L17.3 6.2L17.5 5.9L17.8 5.6L18.2 5.3L18.5 5L18.8 4.7L19.1 4.9L19.7 5.6L20.2 6.3L20.7 7L21.1 7.8L21.4 8.6L21.7 9.4L21.8 10.3L22 11.1L22 11.3ZM15.3 12.8L22 12.8L22 12.9L21.8 13.7L21.7 14.6L21.4 15.4L21.1 16.2L20.7 17L20.2 17.7L19.7 18.4L19.1 19.1L18.8 19.3L18.5 19L18.2 18.7L17.8 18.4L17.5 18.1L17.3 17.8L17 17.4L16.7 17L16.5 16.7L16.3 16.3L16.1 15.9L15.9 15.5L15.8 15L15.6 14.6L15.5 14.2L15.4 13.8L15.3 13.3L15.3 12.9Z",
+   "tennis": "M2 12L2 11.1L2.2 10.3L2.3 9.4L2.6 8.6L2.9 7.8L3.3 7L3.8 6.3L4.3 5.6L4.5 5.3L4.8 5.6L5.2 6L5.6 6.4L5.9 6.8L6.2 7.3L6.5 7.8L6.8 8.3L7 8.8L7.2 9.3L7.3 9.8L7.4 10.4L7.5 10.9L7.6 11.4L7.6 12L7.6 12.6L7.5 13.1L7.4 13.6L7.3 14.2L7.2 14.7L7 15.2L6.8 15.7L6.5 16.2L6.2 16.7L5.9 17.2L5.6 17.6L5.2 18L4.8 18.4L4.5 18.7L4.3 18.4L3.8 17.7L3.3 17L2.9 16.2L2.6 15.4L2.3 14.6L2.2 13.7L2 12.9ZM5.7 4.2L6.3 3.8L7 3.3L7.8 2.9L8.6 2.6L9.4 2.3L10.3 2.2L11.1 2L12 2L12.9 2L13.7 2.2L14.6 2.3L15.4 2.6L16.2 2.9L17 3.3L17.7 3.8L18.3 4.2L18.1 4.4L17.6 4.9L17.2 5.4L16.8 5.9L16.4 6.4L16.1 7L15.8 7.6L15.5 8.2L15.3 8.8L15.1 9.4L15 10.1L14.9 10.7L14.8 11.3L14.8 12L14.8 12.7L14.9 13.3L15 13.9L15.1 14.6L15.3 15.2L15.5 15.8L15.8 16.4L16.1 17L16.4 17.6L16.8 18.1L17.2 18.6L17.6 19.1L18.1 19.6L18.3 19.8L17.7 20.2L17 20.7L16.2 21.1L15.4 21.4L14.6 21.7L13.7 21.8L12.9 22L12 22L11.1 22L10.3 21.8L9.4 21.7L8.6 21.4L7.8 21.1L7 20.7L6.3 20.2L5.7 19.8L5.9 19.6L6.4 19.1L6.8 18.6L7.2 18.1L7.6 17.6L7.9 17L8.2 16.4L8.5 15.8L8.7 15.2L8.9 14.6L9 13.9L9.1 13.3L9.2 12.7L9.2 12L9.2 11.3L9.1 10.7L9 10.1L8.9 9.4L8.7 8.8L8.5 8.2L8.2 7.6L7.9 7L7.6 6.4L7.2 5.9L6.8 5.4L6.4 4.9L5.9 4.4ZM16.4 12L16.4 11.4L16.5 10.9L16.6 10.4L16.7 9.8L16.8 9.3L17 8.8L17.2 8.3L17.5 7.8L17.8 7.3L18.1 6.8L18.4 6.4L18.8 6L19.2 5.6L19.5 5.3L19.7 5.6L20.2 6.3L20.7 7L21.1 7.8L21.4 8.6L21.7 9.4L21.8 10.3L22 11.1L22 12L22 12.9L21.8 13.7L21.7 14.6L21.4 15.4L21.1 16.2L20.7 17L20.2 17.7L19.7 18.4L19.5 18.7L19.2 18.4L18.8 18L18.4 17.6L18.1 17.2L17.8 16.7L17.5 16.2L17.2 15.7L17 15.2L16.8 14.7L16.7 14.2L16.6 13.6L16.5 13.1L16.4 12.6Z",
+   "volleyball": "M2 12L2 11.1L2.2 10.3L2.3 9.4L2.6 8.6L2.9 7.8L3.3 7L3.8 6.3L4.3 5.6L4.9 4.9L5.6 4.3L6.3 3.8L7 3.3L7.8 2.9L7.8 2.9L7.8 3.1L7.7 3.4L7.6 3.8L7.6 4.1L7.6 4.4L7.6 4.7L7.6 5.1L7.6 5.4L7.6 5.7L7.6 6.1L7.7 6.4L7.7 6.7L7.8 7.1L7.9 7.4L8 7.7L8.1 8L8.2 8.3L8.3 8.6L8.5 8.9L8.6 9.2L8.8 9.5L8.9 9.8L9.1 10.1L9.3 10.3L9.5 10.6L9.7 10.9L10 11.1L10.2 11.3L10.4 11.6L10.7 11.8L11 12.1L11 12.1L11 12.4L11 13L11 13.2L10.9 13.5L10.8 13.8L10.7 14L10.6 14.3L10.5 14.6L10.4 14.8L10.3 15.1L10.2 15.3L10 15.5L9.9 15.8L9.7 16L9.5 16.2L9.4 16.4L9.2 16.6L9 16.8L8.8 17L8.6 17.2L8.4 17.4L8.2 17.6L7.9 17.7L7.7 17.9L7.5 18L7.2 18.2L7 18.3L6.7 18.4L6.5 18.5L6.2 18.6L6 18.7L5.7 18.8L5.4 18.8L5.2 18.9L4.8 19L4.3 18.4L3.8 17.7L3.3 17L2.9 16.2L2.6 15.4L2.3 14.6L2.2 13.7L2 12.9ZM6.2 20.2L6.4 20.1L6.7 20L7 19.9L7.3 19.8L7.6 19.6L7.9 19.5L8.2 19.3L8.5 19.1L8.8 19L9.1 18.8L9.3 18.6L9.6 18.3L9.8 18.1L10.1 17.9L10.3 17.6L10.5 17.4L10.7 17.1L10.9 16.9L11.1 16.6L11.3 16.3L11.5 16L11.6 15.8L11.8 15.5L11.9 15.2L12 14.8L12.1 14.5L12.2 14.2L12.3 13.9L12.4 13.6L12.5 13.3L12.6 12.8L12.6 12.8L12.8 12.7L13.3 12.4L13.6 12.3L13.9 12.2L14.1 12.1L14.4 12.1L14.7 12L15 12L15.2 12L15.5 12L15.8 11.9L16.1 12L16.3 12L16.6 12L16.9 12L17.2 12.1L17.4 12.1L17.7 12.2L18 12.3L18.2 12.3L18.5 12.4L18.7 12.5L19 12.7L19.2 12.8L19.5 12.9L19.7 13.1L20 13.2L20.2 13.4L20.4 13.5L20.6 13.7L20.8 13.9L21 14.1L21.2 14.3L21.4 14.5L21.6 14.7L21.4 15.4L21.1 16.2L20.7 17L20.2 17.7L19.7 18.4L19.1 19.1L18.4 19.7L17.7 20.2L17 20.7L16.2 21.1L15.4 21.4L14.6 21.7L13.7 21.8L12.9 22L12 22L11.1 22L10.3 21.8L9.4 21.7L8.6 21.4L7.8 21.1L7 20.7L6.3 20.2ZM9.1 5.1L9.1 4.8L9.1 4.5L9.1 4.2L9.1 4L9.2 3.7L9.2 3.4L9.3 3.2L9.4 2.9L9.4 2.6L9.6 2.3L10.3 2.2L11.1 2L12 2L12.9 2L13.7 2.2L14.6 2.3L15.4 2.6L16.2 2.9L17 3.3L17.7 3.8L18.4 4.3L19.1 4.9L19.7 5.6L20.2 6.3L20.7 7L21.1 7.8L21.4 8.6L21.7 9.4L21.8 10.3L22 11.1L22 12L22 12.9L22 12.9L21.8 12.8L21.6 12.6L21.3 12.3L21.1 12.1L20.8 12L20.5 11.8L20.2 11.6L19.9 11.4L19.6 11.3L19.3 11.2L19 11L18.7 10.9L18.4 10.8L18.1 10.7L17.7 10.7L17.4 10.6L17.1 10.5L16.8 10.5L16.4 10.5L16.1 10.5L15.8 10.4L15.4 10.5L15.1 10.5L14.8 10.5L14.5 10.6L14.1 10.6L13.8 10.7L13.5 10.8L13.2 10.8L12.8 11L12.4 11.1L12.4 11.1L12.2 10.9L11.6 10.7L11.4 10.5L11.2 10.3L11.1 10.1L10.9 9.9L10.7 9.7L10.5 9.4L10.4 9.2L10.2 9L10.1 8.8L9.9 8.5L9.8 8.3L9.7 8L9.6 7.8L9.5 7.5L9.4 7.2L9.3 7L9.2 6.7L9.2 6.4L9.1 6.2L9.1 5.9L9.1 5.6L9.1 5.3Z",
+   "rugby": "M2.2 15.4L2.3 14.8L2.4 14.1L2.7 13.4L3 12.6L3.3 11.9L3.7 11.2L4.2 10.5L4.8 9.8L5.4 9.1L6 8.4L6.7 7.8L7.4 7.2L8.2 6.6L9 6.1L9.8 5.6L10.7 5.1L11.5 4.8L12.4 4.4L13.2 4.2L14.1 4L14.9 3.8L15.7 3.7L16.5 3.7L17.2 3.7L17.9 3.8L18.6 4L19.2 4.2L19.7 4.5L20.2 4.8L20.6 5.2L21 5.7L21.3 6.2L21.5 6.6L21 6.7L20.4 6.9L19.9 7L19.4 7.2L18.8 7.3L18.3 7.5L17.8 7.7L17.3 7.9L16.7 8.1L16.2 8.4L15.7 8.6L15.2 8.8L14.7 9.1L14.2 9.3L13.7 9.6L13.2 9.9L12.8 10.2L12.3 10.5L11.8 10.8L11.4 11.1L10.9 11.4L10.5 11.8L10 12.1L9.6 12.4L9.2 12.8L8.7 13.2L8.3 13.6L7.9 13.9L7.5 14.3L7.1 14.7L6.7 15.1L6.4 15.5L6 16L5.6 16.4L5.3 16.8L4.9 17.3L4.6 17.7L4.3 18.2L4 18.6L3.7 19.1L3.4 18.8L3 18.3L2.7 17.8L2.5 17.3L2.3 16.7L2.2 16.1ZM4.9 19.8L5.1 19.4L5.4 19L5.7 18.5L6.1 18.1L6.4 17.7L6.7 17.3L7.1 16.9L7.4 16.5L7.8 16.1L8.1 15.7L8.5 15.3L8.9 14.9L9.3 14.6L9.7 14.2L10.1 13.9L10.5 13.5L10.9 13.2L11.3 12.9L11.7 12.6L12.2 12.2L12.6 11.9L13.1 11.7L13.5 11.4L14 11.1L14.4 10.8L14.9 10.6L15.4 10.3L15.8 10.1L16.3 9.9L16.8 9.6L17.3 9.4L17.8 9.2L18.3 9L18.8 8.8L19.3 8.7L19.8 8.5L20.3 8.3L20.8 8.2L21.3 8.1L21.8 8L21.8 8.6L21.7 9.2L21.6 9.9L21.3 10.6L21 11.4L20.7 12.1L20.3 12.8L19.8 13.5L19.2 14.2L18.6 14.9L18 15.6L17.3 16.2L16.6 16.8L15.8 17.4L15 17.9L14.2 18.4L13.3 18.9L12.5 19.2L11.6 19.6L10.8 19.8L9.9 20L9.1 20.2L8.3 20.3L7.5 20.3L6.8 20.3L6.1 20.2L5.4 20Z",
+   "afl": "M2.2 15.4L2.3 14.8L2.4 14.1L2.7 13.4L3 12.6L3.3 11.9L3.7 11.2L4.2 10.5L4.8 9.8L5.4 9.1L6 8.4L6.7 7.8L7.4 7.2L8.2 6.6L9 6.1L9.8 5.6L10.7 5.1L11.5 4.8L12.4 4.4L13.2 4.2L14.1 4L14.9 3.8L15.7 3.7L16.5 3.7L17.2 3.7L17.9 3.8L18.6 4L19.2 4.2L19.7 4.5L20.2 4.8L20.6 5.2L21 5.7L21.3 6.2L21.5 6.7L21.7 7.3L21.8 7.9L21.8 8.6L21.7 9.2L21.6 9.9L21.3 10.6L21 11.4L20.7 12.1L20.3 12.8L19.8 13.5L19.2 14.2L18.6 14.9L18 15.6L17.3 16.2L16.6 16.8L15.8 17.4L15 17.9L14.2 18.4L13.3 18.9L12.5 19.2L11.6 19.6L10.8 19.8L9.9 20L9.1 20.2L8.3 20.3L7.5 20.3L6.8 20.3L6.1 20.2L5.4 20L4.8 19.8L4.3 19.5L3.8 19.2L3.4 18.8L3 18.3L2.7 17.8L2.5 17.3L2.3 16.7L2.2 16.1ZM6.4 15.4L6.5 15.7L6.6 15.9L6.8 16L7.1 16.1L7.3 16L7.5 16L7.5 16L9.6 14.5L10.4 15.7L10.5 15.8L10.7 15.9L10.9 15.9L11.1 15.9L11.3 15.8L11.5 15.6L11.5 15.3L11.5 15.1L11.4 15L10.6 13.8L11.2 13.3L12.1 14.5L12.1 14.6L12.3 14.7L12.5 14.8L12.8 14.7L13 14.6L13.1 14.4L13.1 14.2L13.1 13.9L13 13.8L12.2 12.6L12.9 12.2L13.7 13.4L13.8 13.5L14 13.6L14.2 13.6L14.4 13.6L14.6 13.5L14.7 13.3L14.8 13L14.7 12.8L14.7 12.7L13.8 11.5L14.5 11L15.3 12.2L15.4 12.3L15.6 12.4L15.8 12.5L16.1 12.4L16.3 12.3L16.4 12.1L16.4 11.9L16.4 11.7L16.3 11.5L15.5 10.4L17.3 9.1L17.4 9L17.5 8.8L17.6 8.6L17.5 8.3L17.4 8.1L17.2 8L16.9 7.9L16.7 8L16.5 8L16.5 8L14.7 9.3L13.9 8.1L13.8 8L13.6 7.9L13.4 7.8L13.2 7.9L13 8L12.9 8.2L12.8 8.4L12.9 8.7L12.9 8.8L13.8 10L13.1 10.4L12.3 9.2L12.2 9.2L12 9L11.8 9L11.5 9L11.4 9.2L11.2 9.4L11.2 9.6L11.2 9.8L11.3 9.9L12.1 11.1L11.5 11.6L10.6 10.4L10.6 10.3L10.4 10.2L10.1 10.1L9.9 10.2L9.7 10.3L9.6 10.5L9.5 10.7L9.6 11L9.6 11.1L10.5 12.3L9.8 12.7L9 11.5L8.9 11.5L8.7 11.3L8.5 11.3L8.3 11.3L8.1 11.5L7.9 11.7L7.9 11.9L7.9 12.1L8 12.2L8.8 13.4L6.7 14.9L6.6 15L6.5 15.2Z",
+   "cricket": "M2.8 18.6L2.8 18.4L2.8 18.1L2.9 17.9L3 17.6L3.1 17.4L3.2 17.2L3.3 17L3.5 16.8L3.6 16.6L3.8 16.5L4 16.3L4.2 16.2L4.4 16.1L4.6 16L4.9 15.9L5.1 15.8L5.4 15.8L5.6 15.8L5.8 15.8L6.1 15.8L6.3 15.9L6.6 16L6.8 16.1L7 16.2L7.2 16.3L7.4 16.5L7.6 16.6L7.7 16.8L7.9 17L8 17.2L8.1 17.4L8.2 17.6L8.3 17.9L8.4 18.1L8.4 18.4L8.4 18.6L8.4 18.8L8.4 19.1L8.3 19.3L8.2 19.6L8.1 19.8L8 20L7.9 20.2L7.7 20.4L7.6 20.6L7.4 20.7L7.2 20.9L7 21L6.8 21.1L6.6 21.2L6.3 21.3L6.1 21.4L5.8 21.4L5.6 21.4L5.4 21.4L5.1 21.4L4.9 21.3L4.6 21.2L4.4 21.1L4.2 21L4 20.9L3.8 20.7L3.6 20.6L3.5 20.4L3.3 20.2L3.2 20L3.1 19.8L3 19.6L2.9 19.3L2.8 19.1L2.8 18.8ZM5.7 3.4L7.2 2.5L10.7 8.1L10.9 8L11.1 7.9L11.3 7.9L11.5 7.8L11.7 7.8L11.9 7.9L12.1 7.9L12.3 8L12.5 8.1L12.7 8.3L12.8 8.4L12.9 8.6L18.7 17.7L18.8 17.9L18.8 18.1L18.9 18.3L18.9 18.5L18.9 18.7L18.9 19L18.8 19.2L18.7 19.3L18.6 19.5L18.5 19.7L18.3 19.8L18.1 20L16.6 20.9L16.4 21L16.2 21.1L16 21.1L15.8 21.1L15.6 21.1L15.4 21.1L15.2 21L15 21L14.8 20.9L14.7 20.7L14.5 20.6L14.4 20.4L8.7 11.2L8.6 11.1L8.5 10.9L8.5 10.7L8.5 10.4L8.5 10.2L8.5 10L8.6 9.8L8.6 9.6L8.7 9.5L8.9 9.3L9 9.2L9.2 9Z",
+   "cycling": "M0.9 16L0.9 15.6L1 15.2L1.1 14.8L1.2 14.4L1.3 14.1L1.5 13.7L1.7 13.4L2 13L2.2 12.7L2.5 12.5L2.9 12.2L3.2 12L3.6 11.8L3.9 11.7L4.3 11.6L4.7 11.5L5.1 11.4L5.5 11.4L5.9 11.4L6.3 11.5L6.7 11.6L6.8 11.6L8.5 8.2L8.5 8.2L8.6 8L8.9 7.9L9.2 7.8L14.6 7.8L14.2 5.3L14.2 5.3L14.2 5.2L14.3 4.9L14.4 4.6L14.7 4.5L15 4.4L17.4 4.4L17.7 4.5L18 4.6L18.1 4.9L18.2 5.2L18.1 5.5L18 5.8L17.7 5.9L17.4 6L16 6L16.4 8.4L17.6 11.5L17.7 11.5L18.1 11.4L18.5 11.4L18.9 11.4L19.3 11.5L19.7 11.6L20.1 11.7L20.4 11.8L20.8 12L21.1 12.2L21.5 12.5L21.8 12.7L22 13L22.3 13.4L22.5 13.7L22.7 14.1L22.8 14.4L22.9 14.8L23 15.2L23.1 15.6L23.1 16L23.1 16.4L23 16.8L22.9 17.2L22.8 17.6L22.7 17.9L22.5 18.3L22.3 18.6L22 19L21.8 19.3L21.5 19.5L21.1 19.8L20.8 20L20.4 20.2L20.1 20.3L19.7 20.4L19.3 20.5L18.9 20.6L18.5 20.6L18.1 20.6L17.7 20.5L17.3 20.4L16.9 20.3L16.6 20.2L16.2 20L15.9 19.8L15.5 19.5L15.2 19.3L15 19L14.7 18.6L14.5 18.3L14.3 17.9L14.2 17.6L14.1 17.2L14 16.8L13.9 16.4L13.9 16L13.9 15.6L14 15.2L14.1 14.8L14.2 14.4L14.3 14.1L14.5 13.7L14.7 13.4L15 13L15.2 12.7L15.5 12.5L15.9 12.2L16.1 12.1L15.5 10.6L12.7 16.3L12.7 16.3L12.6 16.6L12.3 16.7L12 16.8L11.7 16.7L11.4 16.6L11.3 16.3L11.3 16.3L9.1 10.6L8.2 12.3L8.5 12.5L8.8 12.7L9 13L9.3 13.4L9.5 13.7L9.7 14.1L9.8 14.4L9.9 14.8L10 15.2L10.1 15.6L10.1 16L10.1 16.4L10 16.8L9.9 17.2L9.8 17.6L9.7 17.9L9.5 18.3L9.3 18.6L9 19L8.8 19.3L8.5 19.5L8.1 19.8L7.8 20L7.4 20.2L7.1 20.3L6.7 20.4L6.3 20.5L5.9 20.6L5.5 20.6L5.1 20.6L4.7 20.5L4.3 20.4L3.9 20.3L3.6 20.2L3.2 20L2.9 19.8L2.5 19.5L2.2 19.3L2 19L1.7 18.6L1.5 18.3L1.3 17.9L1.2 17.6L1.1 17.2L1 16.8L0.9 16.4ZM2.5 16L2.5 16.3L2.5 16.5L2.6 16.8L2.7 17L2.8 17.3L2.9 17.5L3 17.7L3.2 17.9L3.4 18.1L3.6 18.3L3.8 18.5L4 18.6L4.2 18.7L4.5 18.8L4.7 18.9L5 19L5.2 19L5.5 19L5.8 19L6 19L6.3 18.9L6.5 18.8L6.8 18.7L7 18.6L7.2 18.5L7.4 18.3L7.6 18.1L7.8 17.9L8 17.7L8.1 17.5L8.2 17.3L8.3 17L8.4 16.8L8.5 16.5L8.5 16.3L8.5 16L8.5 15.7L8.5 15.5L8.4 15.2L8.3 15L8.2 14.7L8.1 14.5L8 14.3L7.8 14.1L7.6 13.9L7.5 13.8L6.2 16.4L6.2 16.4L6.1 16.6L5.8 16.7L5.5 16.8L5.2 16.7L4.9 16.6L4.8 16.3L4.7 16L4.8 15.7L4.8 15.6L6.1 13.1L5.8 13L5.5 13L5.2 13L5 13L4.7 13.1L4.5 13.2L4.2 13.3L4 13.4L3.8 13.5L3.6 13.7L3.4 13.9L3.2 14.1L3 14.3L2.9 14.5L2.8 14.7L2.7 15L2.6 15.2L2.5 15.5L2.5 15.7ZM10.4 9.4L12.1 14L14.3 9.4ZM15.5 16L15.5 16.3L15.5 16.5L15.6 16.8L15.7 17L15.8 17.3L15.9 17.5L16 17.7L16.2 17.9L16.4 18.1L16.6 18.3L16.8 18.5L17 18.6L17.2 18.7L17.5 18.8L17.7 18.9L18 19L18.2 19L18.5 19L18.8 19L19 19L19.3 18.9L19.5 18.8L19.8 18.7L20 18.6L20.2 18.5L20.4 18.3L20.6 18.1L20.8 17.9L21 17.7L21.1 17.5L21.2 17.3L21.3 17L21.4 16.8L21.5 16.5L21.5 16.3L21.5 16L21.5 15.7L21.5 15.5L21.4 15.2L21.3 15L21.2 14.7L21.1 14.5L21 14.3L20.8 14.1L20.6 13.9L20.4 13.7L20.2 13.5L20 13.4L19.8 13.3L19.5 13.2L19.3 13.1L19 13L18.8 13L18.5 13L18.2 13L19.2 15.7L19.3 16L19.2 16.3L19.1 16.6L18.8 16.7L18.5 16.8L18.2 16.7L17.9 16.6L17.8 16.3L17.8 16.3L16.7 13.6L16.6 13.7L16.4 13.9L16.2 14.1L16 14.3L15.9 14.5L15.8 14.7L15.7 15L15.6 15.2L15.5 15.5L15.5 15.7ZM6.8 6.2L6.9 5.9L7 5.6L7.3 5.5L7.6 5.4L11 5.4L11.3 5.5L11.6 5.6L11.7 5.9L11.8 6.2L11.7 6.5L11.6 6.8L11.3 6.9L11 7L7.6 7L7.3 6.9L7 6.8L6.9 6.5Z",
+   "swimming": "M0.6 16L0.7 15.7L1 15.4L1.3 15.3L1.7 15.3L2 15.4L2.5 15.7L3 16L3.4 16.2L3.8 16.3L4.1 16.4L4.5 16.3L4.8 16.2L5.3 16L5.7 15.7L6.8 15.1L7.4 14.7L8 14.4L8.7 14.2L9.4 14.2L10.1 14.2L10.8 14.4L11.4 14.7L12 15.1L13 15.7L13.5 16L13.9 16.2L14.3 16.3L14.6 16.4L15 16.3L15.3 16.2L15.8 16L16.2 15.7L17.3 15.1L17.9 14.7L18.5 14.4L19.2 14.2L19.9 14.2L20.6 14.2L21.3 14.4L21.9 14.7L22.5 15.1L23 15.4L23.3 15.7L23.4 16L23.4 16.4L23.3 16.7L23 17L22.7 17.1L22.3 17.1L22 17L21.5 16.7L21 16.4L20.6 16.2L20.2 16.1L19.9 16.1L19.5 16.1L19.2 16.2L18.7 16.4L18.3 16.7L17.2 17.3L16.6 17.7L16 18L15.3 18.2L14.6 18.3L13.9 18.2L13.2 18L12.6 17.7L12 17.3L11 16.7L10.5 16.4L10.1 16.2L9.7 16.1L9.4 16.1L9 16.1L8.7 16.2L8.2 16.4L7.8 16.7L6.7 17.3L6.1 17.7L5.5 18L4.8 18.2L4.1 18.3L3.4 18.2L2.7 18L2.1 17.7L1.5 17.3L1 17L0.7 16.7L0.6 16.4ZM0.6 20.6L0.7 20.3L1 20L1.3 19.9L1.7 19.9L2 20L2.5 20.3L3 20.6L3.4 20.8L3.8 20.9L4.1 21L4.5 20.9L4.8 20.8L5.3 20.6L5.7 20.3L6.8 19.7L7.4 19.3L8 19L8.7 18.8L9.4 18.8L10.1 18.8L10.8 19L11.4 19.3L12 19.7L13 20.3L13.5 20.6L13.9 20.8L14.3 20.9L14.6 21L15 20.9L15.3 20.8L15.8 20.6L16.2 20.3L17.3 19.7L17.9 19.3L18.5 19L19.2 18.8L19.9 18.8L20.6 18.8L21.3 19L21.9 19.3L22.5 19.7L23 20L23.3 20.3L23.4 20.6L23.4 21L23.3 21.3L23 21.6L22.7 21.7L22.3 21.7L22 21.6L21.5 21.3L21 21L20.6 20.8L20.2 20.7L19.9 20.7L19.5 20.7L19.2 20.8L18.7 21L18.3 21.3L17.2 21.9L16.6 22.3L16 22.6L15.3 22.8L14.6 22.9L13.9 22.8L13.2 22.6L12.6 22.3L12 21.9L11 21.3L10.5 21L10.1 20.8L9.7 20.7L9.4 20.7L9 20.7L8.7 20.8L8.2 21L7.8 21.3L6.7 21.9L6.1 22.3L5.5 22.6L4.8 22.8L4.1 22.9L3.4 22.8L2.7 22.6L2.1 22.3L1.5 21.9L1 21.6L0.7 21.3L0.6 21ZM2.2 12.4L2.3 12L2.4 11.8L2.4 11.8L7.6 5.6L7.7 5.5L8 5.3L8.4 5.2L8.8 5.3L9.1 5.5L9.1 5.4L14.1 9.8L14.1 9.9L14.3 10.2L14.4 10.6L14.3 11L14.1 11.3L13.8 11.5L13.4 11.6L13 11.5L12.7 11.3L12.7 11.4L8.5 7.6L4 13L3.9 13.1L3.6 13.3L3.2 13.4L2.8 13.3L2.5 13.1L2.3 12.8ZM14.1 9L14.1 8.8L14.1 8.5L14.2 8.3L14.3 8.1L14.4 7.9L14.5 7.7L14.6 7.5L14.7 7.3L14.9 7.1L15.1 6.9L15.3 6.8L15.5 6.7L15.7 6.6L15.9 6.5L16.1 6.4L16.3 6.3L16.6 6.3L16.8 6.3L17 6.3L17.3 6.3L17.5 6.4L17.7 6.5L17.9 6.6L18.2 6.7L18.3 6.8L18.5 6.9L18.7 7.1L18.9 7.3L19 7.5L19.1 7.7L19.2 7.9L19.3 8.1L19.4 8.3L19.5 8.5L19.5 8.8L19.5 9L19.5 9.2L19.5 9.5L19.4 9.7L19.3 9.9L19.2 10.1L19.1 10.4L19 10.5L18.9 10.7L18.7 10.9L18.5 11.1L18.3 11.2L18.2 11.3L17.9 11.4L17.7 11.5L17.5 11.6L17.3 11.7L17 11.7L16.8 11.7L16.6 11.7L16.3 11.7L16.1 11.6L15.9 11.5L15.7 11.4L15.5 11.3L15.3 11.2L15.1 11.1L14.9 10.9L14.7 10.7L14.6 10.5L14.5 10.4L14.4 10.1L14.3 9.9L14.2 9.7L14.1 9.5L14.1 9.2Z",
+   "climbing": "M4.6 16.2L4.6 15.4L4.7 14.6L4.9 13.9L7.8 6L8.1 5.3L8.5 4.6L9 4L9.6 3.5L10.2 3L10.9 2.6L11.6 2.3L12.4 2.1L13.2 2.1L14 2.1L14.7 2.2L15.5 2.4L16.2 2.7L16.9 3.1L17.5 3.6L18 4.2L18.5 4.8L18.9 5.5L19.2 6.2L19.3 7L19.4 7.8L19.4 8.6L19.3 9.4L19.1 10.1L18.7 11.2L18.1 11L15.1 15.1L15.1 15.1L14.8 15.3L14.6 15.3L14.3 15.3L14.1 15.1L13.9 14.9L13.9 14.7L13.9 14.4L14 14.2L14 14.2L16.8 10.5L16.4 10.4L16.8 9.3L17 8.8L17 8.4L17 7.9L17 7.4L16.9 7L16.7 6.5L16.5 6.1L16.2 5.7L15.9 5.4L15.5 5.1L15.1 4.9L14.7 4.7L14.2 4.5L13.8 4.5L13.3 4.5L12.8 4.5L12.4 4.6L11.9 4.8L11.5 5L11.1 5.3L10.8 5.6L10.5 6L10.2 6.4L10.1 6.8L7.2 14.7L7 15.2L7 15.6L7 16.1L7 16.6L7.1 17L7.3 17.5L7.5 17.9L7.8 18.3L8.1 18.6L8.5 18.9L8.9 19.1L9.3 19.3L9.8 19.5L10.2 19.5L10.7 19.5L11.2 19.5L11.6 19.4L12.1 19.2L12.5 19L12.9 18.7L13.2 18.4L13.5 18L13.8 17.6L13.9 17.2L14.6 15.5L16.8 16.3L16.2 18L15.9 18.7L15.5 19.4L15 20L14.4 20.5L13.8 21L13.1 21.4L12.4 21.7L11.6 21.9L10.8 21.9L10 21.9L9.3 21.8L8.5 21.6L7.8 21.3L7.1 20.9L6.5 20.4L6 19.8L5.5 19.2L5.1 18.5L4.8 17.8L4.7 17Z",
+   "combat": "M3.2 10.4L3.2 10L3.3 9.6L3.4 9.3L3.6 8.9L3.8 8.6L4.1 8.3L4.4 8L4.7 7.8L5.1 7.6L5.4 7.5L5.8 7.4L6.2 7.4L6.5 7.4L6.5 7L6.5 6.3L6.7 5.7L6.9 5L7.2 4.4L7.6 3.8L8 3.3L8.5 2.9L9.1 2.5L9.7 2.2L10.4 2L11 1.8L11.7 1.8L14.3 1.8L15 1.8L15.6 2L16.3 2.2L16.9 2.5L17.5 2.9L18 3.3L18.4 3.8L18.8 4.4L19.1 5L19.3 5.7L19.5 6.3L19.5 7L19.5 9.2L19.5 9.9L19.3 10.5L19.1 11.2L18.8 11.8L18.4 12.4L18 12.9L17.5 13.3L16.9 13.7L16.3 14L15.6 14.2L15 14.4L14.3 14.4L11.7 14.4L11 14.4L10.4 14.2L9.7 14L9.1 13.7L8.8 13.5L8.6 13.8L8.3 14.1L8 14.4L7.7 14.6L7.3 14.8L7 14.9L6.6 15L6.2 15L5.8 15L5.4 14.9L5.1 14.8L4.7 14.6L4.4 14.4L4.1 14.1L3.8 13.8L3.6 13.5L3.4 13.1L3.3 12.8L3.2 12.4L3.2 12ZM7.4 17.4L7.4 17.2L7.4 17L7.5 16.9L7.6 16.7L7.7 16.5L7.8 16.4L7.9 16.3L8.1 16.2L8.3 16.1L8.4 16L8.6 16L8.8 16L16.8 16L17 16L17.2 16L17.3 16.1L17.5 16.2L17.7 16.3L17.8 16.4L17.9 16.5L18 16.7L18.1 16.9L18.2 17L18.2 17.2L18.2 17.4L18.2 20.8L18.2 21L18.2 21.2L18.1 21.3L18 21.5L17.9 21.7L17.8 21.8L17.7 21.9L17.5 22L17.3 22.1L17.2 22.2L17 22.2L16.8 22.2L8.8 22.2L8.6 22.2L8.4 22.2L8.3 22.1L8.1 22L7.9 21.9L7.8 21.8L7.7 21.7L7.6 21.5L7.5 21.3L7.4 21.2L7.4 21L7.4 20.8Z",
+   "sport": "M2 11.8L2 11.1L2.2 10.3L2.3 9.4L2.6 8.6L2.9 7.8L3.3 7L3.8 6.3L4.3 5.6L4.9 4.9L5.6 4.3L6.3 3.8L7 3.3L7.8 2.9L8.6 2.6L9.4 2.3L10.3 2.2L11.1 2L12 2L12.9 2L13.7 2.2L14.6 2.3L15.4 2.6L16.2 2.9L17 3.3L17.7 3.8L18.4 4.3L19.1 4.9L19.7 5.6L20.2 6.3L20.7 7L21.1 7.8L21.4 8.6L21.7 9.4L21.8 10.3L22 11.1L22 11.8L21.8 11.6L21.2 11.3L20.6 11.1L20 10.8L19.5 10.6L18.9 10.4L18.3 10.2L17.6 10L17 9.8L16.4 9.7L15.8 9.5L15.2 9.4L14.5 9.4L13.9 9.3L13.3 9.2L12.6 9.2L12 9.2L11.4 9.2L10.7 9.2L10.1 9.3L9.5 9.4L8.8 9.4L8.2 9.5L7.6 9.7L7 9.8L6.4 10L5.7 10.2L5.1 10.4L4.5 10.6L4 10.8L3.4 11.1L2.8 11.3L2.2 11.6ZM2.1 13.5L2.5 13.3L3 13L3.5 12.8L4 12.5L4.6 12.3L5.1 12.1L5.7 11.9L6.2 11.7L6.8 11.5L7.4 11.4L7.9 11.2L8.5 11.1L9.1 11L9.7 10.9L10.2 10.9L10.8 10.8L11.4 10.8L12 10.8L12.6 10.8L13.2 10.8L13.8 10.9L14.3 10.9L14.9 11L15.5 11.1L16.1 11.2L16.6 11.4L17.2 11.5L17.8 11.7L18.3 11.9L18.9 12.1L19.4 12.3L20 12.5L20.5 12.8L21 13L21.5 13.3L21.9 13.5L21.8 13.7L21.7 14.6L21.4 15.4L21.1 16.2L20.7 17L20.2 17.7L19.7 18.4L19.1 19.1L18.4 19.7L17.7 20.2L17 20.7L16.2 21.1L15.4 21.4L14.6 21.7L13.7 21.8L12.9 22L12 22L11.1 22L10.3 21.8L9.4 21.7L8.6 21.4L7.8 21.1L7 20.7L6.3 20.2L5.6 19.7L4.9 19.1L4.3 18.4L3.8 17.7L3.3 17L2.9 16.2L2.6 15.4L2.3 14.6L2.2 13.7Z"
   },
   "DELOAD_CUT": 0.5,
   "SCORE_PLACEHOLDER_SVG": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\"><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"22\"/><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"/><line x1=\"4.5\" y1=\"4.5\" x2=\"19.5\" y2=\"19.5\"/><line x1=\"19.5\" y1=\"4.5\" x2=\"4.5\" y2=\"19.5\"/></svg>",
@@ -3495,7 +3508,11 @@
   "SPORTS": {
    "golf": {
     "label": "Golf",
-    "dayTitle": "Golf round",
+    "gameWord": "Round",
+    "gameTitle": "Golf round",
+    "sessionTitle": "Golf practice",
+    "heavyLegsClearDays": 1,
+    "heavyUpperClearDays": 0,
     "sequences": {
      "off": [
       "strength",
@@ -3505,14 +3522,18 @@
       "inseason"
      ]
     },
-    "rotational": [
+    "power": [
      "med_ball_rotational_throw",
      "cable_woodchop",
      "step_behind_rotational_throw",
      "landmine_rotation",
      "cable_lift"
     ],
-    "beforeRound": [
+    "prehab": [
+     "hip_airplane"
+    ],
+    "seasonNote": "Off-season builds strength, then power; in-season keeps it to two short, heavy lifts a week.",
+    "beforeSession": [
      {
       "name": "Brisk walk or easy jog",
       "area": "",
@@ -3563,7 +3584,7 @@
       "doseText": "10"
      }
     ],
-    "afterRound": [
+    "afterSession": [
      {
       "name": "90/90 lift-offs, lead hip",
       "area": "hips",
@@ -3610,8 +3631,1645 @@
       "holdSeconds": 45
      }
     ]
+   },
+   "soccer": {
+    "label": "Soccer",
+    "gameWord": "Match",
+    "gameTitle": "Soccer match",
+    "sessionTitle": "Soccer training",
+    "heavyLegsClearDays": 2,
+    "heavyUpperClearDays": 0,
+    "sequences": {
+     "off": [
+      "muscle",
+      "strength",
+      "power"
+     ],
+     "in": [
+      "inseason"
+     ]
+    },
+    "power": [
+     "sprint_acceleration",
+     "lateral_bound",
+     "trap_bar_jump",
+     "change_of_direction_sprint",
+     "single_leg_bound",
+     "flying_sprint",
+     "depth_jump",
+     "resisted_sprint",
+     "broad_jump"
+    ],
+    "prehab": [
+     "nordic_curl",
+     "copenhagen_plank",
+     "single_leg_drop_landing",
+     "single_leg_balance",
+     "single_leg_rdl",
+     "back_extension",
+     "single_leg_calf_raise",
+     "side_plank"
+    ],
+    "seasonNote": "Off-season builds muscle, then strength, then jump-and-sprint power; in-season drops to two short heavy lifts a week, keeps the Nordics and Copenhagens going, and keeps heavy legs at least two days clear of a match.",
+    "beforeSession": [
+     {
+      "name": "Easy jog, building to three-quarter pace",
+      "area": "",
+      "sets": 1,
+      "reps": 1,
+      "doseText": "2–3 min"
+     },
+     {
+      "name": "Jogging hip out and hip in (open and close the gate)",
+      "area": "hips",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each side"
+     },
+     {
+      "name": "Leg swings, front-to-back and side-to-side",
+      "area": "hamstrings",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way, each leg"
+     },
+     {
+      "name": "Walking lunge with overhead reach",
+      "area": "quads_knees",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 each leg"
+     },
+     {
+      "name": "Walking hamstring sweeps",
+      "area": "hamstrings",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 each leg"
+     },
+     {
+      "name": "Lateral shuffle and carioca",
+      "area": "adductors",
+      "sets": 2,
+      "reps": 1,
+      "doseText": "15 m each direction"
+     },
+     {
+      "name": "Pogo hops",
+      "area": "calves",
+      "sets": 2,
+      "reps": 15
+     },
+     {
+      "name": "Build-up runs to near full speed, finishing with a cut",
+      "area": "",
+      "sets": 1,
+      "reps": 4,
+      "doseText": "4 × 30 m, 60% → 90% pace"
+     }
+    ],
+    "afterSession": [
+     {
+      "name": "Supine hamstring stretch with a strap",
+      "area": "hamstrings",
+      "sets": 2,
+      "holdSeconds": 40,
+      "doseText": "each leg"
+     },
+     {
+      "name": "Half-kneeling hip flexor stretch",
+      "area": "hips",
+      "sets": 2,
+      "holdSeconds": 40,
+      "doseText": "each side"
+     },
+     {
+      "name": "Couch stretch",
+      "area": "quads_knees",
+      "sets": 1,
+      "holdSeconds": 45,
+      "doseText": "each side"
+     },
+     {
+      "name": "Wide-stance side lunge hold",
+      "area": "adductors",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "each side"
+     },
+     {
+      "name": "Figure-4 glute stretch",
+      "area": "glutes",
+      "sets": 1,
+      "holdSeconds": 40,
+      "doseText": "each side"
+     },
+     {
+      "name": "Wall calf stretch, straight then bent knee",
+      "area": "calves",
+      "sets": 1,
+      "holdSeconds": 30,
+      "doseText": "30 s each position, each leg"
+     },
+     {
+      "name": "90/90 hip switches",
+      "area": "hips",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 each side"
+     }
+    ]
+   },
+   "basketball": {
+    "label": "Basketball",
+    "gameWord": "Game",
+    "gameTitle": "Basketball game",
+    "sessionTitle": "Basketball training",
+    "heavyLegsClearDays": 2,
+    "heavyUpperClearDays": 0,
+    "sequences": {
+     "off": [
+      "muscle",
+      "strength",
+      "power"
+     ],
+     "in": [
+      "inseason"
+     ]
+    },
+    "power": [
+     "trap_bar_jump",
+     "depth_jump",
+     "lateral_bound",
+     "single_leg_box_jump",
+     "pro_agility_shuttle",
+     "hurdle_hop",
+     "box_jump",
+     "single_leg_pogo",
+     "sprint_acceleration"
+    ],
+    "prehab": [
+     "single_leg_balance",
+     "single_leg_drop_landing",
+     "spanish_squat",
+     "single_leg_calf_raise",
+     "nordic_curl",
+     "single_leg_decline_squat"
+    ],
+    "seasonNote": "Off-season builds muscle, then strength, then jump and cutting power; in-season drops to two short heavy lifts a week, keeps heavy legs two days clear of games, and keeps the ankle, landing and tendon work going because practice already supplies plenty of jumping.",
+    "beforeSession": [
+     {
+      "name": "Easy jog into forward and backward skips",
+      "area": "",
+      "sets": 1,
+      "reps": 4,
+      "doseText": "4 court lengths"
+     },
+     {
+      "name": "Leg swings, front-to-back and side-to-side",
+      "area": "hamstrings",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way, each leg"
+     },
+     {
+      "name": "Lateral shuffle and carioca",
+      "area": "hips",
+      "sets": 1,
+      "reps": 4,
+      "doseText": "2 court widths each way"
+     },
+     {
+      "name": "Walking lunge with rotation",
+      "area": "hips",
+      "sets": 1,
+      "reps": 6,
+      "doseText": "6 each side"
+     },
+     {
+      "name": "World's greatest stretch",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 5,
+      "doseText": "5 each side"
+     },
+     {
+      "name": "Pogo hops",
+      "area": "ankles",
+      "sets": 2,
+      "reps": 15
+     },
+     {
+      "name": "Jump-and-stick build-up",
+      "area": "quads_knees",
+      "sets": 1,
+      "reps": 6,
+      "doseText": "3 two-foot jumps, then 3 single-leg hops each leg, holding each landing"
+     },
+     {
+      "name": "Build-up sprints with a cut",
+      "area": "",
+      "sets": 1,
+      "reps": 3,
+      "doseText": "3 half-court runs to about 90%"
+     }
+    ],
+    "afterSession": [
+     {
+      "name": "Wall calf stretch, knee straight then bent",
+      "area": "calves",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "30 s each position, each leg"
+     },
+     {
+      "name": "Knee-to-wall ankle rocks",
+      "area": "ankles",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each side"
+     },
+     {
+      "name": "Couch stretch",
+      "area": "quads_knees",
+      "sets": 2,
+      "holdSeconds": 45,
+      "doseText": "each side"
+     },
+     {
+      "name": "Supine hamstring stretch with a strap",
+      "area": "hamstrings",
+      "sets": 2,
+      "holdSeconds": 45,
+      "doseText": "each side"
+     },
+     {
+      "name": "Figure-four glute stretch",
+      "area": "glutes",
+      "sets": 2,
+      "holdSeconds": 45,
+      "doseText": "each side"
+     },
+     {
+      "name": "Adductor rock-back",
+      "area": "adductors",
+      "sets": 1,
+      "reps": 10
+     },
+     {
+      "name": "Open-book thoracic rotation",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 each side"
+     }
+    ]
+   },
+   "tennis": {
+    "label": "Tennis",
+    "gameWord": "Match",
+    "gameTitle": "Tennis match",
+    "sessionTitle": "Tennis practice",
+    "heavyLegsClearDays": 1,
+    "heavyUpperClearDays": 1,
+    "sequences": {
+     "off": [
+      "muscle",
+      "strength",
+      "power"
+     ],
+     "in": [
+      "inseason"
+     ]
+    },
+    "power": [
+     "med_ball_rotational_throw",
+     "lateral_bound",
+     "med_ball_overhead_throw",
+     "step_behind_rotational_throw",
+     "pro_agility_shuttle",
+     "landmine_rotation",
+     "trap_bar_jump",
+     "pogos",
+     "sprint_acceleration"
+    ],
+    "prehab": [
+     "ninety_ninety_external_rotation",
+     "eccentric_wrist_extension",
+     "single_leg_balance",
+     "prone_ytw_raise",
+     "side_plank",
+     "copenhagen_plank",
+     "single_leg_calf_raise",
+     "forearm_pronation_supination",
+     "band_external_rotation",
+     "pallof_press"
+    ],
+    "seasonNote": "Off-season builds strength and then rotational and lateral power for serves, groundstrokes and court coverage; in-season and tournament weeks keep two short lifts with heavy legs and heavy pressing a day clear of matches, and the shoulder and elbow work never stops.",
+    "beforeSession": [
+     {
+      "name": "Easy jog and skipping with arm circles",
+      "area": "",
+      "sets": 1,
+      "reps": 4,
+      "doseText": "4 court widths"
+     },
+     {
+      "name": "Leg swings, front-to-back and side-to-side",
+      "area": "hamstrings",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way, each leg"
+     },
+     {
+      "name": "Lateral shuffle and carioca",
+      "area": "hips",
+      "sets": 1,
+      "reps": 4,
+      "doseText": "2 court widths each way"
+     },
+     {
+      "name": "Walking lunge with rotation",
+      "area": "hips",
+      "sets": 1,
+      "reps": 6,
+      "doseText": "6 each side"
+     },
+     {
+      "name": "Band pull-aparts and external rotations",
+      "area": "shoulders",
+      "sets": 1,
+      "reps": 15
+     },
+     {
+      "name": "Trunk rotations, arms loose, building speed",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way"
+     },
+     {
+      "name": "Wrist circles and forearm turns",
+      "area": "forearms",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way"
+     },
+     {
+      "name": "Split-step into first-step sprint",
+      "area": "ankles",
+      "sets": 1,
+      "reps": 6,
+      "doseText": "6 reps, alternating sides"
+     }
+    ],
+    "afterSession": [
+     {
+      "name": "Cross-body shoulder stretch",
+      "area": "shoulders",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "each side, longer on the hitting arm"
+     },
+     {
+      "name": "Sleeper stretch, gentle",
+      "area": "shoulders",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "hitting arm; ease off if the front of the shoulder pinches"
+     },
+     {
+      "name": "Wrist extensor stretch",
+      "area": "forearms",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "each side"
+     },
+     {
+      "name": "Couch stretch",
+      "area": "quads_knees",
+      "sets": 2,
+      "holdSeconds": 45,
+      "doseText": "each side"
+     },
+     {
+      "name": "Wall calf stretch, knee straight then bent",
+      "area": "calves",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "30 s each position, each leg"
+     },
+     {
+      "name": "Adductor rock-back",
+      "area": "adductors",
+      "sets": 1,
+      "reps": 10
+     },
+     {
+      "name": "Open-book thoracic rotation",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 each side"
+     },
+     {
+      "name": "Figure-four glute stretch",
+      "area": "glutes",
+      "sets": 2,
+      "holdSeconds": 45,
+      "doseText": "each side"
+     }
+    ]
+   },
+   "cricket": {
+    "label": "Cricket",
+    "gameWord": "Match",
+    "gameTitle": "Cricket match",
+    "sessionTitle": "Cricket training",
+    "heavyLegsClearDays": 2,
+    "heavyUpperClearDays": 0,
+    "sequences": {
+     "off": [
+      "muscle",
+      "strength",
+      "power"
+     ],
+     "in": [
+      "inseason"
+     ]
+    },
+    "power": [
+     "med_ball_rotational_throw",
+     "countermovement_jump",
+     "sprint_acceleration",
+     "step_behind_rotational_throw",
+     "single_leg_bound",
+     "med_ball_overhead_slam",
+     "trap_bar_jump",
+     "landmine_rotation"
+    ],
+    "prehab": [
+     "nordic_curl",
+     "side_plank",
+     "ninety_ninety_external_rotation",
+     "cable_woodchop",
+     "copenhagen_plank",
+     "bird_dog",
+     "prone_ytw_raise",
+     "single_leg_drop_landing",
+     "single_leg_rdl"
+    ],
+    "seasonNote": "Pre-season builds muscle, strength and then plyometric and rotational power while bowling volume ramps up gradually. In-season it's two short heavy lifts a week with no heavy legs in the two days before a match, and bowlers should keep their weekly ball count steady instead of letting it spike.",
+    "beforeSession": [
+     {
+      "name": "Easy jog",
+      "area": "",
+      "sets": 1,
+      "holdSeconds": 180,
+      "doseText": "3 minutes, easy"
+     },
+     {
+      "name": "Leg swings, front-to-back and side-to-side",
+      "area": "hamstrings",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way"
+     },
+     {
+      "name": "Inchworm walkouts",
+      "area": "hamstrings",
+      "sets": 1,
+      "reps": 6
+     },
+     {
+      "name": "Walking lunge with rotation over the front leg",
+      "area": "hips",
+      "sets": 1,
+      "reps": 6,
+      "doseText": "6 each side"
+     },
+     {
+      "name": "Standing trunk rotations and side bends",
+      "area": "core",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each side"
+     },
+     {
+      "name": "Arm circles into windmills",
+      "area": "shoulders",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way"
+     },
+     {
+      "name": "Band pull-aparts",
+      "area": "shoulders",
+      "sets": 1,
+      "reps": 15
+     },
+     {
+      "name": "Build-up strides",
+      "area": "hamstrings",
+      "sets": 1,
+      "reps": 3,
+      "doseText": "3 × 30 m, building from 70% to 90%"
+     }
+    ],
+    "afterSession": [
+     {
+      "name": "Supine hamstring stretch with strap",
+      "area": "hamstrings",
+      "sets": 2,
+      "holdSeconds": 45,
+      "doseText": "each side"
+     },
+     {
+      "name": "Couch stretch",
+      "area": "quads_knees",
+      "sets": 2,
+      "holdSeconds": 45,
+      "doseText": "each side"
+     },
+     {
+      "name": "Sleeper stretch, throwing/bowling arm",
+      "area": "shoulders",
+      "sets": 2,
+      "holdSeconds": 30
+     },
+     {
+      "name": "Cross-body shoulder stretch",
+      "area": "shoulders",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "each side"
+     },
+     {
+      "name": "Standing side-bend stretch with overhead reach",
+      "area": "core",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "each side"
+     },
+     {
+      "name": "Wall calf stretch",
+      "area": "calves",
+      "sets": 2,
+      "holdSeconds": 45,
+      "doseText": "each side"
+     },
+     {
+      "name": "Child's pose",
+      "area": "lower_back",
+      "sets": 2,
+      "holdSeconds": 45
+     },
+     {
+      "name": "Kneeling adductor rock-back",
+      "area": "adductors",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each side"
+     }
+    ]
+   },
+   "rugby": {
+    "label": "Rugby",
+    "gameWord": "Match",
+    "gameTitle": "Rugby match",
+    "sessionTitle": "Rugby training",
+    "heavyLegsClearDays": 2,
+    "heavyUpperClearDays": 1,
+    "sequences": {
+     "off": [
+      "muscle",
+      "strength",
+      "power"
+     ],
+     "in": [
+      "inseason"
+     ]
+    },
+    "power": [
+     "sprint_acceleration",
+     "hang_clean",
+     "plyo_push_up",
+     "trap_bar_jump",
+     "sled_push",
+     "change_of_direction_sprint",
+     "resisted_sprint",
+     "med_ball_chest_pass",
+     "lateral_bound"
+    ],
+    "prehab": [
+     "neck_isometric_4way",
+     "nordic_curl",
+     "single_leg_drop_landing",
+     "neck_harness_extension",
+     "single_leg_balance",
+     "single_leg_rdl",
+     "neck_flexion",
+     "band_external_rotation"
+    ],
+    "seasonNote": "Off-season builds size and strength first and then turns it into power and contact readiness; in-season keeps two short heavy lifts a week and the neck and Nordic work, with heavy legs two days clear of a match and heavy upper body one day clear.",
+    "beforeSession": [
+     {
+      "name": "Easy jog with arm swings",
+      "area": "",
+      "sets": 1,
+      "reps": 1,
+      "doseText": "2–3 min"
+     },
+     {
+      "name": "Light neck isometrics: forward, back, each side",
+      "area": "neck",
+      "sets": 2,
+      "reps": 4,
+      "doseText": "5 s each direction, about half effort"
+     },
+     {
+      "name": "Leg swings, front-to-back and side-to-side",
+      "area": "hamstrings",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way, each leg"
+     },
+     {
+      "name": "World's greatest stretch (lunge, elbow to instep, rotate)",
+      "area": "hips",
+      "sets": 1,
+      "reps": 5,
+      "doseText": "5 each side"
+     },
+     {
+      "name": "Arm circles and band pull-aparts",
+      "area": "shoulders",
+      "sets": 1,
+      "reps": 15
+     },
+     {
+      "name": "Squat to vertical jump",
+      "area": "quads_knees",
+      "sets": 2,
+      "reps": 5
+     },
+     {
+      "name": "Shuffle, backpedal and plant",
+      "area": "adductors",
+      "sets": 2,
+      "reps": 1,
+      "doseText": "10 m each direction"
+     },
+     {
+      "name": "Build-up runs to near full speed, with a side-step",
+      "area": "",
+      "sets": 1,
+      "reps": 4,
+      "doseText": "4 × 30 m, 60% → 90% pace"
+     }
+    ],
+    "afterSession": [
+     {
+      "name": "Doorway chest stretch",
+      "area": "chest",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "each side"
+     },
+     {
+      "name": "Gentle side neck stretch, hand on head, no pulling",
+      "area": "neck",
+      "sets": 1,
+      "holdSeconds": 30,
+      "doseText": "each side"
+     },
+     {
+      "name": "Supine hamstring stretch with a strap",
+      "area": "hamstrings",
+      "sets": 2,
+      "holdSeconds": 40,
+      "doseText": "each leg"
+     },
+     {
+      "name": "Half-kneeling hip flexor stretch",
+      "area": "hips",
+      "sets": 2,
+      "holdSeconds": 40,
+      "doseText": "each side"
+     },
+     {
+      "name": "Figure-4 glute stretch",
+      "area": "glutes",
+      "sets": 1,
+      "holdSeconds": 40,
+      "doseText": "each side"
+     },
+     {
+      "name": "Side-lying open book",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 each side"
+     },
+     {
+      "name": "Wall calf stretch, straight then bent knee",
+      "area": "calves",
+      "sets": 1,
+      "holdSeconds": 30,
+      "doseText": "30 s each position, each leg"
+     }
+    ]
+   },
+   "afl": {
+    "label": "AFL",
+    "gameWord": "Game",
+    "gameTitle": "AFL game",
+    "sessionTitle": "Footy training",
+    "heavyLegsClearDays": 2,
+    "heavyUpperClearDays": 0,
+    "sequences": {
+     "off": [
+      "muscle",
+      "strength",
+      "engine",
+      "power"
+     ],
+     "in": [
+      "inseason"
+     ]
+    },
+    "power": [
+     "sprint_acceleration",
+     "flying_sprint",
+     "trap_bar_jump",
+     "lateral_bound",
+     "change_of_direction_sprint",
+     "single_leg_box_jump",
+     "single_leg_bound",
+     "hang_clean",
+     "resisted_sprint"
+    ],
+    "prehab": [
+     "nordic_curl",
+     "copenhagen_plank",
+     "single_leg_rdl",
+     "single_leg_drop_landing",
+     "single_leg_calf_raise",
+     "single_leg_balance",
+     "back_extension",
+     "seated_calf_raise"
+    ],
+    "seasonNote": "Pre-season builds muscle, strength and a running engine before sharpening into power; in-season keeps two short heavy lifts a week plus the Nordic, Copenhagen and calf work, with heavy legs at least two days clear of a game.",
+    "beforeSession": [
+     {
+      "name": "Easy jog, building to three-quarter pace",
+      "area": "",
+      "sets": 1,
+      "reps": 1,
+      "doseText": "2–3 min"
+     },
+     {
+      "name": "Jogging hip out and hip in (open and close the gate)",
+      "area": "hips",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each side"
+     },
+     {
+      "name": "Leg swings, front-to-back and side-to-side",
+      "area": "hamstrings",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way, each leg"
+     },
+     {
+      "name": "Walking lunge with a twist over the front leg",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 each leg"
+     },
+     {
+      "name": "Arm circles and big cross-body arm swings",
+      "area": "shoulders",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each direction"
+     },
+     {
+      "name": "Lateral shuffle and carioca",
+      "area": "adductors",
+      "sets": 2,
+      "reps": 1,
+      "doseText": "15 m each direction"
+     },
+     {
+      "name": "Skips for height, then single-leg hop and stick",
+      "area": "calves",
+      "sets": 1,
+      "reps": 6,
+      "doseText": "20 m skips, then 6 hops each leg"
+     },
+     {
+      "name": "Build-up runs to near full speed, with a side-step and a leap-and-land",
+      "area": "",
+      "sets": 1,
+      "reps": 4,
+      "doseText": "4 × 40 m, 60% → 90% pace"
+     }
+    ],
+    "afterSession": [
+     {
+      "name": "Supine hamstring stretch with a strap",
+      "area": "hamstrings",
+      "sets": 2,
+      "holdSeconds": 40,
+      "doseText": "each leg"
+     },
+     {
+      "name": "Couch stretch",
+      "area": "quads_knees",
+      "sets": 2,
+      "holdSeconds": 40,
+      "doseText": "each side — the kicking leg's rectus femoris"
+     },
+     {
+      "name": "Half-kneeling hip flexor stretch",
+      "area": "hips",
+      "sets": 1,
+      "holdSeconds": 40,
+      "doseText": "each side"
+     },
+     {
+      "name": "Wide-stance side lunge hold",
+      "area": "adductors",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "each side"
+     },
+     {
+      "name": "Figure-4 glute stretch",
+      "area": "glutes",
+      "sets": 1,
+      "holdSeconds": 40,
+      "doseText": "each side"
+     },
+     {
+      "name": "Bent-knee wall calf stretch (soleus)",
+      "area": "calves",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "each leg"
+     },
+     {
+      "name": "Side-lying open book",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 each side"
+     }
+    ]
+   },
+   "volleyball": {
+    "label": "Volleyball",
+    "gameWord": "Match",
+    "gameTitle": "Volleyball match",
+    "sessionTitle": "Volleyball training",
+    "heavyLegsClearDays": 2,
+    "heavyUpperClearDays": 1,
+    "sequences": {
+     "off": [
+      "muscle",
+      "strength",
+      "power"
+     ],
+     "in": [
+      "inseason"
+     ]
+    },
+    "power": [
+     "trap_bar_jump",
+     "depth_jump",
+     "med_ball_overhead_throw",
+     "box_jump",
+     "lateral_bound",
+     "hurdle_hop",
+     "med_ball_overhead_slam",
+     "single_leg_box_jump",
+     "pogos",
+     "med_ball_rotational_throw"
+    ],
+    "prehab": [
+     "single_leg_balance",
+     "ninety_ninety_external_rotation",
+     "spanish_squat",
+     "prone_ytw_raise",
+     "single_leg_drop_landing",
+     "single_leg_decline_squat",
+     "band_external_rotation",
+     "push_up_plus",
+     "side_plank"
+    ],
+    "seasonNote": "Off-season builds muscle, strength and then jump power; in-season keeps two short heavy lifts a week with heavy legs two days and heavy pressing one day clear of matches, while the shoulder, ankle and patellar-tendon work carries on all year.",
+    "beforeSession": [
+     {
+      "name": "Easy jog with arm circles",
+      "area": "",
+      "sets": 1,
+      "reps": 4,
+      "doseText": "4 court lengths"
+     },
+     {
+      "name": "Leg swings, front-to-back and side-to-side",
+      "area": "hamstrings",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way, each leg"
+     },
+     {
+      "name": "Band pull-aparts and external rotations",
+      "area": "shoulders",
+      "sets": 1,
+      "reps": 15
+     },
+     {
+      "name": "Arm swings, across the body and overhead",
+      "area": "shoulders",
+      "sets": 1,
+      "reps": 10
+     },
+     {
+      "name": "Lateral shuffle with crossover step",
+      "area": "hips",
+      "sets": 1,
+      "reps": 4,
+      "doseText": "2 court widths each way"
+     },
+     {
+      "name": "Walking lunge with overhead reach and rotation",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 6,
+      "doseText": "6 each side"
+     },
+     {
+      "name": "Pogo hops",
+      "area": "ankles",
+      "sets": 2,
+      "reps": 15
+     },
+     {
+      "name": "Progressive two-foot jumps",
+      "area": "quads_knees",
+      "sets": 1,
+      "reps": 6,
+      "doseText": "6 jumps building from half to near-full effort, landing soft"
+     }
+    ],
+    "afterSession": [
+     {
+      "name": "Cross-body shoulder stretch",
+      "area": "shoulders",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "each side"
+     },
+     {
+      "name": "Sleeper stretch, gentle",
+      "area": "shoulders",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "each side; ease off if the front of the shoulder pinches"
+     },
+     {
+      "name": "Doorway pec stretch",
+      "area": "chest",
+      "sets": 2,
+      "holdSeconds": 30
+     },
+     {
+      "name": "Child's pose with side reach",
+      "area": "thoracic",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "each side"
+     },
+     {
+      "name": "Couch stretch",
+      "area": "quads_knees",
+      "sets": 2,
+      "holdSeconds": 45,
+      "doseText": "each side"
+     },
+     {
+      "name": "Wall calf stretch, knee straight then bent",
+      "area": "calves",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "30 s each position, each leg"
+     },
+     {
+      "name": "Open-book thoracic rotation",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 each side"
+     }
+    ]
+   },
+   "combat": {
+    "label": "Combat sports",
+    "gameWord": "Fight",
+    "gameTitle": "Fight / competition",
+    "sessionTitle": "Combat training",
+    "heavyLegsClearDays": 2,
+    "heavyUpperClearDays": 2,
+    "sequences": {
+     "off": [
+      "muscle",
+      "strength",
+      "power",
+      "engine"
+     ],
+     "in": [
+      "inseason"
+     ]
+    },
+    "power": [
+     "med_ball_rotational_throw",
+     "jump_squat",
+     "bench_throw",
+     "hang_clean",
+     "step_behind_rotational_throw",
+     "trap_bar_jump",
+     "plyo_push_up",
+     "med_ball_overhead_slam"
+    ],
+    "prehab": [
+     "neck_isometric_4way",
+     "fingertip_hang",
+     "neck_harness_extension",
+     "band_external_rotation",
+     "copenhagen_plank",
+     "neck_flexion",
+     "prone_ytw_raise",
+     "cossack_squat",
+     "farmers_carry",
+     "back_extension"
+    ],
+    "seasonNote": "Between fight camps the lifting builds muscle, then strength, then power, with a conditioning block last; once a fight is booked it drops to two short heavy sessions a week with nothing heavy in the two days before. If you're cutting weight, keep those sessions short and don't chase PRs.",
+    "beforeSession": [
+     {
+      "name": "Jump rope, easy",
+      "area": "",
+      "sets": 1,
+      "holdSeconds": 120,
+      "doseText": "2 minutes, easy bounce"
+     },
+     {
+      "name": "Slow neck circles and nods",
+      "area": "neck",
+      "sets": 1,
+      "reps": 5,
+      "doseText": "5 slow each way"
+     },
+     {
+      "name": "Arm circles into band pull-aparts",
+      "area": "shoulders",
+      "sets": 1,
+      "reps": 15
+     },
+     {
+      "name": "Quadruped thoracic rotation",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 each side"
+     },
+     {
+      "name": "World's greatest stretch",
+      "area": "hips",
+      "sets": 1,
+      "reps": 5,
+      "doseText": "5 each side"
+     },
+     {
+      "name": "Leg swings, front-to-back and side-to-side",
+      "area": "hamstrings",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way"
+     },
+     {
+      "name": "Cossack shifts",
+      "area": "adductors",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 each side"
+     },
+     {
+      "name": "90/90 hip switches",
+      "area": "hips",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 each side"
+     }
+    ],
+    "afterSession": [
+     {
+      "name": "90/90 hip stretch",
+      "area": "hips",
+      "sets": 2,
+      "holdSeconds": 45,
+      "doseText": "each side"
+     },
+     {
+      "name": "Couch stretch",
+      "area": "quads_knees",
+      "sets": 2,
+      "holdSeconds": 45,
+      "doseText": "each side"
+     },
+     {
+      "name": "Frog or butterfly stretch",
+      "area": "adductors",
+      "sets": 2,
+      "holdSeconds": 45
+     },
+     {
+      "name": "Doorway pec stretch",
+      "area": "chest",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "each side"
+     },
+     {
+      "name": "Child's pose with side reach",
+      "area": "thoracic",
+      "sets": 2,
+      "holdSeconds": 45
+     },
+     {
+      "name": "Supine spinal twist",
+      "area": "lower_back",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "each side"
+     },
+     {
+      "name": "Upper-trap side-bend stretch",
+      "area": "neck",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "each side"
+     },
+     {
+      "name": "Wrist flexor and extensor stretch",
+      "area": "forearms",
+      "sets": 1,
+      "holdSeconds": 30,
+      "doseText": "30 s each way, each arm"
+     }
+    ]
+   },
+   "cycling": {
+    "label": "Cycling",
+    "gameWord": "Race",
+    "gameTitle": "Cycling race",
+    "sessionTitle": "Bike ride",
+    "heavyLegsClearDays": 2,
+    "heavyUpperClearDays": 0,
+    "sequences": {
+     "off": [
+      "muscle",
+      "strength",
+      "power"
+     ],
+     "in": [
+      "inseason"
+     ]
+    },
+    "power": [
+     "single_leg_box_jump",
+     "trap_bar_jump",
+     "countermovement_jump",
+     "jump_squat",
+     "kettlebell_swing",
+     "broad_jump",
+     "pogos"
+    ],
+    "prehab": [
+     "back_extension",
+     "side_plank",
+     "hip_abduction",
+     "bird_dog",
+     "lateral_step_up",
+     "neck_harness_extension"
+    ],
+    "seasonNote": "Off-season builds muscle, then heavy strength, then jump power over about 14 weeks; in season one or two short heavy sessions a week hold that strength (and the time-trial gains) without taking anything from the riding.",
+    "beforeSession": [
+     {
+      "name": "Easy spin, building cadence every minute",
+      "area": "",
+      "sets": 1,
+      "holdSeconds": 300,
+      "doseText": "5 min easy"
+     },
+     {
+      "name": "Leg swings, front-to-back and side-to-side",
+      "area": "hamstrings",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way, each leg"
+     },
+     {
+      "name": "Bodyweight squat to full depth",
+      "area": "quads_knees",
+      "sets": 1,
+      "reps": 10
+     },
+     {
+      "name": "Walking lunge with overhead reach",
+      "area": "hips",
+      "sets": 1,
+      "reps": 6,
+      "doseText": "6 each side"
+     },
+     {
+      "name": "Glute bridge march",
+      "area": "glutes",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 alternating"
+     },
+     {
+      "name": "Cat-cow",
+      "area": "lower_back",
+      "sets": 1,
+      "reps": 8
+     },
+     {
+      "name": "Quadruped thoracic rotation",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 6,
+      "doseText": "6 each side"
+     }
+    ],
+    "afterSession": [
+     {
+      "name": "Couch stretch (hip flexor and quad)",
+      "area": "quads_knees",
+      "sets": 2,
+      "holdSeconds": 45,
+      "doseText": "45 s each side"
+     },
+     {
+      "name": "Supine hamstring stretch with strap",
+      "area": "hamstrings",
+      "sets": 2,
+      "holdSeconds": 45,
+      "doseText": "45 s each side"
+     },
+     {
+      "name": "Figure-4 glute stretch",
+      "area": "glutes",
+      "sets": 2,
+      "holdSeconds": 45,
+      "doseText": "45 s each side"
+     },
+     {
+      "name": "Prone press-up (cobra), hips down",
+      "area": "lower_back",
+      "sets": 1,
+      "reps": 10
+     },
+     {
+      "name": "Thoracic extension over a foam roller",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 slow extensions at 2–3 levels"
+     },
+     {
+      "name": "Doorway pec stretch",
+      "area": "chest",
+      "sets": 2,
+      "holdSeconds": 30
+     },
+     {
+      "name": "Chin tucks",
+      "area": "neck",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 × 3 s hold"
+     },
+     {
+      "name": "Wall calf stretch, knee straight then bent",
+      "area": "calves",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "30 s each position, each side"
+     }
+    ]
+   },
+   "swimming": {
+    "label": "Swimming",
+    "gameWord": "Meet",
+    "gameTitle": "Swim meet",
+    "sessionTitle": "Swim session",
+    "heavyLegsClearDays": 2,
+    "heavyUpperClearDays": 2,
+    "sequences": {
+     "off": [
+      "muscle",
+      "strength",
+      "power"
+     ],
+     "in": [
+      "inseason"
+     ]
+    },
+    "power": [
+     "squat_jump",
+     "countermovement_jump",
+     "broad_jump",
+     "med_ball_overhead_slam",
+     "explosive_pull_up",
+     "box_jump",
+     "med_ball_chest_pass",
+     "pogos"
+    ],
+    "prehab": [
+     "ninety_ninety_external_rotation",
+     "prone_ytw_raise",
+     "push_up_plus",
+     "side_plank",
+     "face_pull",
+     "copenhagen_plank",
+     "bird_dog"
+    ],
+    "seasonNote": "Off-season builds muscle, then heavy strength, then jump-and-throw power for starts and turns; in season two short heavy sessions a week maintain it, and heavy lifting stays two days clear of a meet.",
+    "beforeSession": [
+     {
+      "name": "Arm circles, small to large",
+      "area": "shoulders",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 forwards, 10 backwards"
+     },
+     {
+      "name": "Band pull-aparts",
+      "area": "shoulders",
+      "sets": 1,
+      "reps": 15
+     },
+     {
+      "name": "Light band external rotation at 90° abduction",
+      "area": "shoulders",
+      "sets": 1,
+      "reps": 12,
+      "doseText": "12 each arm, easy band"
+     },
+     {
+      "name": "Scapular push-ups",
+      "area": "shoulders",
+      "sets": 1,
+      "reps": 10
+     },
+     {
+      "name": "Quadruped thoracic rotation",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 6,
+      "doseText": "6 each side"
+     },
+     {
+      "name": "World's greatest stretch",
+      "area": "hips",
+      "sets": 1,
+      "reps": 5,
+      "doseText": "5 each side"
+     },
+     {
+      "name": "Leg swings, front-to-back and side-to-side",
+      "area": "hips",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way, each leg"
+     },
+     {
+      "name": "Countermovement jumps, building to full effort",
+      "area": "quads_knees",
+      "sets": 1,
+      "reps": 5
+     }
+    ],
+    "afterSession": [
+     {
+      "name": "Cross-body posterior shoulder stretch",
+      "area": "shoulders",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "30 s each side"
+     },
+     {
+      "name": "Sleeper stretch (gentle, pain-free)",
+      "area": "shoulders",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "30 s each side"
+     },
+     {
+      "name": "Doorway pec stretch, elbow at shoulder height",
+      "area": "chest",
+      "sets": 2,
+      "holdSeconds": 30
+     },
+     {
+      "name": "Kneeling lat stretch on a bench",
+      "area": "thoracic",
+      "sets": 2,
+      "holdSeconds": 30
+     },
+     {
+      "name": "Thoracic extension over a foam roller",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 slow extensions at 2–3 levels"
+     },
+     {
+      "name": "Half-kneeling hip flexor stretch",
+      "area": "hips",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "30 s each side"
+     },
+     {
+      "name": "Kneeling ankle plantarflexion stretch (sit back on heels)",
+      "area": "ankles",
+      "sets": 1,
+      "holdSeconds": 45
+     },
+     {
+      "name": "Child's pose with side reach",
+      "area": "lower_back",
+      "sets": 1,
+      "holdSeconds": 45
+     }
+    ]
+   },
+   "climbing": {
+    "label": "Climbing",
+    "gameWord": "Trip",
+    "gameTitle": "Climbing trip",
+    "sessionTitle": "Climbing session",
+    "heavyLegsClearDays": 0,
+    "heavyUpperClearDays": 2,
+    "sequences": {
+     "off": [
+      "strength",
+      "power"
+     ],
+     "in": [
+      "inseason"
+     ]
+    },
+    "power": [
+     "hangboard_max_hang",
+     "explosive_pull_up",
+     "med_ball_overhead_slam"
+    ],
+    "prehab": [
+     "ninety_ninety_external_rotation",
+     "push_up_plus",
+     "wrist_curl",
+     "prone_ytw_raise",
+     "push_up",
+     "reverse_wrist_curl",
+     "dumbbell_shoulder_press"
+    ],
+    "seasonNote": "Off-season builds heavy pulling and finger strength then turns it into pulling power; during a trip or project season two short heavy sessions a week hold it, and nothing heavy for the upper body lands in the two days before a climbing trip.",
+    "beforeSession": [
+     {
+      "name": "Arm circles and band pull-aparts",
+      "area": "shoulders",
+      "sets": 1,
+      "reps": 15
+     },
+     {
+      "name": "Scapular pull-ups (shoulder blades only, arms straight)",
+      "area": "shoulders",
+      "sets": 1,
+      "reps": 8
+     },
+     {
+      "name": "Fist-to-wide-spread finger pumps",
+      "area": "forearms",
+      "sets": 1,
+      "reps": 20
+     },
+     {
+      "name": "Wrist circles and palms-together wrist rocks",
+      "area": "forearms",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 each way"
+     },
+     {
+      "name": "Quadruped thoracic rotation",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 6,
+      "doseText": "6 each side"
+     },
+     {
+      "name": "90/90 hip switches",
+      "area": "hips",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 each side"
+     },
+     {
+      "name": "Progressive finger loading: feet-on or big-edge hangs from ~50% to ~80% effort",
+      "area": "forearms",
+      "sets": 1,
+      "reps": 6,
+      "doseText": "6 × 5 s hangs, building effort, then easy climbing on big holds"
+     }
+    ],
+    "afterSession": [
+     {
+      "name": "Forearm flexor stretch (palm forward, fingers straight)",
+      "area": "forearms",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "30 s each arm"
+     },
+     {
+      "name": "Forearm extensor stretch (fist curled, wrist flexed)",
+      "area": "forearms",
+      "sets": 2,
+      "holdSeconds": 30,
+      "doseText": "30 s each arm"
+     },
+     {
+      "name": "Kneeling lat stretch on a bench",
+      "area": "thoracic",
+      "sets": 2,
+      "holdSeconds": 30
+     },
+     {
+      "name": "Doorway pec stretch",
+      "area": "chest",
+      "sets": 2,
+      "holdSeconds": 30
+     },
+     {
+      "name": "Thoracic extension over a foam roller",
+      "area": "thoracic",
+      "sets": 1,
+      "reps": 8,
+      "doseText": "8 slow extensions at 2–3 levels"
+     },
+     {
+      "name": "Frog stretch",
+      "area": "adductors",
+      "sets": 2,
+      "holdSeconds": 45
+     },
+     {
+      "name": "Pigeon or figure-4 hip stretch",
+      "area": "hips",
+      "sets": 2,
+      "holdSeconds": 45,
+      "doseText": "45 s each side"
+     },
+     {
+      "name": "Chin tucks (belayer's neck)",
+      "area": "neck",
+      "sets": 1,
+      "reps": 10,
+      "doseText": "10 × 3 s hold"
+     }
+    ]
    }
   },
+  "SPORT_ORDER": [
+   "golf",
+   "soccer",
+   "basketball",
+   "tennis",
+   "cricket",
+   "rugby",
+   "afl",
+   "volleyball",
+   "combat",
+   "cycling",
+   "swimming",
+   "climbing"
+  ],
   "FINISHER_MIN_SESSION": 45,
   "FINISHER_NOTE": "Hard but smooth. Stop a round early rather than let form go.",
   "FINISHERS": {

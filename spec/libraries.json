@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.21.001",
+ "generatedFrom": "2026.10.21.002",
  "generatedBy": "tools/spec-dump.mjs",
  "libraries": {
   "EXERCISE_LIBRARY": {
@@ -4039,6 +4039,559 @@
     "hypertrophyTier": "B",
     "powerTier": "C",
     "tierEvidence": "low"
+   },
+   "single_leg_balance": {
+    "name": "Single-Leg Balance with Perturbation",
+    "aliases": [
+     "single leg balance",
+     "single-leg balance",
+     "single leg stance",
+     "balance training",
+     "single leg balance ball toss",
+     "wobble board balance",
+     "proprioception drill",
+     "proprioceptive training"
+    ],
+    "category": "bulletproofing",
+    "area": "ankles",
+    "secondaryArea": "hips",
+    "movement": "isolation",
+    "difficulty": "beginner",
+    "equipment": [
+     "bodyweight",
+     "medicine_ball"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "C",
+    "tierEvidence": "moderate",
+    "tierNote": "Stand on one leg with the knee soft and make it hard: eyes closed, catching a ball, a partner's push or a soft pad. Balance programmes cut ankle sprains by about a third (Schiftan et al. 2015, RR 0.65), most clearly in players who have sprained before.",
+    "goalSuitability": {
+     "strength": 0,
+     "hypertrophy": 0,
+     "endurance": 0,
+     "running": 2,
+     "power": 0,
+     "mobility": 1,
+     "calisthenics": 0
+    }
+   },
+   "single_leg_drop_landing": {
+    "name": "Single-Leg Drop Landing",
+    "loadFactor": 1.5,
+    "aliases": [
+     "single leg drop landing",
+     "single-leg drop landing",
+     "drop landing",
+     "drop and stick",
+     "landing drill",
+     "hop and stick",
+     "single leg landing",
+     "stick landing"
+    ],
+    "category": "bulletproofing",
+    "area": "quads_knees",
+    "secondaryArea": "hips",
+    "movement": "squat",
+    "difficulty": "intermediate",
+    "equipment": [
+     "box",
+     "bodyweight"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "B",
+    "tierEvidence": "moderate",
+    "tierNote": "Step off a low box onto one leg and stick it for two seconds: soft knee tracking over the second toe, hips back, no inward collapse. Coached landing and cutting practice is the active ingredient of the neuromuscular programmes that halve ACL injuries (Webster & Hewett 2018 meta-analysis).",
+    "goalSuitability": {
+     "strength": 0,
+     "hypertrophy": 0,
+     "endurance": 0,
+     "running": 2,
+     "power": 1,
+     "mobility": 0,
+     "calisthenics": 0
+    }
+   },
+   "change_of_direction_sprint": {
+    "name": "Change-of-Direction Sprint",
+    "aliases": [
+     "change of direction sprint",
+     "505",
+     "5-0-5",
+     "505 drill",
+     "cutting drill",
+     "cuts",
+     "shuttle cut",
+     "45 degree cut",
+     "deceleration drill",
+     "cod drill",
+     "change of direction"
+    ],
+    "category": "power",
+    "area": "hips",
+    "secondaryArea": "quads_knees",
+    "movement": "isolation",
+    "difficulty": "intermediate",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "moderate",
+    "tierNote": "Sprint 5–10 m, plant, cut 45–180° and re-accelerate, fully rested between reps. Change-of-direction speed is fairly specific to itself (Brughelli et al. 2008), so it is trained directly, and plyometric work adds to it (Asadi et al. 2016 meta-analysis). Practise the low, wide plant step, which also keeps knee load down.",
+    "goalSuitability": {
+     "strength": 0,
+     "hypertrophy": 0,
+     "endurance": 0,
+     "running": 2,
+     "power": 3,
+     "mobility": 0,
+     "calisthenics": 0
+    }
+   },
+   "spanish_squat": {
+    "name": "Spanish Squat Hold",
+    "aliases": [
+     "spanish squat",
+     "spanish squat hold",
+     "isometric spanish squat",
+     "patellar tendon isometric",
+     "isometric squat hold",
+     "isometric leg extension"
+    ],
+    "category": "bulletproofing",
+    "area": "quads_knees",
+    "secondaryArea": "",
+    "movement": "squat",
+    "difficulty": "beginner",
+    "equipment": [
+     "band",
+     "other"
+    ],
+    "evidenceConfidence": "rct",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "C",
+    "tierEvidence": "moderate",
+    "tierNote": "Loop a heavy band behind both knees, keep the shins vertical, sit back to about 60 degrees of knee bend and hold for 30-45 s, five times. Heavy isometric quad holds ease patellar tendon pain within minutes (Rio 2015). In basketball and volleyball players who kept playing, a four-week programme of them cut pain (van Ark 2016), so the tendon can stay loaded through game weeks.",
+    "goalSuitability": {
+     "strength": 1,
+     "hypertrophy": 0,
+     "endurance": 1,
+     "running": 1,
+     "power": 0,
+     "mobility": 0,
+     "calisthenics": 0
+    }
+   },
+   "single_leg_decline_squat": {
+    "name": "Single-Leg Decline Squat",
+    "aliases": [
+     "single leg decline squat",
+     "single-leg decline squat",
+     "decline squat",
+     "decline board squat",
+     "eccentric decline squat",
+     "slant board squat"
+    ],
+    "category": "bulletproofing",
+    "area": "quads_knees",
+    "secondaryArea": "",
+    "movement": "squat",
+    "difficulty": "intermediate",
+    "equipment": [
+     "bodyweight",
+     "plate",
+     "other"
+    ],
+    "evidenceConfidence": "rct",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "C",
+    "tierEvidence": "moderate",
+    "tierNote": "Stand on a 25-degree slant board (or with heels raised on plates), lower slowly on one leg to about 70 degrees of knee bend, and stand up on both legs. Add a loaded backpack when it gets easy. For jumper's knee it did about as well as heavy slow resistance (Kongsgaard 2009) and beat flat step squats in volleyball players (Young 2005). Done mid-season on top of full jumping volume, it did not help (Visnes 2005).",
+    "goalSuitability": {
+     "strength": 1,
+     "hypertrophy": 1,
+     "endurance": 0,
+     "running": 1,
+     "power": 0,
+     "mobility": 0,
+     "calisthenics": 0
+    }
+   },
+   "pro_agility_shuttle": {
+    "name": "Pro-Agility Shuttle (5-10-5)",
+    "aliases": [
+     "pro agility",
+     "pro-agility shuttle",
+     "pro agility shuttle",
+     "5-10-5",
+     "5 10 5 shuttle",
+     "505 drill",
+     "5-0-5",
+     "change of direction sprint",
+     "shuttle sprint"
+    ],
+    "category": "power",
+    "area": "hips",
+    "secondaryArea": "adductors",
+    "movement": "isolation",
+    "difficulty": "intermediate",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "meta_analysis",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "B",
+    "tierEvidence": "moderate",
+    "tierNote": "Sprint 5 m, plant and cut back 10 m, then cut again for the last 5 m. Go all out with full rest between reps. In Falch 2019's meta-analysis, change-of-direction drills and plyometrics improved cutting speed more than plain strength training did. Planting and pushing off is a skill, and it improves fastest when it is practised hard and fresh.",
+    "goalSuitability": {
+     "strength": 0,
+     "hypertrophy": 0,
+     "endurance": 0,
+     "running": 2,
+     "power": 2,
+     "mobility": 0,
+     "calisthenics": 0
+    }
+   },
+   "eccentric_wrist_extension": {
+    "name": "Eccentric Wrist Extension",
+    "aliases": [
+     "eccentric wrist extension",
+     "wrist extension",
+     "reverse wrist curl",
+     "tyler twist",
+     "flexbar twist",
+     "eccentric wrist extensor",
+     "isometric wrist extension",
+     "tennis elbow exercise"
+    ],
+    "category": "bulletproofing",
+    "area": "forearms",
+    "secondaryArea": "",
+    "movement": "isolation",
+    "difficulty": "beginner",
+    "equipment": [
+     "dumbbell",
+     "other"
+    ],
+    "evidenceConfidence": "systematic_review",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "C",
+    "tierEvidence": "moderate",
+    "tierNote": "Rest the forearm on your thigh, palm down. Lift the dumbbell with help from the other hand, then lower it on the working side over 3-4 s. A FlexBar Tyler twist does the same job, and a 30-45 s hold works when the elbow is too sore to move under load. Adding eccentric wrist-extensor work beat standard care for chronic tennis elbow (Tyler 2010), and reviews find loading programmes reduce pain and restore grip (Cullinane 2014). Wrist curls work the flexors instead.",
+    "goalSuitability": {
+     "strength": 1,
+     "hypertrophy": 0,
+     "endurance": 0,
+     "running": 0,
+     "power": 0,
+     "mobility": 0,
+     "calisthenics": 0
+    }
+   },
+   "forearm_pronation_supination": {
+    "name": "Dumbbell Pronation and Supination",
+    "aliases": [
+     "pronation supination",
+     "pronation and supination",
+     "forearm rotation",
+     "dumbbell pronation",
+     "dumbbell supination",
+     "hammer rotation",
+     "forearm pronation",
+     "forearm supination"
+    ],
+    "category": "bulletproofing",
+    "area": "forearms",
+    "secondaryArea": "",
+    "movement": "isolation",
+    "difficulty": "beginner",
+    "equipment": [
+     "dumbbell",
+     "other"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "C",
+    "tierEvidence": "limited",
+    "tierNote": "Rest the forearm on a bench and hold a dumbbell or hammer by one end. Turn the palm slowly down, then slowly up. Topspin and the serve load forearm rotation hard, and tennis-elbow rehab programmes use this alongside wrist-extensor work. The support is expert consensus, not a trial.",
+    "goalSuitability": {
+     "strength": 1,
+     "hypertrophy": 0,
+     "endurance": 0,
+     "running": 0,
+     "power": 0,
+     "mobility": 0,
+     "calisthenics": 0
+    }
+   },
+   "neck_isometric_4way": {
+    "name": "4-Way Neck Isometric",
+    "aliases": [
+     "4 way neck isometric",
+     "4-way neck",
+     "four way neck",
+     "neck isometrics",
+     "neck isometric",
+     "manual neck resistance",
+     "band neck isometric",
+     "neck holds",
+     "activate neck"
+    ],
+    "category": "bulletproofing",
+    "area": "neck",
+    "secondaryArea": "",
+    "movement": "isolation",
+    "difficulty": "beginner",
+    "equipment": [
+     "bodyweight",
+     "band",
+     "partner"
+    ],
+    "evidenceConfidence": "systematic_review",
+    "strengthTier": "B",
+    "hypertrophyTier": "C",
+    "powerTier": "C",
+    "tierEvidence": "limited",
+    "tierNote": "Press the head into your hand, a band or a partner's hand (forward, back, then each side) and hold 10–15 s without letting it move. This is the neck part of World Rugby's Activate (Hislop et al. 2017: 59% fewer concussions at three sessions a week) and the safest way to build neck strength. Whether neck strength alone cuts concussion is still unsettled (Fownes-Walpole et al. 2025).",
+    "goalSuitability": {
+     "strength": 1,
+     "hypertrophy": 0,
+     "endurance": 0,
+     "running": 0,
+     "power": 0,
+     "mobility": 0,
+     "calisthenics": 0
+    }
+   },
+   "ninety_ninety_external_rotation": {
+    "name": "90/90 External Rotation",
+    "aliases": [
+     "90/90 external rotation",
+     "90 90 external rotation",
+     "external rotation at 90",
+     "cable external rotation 90",
+     "band external rotation 90/90",
+     "abducted external rotation",
+     "eccentric external rotation",
+     "90/90 er"
+    ],
+    "category": "bulletproofing",
+    "area": "shoulders",
+    "secondaryArea": "rear_delts",
+    "movement": "isolation",
+    "difficulty": "intermediate",
+    "equipment": [
+     "band",
+     "cable",
+     "dumbbell"
+    ],
+    "evidenceConfidence": "rct",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "C",
+    "tierEvidence": "moderate",
+    "tierNote": "Raise the upper arm to shoulder height with the elbow bent to 90 degrees, rotate the forearm back to vertical, then lower it slowly over three seconds. This trains the cuff eccentrically in the hitting and serving position. Eccentric external-rotation work corrected the rotator imbalance in tennis players (Niederbracht 2008), and external-rotation strength was central to the programme that cut overhead-athlete shoulder problems by 28% (Andersson 2017).",
+    "goalSuitability": {
+     "strength": 1,
+     "hypertrophy": 0,
+     "endurance": 0,
+     "running": 0,
+     "power": 0,
+     "mobility": 0,
+     "calisthenics": 0
+    }
+   },
+   "push_up_plus": {
+    "name": "Push-up Plus",
+    "aliases": [
+     "push up plus",
+     "push-up plus",
+     "pushup plus",
+     "serratus push up",
+     "scapular push up",
+     "scap push up"
+    ],
+    "category": "bulletproofing",
+    "area": "shoulders",
+    "secondaryArea": "chest",
+    "movement": "push",
+    "difficulty": "beginner",
+    "equipment": [
+     "bodyweight"
+    ],
+    "evidenceConfidence": "coaching_consensus",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "C",
+    "tierEvidence": "limited",
+    "tierNote": "At the top of a push-up, push the floor further away so the shoulder blades spread around the ribs, hold for a beat, then let them come back. The extra push is where serratus anterior works hardest (Ludewig 2004). That muscle rotates the shoulder blade upward, which lets the arm get overhead to spike without pinching.",
+    "goalSuitability": {
+     "strength": 1,
+     "hypertrophy": 0,
+     "endurance": 0,
+     "running": 0,
+     "power": 0,
+     "mobility": 0,
+     "calisthenics": 1
+    }
+   },
+   "med_ball_overhead_throw": {
+    "name": "Medicine Ball Overhead Throw",
+    "resultUnit": "m",
+    "aliases": [
+     "medicine ball overhead throw",
+     "med ball overhead throw",
+     "overhead med ball throw",
+     "overhead medicine ball throw",
+     "soccer throw",
+     "forward overhead throw",
+     "overhead wall throw"
+    ],
+    "category": "power",
+    "area": "shoulders",
+    "secondaryArea": "core",
+    "movement": "push",
+    "difficulty": "beginner",
+    "equipment": [
+     "medicine_ball"
+    ],
+    "evidenceConfidence": "rct",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "A",
+    "tierEvidence": "limited",
+    "tierNote": "From a split stance, take a 2-3 kg ball back behind the head, arch, and throw it forward for distance or hard into a wall. It trains the arch-and-snap of the serve and the spike with a ball light enough to move fast. Medicine-ball and band work raised serve speed in junior tennis players (Fernandez-Fernandez 2013). It is the only forward overhead throw in the library; the slam drives down instead.",
+    "goalSuitability": {
+     "strength": 0,
+     "hypertrophy": 0,
+     "endurance": 0,
+     "running": 0,
+     "power": 2,
+     "mobility": 0,
+     "calisthenics": 0
+    }
+   },
+   "prone_ytw_raise": {
+    "name": "Prone Y-T-W Raise",
+    "aliases": [
+     "prone y-t-w raise",
+     "prone ytw",
+     "ytw",
+     "y t w raise",
+     "ytw raise",
+     "prone y raise",
+     "prone t raise",
+     "incline ytw"
+    ],
+    "category": "bulletproofing",
+    "area": "shoulders",
+    "secondaryArea": "thoracic",
+    "movement": "isolation",
+    "difficulty": "beginner",
+    "equipment": [
+     "bench",
+     "dumbbell",
+     "bodyweight"
+    ],
+    "evidenceConfidence": "rct",
+    "strengthTier": "C",
+    "hypertrophyTier": "B",
+    "powerTier": "C",
+    "tierEvidence": "moderate",
+    "tierNote": "Lying face-down on an incline bench, raise light weights into a Y, a T and a W. The prone Y is the best lower-trapezius exercise in EMG work (Ekstrom 2003), and scapular strengthening like this is part of the OSTRC shoulder programme that cut shoulder problems in overhead athletes (Andersson 2017). It keeps the shoulder blade stable for grappling frames and for throwing.",
+    "goalSuitability": {
+     "strength": 1,
+     "hypertrophy": 1,
+     "endurance": 0,
+     "running": 0,
+     "power": 0,
+     "mobility": 1,
+     "calisthenics": 0
+    }
+   },
+   "hangboard_max_hang": {
+    "name": "Hangboard Max Hang",
+    "aliases": [
+     "max hang",
+     "max hangs",
+     "maxhangs",
+     "weighted hang",
+     "weighted max hang",
+     "hangboard max hang",
+     "fingerboard max hang",
+     "hangboard",
+     "fingerboard",
+     "half crimp hang"
+    ],
+    "category": "secondary_strength",
+    "area": "forearms",
+    "secondaryArea": "thoracic",
+    "movement": "isolation",
+    "difficulty": "advanced",
+    "equipment": [
+     "other"
+    ],
+    "evidenceConfidence": "rct",
+    "strengthTier": "A",
+    "hypertrophyTier": "C",
+    "powerTier": "B",
+    "tierEvidence": "moderate",
+    "tierNote": "Ten-second half-crimp hangs on an ~20 mm edge with weight added (or removed with a pulley) so 3 s are left in reserve, about 5 sets with 3 min rest. López-Rivera & González-Badillo (2012, 2019) found weighted max hangs built finger strength faster than minimum-edge or intermittent hangs; Devise et al. (2022) showed ~80% repeaters also build strength and add endurance. Adults only (growth plates closed), after a year or more of regular climbing, adding load in small steps — pulleys adapt more slowly than muscle.",
+    "goalSuitability": {
+     "strength": 2,
+     "hypertrophy": 0,
+     "endurance": 1,
+     "running": 0,
+     "power": 2,
+     "mobility": 0,
+     "calisthenics": 2
+    }
+   },
+   "reverse_wrist_curl": {
+    "name": "Reverse Wrist Curl",
+    "aliases": [
+     "reverse wrist curl",
+     "wrist extension curl",
+     "wrist extensor curl",
+     "eccentric wrist extension",
+     "pronated wrist curl"
+    ],
+    "category": "bulletproofing",
+    "area": "forearms",
+    "secondaryArea": "",
+    "movement": "isolation",
+    "difficulty": "beginner",
+    "equipment": [
+     "dumbbell",
+     "barbell"
+    ],
+    "evidenceConfidence": "systematic_review",
+    "strengthTier": "C",
+    "hypertrophyTier": "C",
+    "powerTier": "C",
+    "tierEvidence": "moderate",
+    "tierNote": "Forearm on a bench palm down, lowering the weight slowly by bending the wrist — the wrist extensors, which climbing loads constantly while it trains only the flexors. Slow eccentric extensor loading is the best-supported exercise treatment for lateral elbow pain, and it balances the forearm alongside wrist curls for the medial side.",
+    "goalSuitability": {
+     "strength": 1,
+     "hypertrophy": 1,
+     "endurance": 0,
+     "running": 0,
+     "power": 0,
+     "mobility": 0,
+     "calisthenics": 1
+    }
    }
   },
   "RUN_PLAN_TEMPLATES": {
