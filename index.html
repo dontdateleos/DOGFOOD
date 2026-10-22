@@ -1100,6 +1100,17 @@
     font-family:var(--mono); font-weight:var(--fw-bold); font-size:var(--fs-lg);
     letter-spacing:0.12em; text-transform:uppercase; line-height:1; display:block; }
   #logFab:active{ opacity:0.72; }
+  /* DONE AS PLANNED, ONE TAP. Above Start, only on a day with a planned lifting session not
+     yet logged: the whole session goes in at the plan's sets and reps and your last weights,
+     without opening the sheet. Start is still there for a day that went differently. */
+  body.tab-insights.first-run #logPlannedFab{ display:none !important; }
+  #logPlannedFab{ position:fixed; z-index:55; left:0; right:0; margin:0 auto; width:fit-content;
+    bottom:calc(86px + var(--fab-lift, 0px) + env(safe-area-inset-bottom, 0px));
+    height:40px; min-height:0; padding:0 18px; flex:none; border-radius:999px;
+    background:var(--block-lime); color:#0c0d0b; border:0; font-family:var(--mono); font-weight:var(--fw-bold);
+    font-size:var(--fs-tag); letter-spacing:0.1em; text-transform:uppercase; }
+  body:not(.tab-insights) #logPlannedFab{ display:none; }
+  .lift-sheet.silent{ visibility:hidden !important; }
   #logFab:focus-visible{ outline:2px solid var(--bg); outline-offset:6px; }
 
   /* THE FORM MARK, STUCK ON THE MARK'S CORNER.
@@ -3353,6 +3364,23 @@
   .log-sheet .ex-last-line{ font-family:var(--mono); font-size:var(--log-note); letter-spacing:0.04em;
     color:rgba(var(--ink-rgb),0.5); margin-top:3px; }
   .log-sheet .set-breakdown{ font-size:var(--log-note); margin-top:3px; }
+  .log-sheet .set-ticks{ order:9; flex-basis:100%; display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+  .set-ticks[hidden]{ display:none !important; }
+  /* With the set rows there, the three summary boxes are what Save reads, not what you touch. */
+  .log-sheet .edit-row.has-ticks .log-fields-row, .log-sheet .edit-row.has-ticks .set-breakdown{ display:none !important; }
+  .st-row{ display:grid; grid-template-columns:20px minmax(0,1fr) minmax(0,1fr) 44px; gap:6px; align-items:center; }
+  .st-n{ font-family:var(--mono); font-size:var(--fs-xs); color:rgba(var(--ink-rgb),0.5); }
+  .st-row .st-v{ height:44px; min-height:0; padding:0 8px; background:transparent; color:rgba(var(--ink-rgb),0.45);
+    border:1px dashed rgba(var(--ink-rgb),0.3); border-radius:6px; font-family:var(--mono); font-size:var(--fs-sm);
+    letter-spacing:0; text-transform:none; font-variant-numeric:tabular-nums; }
+  .st-row .st-v small{ font-size:var(--fs-xs); opacity:0.7; margin-left:3px; }
+  .st-row .st-ok{ height:44px; min-height:0; padding:0; background:transparent; color:var(--bg);
+    border:1px solid rgba(var(--ink-rgb),0.3); border-radius:6px; }
+  .st-row .st-ok svg{ width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+  .st-row.done .st-v{ background:var(--bg); color:var(--ground); border-style:solid; border-color:var(--bg); }
+  .st-row.done .st-ok{ background:var(--block-lime); border-color:var(--block-lime); color:#0c0d0b; }
+  .st-acts{ display:flex; gap:8px; }
+  .st-acts button{ flex:1 1 0; height:36px; min-height:0; background:transparent; color:var(--bg); border-color:rgba(var(--ink-rgb),0.3); }
 
   /* Add a lift — something you could say, in the voice the rest of the sheet now says things
      in. It used to have "Fill it in as planned" beside it; the sheet does that on open. */
@@ -4111,6 +4139,18 @@
      date/time input's intrinsic width is wider than a third of 358 and without it the row
      runs off the edge — the same trap the tag selects fell into. */
   .morning-panel .morning-night{ display:flex; gap:8px; margin:0 0 var(--sp-3); }
+  .ic-scale{ display:grid; grid-template-columns:repeat(10, minmax(0,1fr)); gap:4px; margin:0 0 6px; }
+  .ic-scale .ic-dot{ height:44px; padding:0; min-width:0; background:transparent; color:var(--bg);
+    border:1px solid rgba(var(--ink-rgb),0.25); border-radius:6px; font-family:var(--mono); letter-spacing:0; }
+  .ic-scale .ic-dot.was{ border-color:var(--bg); border-width:2px; }
+  .ic-scale .ic-dot.on{ background:var(--bg); color:var(--reverse-bg); }
+  .ic-hint{ font-family:var(--mono); font-size:var(--fs-xs); color:rgba(var(--ink-rgb),0.6); margin:0 0 var(--sp-3); }
+  .weigh-big{ display:flex; align-items:baseline; justify-content:center; gap:6px; margin:var(--sp-3) 0 var(--sp-2); }
+  .weigh-big input{ flex:0 0 auto; width:4.4ch !important; max-width:none; font-family:var(--mono); font-size:46px; font-weight:var(--fw-bold); text-align:center;
+    background:transparent; border:0; color:inherit; font-variant-numeric:tabular-nums; padding:0; height:auto; }
+  .weigh-big span{ font-family:var(--mono); font-size:var(--fs-md); opacity:0.6; }
+  .weigh-nudge{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; }
+  .weigh-nudge button{ background:transparent; color:var(--bg); border-color:rgba(var(--ink-rgb),0.3); height:44px; letter-spacing:0.04em; }
   .morning-usual{ font-family:var(--mono); font-size:var(--fs-tag); line-height:1.5; color:rgba(var(--ink-rgb),0.7); margin:0 0 var(--sp-3); }
   /* A filled-in usual is the usual, not your answer yet: dimmed until you change it. */
   .morning-panel input[data-planned]{ opacity:0.62; }
@@ -6388,8 +6428,15 @@
           <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
         <div class="fields">
           <div id="planWeightDetail"></div>
-          <div class="field-row"><span class="field-label">Today</span><input type="number" step="0.1" id="planWeightInput" placeholder="kg"></div>
-          <button type="button" id="savePlanWeightBtn" class="small" style="margin-top:8px;">Log weight</button>
+          <!-- OPENS ON YOUR LAST WEIGHT, NUDGED NOT DIALED. Most mornings are within half a kilo of
+               the last one, so the number is already there and four steps cover the usual
+               change. Tap the number itself for the wheel. -->
+          <div class="weigh-big"><input type="number" step="0.1" id="planWeightInput" placeholder="kg" aria-label="Weight today, kg"><span>kg</span></div>
+          <div class="weigh-nudge" role="group" aria-label="Adjust">
+            <button type="button" data-d="-0.5">&minus;0.5</button><button type="button" data-d="-0.1">&minus;0.1</button>
+            <button type="button" data-d="0.1">+0.1</button><button type="button" data-d="0.5">+0.5</button>
+          </div>
+          <button type="button" id="savePlanWeightBtn" class="primary" style="margin-top:8px;">Log weight</button>
         </div>
       </div>
     </div>
@@ -7264,6 +7311,7 @@
      one, and that is something you do from Today. A disc floating over Data's charts or
      Settings' forms would be cost without benefit. -->
 <button type="button" class="log-fab" id="logFab" aria-label="Start workout"><span class="fab-word">Start</span></button>
+<button type="button" id="logPlannedFab" hidden>Done as planned</button>
 
 <div class="log-bar" id="logBar" style="display:none;">
   <button type="button" class="log-bar-open" id="logBarOpen">
@@ -11236,7 +11284,41 @@ async function refreshHeaderLogBtn(){
   try{ started = !!(await loggingStartedAt(todayStr)); } catch(e){}
   btn.setAttribute('aria-label', logged ? 'Edit today' + '\u2019' + 's session'
                                 : started ? 'Resume workout' : 'Start workout');
+  const planned = document.getElementById('logPlannedFab');
+  if(planned){
+    let show = false;
+    try{
+      const found = !logged && !started ? await todaysBlockAnySlot() : null;
+      show = !!(found && found.block && found.block.type === 'strength');
+    }catch(e){}
+    planned.hidden = !show;
+  }
 }
+/* Opens today's session out of sight, lets the sheet fill itself with the plan the way it
+   always does on open, and presses its own Save, so this is exactly a session logged
+   untouched: same records, same history, same toasts. */
+async function logTodayAsPlanned(){
+  const btn = document.getElementById('logPlannedFab');
+  const found = await todaysBlockAnySlot();
+  if(!found || !found.block || found.block.type !== 'strength'){ await openLogFromAnywhere(); return; }
+  const sheet = document.getElementById('logSheet');
+  if(btn) btn.disabled = true;
+  if(sheet) sheet.classList.add('silent');
+  try{
+    await openBlockEditor(todayStr, found.slot, found.block);
+    for(let i = 0; i < 40; i++){
+      if(document.querySelector('#weekExerciseRows .edit-row .week-ex-name') && document.getElementById('logWeekSessionBtn')) break;
+      await new Promise(r => setTimeout(r, 50));
+    }
+    document.getElementById('logWeekSessionBtn')?.click();
+    await new Promise(r => setTimeout(r, 900));
+  } finally {
+    if(sheet) sheet.classList.remove('silent');
+    if(btn) btn.disabled = false;
+    refreshHeaderLogBtn().catch(()=>{});
+  }
+}
+document.getElementById('logPlannedFab')?.addEventListener('click', ()=>{ logTodayAsPlanned().catch(()=>{}); });
 (function setupHeaderLogBtn(){
   const btn = document.getElementById('logFab');
   if(!btn) return;
@@ -12538,7 +12620,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.23.003';
+const APP_VERSION = '2026.10.23.004';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -22055,9 +22137,7 @@ async function openBlockEditor(date, slot, block){
            the lot — same comma-joined lists underneath either way, sets just a count of them.
            Said once, since it's the one thing about these boxes that isn't self-evident from
            using them. -->
-      <div class="log-hint">Tap SETS, REPS or KG to dial a set in — <b>+ another set</b> banks
-        it and starts the next, <b>⌫</b> undoes the last one or clears the box, so a drop
-        set or a ramp is still one place to look.</div>
+      <div class="log-hint">Tick a set to log it as shown, and the rest timer starts. Tap a number if it was different.</div>
       <div class="score-note">For weight, choose a load you can control for every planned rep; leave it blank if you are still finding it out.</div>
       <div id="weekExerciseRows"></div><div class="add-row" id="addWeekExerciseRow">Add a lift</div>
       <!-- The run block has always had one. A strength session did not, so "gym was rammed,
@@ -22200,6 +22280,7 @@ async function openBlockEditor(date, slot, block){
           <input type="text" class="week-ex-weight" placeholder="${ph(ghostWeight, '')}" title="${resultUnitFor(name) ? 'how far or how high \u2014 your best of the session' : 'weight actually used \u2014 one number for every set (100), or per-set for a ramp or a drop set (60,80,100)'}" inputmode="decimal"><span class="log-op log-unit">${resultUnitFor(name) ? 'best ' + resultUnitFor(name) : 'kg'}</span>
         </div>
         <div class="set-breakdown" hidden></div>
+        <div class="set-ticks"></div>
         <!-- BW and F were two unlabelled letters on the row you touch more than any other in
              the app, with their meanings in title attributes that a phone never shows. One
              lift is on screen at a time now, so there is room to say the words. -->
@@ -22412,7 +22493,7 @@ async function openBlockEditor(date, slot, block){
   applyLogDraft(panel, await loadLogDraft(date, slot));
   // Last, so that anything actually logged or drafted is already in the boxes and the plan
   // only lands where there is nothing.
-  if(block.type === 'strength') logExRows().forEach(row=>{ prefillPlanned(row); refreshOverPlan(row); refreshWeightWhy(row); });
+  if(block.type === 'strength') logExRows().forEach(row=>{ prefillPlanned(row); refreshOverPlan(row); refreshWeightWhy(row); initSetTicks(row); });
   /* THE SUBSTITUTION, SHOWN HAPPENING RATHER THAN ALREADY DONE.
 
      Change a lift twice and the generator stops asking for the original — applyExerciseSwaps
@@ -23368,7 +23449,8 @@ async function refreshInjuries(){
         </div>
         <div class="injury-actions">
           ${!inj.resolved ? `<input type="number" min="1" max="10" step="1" inputmode="numeric" class="injury-rerate" data-id="${inj.id}" placeholder="1-10" style="max-width:62px;" aria-label="How is it today, 1 to 10">
-          <button class="small rerate-btn" data-id="${inj.id}">Update</button>` : ''}
+          <button class="small rerate-btn" data-id="${inj.id}">Update</button>
+          <button class="small check-today-btn" data-id="${inj.id}">Check in</button>` : ''}
           <button class="small diagnose-btn" data-id="${inj.id}">What led to this</button>
           ${!inj.resolved ? `<button class="small resolve-btn" data-id="${inj.id}">Mark resolved</button>` : ''}
           <button class="small outline delete-btn" data-id="${inj.id}">Delete</button>
@@ -23389,6 +23471,7 @@ async function refreshInjuries(){
        has been since anybody asked. */
     // Bound here rather than delegated, for the reason every other button on this card is:
     // the list is rebuilt whole on each refresh and a listener on a removed node goes with it.
+    list.querySelectorAll('.check-today-btn').forEach(btn=> btn.addEventListener('click', ()=> openInjuryCheckSheet()));
     list.querySelectorAll('.diagnose-btn').forEach(btn=>{
       const inj = injuries.find(x=> String(x.id) === btn.dataset.id);
       if(inj) btn.addEventListener('click', ()=> showInjuryDiagnosis(inj));
@@ -23915,7 +23998,7 @@ async function logRecDecision(type, meta, decision, card, title){
     // The card is the only place the trigger is explained, so it hands straight off rather
     // than leaving you to find a button whose label does not mention any of this.
     if(type==='injury_check' && decision==='accepted'){
-      activateTab('injuries');
+      openInjuryCheckSheet();
     }
     if(type==='mobility_retest' && decision==='accepted'){
       mobilityAssessmentAutoOpen = true;
@@ -26959,6 +27042,104 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
    only commits once something was actually done in the sheet), so an untouched plan keeps
    its dim .dataset.planned — the same rule typing always followed. Once something WAS done,
    only the fields whose value actually changed are written. */
+/* ONE TICK A SET.
+
+   Under each lift, its sets as rows: last time's reps and weight for that set, dimmed (or
+   the plan's, for a lift with no history). Tick a set and it is logged exactly as shown, in
+   full ink, and the rest timer starts on its own. Tap either number to change that set on
+   the wheel, which logs it too. Copy set 1 puts the first set's numbers on every set not
+   yet ticked; + Set adds one like the last.
+
+   The sets/reps/weight boxes are still what Save reads. Ticked sets are written into them
+   as per-set lists; untick everything and the boxes go back to the plan they opened on, so
+   a lift you never touch saves as planned, as it always has. */
+function initSetTicks(row){
+  const host = row.querySelector('.set-ticks');
+  if(!host) return;
+  const repsEl = row.querySelector('.week-ex-reps'), weightEl = row.querySelector('.week-ex-weight'), setsEl = row.querySelector('.week-ex-sets');
+  if(!repsEl || !weightEl) return;
+  const nameEl = row.querySelector('.week-ex-name');
+  const list = v => String(v || '').trim() ? String(v).split(SET_LIST_SEP).map(parseFloat).filter(isFinite) : [];
+  const typed = !repsEl.dataset.planned && list(repsEl.value).length;
+  const orig = [repsEl, weightEl, setsEl].map(el => el ? { v: el.value, planned: el.dataset.planned } : null);
+  let sets;
+  if(typed){
+    const r = list(repsEl.value), w = list(weightEl.value), n = Math.max(r.length, parseInt(setsEl && setsEl.value, 10) || 0);
+    sets = Array.from({ length: Math.max(1, n) }, (_, i)=> ({ reps: r[Math.min(i, r.length - 1)], weight: w.length ? w[Math.min(i, w.length - 1)] : null, done: true }));
+  } else {
+    const h = nameEl ? lastSetsFor(nameEl.value) : null;
+    const pn = parseInt(setsEl && setsEl.value, 10) || 0;
+    if(h){
+      const n = Math.max(h.reps.length, pn || 0);
+      sets = Array.from({ length: n }, (_, i)=> ({ reps: h.reps[Math.min(i, h.reps.length - 1)],
+        weight: h.weight.length ? h.weight[Math.min(i, h.weight.length - 1)] : null, done: false }));
+    } else {
+      const r = list(repsEl.value), w = list(weightEl.value);
+      if(!r.length) { host.hidden = true; return; }
+      sets = Array.from({ length: Math.max(1, pn || r.length) }, (_, i)=> ({ reps: r[Math.min(i, r.length - 1)], weight: w.length ? w[Math.min(i, w.length - 1)] : null, done: false }));
+    }
+  }
+  row.classList.add('has-ticks');
+  const unit = resultUnitFor(nameEl ? nameEl.value : '') || 'kg';
+  const fmt = v => v == null ? '\u2013' : String(+(+v).toFixed(2));
+  const tick = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>';
+  const write = ()=>{
+    const done = sets.filter(x => x.done);
+    const put = (el, v, planned)=>{ if(!el || el.value === v) { if(el){ if(planned) el.dataset.planned = planned; else delete el.dataset.planned; } return; }
+      el.value = v; if(planned) el.dataset.planned = planned; else delete el.dataset.planned;
+      el.dispatchEvent(new Event('input', { bubbles:true })); el.dispatchEvent(new Event('change', { bubbles:true })); };
+    if(!done.length){ [repsEl, weightEl, setsEl].forEach((el, i)=> orig[i] && put(el, orig[i].v, orig[i].planned)); return; }
+    put(repsEl, done.map(x => fmt(x.reps)).join(','), null);
+    put(weightEl, done.every(x => x.weight == null) ? '' : done.map(x => fmt(x.weight)).join(','), null);
+    put(setsEl, String(done.length), null);
+    blockEditDirty = true;
+  };
+  const restNow = ()=>{
+    const go = document.getElementById('restGoBtn');
+    if(go && !restTimerId) go.click();
+    else if(restTimerId){ restEndsAt = Date.now() + restChosen * 1000; tickRestTimer(); }
+  };
+  const paint = ()=>{
+    host.innerHTML = sets.map((x, i)=> `<div class="st-row${x.done ? ' done' : ''}" data-i="${i}">
+        <span class="st-n">${i + 1}</span>
+        <button type="button" class="st-v" data-k="reps" aria-label="Set ${i + 1} reps">${fmt(x.reps)} <small>reps</small></button>
+        <button type="button" class="st-v" data-k="weight" aria-label="Set ${i + 1} ${unit}">${fmt(x.weight)} <small>${unit}</small></button>
+        <button type="button" class="st-ok" aria-pressed="${x.done}" aria-label="${x.done ? 'Undo' : 'Log'} set ${i + 1}">${tick}</button>
+      </div>`).join('') + `<div class="st-acts">
+        <button type="button" class="st-copy"${sets.length > 1 ? '' : ' hidden'}>Copy set 1</button>
+        <button type="button" class="st-add">+ Set</button></div>`;
+  };
+  host.addEventListener('click', e=>{
+    const r = e.target.closest('.st-row'); const i = r ? +r.dataset.i : -1;
+    if(e.target.closest('.st-ok')){
+      sets[i].done = !sets[i].done; paint(); write();
+      if(sets[i].done) restNow();
+      return;
+    }
+    if(e.target.closest('.st-v')){
+      const x = sets[i];
+      openSetWheelPicker({ title: `Set ${i + 1}`, reps: { title:'Reps', min:1, max:50, step:1, unit:'reps' },
+        weight: { title: unit === 'kg' ? 'Weight' : 'Result', min:0, max: unit === 'kg' ? 400 : 500, step: unit === 'kg' ? 2.5 : 1, decimalStep:0.5, decimals:2, allowDecimal:true, unit },
+        repsValues: [x.reps], weightValues: x.weight != null ? [x.weight] : [], setsValue: 1,
+        onCommit: (rj, wj)=>{
+          const rr = list(rj), ww = list(wj);
+          if(!rr.length && !ww.length) return;
+          if(rr.length) x.reps = rr[rr.length - 1];
+          if(ww.length) x.weight = ww[ww.length - 1];
+          const wasDone = x.done; x.done = true; paint(); write();
+          if(!wasDone) restNow();
+        } });
+      return;
+    }
+    if(e.target.closest('.st-copy')){
+      sets.forEach((x, j)=>{ if(j && !x.done){ x.reps = sets[0].reps; x.weight = sets[0].weight; } }); paint(); return;
+    }
+    if(e.target.closest('.st-add')){
+      const last = sets[sets.length - 1]; sets.push({ reps: last.reps, weight: last.weight, done: false }); paint(); return;
+    }
+  });
+  paint();
+}
 /* Last session of a lift, set by set: { reps:[...], weight:[...] }, or null with no history.
    A session logged as one number for every set (3 x 8 @ 60) is spread across its sets. */
 function lastSetsFor(name){
@@ -27240,8 +27421,22 @@ async function paintPlanWeightSheet(){
     <div class="score-note">${why}</div>
     ${recent.length ? `<div class="score-note">${recent.map(r => `${fmtShortDate(r.date)} ${r.weight.toFixed(1)}`).join(' · ')}</div>` : ''}`;
   const inp = document.getElementById('planWeightInput');
-  if(g.trend.latest) inp.value = g.trend.latest.weight;
+  if(g.trend.latest) inp.value = (+g.trend.latest.weight).toFixed(1);
+  syncWeighLabel();
 }
+function syncWeighLabel(){
+  const w = parseFloat(document.getElementById('planWeightInput').value);
+  const b = document.getElementById('savePlanWeightBtn');
+  if(b) b.textContent = w > 0 ? `Save ${w.toFixed(1)} kg` : 'Log weight';
+}
+document.getElementById('planWeightInput').addEventListener('change', syncWeighLabel);
+document.querySelectorAll('#planWeightSheet .weigh-nudge button').forEach(btn=> btn.addEventListener('click', ()=>{
+  const inp = document.getElementById('planWeightInput');
+  const cur = parseFloat(inp.value);
+  const base = cur > 0 ? cur : 75;
+  inp.value = (Math.round((base + parseFloat(btn.dataset.d)) * 10) / 10).toFixed(1);
+  syncWeighLabel();
+}));
 document.getElementById('planWeightRow').addEventListener('click', async ()=>{ await paintPlanWeightSheet(); planWeightSheet.open(); });
 document.getElementById('savePlanWeightBtn').addEventListener('click', async ()=>{
   const w = parseFloat(document.getElementById('planWeightInput').value);
@@ -37069,8 +37264,70 @@ const MOBILITY_RETEST_FLOOR_DAYS = 28;
    points from the last reading you actually gave. A model still saying what you said is not
    worth a card, and asking every morning is the nagging the retest card was careful to
    avoid. */
-const INJURY_CHECK_MIN_DAYS = 7;
-const INJURY_CHECK_MIN_DRIFT = 2;
+/* ONCE A DAY NOW, AND ONE TAP. The card used to wait a week and two points of drift because
+   asking was a trip to Skills and a wheel. It is a sheet that opens on the last rating you
+   gave with "Same as last time" as the big button, so a day where nothing changed costs one
+   tap, and the model gets a real reading every day instead of a guess for a week. */
+const INJURY_CHECK_MIN_DAYS = 1;
+const INJURY_CHECK_MIN_DRIFT = -Infinity;
+/* THE DAILY INJURY CHECK. One row of 1-10 per live injury, opening on the last rating you
+   gave (outlined, and picked). The button says what saving will mean: "Same as last time",
+   or "Better" / "Worse" with the number. Saving re-rates each injury the way the Skills card's
+   Update does — today becomes the onset and the number the new start of the decay. */
+async function openInjuryCheckSheet(){
+  if(document.querySelector('.injury-check-sheet')) return;
+  const live = [];
+  try{
+    const res = await window.storage.list('injury:');
+    for(const k of (res && res.keys) || []){
+      try{ const inj = JSON.parse((await window.storage.get(k)).value); if(inj && !inj.resolved && inj.initialSeverity != null) live.push(inj); }catch(e){}
+    }
+  }catch(e){}
+  if(!live.length){ activateTab('injuries'); return; }
+  const last = inj => Math.max(1, Math.min(10, Math.round(inj.initialSeverity)));
+  const sheet = document.createElement('div');
+  sheet.className = 'morning-sheet injury-check-sheet';
+  sheet.innerHTML = `<div class="morning-panel" role="dialog" aria-modal="true" aria-label="Injury check">
+      <div class="lift-sheet-head"><span>Injury check</span>
+        <button type="button" class="lift-sheet-x" aria-label="Not now">\u00d7</button></div>
+      ${live.map(inj => `<div class="morning-q">How is the ${String(inj.part || 'injury').toLowerCase()} today?</div>
+        <div class="ic-scale" data-id="${inj.id}" data-last="${last(inj)}" role="group" aria-label="${inj.part}, 1 to 10">
+          ${Array.from({ length:10 }, (_, i)=> `<button type="button" class="ic-dot${i + 1 === last(inj) ? ' was on' : ''}" data-v="${i + 1}">${i + 1}</button>`).join('')}
+        </div>
+        <div class="ic-hint">Outlined is your last rating, ${last(inj)} out of 10. Lower is better.</div>`).join('')}
+      <button type="button" class="primary morning-done ic-save">Same as last time</button>
+    </div>`;
+  const label = ()=>{
+    const scales = [...sheet.querySelectorAll('.ic-scale')];
+    const now = sc => +sc.querySelector('.ic-dot.on').dataset.v;
+    const moved = scales.map(sc => now(sc) - +sc.dataset.last);
+    const btn = sheet.querySelector('.ic-save');
+    if(scales.length === 1) btn.textContent = moved[0] === 0 ? 'Same as last time' : `${moved[0] < 0 ? 'Better' : 'Worse'} \u00b7 save ${now(scales[0])}/10`;
+    else btn.textContent = moved.every(m => m === 0) ? 'Same as last time' : 'Save';
+  };
+  const close = ()=>{ sheet.classList.remove('sheet-open'); setTimeout(()=> sheet.remove(), SHEET_MS); };
+  sheet.addEventListener('click', async e=>{
+    const dot = e.target.closest('.ic-dot');
+    if(dot){ dot.closest('.ic-scale').querySelectorAll('.ic-dot').forEach(b=> b.classList.toggle('on', b === dot)); label(); return; }
+    if(e.target.closest('.ic-save')){
+      for(const sc of sheet.querySelectorAll('.ic-scale')){
+        const v = +sc.querySelector('.ic-dot.on').dataset.v;
+        try{
+          const inj = JSON.parse((await window.storage.get(`injury:${sc.dataset.id}`)).value);
+          inj.initialSeverity = v; inj.date = todayStr; inj.confirmedOn = todayStr;
+          await window.storage.set(`injury:${sc.dataset.id}`, JSON.stringify(inj));
+        }catch(err){ console.error(err); }
+      }
+      close();
+      showToast('Injury check saved');
+      try{ refreshInjuries(); generateWarmup(); generateRecommendations(); }catch(err){}
+      return;
+    }
+    if(e.target === sheet || e.target.closest('.lift-sheet-x')) close();
+  });
+  document.body.appendChild(sheet);
+  requestAnimationFrame(()=> sheet.classList.add('sheet-open'));
+}
 async function buildInjuryCheckCard(){
   let stale = [];
   try{
@@ -37084,16 +37341,16 @@ async function buildInjuryCheckCard(){
       const modelled = severityNow(inj.initialSeverity, inj.date, inj.halfLife);
       const drift = inj.initialSeverity - modelled;
       if(drift < INJURY_CHECK_MIN_DRIFT) continue;
-      stale.push({ part: inj.part, days, said: inj.initialSeverity, now: Math.round(modelled * 10) / 10 });
+      stale.push({ id: inj.id, part: inj.part, days, said: inj.initialSeverity, now: Math.round(modelled * 10) / 10 });
     }
   } catch(e){}
   if(!stale.length) return null;
   const signals = stale.map(x =>
-    `${x.part}: you said ${x.said} out of 10 ${x.days} days ago, and it is being treated as ${x.now} today.`);
-  signals.push('That number is a decay curve, not a measurement. Re-rate it on Body and the model starts again from what you actually feel — including upwards, if it got worse.');
+    `${x.part}: last rated ${x.said} out of 10${x.days === 1 ? ' yesterday' : `, ${x.days} days ago`}.`);
+  signals.push('Check opens on that number. If nothing changed it is one tap.');
   return { type:'injury_check', title: stale.length === 1
-      ? `How is the ${stale[0].part} now?`
-      : `${stale.length} injuries have not been checked in a while`,
+      ? `How is the ${stale[0].part} today?`
+      : `How are your ${stale.length} injuries today?`,
     signals, confidence:null, meta:{ parts: stale.map(x=>x.part) } };
 }
 
