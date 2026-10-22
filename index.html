@@ -566,6 +566,11 @@
      The stroke goes with it. It is 0.6px of optical weight, not an outline, so leaving it
      cream would have drawn a pale halo around a coloured word. */
   header h1{ color:var(--band); -webkit-text-stroke-color:var(--band); }
+  /* ONE BANNER HEIGHT ON EVERY TAB. Four titles set on two lines and TOURING sets on one, so
+     Today's band came out 18px shorter and the dots jumped as you swiped onto it. The title
+     always holds two lines' room; in em, so it fits with the fitted size and folds to nothing
+     with the collapse. */
+  header h1{ min-height:calc(2em * 0.92); }
   /* THE BANNER TAKES THE TAB'S TINT. It was the ground, which made the masthead the same
      surface as the page under it and left the tab's colour to arrive only once you had
      scrolled to a section band. --field is the tint that already exists for exactly this —
@@ -1419,10 +1424,10 @@
      in the way, which is the whole point of an optional test. */
   .group-head .head-action{ order:1; flex:none; margin-left:auto;
     font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold);
-    letter-spacing:0.08em; text-transform:uppercase;
+    letter-spacing:0.1em; text-transform:uppercase;
     background:transparent; color:var(--bg);
     border:1px solid rgba(var(--ink-rgb),0.3); border-radius:6px;
-    padding:6px 12px; height:auto; min-height:0; width:auto; cursor:pointer; letter-spacing:0.1em; }
+    display:inline-flex; align-items:center; padding:0 12px; height:36px; min-height:0; width:auto; cursor:pointer; }
   .group-head .head-action:hover{ border-color:var(--bg); }
   /* A tag AND a button: the tag takes the free space, the button sits beside it. */
   .group-head .head-est:not(:empty) ~ .head-action{ margin-left:10px; }
@@ -1722,7 +1727,7 @@
      hung the outer ones a pixel off-screen and clipped them. Collapse the seam only. */
   footer button{ border-radius:0; flex:1 1 0; margin:0; }
   footer button + button{ margin-left:-2px; }
-  button{ font-family:var(--sans); font-size:var(--fs-tag); letter-spacing:0.07em; text-transform:uppercase; font-weight:var(--fw-bold); height:40px; padding:0 16px; border-radius:6px; border:1px solid var(--bg); background:var(--bg); color:var(--ground); flex:1 0 auto; cursor:pointer; transition:opacity 0.08s ease; display:flex; align-items:center; justify-content:center; }
+  button{ font-family:var(--sans); font-size:var(--fs-tag); letter-spacing:0.1em; text-transform:uppercase; font-weight:var(--fw-bold); height:40px; padding:0 16px; border-radius:6px; border:1px solid var(--bg); background:var(--bg); color:var(--ground); flex:1 0 auto; cursor:pointer; transition:opacity 0.08s ease; display:flex; align-items:center; justify-content:center; }
   button:active{ opacity:0.6; }
   .type-btn:active, .tab:active { transform:scale(0.95); }
   .empty-state{ display:flex; flex-direction:column; align-items:center; gap:8px; padding:28px 16px; color:var(--dim); text-align:center; }
@@ -1995,12 +2000,12 @@
     justify-content:space-between; gap:10px; padding:10px var(--gutter); background:var(--reverse-bg); color:var(--bg);
     font-family:var(--sans); font-size:var(--fs-sm); letter-spacing:0.015em; }
   .update-banner-actions{ display:flex; align-items:center; gap:8px; flex:none; }
-  .update-banner button{ height:31px; background:var(--bg); color:var(--ground); border:2px solid var(--bg); }
+  .update-banner button{ height:36px; background:var(--bg); color:var(--ground); border:1px solid var(--bg); }
   .day-rolled{ display:flex; align-items:center; justify-content:space-between; gap:12px;
     padding:12px var(--gutter); background:var(--warn); color:var(--text); font-family:var(--mono);
     font-size:var(--fs-tag); font-weight:var(--fw-bold); letter-spacing:var(--track-ui); }
-  .day-rolled button{ height:31px; flex:0 0 auto; background:var(--ground); color:var(--bg);
-    border:2px solid var(--ground); }
+  .day-rolled button{ height:36px; flex:0 0 auto; background:var(--ground); color:var(--bg);
+    border:1px solid var(--ground); }
   .update-banner-x{ font-size:var(--fs-xl); line-height:1; cursor:pointer; padding:0 6px; opacity:0.7; }
   /* Collapsible Settings sections. Head is a 44px tap target in its own right.
      No justify-content: it used to say space-between, which was right when the head was a
@@ -2266,8 +2271,8 @@
   #trendPeriodPills .type-btn{ flex:0 0 auto; width:auto; padding:0 0 3px; text-align:left;
     background:transparent; border:0; border-bottom:2px solid transparent; border-radius:0;
     font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold);
-    letter-spacing:0.08em; text-transform:uppercase; color:rgba(var(--ink-rgb),0.58);
-    position:relative; }
+    letter-spacing:0.1em; text-transform:uppercase; color:rgba(var(--ink-rgb),0.58);
+    position:relative; min-height:0; }
   /* The drawn box is a word; a finger gets the row's height either side of it. */
   #trendPeriodPills .type-btn::after{ content:''; position:absolute; inset:-11px -8px; }
   #trendPeriodPills .type-btn.active{ background:transparent; color:var(--bg);
@@ -2288,7 +2293,7 @@
      its own first pill row; every ground in the app is dark now, so it is the base, and the
      rows the override never reached (Today's session type, the trends metric and period
      rows) get it too. */
-  .type-btn{ flex:1; text-align:center; padding:10px; border:2px solid rgba(var(--ink-rgb),0.4); border-radius:0; font-family:var(--sans); font-size:var(--fs-sm); color:rgba(var(--ink-rgb),0.65); cursor:pointer; background:transparent; }
+  .type-btn{ flex:1; text-align:center; padding:10px; min-height:40px; border:1px solid rgba(var(--ink-rgb),0.3); border-radius:6px; font-family:var(--sans); font-size:var(--fs-tag); font-weight:var(--fw-bold); letter-spacing:0.1em; text-transform:uppercase; color:var(--bg); cursor:pointer; background:transparent; }
   .type-btn.active{ color:var(--ground); background:var(--bg); border-color:var(--bg); }
 
   .remove-row{ font-family:var(--mono); color:var(--text); font-size:var(--fs-lg); cursor:pointer; padding:0 4px; flex:none; }
@@ -3587,12 +3592,12 @@
   .progress-snapshot-stats{ display:flex; gap:18px; margin-top:8px; font-family:var(--mono); font-size:var(--fs-tag); }
   .progress-snapshot-stats b{ display:block; font-size:var(--fs-xl); }
   .backup-nudge{ margin-top:12px; padding:10px 12px; border-left:3px solid var(--block-yellow); color:var(--dim); font-size:var(--fs-tag); }
-  .backup-nudge button{ display:inline-flex; width:auto; height:26px; margin-left:8px; padding:0 8px; font-size:var(--fs-xs); }
+  .backup-nudge button{ display:inline-flex; width:auto; height:36px; margin-left:8px; padding:0 12px; font-size:var(--fs-tag); }
   .page-snapshot{ margin:0 0 14px; padding:12px; border:1px solid var(--border); }
   .page-snapshot-head{ font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold); text-transform:uppercase; letter-spacing:.06em; }
   .page-snapshot-copy{ margin:7px 0 0; color:var(--dim); font-size:var(--fs-tag); }
-  .settings-shortcuts{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:0 0 14px; }
-  .settings-shortcuts button{ min-width:0; height:34px; padding:0 8px; font-size:var(--fs-xs); }
+  .settings-shortcuts{ display:grid; grid-template-columns:auto auto auto; gap:8px; margin:0 0 14px; }
+  .settings-shortcuts button{ min-width:0; height:36px; padding:0 12px; font-size:var(--fs-tag); white-space:nowrap; }
   .session-complete{ margin:14px 0; padding:12px; border:2px solid var(--good); }
   .session-complete b{ display:block; font-family:var(--mono); font-size:var(--fs-tag); letter-spacing:.06em; text-transform:uppercase; }
   html[data-high-contrast="true"]{ filter:contrast(1.18); }
@@ -3978,7 +3983,7 @@
   .log-grab-hint{ font-family:var(--mono); font-size:var(--fs-tag); letter-spacing:0.04em;
     text-transform:none; opacity:0.5; white-space:nowrap; }
   .log-toggle-row{ flex-basis:100%; display:flex; gap:6px; margin-top:6px; }
-  .log-toggle-row button{ height:28px; padding:0 10px; font-size:var(--fs-tag); flex:0 0 auto; }
+  .log-toggle-row button{ height:36px; padding:0 12px; font-size:var(--fs-tag); flex:0 0 auto; }
   .log-step{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
   /* Every lift is on the page, so the rows need a line between them or a nine-lift session
      reads as one long form rather than nine things. */
@@ -12378,7 +12383,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.22.005';
+const APP_VERSION = '2026.10.22.006';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
