@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.21.003",
+ "generatedFrom": "2026.10.22.001",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1086,7 +1086,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.21.003",
+  "APP_VERSION": "2026.10.22.001",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1464,6 +1464,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.10.22.001": "Dogfood is now Touring. Same app, same colours, same mark — just cleaner: the + texture behind every panel is gone, buttons are lighter with hairline edges and a little more room to tap, and the section bands have more air around them. The launch screen shows the new name too; remove the app from your home screen and add it again once to pick up the new name and launch screen.",
    "2026.10.21.003": "Plan looks like the rest of the app now: numbered sections, the tag on the right saying where you are, one button to change each. Block shows this block’s weeks as a strip like Today’s calendar, deload hatched, with the blocks coming up under it. Goals lists each goal and whether it is moving. Sport shows each sport you play with its week — game days filled, training days as rings. Weight shows the number big, the trend against what the block wants, and what to do about it.",
    "2026.10.21.002": "Eleven more sports, alongside golf: soccer, basketball, tennis, cricket, rugby, AFL, volleyball, combat sports, cycling, swimming and climbing. Turn on as many as you play under Plan → Sport, with a season and two kinds of day for each. Game days (a match, a fight, a race) are kept for the game, with a warm-up before and stretches after, and heavy lifting stays off the day or two before. Training days share the day: a lift in the morning and your sport in the evening. Every lift day gets one fast movement and one protective one from each sport, picked from what the research says moves performance and injury risk for it: Nordics and Copenhagens for football codes, landing and tendon work for jumping sports, rotator-cuff work for throwing, serving and swimming, neck work for collision and fight sports, finger and antagonist work for climbing. Fifteen new exercises came in with them, and every sport has its own icon.",
    "2026.10.21.001": "Stalls and deloads act now, not just warn. A lift stuck at one weight for three sessions without reaching the top of its rep range resets about 10% and builds back; if it sticks again at the same weight, it tells you which variation to swap to. When two or more of your main lifts stop improving in the same block (none of the last three sessions beat the best before them, or the last two fall 3% short of it), the deload moves to next week and the block ends there, so you never get a second deload a fortnight later. Marking a deload yourself from week 3 does the same. This covers every main lift you train, goal or no goal. The weeks already planned after it are rebuilt for the new block, and one undo puts it all back.",
@@ -1580,7 +1581,7 @@
     "set-up"
    ]
   },
-  "WORDMARK_HTML": "<div class=\"logo-line\"><span style=\"margin-right:-0.01em;\">D</span><span style=\"margin-right:-0.03em;\">o</span><span>g</span></div><div class=\"logo-line\"><span style=\"margin-right:-0.04em;\">f</span><span style=\"margin-right:0.005em;\">o</span><span style=\"margin-right:-0.025em;\">o</span><span>d</span></div>",
+  "WORDMARK_HTML": "<div class=\"logo-line\"><span style=\"margin-right:-0.02em;\">T</span><span>o</span><span>u</span><span>r</span><span>i</span><span>n</span><span>g</span></div>",
   "SHIFT_MS": 560,
   "CONFIRM_FILL_STEPS": 14,
   "SIG_TAU": 7,
@@ -2778,7 +2779,7 @@
     "movement": "push"
    },
    "hinge": {
-    "name": "Deadlift",
+    "name": "Romanian Deadlift",
     "area": "hamstrings",
     "secondaryArea": "lower_back",
     "movement": "hinge"
