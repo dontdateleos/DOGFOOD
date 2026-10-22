@@ -4111,6 +4111,13 @@
      date/time input's intrinsic width is wider than a third of 358 and without it the row
      runs off the edge — the same trap the tag selects fell into. */
   .morning-panel .morning-night{ display:flex; gap:8px; margin:0 0 var(--sp-3); }
+  .morning-usual{ font-family:var(--mono); font-size:var(--fs-tag); line-height:1.5; color:rgba(var(--ink-rgb),0.7); margin:0 0 var(--sp-3); }
+  /* A filled-in usual is the usual, not your answer yet: dimmed until you change it. */
+  .morning-panel input[data-planned]{ opacity:0.62; }
+  /* Done never needs a scroll: it sits at the foot of the sheet however long the sheet is,
+     so an ordinary morning is the tap on him and this one, and nothing between. */
+  .morning-panel button.primary.morning-done{ position:sticky; bottom:0; z-index:2;
+    box-shadow:0 -14px 18px 6px var(--reverse-bg); }
   .morning-panel .mn-field{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:4px; }
   .morning-panel .mn-field input{
     width:100%; min-width:0; height:auto; min-height:0; margin:0;
@@ -9531,7 +9538,7 @@ document.addEventListener('click', e=>{
   if(!todayNeedsLog || currentTabName() !== 'insights') return;
   if(!e.target.closest || !e.target.closest('.header-brand .header-mark')) return;
   e.stopPropagation();
-  openMorningLogSheet();
+  maybeAskMorning(true);
 }, true);
 function bindEyeTap(){
   [null].forEach(id=>{
@@ -12531,7 +12538,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.23.002';
+const APP_VERSION = '2026.10.23.003';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15468,16 +15475,46 @@ async function setMorningContext(field, value){
   entry.date = todayStr;
   try{ await window.storage.set(keyFor(todayStr), JSON.stringify(entry)); } catch(e){}
 }
-async function maybeAskMorning(){
-  if(!todayIsSetUp) return;                       // nothing to contextualise before there is a plan
+/* YOUR USUAL NIGHT: the median hours and wake time of the last fourteen nights that have
+   them, so the check-in opens already holding an ordinary morning. Null fields with no
+   history. Medians, not means, so one bad night does not move what "usual" is. */
+async function usualNight(){
+  const out = { hrs:null, wake:null };
+  try{
+    const res = await window.storage.list('entry:');
+    const keys = (res && res.keys || []).filter(k => k !== keyFor(todayStr)).sort().reverse().slice(0, 14);
+    const hrs = [], wake = [];
+    for(const k of keys){
+      try{
+        const e = JSON.parse((await window.storage.get(k)).value);
+        if(e && isFinite(parseFloat(e.durationHrs))) hrs.push(parseFloat(e.durationHrs));
+        if(e && typeof e.wakeClock === 'string' && /^\d{1,2}:\d{2}/.test(e.wakeClock)){
+          const [h, m] = e.wakeClock.split(':').map(Number); wake.push(h * 60 + m);
+        }
+      }catch(err){}
+    }
+    const med = a => { if(!a.length) return null; const b = [...a].sort((x, y)=> x - y); return b[Math.floor((b.length - 1) / 2)]; };
+    const mh = med(hrs); if(mh != null) out.hrs = Math.round(mh * 4) / 4;
+    const mw = med(wake);
+    if(mw != null){ const r = Math.round(mw / 5) * 5; out.wake = String(Math.floor(r / 60)).padStart(2, '0') + ':' + String(r % 60).padStart(2, '0'); }
+  }catch(e){}
+  return out;
+}
+async function maybeAskMorning(force){
   if(document.querySelector('.morning-sheet')) return;
-  if(await morningAlreadyAsked()) return;
+  if(!force){
+    if(!todayIsSetUp) return;                       // nothing to contextualise before there is a plan
+    if(await morningAlreadyAsked()) return;
+  }
   let entry = null;
   try{ entry = JSON.parse((await window.storage.get(keyFor(todayStr))).value); } catch(e){}
-  try{
-    const logged = (await getAllTrainingSessions()).some(sn => sn.date === todayStr);
-    if(logged) return;
-  } catch(e){}
+  if(!force){
+    try{
+      const logged = (await getAllTrainingSessions()).some(sn => sn.date === todayStr);
+      if(logged) return;
+    } catch(e){}
+  }
+  const usual = await usualNight();
 
   const dots = (id, opts) => `<div class="subj-scale" id="${id}">` + opts.map(([v, t]) =>
     `<button type="button" class="subj-dot" data-v="${v}">${t}</button>`).join('') + `</div>`;
@@ -15505,9 +15542,9 @@ async function maybeAskMorning(){
       <div class="morning-q">Last night</div>
       <div class="morning-night">
         <label class="mn-field"><input type="text" inputmode="decimal" id="morningSleepHrs"
-          data-field="durationHrs" placeholder="7.5" aria-label="Hours slept"><span class="mn-unit">hours</span></label>
+          data-field="durationHrs" placeholder="7.5" aria-label="Hours slept"${usual.hrs != null ? ` value="${usual.hrs}" data-planned="1"` : ''}><span class="mn-unit">hours</span></label>
         <label class="mn-field"><input type="time" id="morningWakeClock"
-          data-field="wakeClock" aria-label="Time you woke"><span class="mn-unit">woke</span></label>
+          data-field="wakeClock" aria-label="Time you woke"${usual.wake ? ` value="${usual.wake}" data-planned="1"` : ''}><span class="mn-unit">woke</span></label>
         <label class="mn-field"><input type="text" inputmode="numeric" id="morningRestingHR"
           data-field="restingHR" placeholder="52" aria-label="Resting heart rate"><span class="mn-unit">rhr</span></label>
       </div>
@@ -15519,7 +15556,7 @@ async function maybeAskMorning(){
            decide whether it has enough to report at all. Skipping it holds that average down
            for as long as you skip it, and nothing on screen ever said so. A ring fills it
            from bedtime_end, so this is aimed at the people who type. -->
-      <div class="morning-why">The time you woke is what regularity is measured from — the one
+      <div class="morning-why"${usual.wake ? ' hidden' : ''}>The time you woke is what regularity is measured from — the one
         of these three the score cannot get any other way.</div>` : '';
 
   const sheet = document.createElement('div');
@@ -15527,6 +15564,7 @@ async function maybeAskMorning(){
   sheet.innerHTML = `<div class="morning-panel" role="dialog" aria-modal="true" aria-label="This morning">
       <div class="lift-sheet-head"><span>This morning</span>
         <button type="button" class="lift-sheet-x" aria-label="Not now">\u00d7</button></div>
+      ${(askNight && (usual.hrs != null || usual.wake)) ? '<div class="morning-usual">Filled in with your usual night. Change anything that was different, then Done.</div>' : ''}
       ${nightRow}
       <div class="morning-q">Alcohol last night</div>
       ${dots('morningAlcohol', [[0,'None'],[1,'A drink or two'],[2,'More']])}
@@ -15535,11 +15573,22 @@ async function maybeAskMorning(){
       <div class="score-note" style="margin-top:var(--sp-3); color:rgba(var(--ink-rgb),0.6);">
         A drink or a bug is attributed rather than read as fatigue \u2014 the day still scores
         honestly, it just stops setting what normal looks like for you.</div>
-      <button type="button" class="primary morning-done">Done</button>
+      <button type="button" class="primary morning-done">${askNight && (usual.hrs != null || usual.wake) ? 'Done, usual night' : 'Done'}</button>
     </div>`;
 
   // Dialed, not typed — see the note on wireWheelField. Only when nightRow actually rendered
   // them; a synced ring skips this question and there is nothing here to wire.
+  /* THE ORDINARY ANSWER IS ALREADY PICKED. Most mornings are no drinks and not ill, so those
+     are selected on open (unless today already holds an answer) and Done saves them. A
+     different morning is one tap on the other option. */
+  [['morningAlcohol', 'alcohol'], ['morningUnwell', 'unwell']].forEach(([id, f])=>{
+    const box = sheet.querySelector('#' + id); if(!box) return;
+    const have = entry && entry[f] != null && entry[f] !== '' ? String(entry[f]) : null;
+    const v = have != null ? have : '0';
+    box.querySelectorAll('.subj-dot').forEach(b=> b.classList.toggle('on', b.dataset.v === v));
+    box.classList.add('answered');
+    if(have == null) box.dataset.planned = '1';
+  });
   if(askNight){
     wireWheelField(sheet.querySelector('#morningSleepHrs'), { title:'Hours slept', min:0, max:12, step:0.25, decimals:2, unit:'hours' });
     wireWheelField(sheet.querySelector('#morningRestingHR'), { title:'Resting heart rate', min:30, max:120, step:1, unit:'bpm' });
@@ -15575,13 +15624,26 @@ async function maybeAskMorning(){
   // takes; the separate keydown path this used to need existed only to get past the hold.
 
   sheet.addEventListener('click', async e=>{
-    if(e.target === sheet || e.target.closest('.lift-sheet-x') || e.target.closest('.morning-done')){ await close(); return; }
+    if(e.target.closest('.morning-done')){
+      // Done takes what is on screen, defaults and all: the usual night and the picked dots.
+      for(const el of sheet.querySelectorAll('input[data-field][data-planned]')){
+        if(el.value.trim()){ await setMorningContext(el.dataset.field, el.value.trim()); nightChanged = true; }
+      }
+      for(const [id, f] of [['morningAlcohol', 'alcohol'], ['morningUnwell', 'unwell']]){
+        const box = sheet.querySelector('#' + id);
+        const on = box && box.querySelector('.subj-dot.on');
+        if(box && box.dataset.planned && on){ await setMorningContext(f, on.dataset.v); nightChanged = true; }
+      }
+      await close(); return;
+    }
+    if(e.target === sheet || e.target.closest('.lift-sheet-x')){ await close(); return; }
     const dot = e.target.closest('.subj-dot');
     if(dot){
       const box = dot.closest('.subj-scale');
       const clearing = dot.classList.contains('on');
       box.querySelectorAll('.subj-dot').forEach(b=> b.classList.toggle('on', !clearing && b === dot));
       box.classList.toggle('answered', !clearing);
+      delete box.dataset.planned;
       await setMorningContext(box.id === 'morningAlcohol' ? 'alcohol' : 'unwell',
         clearing ? null : dot.dataset.v);
     }
@@ -15595,6 +15657,7 @@ async function maybeAskMorning(){
     const raw = el.value.trim();
     const ok = raw === '' || el.type === 'time' || isFinite(parseFloat(raw));
     if(!ok){ el.value = ''; return; }
+    delete el.dataset.planned;
     await setMorningContext(el.dataset.field, raw === '' ? null : raw);
     nightChanged = true;
   });
@@ -22141,6 +22204,7 @@ async function openBlockEditor(date, slot, block){
              the app, with their meanings in title attributes that a phone never shows. One
              lift is on screen at a time now, so there is room to say the words. -->
         <div class="log-toggle-row">
+          ${lastSetsFor(name) ? '<button type="button" class="week-ex-same small" title="log exactly what you did last time">Same as last</button>' : ''}
           <button type="button" class="week-ex-bw small outline" title="fill the weight box with your logged bodyweight">Bodyweight</button>
           <button type="button" class="week-ex-fail small outline" title="mark that the last set was taken to failure">To failure</button>
         </div>
@@ -22175,6 +22239,22 @@ async function openBlockEditor(date, slot, block){
       // Blank silently defaults to 0 in volume-load math, which undercounts calisthenics
       // work (a pull-up genuinely moves bodyweight, that's real training stress) — one tap
       // records it accurately instead of requiring mental math or a trip to Settings.
+      /* ONE TAP: LAST TIME, EXACTLY. Every set's reps and weight from the last session of this
+         lift go into the boxes in full ink, as yours. The plan's dim numbers are what you
+         get by not touching the row; this is for the day you repeated last time instead. */
+      row.querySelector('.week-ex-same')?.addEventListener('click', function(){
+        const h = lastSetsFor(row.querySelector('.week-ex-name').value);
+        if(!h) return;
+        const fmt = v => String(+(+v).toFixed(2));
+        [['.week-ex-reps', h.reps.map(fmt).join(',')], ['.week-ex-weight', h.weight.map(fmt).join(',')], ['.week-ex-sets', String(h.reps.length)]].forEach(([sel, v])=>{
+          const el = row.querySelector(sel); if(!el || !v) return;
+          el.value = v; delete el.dataset.planned;
+          el.dispatchEvent(new Event('input', { bubbles:true }));
+          el.dispatchEvent(new Event('change', { bubbles:true }));
+        });
+        blockEditDirty = true;
+        this.classList.add('on');
+      });
       row.querySelector('.week-ex-bw').addEventListener('click', async ()=>{
         const metrics = await getLatestBodyMetrics(todayStr);
         const weightInput = row.querySelector('.week-ex-weight');
@@ -26743,7 +26823,7 @@ function compactSetList(values, label){
   return values.every(v=> v === values[0]) ? label(values[0]) : values.map(label).join(',');
 }
 
-function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, setsValue, onCommit }){
+function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, setsValue, history, onCommit }){
   const titleEl = document.getElementById('multiWheelPickerTitle');
   const bankEl = document.getElementById('multiWheelBank');
   const backBtn = document.getElementById('multiWheelBackBtn');
@@ -26768,7 +26848,7 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
   // from the start when the field already had something in it, true the moment that wheel is
   // actually moved, false otherwise. Tapping in on reps alone and leaving without ever moving
   // the weight wheel must not write a weight that was never there — see the commit below.
-  let repsTouched = repsValues.length > 0, weightTouched = weightValues.length > 0;
+  let repsTouched = repsValues.length > 0 || !!(history && history.reps && history.reps.length), weightTouched = weightValues.length > 0 || !!(history && history.weight && history.weight.length);
   /* Whether anything was done in the sheet at all: a wheel moved, a set banked or unbanked.
      A sheet opened and closed without any of that writes NOTHING — not even values equal to
      what was already there, since the set count derived on the way out can differ from a
@@ -26787,8 +26867,16 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
   };
 
   const mid = (lo, hi)=> Math.round((lo + hi) / 2);
-  const repsStart = n ? repsFull[n - 1] : (reps.defaultValue != null ? reps.defaultValue : mid(reps.min, reps.max));
-  const weightStart = n ? weightFull[n - 1] : (weight.defaultValue != null ? weight.defaultValue : mid(weight.min, weight.max));
+  /* WHERE THE WHEELS START: LAST TIME, SET BY SET. A row nobody has touched yet (history is
+     only passed then) opens on set one of the last session of this lift, reps and weight,
+     and each + moves the wheels on to that session's next set, so a session that matches
+     last time is a run of + presses with no scrolling at all. Past the last set it had,
+     they stay where they are. Rows already holding your numbers open on those. */
+  const hist = history && history.reps && history.reps.length ? history : null;
+  const histAt = i => hist ? { reps: hist.reps[Math.min(i, hist.reps.length - 1)],
+    weight: hist.weight && hist.weight.length ? hist.weight[Math.min(i, hist.weight.length - 1)] : null } : null;
+  const repsStart = hist ? histAt(0).reps : n ? repsFull[n - 1] : (reps.defaultValue != null ? reps.defaultValue : mid(reps.min, reps.max));
+  const weightStart = hist && histAt(0).weight != null ? histAt(0).weight : n ? weightFull[n - 1] : (weight.defaultValue != null ? weight.defaultValue : mid(weight.min, weight.max));
 
   const repsWheel = mkSetWheelColumn({ col:'mwRepsCol', scroll:'mwRepsScroll', track:'mwRepsTrack' }, { min:reps.min, max:reps.max, label:reps.title, onInteract:()=>{ repsTouched = true; dirty = true; } });
   repsWheel.build(repsStart, reps.step || 1, 0);
@@ -26802,8 +26890,11 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
     dirty = true;
     banked.push({ reps: repsWheel.current(), weight: weightWheel.current() });
     renderBank();
-    repsWheel.build(repsWheel.current(), reps.step || 1, 0);
-    weightWheel.build(weightWheel.current(), weightStep(), weightDecimals());
+    // Next set: last session's same set if it had one, else the set just banked.
+    const nx = hist && banked.length < hist.reps.length ? histAt(banked.length) : null;
+    repsWheel.build(nx ? nx.reps : repsWheel.current(), reps.step || 1, 0);
+    weightWheel.build(nx && nx.weight != null ? nx.weight : weightWheel.current(), weightStep(), weightDecimals());
+    if(hist){ repsTouched = true; weightTouched = true; }
   };
   if(addBtn) addBtn.addEventListener('click', onAdd);
 
@@ -26868,6 +26959,18 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
    only commits once something was actually done in the sheet), so an untouched plan keeps
    its dim .dataset.planned — the same rule typing always followed. Once something WAS done,
    only the fields whose value actually changed are written. */
+/* Last session of a lift, set by set: { reps:[...], weight:[...] }, or null with no history.
+   A session logged as one number for every set (3 x 8 @ 60) is spread across its sets. */
+function lastSetsFor(name){
+  const g = exerciseHistory[exHistKey(name)];
+  if(!g) return null;
+  const n = Math.max(1, parseInt(g.sets, 10) || 1);
+  const reps = (g.repsPerSet && g.repsPerSet.length) ? g.repsPerSet.map(Number)
+    : (g.reps != null && isFinite(+g.reps) ? Array(n).fill(+g.reps) : []);
+  const weight = (g.weightPerSet && g.weightPerSet.length) ? g.weightPerSet.map(Number)
+    : (g.weight != null && isFinite(+g.weight) ? Array(reps.length || n).fill(+g.weight) : []);
+  return reps.length ? { reps, weight } : null;
+}
 function wireSetWheelField(row, { title, reps, weight }){
   const repsInput = row.querySelector('.week-ex-reps');
   const weightInput = row.querySelector('.week-ex-weight');
@@ -26889,8 +26992,11 @@ function wireSetWheelField(row, { title, reps, weight }){
        8,8,8,3 and 20,20,20,100. A planned row now opens on one set, starting at the plan's
        numbers; + is how you add the rest. */
     const plannedSets = !!(setsInput && setsInput.dataset.planned);
+    const untouched = !typedValue(repsInput) && !typedValue(weightInput);
+    const nameEl = row.querySelector('.week-ex-name');
+    const h = untouched && nameEl ? lastSetsFor(nameEl.value) : null;
     openSetWheelPicker({
-      title, reps, weight,
+      title, reps, weight, history: h,
       repsValues: parseList(repsInput.value), weightValues: parseList(weightInput.value),
       setsValue: (!plannedSets && isFinite(parsedSets)) ? parsedSets : 0,
       onCommit: (repsJoined, weightJoined, setCount)=>{
