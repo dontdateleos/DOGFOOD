@@ -9014,8 +9014,7 @@ function mcPaint(m){
   const z = h + 0.4;
   let eyes = '';
   for(const face of [0, 180]){
-    const Q = mcProject(0, face, 0), n = P(Q([0,0,1]));
-    if(n[2] <= 0.02) continue;
+    // Each eye decides its own visibility below, so a pair can wrap past the limb one eye at a time.
     /* THE EYES KEEP THEIR SHAPE. .446 shut the drawn eyes when the mark was asleep, and the
        geometry below turns a short eye into a bad one: the eye is a LINE with a round cap, so
        once eh drops under ew the `half` on the next line clamps to 0 and what is left is a
@@ -9026,18 +9025,30 @@ function mcPaint(m){
     const ew = MC_EYE_W*s * (1 + (wd - 1) * 0.3);
     const gap = MC_EYE_GAP*s;
     const eh = MC_EYE_H*s * mcState.blink * wd;
-    const ax = P(Q([1,0,0])), w = Math.max(0.6, ew * Math.hypot(ax[0], ax[1]));
-    const half = Math.max(0, eh/2 - ew/2);
-    const gx = mcState.gx * ew * 0.85;
-    const gy = mcState.gy * s * 0.06;
-    /* Upright. The pair used to slant, mirrored on sg, to carry the face you had tapped —
-       there is no face to carry now, so the line runs straight up its own axis. */
+    /* THE EYES ARE ON THE BALL, NOT ON A CARD IN FRONT OF IT.
+       They used to be drawn on a flat plane touching the front of the sphere, so a turn slid
+       them sideways and narrowed them but never carried them round: nothing about them said
+       "ball". Each eye is now a patch of the sphere's own surface — its centre, its right edge
+       and its top edge are points on the sphere at angles off the face's centre, all three
+       rotated and projected — and the capsule is drawn through them. Turning carries the eyes
+       round the curve and flattens them toward the limb; looking (gx/gy) moves them across
+       the surface the same way, so a glance to the side is foreshortened too; and past the
+       limb they go round the back. Same sizes at rest as the flat ones. */
+    const sph = (az, el)=> [Math.sin(az)*Math.cos(el)*h, -Math.sin(el)*h, Math.cos(az)*Math.cos(el)*h];
+    const asn = v => Math.asin(Math.max(-0.99, Math.min(0.99, v)));
+    const off = asn((gap/2 + ew/2) / h), dw = asn((ew/2) / h), dh = asn((eh/2) / h);
+    const gAz = asn(mcState.gx * ew * 0.85 / h), gEl = -asn(mcState.gy * s * 0.06 / h);
     for(const sg of [-1,1]){
-      const x = sg * (gap/2 + ew/2) + gx;
-      const a = P(Q([x, -half + gy, z])), b = P(Q([x, half + gy, z]));
-      eyes += `<line x1="${(c+a[0]).toFixed(2)}" y1="${(c+a[1]).toFixed(2)}"`
-           + ` x2="${(c+b[0]).toFixed(2)}" y2="${(c+b[1]).toFixed(2)}"`
-           + ` style="stroke:${m.ink}" stroke-width="${w.toFixed(2)}" stroke-linecap="round"/>`;
+      const az = face * MC_RAD + sg * off + gAz, el = gEl;
+      const pc = P(sph(az, el));
+      if(pc[2] <= 0.04 * h) continue;
+      const pu = P(sph(az + dw, el)), pv = P(sph(az, el + dh));
+      const ux = pu[0]-pc[0], uy = pu[1]-pc[1], vx = pc[0]-pv[0], vy = pc[1]-pv[1];
+      const lu = Math.hypot(ux, uy), lv = Math.max(0.01, Math.hypot(vx, vy));
+      if(lu < 0.25) continue;
+      const ry = Math.min(1, lu / lv);
+      eyes += `<rect x="-1" y="-1" width="2" height="2" rx="1" ry="${ry.toFixed(3)}" style="fill:${m.ink}"`
+           + ` transform="matrix(${ux.toFixed(3)} ${uy.toFixed(3)} ${vx.toFixed(3)} ${vy.toFixed(3)} ${(c+pc[0]).toFixed(2)} ${(c+pc[1]).toFixed(2)})"/>`;
     }
   }
   if(eyes) out += `<clipPath id="${m.id}E"><circle cx="${c}" cy="${c}" r="${h.toFixed(2)}"/></clipPath>`
@@ -9179,6 +9190,16 @@ function startMarkCube(){
     const t = (now - mcState.born) / 1000;
     if(!mcState.step && mcState.queue.length){
       const to = mcState.queue.shift();
+      /* THE EYES GO FIRST. A head that turns with its eyes fixed is a model on a turntable;
+         one whose eyes get there a beat early is looking at something. Any turn of more than
+         ten degrees aims the gaze the way it is going for the length of the step, and a turn
+         back to face on brings it home. */
+      { const dy = (to.ry == null ? mcState.ry : to.ry) - mcState.ry, dx = (to.rx == null ? mcState.rx : to.rx) - mcState.rx;
+        if(Math.abs(dy) > 10 && Math.abs(dy) < 300 || Math.abs(dx) > 10 && Math.abs(dx) < 300){
+          mcState.aimGx = Math.max(-0.7, Math.min(0.7, dy / 40));
+          mcState.aimGy = Math.max(-0.7, Math.min(0.7, -dx / 30));
+          mcState.gazeAt = now + Math.max(1, to.ms) + (to.hold || 0);
+        } }
       mcState.step = { t0:now, ms:Math.max(1, to.ms), hold:to.hold,
                        from:{ rx:mcState.rx, ry:mcState.ry, rz:mcState.rz },
                        to:{ rx: to.rx == null ? mcState.rx : to.rx,
@@ -12459,7 +12480,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.22.014';
+const APP_VERSION = '2026.10.22.015';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
