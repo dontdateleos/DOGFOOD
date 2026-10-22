@@ -2455,8 +2455,6 @@
   #recoveryDataView > .date-row{ margin-bottom:0; padding-top:var(--sp-2); padding-bottom:var(--sp-2); }
   #recoveryDataView > #sleepDebtOut{ margin-top:0; padding-bottom:var(--sp-3);
     color:var(--dim); }
-  /* This said the above for one pill row on one tab. It is the base now. */
-  body.tab-injuries header, body.tab-settings header, body.tab-data header,
   /* PLAN ROWS. One answer each: a label, the big line, one sentence under it. The whole row
      is the button into its sheet. */
   .plan-rows{ display:flex; flex-direction:column; margin:8px 0 40px; }
@@ -12401,7 +12399,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.22.010';
+const APP_VERSION = '2026.10.22.011';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
