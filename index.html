@@ -1109,8 +1109,8 @@
      that comment) rather than copying the mark's scroll-collapse math into a second place.
      24px tall for the same reason the mark's own hit area used to be floored: WCAG 2.2 AA's
      minimum for a real target, not a label. */
-  .header-mark .header-score{ position:absolute; left:calc(100% + 8px); top:50%;
-    transform:translateY(-50%); display:flex; align-items:center; gap:4px;
+  .header-mark .header-score{ position:absolute; left:auto; right:calc(100% + 10px / var(--mk, 1)); top:8px;
+    transform:translateY(-50%) scale(calc(1 / var(--mk, 1))); transform-origin:100% 50%; display:flex; align-items:center; gap:4px;
     background:transparent; border:1px solid rgba(var(--ink-rgb),0.4); border-radius:999px;
     padding:0 10px; min-height:24px; font-family:var(--mono); font-size:var(--fs-tag);
     font-weight:var(--fw-bold); color:var(--bg); letter-spacing:var(--track-ui);
@@ -1135,8 +1135,8 @@
      (today's number, tap for detail) — fine for a readout, wrong for an offer. Filled solid
      in the same orange the reminder has used since the very first version of it, plus a slow
      breathe so it is still finding your eye after the first glance, not just at it. */
-  @keyframes headerScorePulse{ 0%,100%{ transform:translateY(-50%) scale(1); }
-    50%{ transform:translateY(-50%) scale(1.08); } }
+  @keyframes headerScorePulse{ 0%,100%{ transform:translateY(-50%) scale(calc(1 / var(--mk, 1))); }
+    50%{ transform:translateY(-50%) scale(calc(1.08 / var(--mk, 1))); } }
   .header-mark .header-score.needs-tap{ background:var(--block-orange); border-color:var(--block-orange);
     color:var(--banner); animation:headerScorePulse 1800ms ease-in-out infinite; }
   .header-mark .header-score.needs-tap:active{ background:var(--block-orange); opacity:0.8; }
@@ -12177,12 +12177,13 @@ function renderHeaderDate(){
   set('.hd-day', String(now.getDate()));
   set('.hd-mon', now.toLocaleDateString(undefined, { month:'long' }));
   el.setAttribute('aria-label', now.toLocaleDateString(undefined, { weekday:'long', day:'numeric', month:'long' }));
-  // The date starts where the logo starts. It sat at the top of the black instead, which
-  // put it on a level of its own above everything else in the header.
-  const h1 = document.querySelector('.header-brand h1');
+  // The date starts level with the tab's label (TODAY, PLAN…). It used to start on the
+  // title's cap line; with the big mark now under it, it moves up a row to give the face
+  // room, and the label line is the one thing already up there for it to line up with.
+  const h1 = document.getElementById('currentTabWord');
   const first = el.querySelector('.hd-dow');
   if(h1 && first){
-    const top = h1.offsetTop + capTopOffset(h1) - capTopOffset(first);
+    const top = h1.getBoundingClientRect().top - el.offsetParent.getBoundingClientRect().top + capTopOffset(h1) - capTopOffset(first);
     el.style.top = Math.round(top) + 'px';
   }
 }
@@ -12383,7 +12384,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.22.006';
+const APP_VERSION = '2026.10.22.007';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13949,13 +13950,25 @@ function updateHeaderCollapse(){
   const MARK_TOP = 57;
   // The header mark's top is written from here, so the sag has to be added in rather than
   // read off the custom property the way the score slot does it.
-  mark.style.top = (lerp(MARK_TOP, 30, progress) + (typeof eyeSagPx === 'function' ? eyeSagPx() : 0)) + 'px';
-  mark.style.left = (logoOriginX + (logoTextWidth + MARK_GAP) * (fontSize/46)) + 'px';
+  /* BIG, IN THE CORNER, CUT OFF BY THE BANNER (Touring). Open, the mark is MARK_BIG times its
+     size, pinned under the date and pushed past the band's bottom edge so only the top of the
+     face shows: it peeks up at you rather than sitting beside the title as a logo. Scaled from
+     its bottom-right corner, so the collapse below shrinks it down and out of the band the way
+     it came, and the perch takes over exactly as before. MARK_TOP and MARK_GAP above stay
+     for the perch maths and the flying eyes, which still read the lockup position. */
+  const MARK_BIG = 3, MARK_RIGHT = 8, MARK_SUNK = 0.42;
+  const bandH = brandEl ? brandEl.getBoundingClientRect().height : 146;
+  const bandW = brandEl ? brandEl.clientWidth : window.innerWidth;
+  mark.style.transformOrigin = '100% 100%';
+  mark.style.left = (bandW - MARK_RIGHT - 40) + 'px';
+  mark.style.top = (bandH + 40 * MARK_BIG * MARK_SUNK - 40 + (typeof eyeSagPx === 'function' ? eyeSagPx() : 0)) + 'px';
   // Widening a touch as it shrinks reads as the mark being squeezed out of the way,
   // where an even scale just reads as it being turned off. The bulge peaks mid-collapse
   // and is gone at both ends, so it never fights the finger.
   const squash = anim('collapseSquash') ? 1 + EYE_ANIM.collapseSquash.amt * progress * (1 - progress) * 4 : 1;
-  mark.style.transform = `scale(${(1-progress) * squash}, ${1-progress})`;
+  mark.style.transform = `scale(${MARK_BIG * (1-progress) * squash}, ${MARK_BIG * (1-progress)})`;
+  // The score rides inside the mark; it un-scales by this so it stays its own size.
+  mark.style.setProperty('--mk', Math.max(0.01, MARK_BIG * (1-progress)).toFixed(4));
   // Perched, it is not part of the wordmark any more — it sits beside the tab's name on the
   // one row the collapsed header still has, at half size, and stays there until the score
   // scrolls back into view.
@@ -13965,6 +13978,8 @@ function updateHeaderCollapse(){
       mark.style.left = spot.left + 'px';
       mark.style.top = (spot.top + (typeof eyeSagPx === 'function' ? eyeSagPx() : 0)) + 'px';
       mark.style.transform = `scale(${EYE_PERCH_SCALE})`;
+      mark.style.transformOrigin = '';
+      mark.style.setProperty('--mk', '1');
     }
   }
   // The header is sticky and shrinks as you scroll, so a heading that tucks under it has to
