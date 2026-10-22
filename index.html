@@ -573,6 +573,26 @@
      of the page -- which was Today's lime on every other tab. A fixed band of the current
      --banner, exactly the inset tall, sits over it on every tab and through the collapse, and
      theme-color follows the tab too (see syncThemeColor). */
+  /* NIGHT ON WORKOUTS UNTIL THE MORNING IS LOGGED: a dark version of the lime with cream
+     type, over every masthead setting. The band eases to day when he wakes. */
+  body.tab-insights.morning-pending, html[data-masthead] body.tab-insights.morning-pending{ --banner:#2f3712; }
+  body.tab-insights.morning-pending .header-brand, html[data-masthead] body.tab-insights.morning-pending .header-brand{ --bg:#fff7ec; --ink-rgb:255,247,236; --label:#e9e3c9; }
+  html body.tab-insights.morning-pending header h1{ color:#fff7ec; -webkit-text-stroke-color:#fff7ec; }
+  .header-brand{ transition:background-color 900ms ease; }
+  body.morning-pending .header-brand .header-mark{ cursor:pointer; }
+  body.tab-insights.morning-pending .header-brand .tab-label, body.tab-insights.morning-pending .header-brand .tab-label *{ color:#fff7ec; }
+  body.tab-insights.morning-pending .header-brand .tabs{ --lit:#fff7ec; }
+  /* The corner mark's z's: up and to the left of him, the only side with room, at a size for
+     the band rather than 0.4 of his 120 box, in the band's own ink. */
+  .header-brand .header-mark .eye-zzz{ left:6px; top:2px; }
+  .header-brand .header-mark .eye-zzz i{ font-size:18px; color:#0c0d0b; animation-name:eyeZcorner; }
+  body.morning-pending .header-brand .header-mark .eye-zzz i{ color:#fff7ec; }
+  @keyframes eyeZcorner{
+    0%{   transform:translate(0,0) scale(0.7) rotate(-10deg); opacity:0; }
+    20%{  opacity:0.95; }
+    70%{  opacity:0.55; }
+    100%{ transform:translate(-16px,-22px) scale(1.25) rotate(-16deg); opacity:0; }
+  }
   body::before{ content:""; position:fixed; left:0; right:0; top:0; height:env(safe-area-inset-top, 0px);
     background:var(--banner); z-index:60; pointer-events:none; }
   header h1{ min-height:calc(2em * 0.92); }
@@ -7728,7 +7748,7 @@ function eyeFullOpen(site){ return parseFloat(EYE_SITES[site]['--eye-h']); }
    reduced-motion guard as the rest of the mark's ambient movement — with motion off the z's
    go too, because a static z stuck above the eyes is a bug, not a quieter version. */
 function markIsAsleep(){
-  return (anim('idleSleep') && eyeCtx.asleep) || (anim('restDayFace') && eyeCtx.restDay);
+  return !!eyeCtx.morning || (anim('idleSleep') && eyeCtx.asleep) || (anim('restDayFace') && eyeCtx.restDay);
 }
 function updateSleepZs(){
   // The drawn mark is redrawn on the way through. It no longer changes with sleep, but this
@@ -9038,7 +9058,7 @@ function mcPaint(m){
     const wd = (mcState.wide || 1) * (mcState.swEh || 1);
     const ew = MC_EYE_W*s * (1 + (wd - 1) * 0.3);
     const gap = MC_EYE_GAP*s;
-    const eh = MC_EYE_H*s * mcState.blink * wd;
+    const eh = MC_EYE_H*s * mcState.blink * wd * (mcState.sleepy ? 0.12 : 1);
     /* THE EYES ARE ON THE BALL, NOT ON A CARD IN FRONT OF IT.
        They used to be drawn on a flat plane touching the front of the sphere, so a turn slid
        them sideways and narrowed them but never carried them round: nothing about them said
@@ -9159,7 +9179,7 @@ function mcSwitchPose(keys, ms){
   return at(keys.length - 1);
 }
 function markCubeTurn(){                       // the tab you picked, on the eyes' own beat
-  if(!mcState.raf) return;
+  if(!mcState.raf || mcState.sleepy) return;
   let n = Math.floor(Math.random() * MC_SWITCH.length);
   if(n === mcSwitchLast) n = (n + 1 + Math.floor(Math.random() * (MC_SWITCH.length - 1))) % MC_SWITCH.length;
   mcSwitchLast = n;
@@ -9253,7 +9273,7 @@ function startMarkCube(){
         mcState.step = null;
         if(!mcState.queue.length) mcState.nextAt = now + 1500 + Math.random() * 3000;
       }
-    } else if(now > mcState.nextAt){
+    } else if(now > mcState.nextAt && !mcState.sleepy){
       /* A body move is not a queue of poses, so it is dispatched rather than queued — and it
          books the next slot itself, which the queue would otherwise have done on draining. */
       const mv = mcPickMove();
@@ -9284,7 +9304,7 @@ function startMarkCube(){
     /* THE EYES WIDEN ON THEIR OWN every four to nine seconds: up fast, held, eased back. A
        third taller and a touch wider at the top, so it reads as interest, not a stretch. */
     if(!mcState.wideAt) mcState.wideAt = now + 2500;
-    if(now > mcState.wideAt){ mcState.wideT0 = now; mcState.wideAt = now + 4000 + Math.random() * 5000; }
+    if(now > mcState.wideAt && !mcState.sleepy){ mcState.wideT0 = now; mcState.wideAt = now + 4000 + Math.random() * 5000; }
     { const e = (now - (mcState.wideT0 || -1e9)) / 1100;
       mcState.wide = e < 0 || e >= 1 ? 1
         : 1 + 0.34 * (e < 0.14 ? e / 0.14 : e < 0.6 ? 1 : 1 - mcEase((e - 0.6) / 0.4)); }
@@ -9505,6 +9525,14 @@ function withEyesBusy(promise, host){
 /* The header mark only. The perch used to take a tap too, and it is never shown now — a
    visibility:hidden element takes no pointer events, so that binding could not fire. On the
    band the mark is the chip, and the chip's own tap opens the five faces. */
+/* Asleep on Workouts, the mark is the check-in button. Capture phase, so it runs before the
+   press-and-hold stare the mark otherwise does. */
+document.addEventListener('click', e=>{
+  if(!todayNeedsLog || currentTabName() !== 'insights') return;
+  if(!e.target.closest || !e.target.closest('.header-brand .header-mark')) return;
+  e.stopPropagation();
+  openMorningLogSheet();
+}, true);
 function bindEyeTap(){
   [null].forEach(id=>{
     const el = id ? document.getElementById(id) : document.querySelector('.header-mark');
@@ -11438,7 +11466,7 @@ function renderTabInsight(tab){
     .then(()=> tabInsightFor(tab))
     .then(text=>{
       if(mine !== tabInsightToken) return;
-      el.textContent = text || '';
+      el.textContent = (tab === 'insights' && todayNeedsLog) ? 'tap him to start the day' : (text || '');
       if(typeof updateEyePerch === 'function') updateEyePerch();
     })
     .catch(err=>{
@@ -12503,7 +12531,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.23.001';
+const APP_VERSION = '2026.10.23.002';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -37129,7 +37157,20 @@ function refreshHeaderLogBadge(){
   const sunrise = document.getElementById('headerScoreSunrise');
   const out = document.getElementById('headerScoreOut');
   const btn = document.getElementById('headerScoreBtn');
-  if(btn) btn.hidden = !onToday;
+  /* ASLEEP UNTIL YOU LOG, AND NIGHT UNTIL HE WAKES. The sunrise pill is gone: before this
+     morning's check-in the mark sleeps (eyes shut, z's off him, no idle moves) on a night
+     version of the band, and tapping HIM opens the check-in. Logging wakes him with a widen
+     and brings the day up. Off Workouts none of this applies. */
+  const wasAsleep = mcState.sleepy;
+  mcState.sleepy = needsLog;
+  eyeCtx.morning = needsLog;
+  document.body.classList.toggle('morning-pending', needsLog);
+  if(wasAsleep && !needsLog && onToday){ mcState.wideAt = 1; markReact('nod'); renderTabInsight('insights'); }
+  if(typeof updateSleepZs === 'function') updateSleepZs();
+  syncThemeColor();
+  const ins = document.getElementById('currentTabInsight');
+  if(ins && onToday && needsLog) ins.textContent = 'tap him to start the day';
+  if(btn) btn.hidden = !onToday || needsLog;
   if(sunrise) sunrise.hidden = !needsLog;
   if(out) out.hidden = needsLog;
   if(btn) btn.classList.toggle('needs-tap', needsLog);

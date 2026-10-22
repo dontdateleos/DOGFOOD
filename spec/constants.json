@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.23.001",
+ "generatedFrom": "2026.10.23.002",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1086,7 +1086,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.23.001",
+  "APP_VERSION": "2026.10.23.002",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1464,7 +1464,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
-   "2026.10.23.001": "The tab switcher under the masthead is five dots in a straight row now, and the tab you are on is a short white pill. Tap a dot or swipe as before.",
+   "2026.10.23.002": "The tab switcher under the masthead is five dots in a straight row now, and the tab you are on is a short white pill. Tap a dot or swipe as before.",
    "2026.10.22.004": "The mark is a flat white face now, with a soft shadow along the bottom so it still reads as round, and its eyes sit a little higher. Same on the app icon.",
    "2026.10.22.003": "The mark’s eyes are a third bigger and its outer ring is gone — a plain white face on the masthead and on the app icon.",
    "2026.10.22.002": "The mark is white with black eyes now, on every tab and on the app icon — one face across the app, with each tab’s colour left to its title. And the type is on one scale: every size in the app is one of nine steps (10, 11, 12, 13, 16, 18, 26, 46, 58), where there were fourteen, so labels, notes and numbers line up from screen to screen. Re-add the app to your home screen to pick up the new icon.",
