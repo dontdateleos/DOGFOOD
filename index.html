@@ -9022,7 +9022,7 @@ function mcPaint(m){
        zero-length line — a dot. Two beady circles where the capsules were, on every tab,
        whenever the app had been left alone for two and a half minutes. The z's say it is
        asleep; they do not need the face deformed to help. */
-    const wd = mcState.wide || 1;
+    const wd = (mcState.wide || 1) * (mcState.swEh || 1);
     const ew = MC_EYE_W*s * (1 + (wd - 1) * 0.3);
     const gap = MC_EYE_GAP*s;
     const eh = MC_EYE_H*s * mcState.blink * wd;
@@ -9053,10 +9053,10 @@ function mcPaint(m){
      box, since the box is 8% larger than the mark — because a sphere compressing around its
      own centre is a shape being scaled, where one compressing against its footing is an
      object landing on something. */
-  const sq = mcState.sx !== 1 || mcState.sy !== 1 || mcState.ty !== 0;
+  const sq = mcState.sx !== 1 || mcState.sy !== 1 || mcState.ty !== 0 || (mcState.tx || 0) !== 0;
   if(sq){
     svg.style.transformOrigin = '50% 96.3%';
-    svg.style.transform = `translate(-50%,-50%) translate(0,${(mcState.ty * s).toFixed(2)}px)`
+    svg.style.transform = `translate(-50%,-50%) translate(${((mcState.tx || 0) * s).toFixed(2)}px,${(mcState.ty * s).toFixed(2)}px)`
                         + ` scale(${mcState.sx.toFixed(4)},${mcState.sy.toFixed(4)})`;
     svg.dataset.sq = '1';
   } else if(svg.dataset.sq){
@@ -9099,9 +9099,47 @@ function mcPickMove(){
   for(const m of MC_MOVES){ if((r -= m.w) <= 0) return m; }
   return MC_MOVES[0];
 }
+/* ON A TAB SWITCH HE READS THE NEW TITLE, ONE OF TEN WAYS, PICKED AT RANDOM.
+   The mark lives in the bottom-right corner now and the title sits up and to his left, so
+   every one of these turns the sphere up-left toward it and back. They are keyframes on the
+   same rig the idle uses: ry yaw (negative turns his face left, toward the title), rx pitch
+   (positive looks up), rz roll, gx/gy the eyes' own gaze across the face (deg), x/y the body's
+   offset and eh the eye height, at t ms. The order is shuffled so the same one never plays
+   twice running. Turning left brings more of his face in from off the edge, which is half
+   of why these read. */
+const MC_SWITCH = [
+  /* turn and read */      [{t:0},{t:320,ry:-38,rx:14},{t:900,ry:-38,rx:14},{t:1250}],
+  /* read the line */      [{t:0},{t:300,ry:-52,rx:16},{t:520,ry:-52,rx:16},{t:700,ry:-40,rx:16},{t:900,ry:-40,rx:16},{t:1080,ry:-28,rx:12},{t:1250,ry:-28,rx:12},{t:1600}],
+  /* eyes lead */          [{t:0},{t:180,gx:-16,gy:8},{t:420,ry:-30,rx:10,gx:-10,gy:6},{t:950,ry:-30,rx:10,gx:-10,gy:6},{t:1150,ry:-10,rx:3},{t:1400}],
+  /* double take */        [{t:0},{t:140,ry:-24,rx:8},{t:300},{t:520},{t:800,ry:-44,rx:16,eh:1.25},{t:1200,ry:-44,rx:16,eh:1.25},{t:1550}],
+  /* roll to it */         [{t:0},{t:450,ry:-60,rx:8,x:-34},{t:950,ry:-60,rx:8,x:-34},{t:1400}],
+  /* peer over */          [{t:0},{t:380,y:-22,ry:-30,rx:22,rz:-6},{t:950,y:-22,ry:-30,rx:22,rz:-6},{t:1300}],
+  /* curious tilt */       [{t:0},{t:350,ry:-34,rx:12,rz:14},{t:1000,ry:-34,rx:12,rz:14},{t:1350}],
+  /* spin round to it */   [{t:0},{t:600,ry:-400,rx:12},{t:1000,ry:-400,rx:12},{t:1300,ry:-360}],
+  /* nod at it */          [{t:0},{t:300,ry:-36,rx:14},{t:520,ry:-36,rx:14},{t:640,ry:-36,rx:-2},{t:780,ry:-36,rx:14},{t:1000,ry:-36,rx:14},{t:1300}],
+  /* over the shoulder */  [{t:0},{t:420,ry:-72,rx:10},{t:1000,ry:-72,rx:10},{t:1400}],
+];
+const MC_SW0 = { ry:0, rx:0, rz:0, gx:0, gy:0, x:0, y:0, eh:1 };
+let mcSwitchLast = -1;
+function mcSwitchPose(keys, ms){
+  const at = i => Object.assign({}, MC_SW0, keys[i]);
+  if(ms <= keys[0].t) return at(0);
+  for(let i = 1; i < keys.length; i++){
+    if(ms <= keys[i].t){
+      const a = at(i-1), b = at(i), f = mcEase((ms - a.t) / (b.t - a.t)), o = {};
+      for(const k in MC_SW0) o[k] = a[k] + (b[k] - a[k]) * f;
+      return o;
+    }
+  }
+  return at(keys.length - 1);
+}
 function markCubeTurn(){                       // the tab you picked, on the eyes' own beat
-  if(mcState.step || mcState.queue.length) return;
-  mcQueue(MC_MOVES[Math.random() < 0.6 ? 0 : 1].steps());
+  if(!mcState.raf) return;
+  let n = Math.floor(Math.random() * MC_SWITCH.length);
+  if(n === mcSwitchLast) n = (n + 1 + Math.floor(Math.random() * (MC_SWITCH.length - 1))) % MC_SWITCH.length;
+  mcSwitchLast = n;
+  mcState.queue = []; mcState.step = null;
+  mcState.sw = { keys:MC_SWITCH[n], t0:performance.now(), from:{ rx:mcState.rx, ry:mcState.ry, rz:mcState.rz } };
 }
 function mcQueue(steps){
   const from = { rx:mcState.rx, ry:mcState.ry, rz:mcState.rz };
@@ -9147,7 +9185,29 @@ function startMarkCube(){
                             ry: to.ry == null ? mcState.ry : to.ry,
                             rz: to.rz == null ? mcState.rz : to.rz } };
     }
-    if(mcState.step){
+    if(mcState.sw){
+      /* A switch read owns the pose until it ends. Units: gaze degrees to the rig's gaze
+         fraction (about 13 deg to one eye-width across, 7 deg to one step down, sign flipped
+         because the rig's y runs down), body px on a 92px sphere to fractions of it. */
+      const sw = mcState.sw, ms = now - sw.t0, last = sw.keys[sw.keys.length - 1].t;
+      const p = mcSwitchPose(sw.keys, ms);
+      // Ease in from wherever the idle had him, over the first 160ms.
+      const k = Math.min(1, ms / 160);
+      mcState.rx = sw.from.rx + (p.rx - sw.from.rx) * k;
+      mcState.ry = sw.from.ry + (p.ry - sw.from.ry) * k;
+      mcState.rz = sw.from.rz + (p.rz - sw.from.rz) * k;
+      mcState.gx = mcState.aimGx = p.gx / 13;
+      mcState.gy = mcState.aimGy = -p.gy / 7;
+      mcState.gazeAt = now + 900;
+      mcState.tx = p.x / 92;
+      if(!mcState.body) mcState.ty = p.y / 92;
+      mcState.swEh = p.eh;
+      if(ms >= last){
+        mcState.ry %= 360; mcState.rx %= 360;
+        mcState.tx = 0; if(!mcState.body) mcState.ty = 0; mcState.swEh = 1;
+        mcState.sw = null; mcState.nextAt = now + 2500 + Math.random() * 2500;
+      }
+    } else if(mcState.step){
       const st = mcState.step, f = Math.min(1, (now - st.t0) / st.ms), e = mcEase(f);
       mcState.rx = st.from.rx + (st.to.rx - st.from.rx) * e;
       mcState.ry = st.from.ry + (st.to.ry - st.from.ry) * e;
@@ -12399,7 +12459,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.22.013';
+const APP_VERSION = '2026.10.22.014';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
