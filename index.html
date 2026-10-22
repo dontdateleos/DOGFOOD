@@ -18,7 +18,7 @@
      localStorage rather than the app's async storage, because the alternative is the page
      drawing itself black and then flipping to bone on every single launch. The masthead is
      dark on both grounds, which is why theme-color above does not move with it. -->
-<script>try{var g=localStorage.getItem('ground')||'bone';if(g==='bone')document.documentElement.dataset.ground='bone';var m=localStorage.getItem('masthead')||'deep';if(m!=='deep')document.documentElement.dataset.masthead=m;}catch(e){}</script>
+<script>try{var g=localStorage.getItem('ground')||'bone';if(g==='bone')document.documentElement.dataset.ground='bone';var m=localStorage.getItem('masthead')||'bright';if(m!=='deep')document.documentElement.dataset.masthead=m;}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Touring">
@@ -5262,11 +5262,20 @@
   html[data-masthead="lifted"] header h1{ color:#fbfaf6; -webkit-text-stroke-color:#fbfaf6; }
 
   /* Bright -- banner L* 60, C* 34. Title ink at 6.12-6.17:1. */
-  html[data-masthead="bright"] body.tab-insights{ --banner:#8a9759; --mark-shell:#afb78a; --mark-lit:#d8eb98; }
-  html[data-masthead="bright"] body.tab-plan{ --banner:#b9865b; --mark-shell:#d2aa8b; --mark-lit:#ffdcc0; }
-  html[data-masthead="bright"] body.tab-injuries{ --banner:#c97990; --mark-shell:#dda2b1; --mark-lit:#ffd9e1; }
-  html[data-masthead="bright"] body.tab-data{ --banner:#a883ba; --mark-shell:#c4a8d0; --mark-lit:#f5d9ff; }
-  html[data-masthead="bright"] body.tab-settings{ --banner:#39a08e; --mark-shell:#7cbeb0; --mark-lit:#6ff8e1; }
+  html[data-masthead="bright"] body.tab-insights{ --banner:#808e4a; --mark-shell:#afb78a; --mark-lit:#d8eb98; }
+  html[data-masthead="bright"] body.tab-plan{ --banner:#b9773f; --mark-shell:#d2aa8b; --mark-lit:#ffdcc0; }
+  html[data-masthead="bright"] body.tab-injuries{ --banner:#ca5879; --mark-shell:#dda2b1; --mark-lit:#ffd9e1; }
+  html[data-masthead="bright"] body.tab-data{ --banner:#9c68b6; --mark-shell:#c4a8d0; --mark-lit:#f5d9ff; }
+  html[data-masthead="bright"] body.tab-settings{ --banner:#299a86; --mark-shell:#7cbeb0; --mark-lit:#6ff8e1; }
+  /* BRIGHT IS THE DEFAULT NOW THE MARK IS BLACK. On the dark bands a black mark is a hole in
+     the corner and all the colour sits in the title; on a band that carries the tab's colour,
+     the black title and the black mark are a pair on either side of it. The bands are a step
+     richer than they were (lightness x0.9, saturation x1.22), every one still over 4.7:1 for
+     the black type. The morning button turns black with an orange sun, because an orange
+     disc on a coloured band was a second colour fighting the first. */
+  html[data-masthead="bright"] .header-mark .header-score.needs-tap{ background:#0c0d0b; border-color:#0c0d0b;
+    color:var(--block-orange); }
+  html[data-masthead="bright"] .header-mark .header-score.needs-tap:active{ background:#0c0d0b; }
   /* THE MARK IS BLACK ON EVERY TAB, with the cream eyes it always had. It used to wear each
      tab's hue, darkened; the tab's colour now stays with the title and the band, and the mark
      is one character across the app and on the icon. The lit crescent is a lifted black so the
@@ -9015,9 +9024,10 @@ function mcPaint(m){
        zero-length line — a dot. Two beady circles where the capsules were, on every tab,
        whenever the app had been left alone for two and a half minutes. The z's say it is
        asleep; they do not need the face deformed to help. */
-    const ew = MC_EYE_W*s;
+    const wd = mcState.wide || 1;
+    const ew = MC_EYE_W*s * (1 + (wd - 1) * 0.3);
     const gap = MC_EYE_GAP*s;
-    const eh = MC_EYE_H*s * mcState.blink;
+    const eh = MC_EYE_H*s * mcState.blink * wd;
     const ax = P(Q([1,0,0])), w = Math.max(0.6, ew * Math.hypot(ax[0], ax[1]));
     const half = Math.max(0, eh/2 - ew/2);
     const gx = mcState.gx * ew * 0.85;
@@ -9148,19 +9158,20 @@ function startMarkCube(){
         // A full turn lands where it started; keep the angle small so it never drifts away.
         mcState.ry %= 360; mcState.rx %= 360;
         mcState.step = null;
-        if(!mcState.queue.length) mcState.nextAt = now + 3200 + Math.random() * 6000;
+        if(!mcState.queue.length) mcState.nextAt = now + 1500 + Math.random() * 3000;
       }
     } else if(now > mcState.nextAt){
       /* A body move is not a queue of poses, so it is dispatched rather than queued — and it
          books the next slot itself, which the queue would otherwise have done on draining. */
       const mv = mcPickMove();
-      if(mv.body){ markBody(mv.body); mcState.nextAt = now + 3200 + Math.random() * 6000; }
+      if(mv.body){ markBody(mv.body); mcState.nextAt = now + 1500 + Math.random() * 3000; }
       else mcQueue(mv.steps());
     } else {
       // Between moves it is not frozen, just quiet.
-      mcState.rx += ((2.5 * Math.sin(t * 0.31)) - mcState.rx) * 0.04;
-      mcState.ry += ((3.5 * Math.sin(t * 0.23 + 1.1)) - mcState.ry) * 0.04;
-      mcState.rz += (0 - mcState.rz) * 0.06;
+      // Livelier between moves (was 2.5 / 3.5 and no lean): it sways, turns and leans a little.
+      mcState.rx += ((6 * Math.sin(t * 0.37)) - mcState.rx) * 0.05;
+      mcState.ry += ((9 * Math.sin(t * 0.29 + 1.1)) - mcState.ry) * 0.05;
+      mcState.rz += ((3 * Math.sin(t * 0.21 + 2.3)) - mcState.rz) * 0.05;
     }
     /* Advanced beside the queue, not inside it, so a bounce can play over a drift. */
     if(mcState.body){
@@ -9169,14 +9180,21 @@ function startMarkCube(){
       else { const b = B.f(e / B.ms); mcState.sx = b.sx; mcState.sy = b.sy; mcState.ty = b.ty; }
     }
     if(now > mcState.gazeAt){
-      mcState.gazeAt = now + 1400 + Math.random() * 3200;
-      mcState.aimGx = (Math.random() * 2 - 1) * 0.5;
-      mcState.aimGy = (Math.random() * 2 - 1) * 0.5;
+      mcState.gazeAt = now + 900 + Math.random() * 2200;
+      mcState.aimGx = (Math.random() * 2 - 1) * 0.75;
+      mcState.aimGy = (Math.random() * 2 - 1) * 0.75;
     }
     mcState.gx += (mcState.aimGx - mcState.gx) * 0.06;
     mcState.gy += (mcState.aimGy - mcState.gy) * 0.06;
     if(now > mcState.blinkAt){ mcState.blinkAt = now + 3200 + Math.random() * 4600; mcState.blink = 0.08;
       setTimeout(()=>{ mcState.blink = 1; }, 110); }
+    /* THE EYES WIDEN ON THEIR OWN every four to nine seconds: up fast, held, eased back. A
+       third taller and a touch wider at the top, so it reads as interest, not a stretch. */
+    if(!mcState.wideAt) mcState.wideAt = now + 2500;
+    if(now > mcState.wideAt){ mcState.wideT0 = now; mcState.wideAt = now + 4000 + Math.random() * 5000; }
+    { const e = (now - (mcState.wideT0 || -1e9)) / 1100;
+      mcState.wide = e < 0 || e >= 1 ? 1
+        : 1 + 0.34 * (e < 0.14 ? e / 0.14 : e < 0.6 ? 1 : 1 - mcEase((e - 0.6) / 0.4)); }
     drawMarkCube();
     mcState.raf = requestAnimationFrame(step);
   };
@@ -12383,7 +12401,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.22.009';
+const APP_VERSION = '2026.10.22.010';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -40151,8 +40169,8 @@ function setMasthead(name){
 }
 const mastheadSelectEl = document.getElementById('mastheadSelect');
 if(mastheadSelectEl){
-  let saved = 'deep';
-  try{ saved = localStorage.getItem('masthead') || 'deep'; }catch(e){}
+  let saved = 'bright';
+  try{ saved = localStorage.getItem('masthead') || 'bright'; }catch(e){}
   mastheadSelectEl.value = MASTHEAD_NAMES[saved] ? saved : 'deep';
   /* Reflect the stored value WITHOUT writing one back. setMasthead persists, and calling it
      here used to stamp a choice into storage the moment the app opened — which made "never

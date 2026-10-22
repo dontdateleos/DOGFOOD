@@ -65,7 +65,7 @@ const cube = await page.evaluate(() => {
   // Face on, which is the cube's rest. The gaze and the blink animate, so park those or the
   // icon is whatever frame the idle happened to be on.
   mcState.rx = 0; mcState.ry = 0; mcState.rz = 0;
-  mcState.blink = 1; mcState.gx = 0; mcState.gy = 0;
+  mcState.blink = 1; mcState.wide = 1; mcState.gx = 0; mcState.gy = 0;
   // The body moves too, or a bounce caught mid-flight would park the drawing squashed.
   mcState.body = null; mcState.sx = 1; mcState.sy = 1; mcState.ty = 0;
   drawMarkCube();
