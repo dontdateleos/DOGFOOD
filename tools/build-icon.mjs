@@ -46,9 +46,12 @@ const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
 await page.goto(URL_, { waitUntil: 'networkidle' });
 await page.waitForTimeout(2500);
 if (await page.$('#firstRunBuildBtn')) {
+  // The first-run steps as they are now: goal, an optional second goal, days, length.
   await page.click('#firstRunGoal [data-goal="strength"]');
-  const days = await page.$$('#firstRunDays .type-btn');
-  for (let i = 0; i < 7; i++) if (days[i]) await days[i].click();
+  await page.waitForTimeout(200);
+  try { await page.click('#firstRunSecondaryGoal .fr-a[data-goal=""]', { timeout: 1500 }); } catch (e) {}
+  if (await page.$('[data-freq="4"]')) await page.click('[data-freq="4"]');
+  else { const days = await page.$$('#firstRunDays .type-btn'); for (let i = 0; i < 7; i++) if (days[i]) await days[i].click(); }
   await page.click('#firstRunLength [data-len="60"]');
   await page.click('#firstRunBuildBtn');
   await page.waitForTimeout(4000);
@@ -76,15 +79,19 @@ const cube = await page.evaluate(() => {
            round: body.tagName.toLowerCase() === 'circle',
            shell: cs.getPropertyValue('--mark-shell').trim(),
            ink: cs.getPropertyValue('--mark-ink').trim(),
+           eye: cs.getPropertyValue('--mark-eye').trim(),
            lit: cs.getPropertyValue('--mark-lit').trim(),
            rest: `${mcState.rx}/${mcState.ry}/${mcState.rz}` };
 });
 await page.close();
 
 // sRGB relative luminance of the body, which is what decides which ground it needs.
+// Registered as <color> (see @property --mark-shell), the computed value reads as rgb(), so
+// both spellings are taken.
 const lum = (hex)=>{ const m = hex.match(/^#?([0-9a-f]{6})$/i);
-  if(!m) throw new Error(`--mark-shell is not a plain hex: ${hex}`);
-  const [r,g,b] = [0,2,4].map(i=> parseInt(m[1].slice(i,i+2),16)/255)
+  const rgb = !m && hex.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+  if(!m && !rgb) throw new Error(`--mark-shell is not a plain colour: ${hex}`);
+  const [r,g,b] = (m ? [0,2,4].map(i=> parseInt(m[1].slice(i,i+2),16)/255) : rgb.slice(1,4).map(v=> +v/255))
                          .map(v=> v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4));
   return 0.2126*r + 0.7152*g + 0.0722*b; };
 const SHELL = cube.shell, INK = cube.ink;
@@ -106,6 +113,7 @@ const ty = S / 2 - (cube.y + cube.h / 2) * k;
    invalid and the fill falls back to BLACK. The lit crescent was the third. */
 const art = cube.inner.replaceAll('var(--mark-shell)', SHELL)
                       .replaceAll('var(--mark-ink)', INK)
+                      .replaceAll('var(--mark-eye)', cube.eye)
                       .replaceAll('var(--mark-lit)', cube.lit);
 if(/var\(/.test(art)) throw new Error('unsubstituted var() left in the icon art: '
   + art.match(/var\([^)]*\)/g).join(' '));
