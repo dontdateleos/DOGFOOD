@@ -5260,7 +5260,7 @@
   html[data-masthead="lifted"] header h1{ color:#fbfaf6; -webkit-text-stroke-color:#fbfaf6; }
 
   /* Bright -- banner L* 60, C* 34. Title ink at 6.12-6.17:1. */
-  html[data-masthead="bright"] body.tab-insights{ --banner:#808e4a; --mark-shell:#afb78a; --mark-lit:#d8eb98; }
+  html[data-masthead="bright"] body.tab-insights{ --banner:#a9c23a; --mark-shell:#afb78a; --mark-lit:#d8eb98; }
   html[data-masthead="bright"] body.tab-plan{ --banner:#b9773f; --mark-shell:#d2aa8b; --mark-lit:#ffdcc0; }
   html[data-masthead="bright"] body.tab-injuries{ --banner:#ca5879; --mark-shell:#dda2b1; --mark-lit:#ffd9e1; }
   html[data-masthead="bright"] body.tab-data{ --banner:#9c68b6; --mark-shell:#c4a8d0; --mark-lit:#f5d9ff; }
@@ -12399,7 +12399,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.22.011';
+const APP_VERSION = '2026.10.22.012';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13971,7 +13971,7 @@ function updateHeaderCollapse(){
      its bottom-right corner, so the collapse below shrinks it down and out of the band the way
      it came, and the perch takes over exactly as before. MARK_TOP and MARK_GAP above stay
      for the perch maths and the flying eyes, which still read the lockup position. */
-  const MARK_BIG = 3, MARK_RIGHT = 8, MARK_SUNK = 0.3;
+  const MARK_BIG = 3, MARK_RIGHT = -30, MARK_SUNK = 0.36;   // a quarter off the right edge, a little more under the band
   const bandH = brandEl ? brandEl.getBoundingClientRect().height : 146;
   const bandW = brandEl ? brandEl.clientWidth : window.innerWidth;
   mark.style.transformOrigin = '100% 100%';
