@@ -80,6 +80,7 @@ const cube = await page.evaluate(() => {
            shell: cs.getPropertyValue('--mark-shell').trim(),
            ink: cs.getPropertyValue('--mark-ink').trim(),
            eye: cs.getPropertyValue('--mark-eye').trim(),
+           shade: cs.getPropertyValue('--mark-shade').trim(),
            lit: cs.getPropertyValue('--mark-lit').trim(),
            rest: `${mcState.rx}/${mcState.ry}/${mcState.rz}` };
 });
@@ -114,6 +115,7 @@ const ty = S / 2 - (cube.y + cube.h / 2) * k;
 const art = cube.inner.replaceAll('var(--mark-shell)', SHELL)
                       .replaceAll('var(--mark-ink)', INK)
                       .replaceAll('var(--mark-eye)', cube.eye)
+                      .replaceAll('var(--mark-shade)', cube.shade)
                       .replaceAll('var(--mark-lit)', cube.lit);
 if(/var\(/.test(art)) throw new Error('unsubstituted var() left in the icon art: '
   + art.match(/var\([^)]*\)/g).join(' '));
