@@ -83,12 +83,8 @@ const box = await page.evaluate((ground) => {
     .header-brand::before,.header-brand::after{display:none!important}
     #headerDate,#currentTabLabel,#headerScoreBtn,.eye-zzz,.header-brand > .tabs{visibility:hidden!important}`;
   document.head.appendChild(s);
-  /* The mark lives in the masthead's bottom corner now, half under the band, and the name
-     carries its own small mark after the g, so the lockup is the word and that small mark.
-     The corner mark is hidden so it cannot show through the capture. */
-  const big = document.getElementById('headerMark'); if (big) big.style.visibility = 'hidden';
-  const rects = [...document.querySelectorAll('.header-brand h1 .logo-line span, .header-brand h1 .logo-line .tm')]
-                 .map(e => e.getBoundingClientRect());
+  const rects = [...document.querySelectorAll('.header-brand h1 .logo-line span'),
+                 document.getElementById('headerMark')].map(e => e.getBoundingClientRect());
   const x0 = Math.min(...rects.map(r => r.left)),  y0 = Math.min(...rects.map(r => r.top));
   const x1 = Math.max(...rects.map(r => r.right)), y1 = Math.max(...rects.map(r => r.bottom));
   return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
