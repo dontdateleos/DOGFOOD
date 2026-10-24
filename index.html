@@ -578,7 +578,7 @@
   body.tab-insights.morning-pending, html[data-masthead] body.tab-insights.morning-pending{ --banner:#2f3712; }
   body.tab-insights.morning-pending .header-brand, html[data-masthead] body.tab-insights.morning-pending .header-brand{ --bg:#fff7ec; --ink-rgb:255,247,236; --label:#e9e3c9; }
   html body.tab-insights.morning-pending header h1{ color:#fff7ec; -webkit-text-stroke-color:#fff7ec; }
-  .header-brand{ transition:background-color 900ms ease; }
+  .header-brand{ transition:background-color 280ms ease; }
   body.morning-pending .header-brand .header-mark{ cursor:pointer; }
   body.tab-insights.morning-pending .header-brand .tab-label, body.tab-insights.morning-pending .header-brand .tab-label *{ color:#fff7ec; }
   body.tab-insights.morning-pending .header-brand .tabs{ --lit:#fff7ec; }
@@ -783,6 +783,12 @@
      part of it has to go on painting behind the header. `hidden` on one axis forces the other
      to `auto`; `clip` is the pair that is allowed to stay `visible`. */
   main.tab-dealing{ position:relative; overflow-x:clip; overflow-y:visible; }
+  /* The drag: this page and the next one side by side, moving with the finger. The next one
+     is the only other panel shown, laid over main at this page's left and width. */
+  main.tab-dragging{ position:relative; overflow-x:clip; overflow-y:visible; }
+  main.tab-dragging .panel.active, .panel.tab-peek{ will-change:transform; background:var(--ground); }
+  .panel.tab-peek{ display:block !important; position:absolute; z-index:2; }
+  main.tab-dragging .group-head{ position:static; }
   .tab-field{ position:absolute; left:0; right:0; top:0; z-index:1; pointer-events:none;
     background:var(--ground); }
   .panel.tab-card{ position:relative; z-index:3; }
@@ -12184,9 +12190,22 @@ tabs.forEach(t=>{
    something that scrolls sideways itself, which it finds by walking up from the target
    rather than by keeping a list of selectors that would rot. */
 (function wireTabSwipe(){
-  const SWIPE_MIN = 56;        // shorter than this is a tap that wandered
-  const SLOPE = 1.2;           // and it has to be this much more sideways than not
-  let x0 = 0, y0 = 0, dx = 0, dy = 0, live = false;
+  /* THE PAGE FOLLOWS THE FINGER, INSTAGRAM'S WAY.
+
+     It used to wait for the finger to lift and then deal the next page in on a fixed 440ms
+     curve, so the motion was the app's, not yours. Now the page moves 1:1 under the finger
+     from the moment the drag is clearly sideways, the next page comes in beside it, and on
+     release it carries on at the speed you let go at: a flick of any length commits, a slow
+     drag commits past a third of the screen, anything else springs back. Past the first and
+     last tab it gives, at a quarter of the drag, and comes back.
+
+     Vertical drags are left to the page: nothing is decided until the finger has moved 10px,
+     and if that was mostly down, this lets go for the rest of the gesture. Once it is
+     sideways, touchmove is cancelled so the page cannot scroll under it. */
+  const LOCK_PX = 10, SLOPE = 1.2;
+  const COMMIT_FRAC = 0.32, FLICK_V = 0.35;   // px per ms
+  let x0 = 0, y0 = 0, dx = 0, mode = null;   // null: undecided, 'x': ours, 'y': the page's
+  let here = -1, cur = null, peek = null, peekIdx = -1, W = 0, samples = [], anim = [];
 
   const scrollsSideways = el =>{
     for(let n = el; n && n !== document.body; n = n.parentElement){
@@ -12197,60 +12216,140 @@ tabs.forEach(t=>{
     }
     return false;
   };
+  const reduce = ()=> !uiAnim('tabLift');
 
   function begin(x, y, target){
-    live = false; dx = dy = 0;
-    if(!target || target.closest('input, textarea, select, [role="tab"], .wheel-workout-card')) return;
-    if(scrollsSideways(target)) return;
-    x0 = x; y0 = y; live = true;
+    mode = 'off';
+    if(!target || target.closest('input, textarea, select, [role="tab"], .wheel-workout-card, .lift-sheet, .morning-sheet, #logFab')) return;
+    if(window.__weekHold || scrollsSideways(target)) return;
+    if([...document.querySelectorAll('.lift-sheet.sheet-open, .morning-sheet')].some(el=> getComputedStyle(el).display !== 'none')) return;
+    if(anim.length) return;                    // still settling the last one
+    x0 = x; y0 = y; dx = 0; mode = null; samples = [{ x, t: performance.now() }];
   }
-  function update(x, y){ if(live){ dx = x - x0; dy = y - y0; } }
-
-  /* DECIDED WHEN THE GESTURE ENDS, INCLUDING WHEN THE BROWSER ENDS IT.
-
-     Stepping during the move worked exactly once. Chromium watches a sideways drag to see
-     whether it is going to become a scroll, and when it decides it might, it takes the
-     pointer -- so the last good delta is kept as the finger moves and read when it stops. A
-     cancelled gesture still delivers the swipe it had already travelled. It also means the
-     tab changes on release, which is the right moment for a move you cannot half-make. */
+  function setPeek(dir){
+    const idx = here + dir;
+    if(idx === peekIdx) return;
+    clearPeek();
+    if(idx < 0 || idx >= SWEEP_TABS.length) return;
+    const el = document.getElementById('panel-' + SWEEP_TABS[idx]);
+    if(!el) return;
+    const main = document.querySelector('main');
+    const mainAt = main.getBoundingClientRect(), curAt = cur.getBoundingClientRect();
+    const hdr = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdr-h')) || 0;
+    // Its top shows just under the header even when this page is scrolled down, so what
+    // slides in is the start of the next page, not a slice of its middle.
+    const topVp = Math.max(curAt.top, hdr);
+    el.classList.add('tab-peek');
+    el.style.top = (topVp - mainAt.top) + 'px';
+    el.style.left = (curAt.left - mainAt.left) + 'px';
+    el.style.width = curAt.width + 'px';
+    peek = el; peekIdx = idx;
+  }
+  function clearPeek(){
+    if(peek){ peek.classList.remove('tab-peek'); ['top','left','width','transform'].forEach(k=> peek.style.removeProperty(k)); }
+    peek = null; peekIdx = -1;
+  }
+  function paint(){
+    const atEdge = (dx > 0 && here === 0) || (dx < 0 && here === SWEEP_TABS.length - 1);
+    const x = atEdge ? dx * 0.25 : dx;
+    cur.style.transform = `translate3d(${x}px,0,0)`;
+    if(peek) peek.style.transform = `translate3d(${x + (dx < 0 ? W : -W)}px,0,0)`;
+  }
+  function update(x, y, ev){
+    if(mode === 'off' || mode === 'y') return;
+    const ddx = x - x0, ddy = y - y0;
+    if(mode === null){
+      if(Math.abs(ddx) < LOCK_PX && Math.abs(ddy) < LOCK_PX) return;
+      if(Math.abs(ddx) < Math.abs(ddy) * SLOPE || reduce()){ mode = Math.abs(ddx) >= Math.abs(ddy) * SLOPE ? 'x-late' : 'y'; if(mode === 'y') return; }
+      if(mode !== 'x-late'){
+        here = SWEEP_TABS.indexOf(document.querySelector('.tab.active').dataset.tab);
+        cur = document.getElementById('panel-' + SWEEP_TABS[here]);
+        if(here < 0 || !cur){ mode = 'off'; return; }
+        W = cur.getBoundingClientRect().width + 28;
+        document.querySelector('main').classList.add('tab-dragging');
+        mode = 'x';
+        x0 = x;                                 // no jump: start from where the lock happened
+      }
+    }
+    if(mode === 'x-late'){ dx = ddx; return; }  // reduced motion: decided on release, as before
+    if(ev && ev.cancelable) ev.preventDefault();
+    dx = x - x0;
+    const now = performance.now();
+    samples.push({ x, t: now }); while(samples.length > 2 && now - samples[0].t > 90) samples.shift();
+    setPeek(dx < 0 ? 1 : -1);
+    paint();
+  }
+  function velocity(){
+    if(samples.length < 2) return 0;
+    const a = samples[0], b = samples[samples.length - 1];
+    return (b.x - a.x) / Math.max(1, b.t - a.t);
+  }
   function finish(){
-    if(!live) return;
-    live = false;
-    if(window.__weekHold) return;              // a held day being carried across the strip
-    if(Math.abs(dx) < SWIPE_MIN || Math.abs(dx) < Math.abs(dy) * SLOPE) return;
-    const here = SWEEP_TABS.indexOf(document.querySelector('.tab.active').dataset.tab);
-    const next = here + (dx < 0 ? 1 : -1);      // drag left, go right along the bar
-    if(next < 0 || next >= SWEEP_TABS.length) return;
-    const t = document.querySelector(`.tab[data-tab="${SWEEP_TABS[next]}"]`);
-    if(t) activateTabViaUi(t);
+    if(mode === 'x-late'){
+      mode = 'off';
+      if(Math.abs(dx) < 56) return;
+      const h = SWEEP_TABS.indexOf(document.querySelector('.tab.active').dataset.tab), n = h + (dx < 0 ? 1 : -1);
+      const t = n >= 0 && n < SWEEP_TABS.length && document.querySelector(`.tab[data-tab="${SWEEP_TABS[n]}"]`);
+      if(t) activateTabViaUi(t);
+      return;
+    }
+    if(mode !== 'x'){ mode = 'off'; return; }
+    mode = 'off';
+    const v = velocity();
+    const dir = dx < 0 ? 1 : -1;
+    const can = !!peek;
+    const commit = can && (Math.abs(dx) > W * COMMIT_FRAC || (Math.abs(v) > FLICK_V && Math.sign(v) === Math.sign(dx)));
+    const atEdge = !can;
+    const from = atEdge ? dx * 0.25 : dx;
+    const to = commit ? -dir * W : 0;
+    const left = Math.abs(to - from);
+    // Carry on at the release speed, then ease down; never slower than a short settle.
+    const ms = Math.round(Math.max(170, Math.min(340, left / Math.max(Math.abs(v), 1.1))));
+    const ease = 'cubic-bezier(0.18, 0.8, 0.25, 1)';
+    anim = [cur.animate([{ transform:`translate3d(${from}px,0,0)` }, { transform:`translate3d(${to}px,0,0)` }], { duration: ms, easing: ease, fill:'forwards' })];
+    if(peek) anim.push(peek.animate([{ transform:`translate3d(${from + dir * W}px,0,0)` }, { transform:`translate3d(${to + dir * W}px,0,0)` }], { duration: ms, easing: ease, fill:'forwards' }));
+    cur.style.removeProperty('transform'); if(peek) peek.style.removeProperty('transform');
+    const name = commit ? SWEEP_TABS[here + dir] : null;
+    anim[0].onfinish = ()=>{
+      if(commit){
+        const t = document.querySelector(`.tab[data-tab="${name}"]`);
+        tabs.forEach(tb=>{ const on = tb === t; tb.classList.toggle('active', on); tb.setAttribute('aria-selected', on ? 'true' : 'false');
+          if(on) tb.setAttribute('aria-current', 'page'); else tb.removeAttribute('aria-current'); });
+        if(t){ document.getElementById('currentTabWord').textContent = t.textContent; noteTabTap(t); }
+        uiLastTabDir = dir;
+        activateTab(name, { deferSlide:true });
+        const p = document.getElementById('panel-' + name);
+        if(p) p.classList.remove('panel-enter');   // it has already arrived; no fade on top
+        fieldDrift(name);
+        window.headerCollapseSuspended = false; updateHeaderCollapse();
+      }
+      anim.forEach(a=>{ try{ a.cancel(); }catch(e){} }); anim = [];
+      clearPeek();
+      document.querySelector('main').classList.remove('tab-dragging');
+    };
   }
 
-  /* TOUCH EVENTS RATHER THAN POINTER EVENTS, ON THE PHONE.
-
-     This is where it actually runs, and pointer events do not survive there. Measured on a
-     real touch stream: pointerdown fires, and Chromium cancels the pointer on the same frame
-     -- before a single pointermove -- because it has not decided yet whether the gesture
-     belongs to the page. touchmove keeps coming the whole way through. So the phone is driven
-     off touch and the desktop off pointer, which is also the only place a mouse exists. */
+  /* TOUCH ON THE PHONE, POINTER ON THE DESKTOP — see the note this replaced: Chromium cancels
+     a touch pointer before its first move, touch events keep coming. touchmove is NOT passive
+     now, because a sideways drag has to stop the page scrolling under it. */
   document.addEventListener('touchstart', e=>{
-    if(e.touches.length !== 1){ live = false; return; }
+    if(e.touches.length !== 1){ mode = 'off'; return; }
     begin(e.touches[0].clientX, e.touches[0].clientY, e.target);
   }, { passive:true });
   document.addEventListener('touchmove', e=>{
-    if(e.touches.length !== 1){ live = false; return; }
-    update(e.touches[0].clientX, e.touches[0].clientY);
-  }, { passive:true });
+    if(e.touches.length !== 1){ if(mode === 'x') finish(); mode = 'off'; return; }
+    update(e.touches[0].clientX, e.touches[0].clientY, e);
+  }, { passive:false });
   document.addEventListener('touchend', finish, { passive:true });
   document.addEventListener('touchcancel', finish, { passive:true });
 
   document.addEventListener('pointerdown', e=>{
-    if(e.pointerType === 'touch') return;               // the block above owns those
-    if(e.button !== 0) return;
+    if(e.pointerType === 'touch' || e.button !== 0) return;
     begin(e.clientX, e.clientY, e.target);
   }, { passive:true });
   document.addEventListener('pointermove', e=>{
     if(e.pointerType === 'touch') return;
-    update(e.clientX, e.clientY);
+    update(e.clientX, e.clientY, null);
   }, { passive:true });
   document.addEventListener('pointerup', e=>{ if(e.pointerType !== 'touch') finish(); }, { passive:true });
   document.addEventListener('pointercancel', e=>{ if(e.pointerType !== 'touch') finish(); }, { passive:true });
@@ -12634,7 +12733,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.23.008';
+const APP_VERSION = '2026.10.25.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
