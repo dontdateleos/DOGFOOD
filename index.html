@@ -3366,6 +3366,18 @@
   .log-sheet .ex-last-line{ font-family:var(--mono); font-size:var(--log-note); letter-spacing:0.04em;
     color:rgba(var(--ink-rgb),0.5); margin-top:3px; }
   .log-sheet .set-breakdown{ font-size:var(--log-note); margin-top:3px; }
+  /* One-lift mode: only the chosen lift, the rest timer and the two buttons. */
+  #logSheet.single-lift #blockEditPanel > :not(#weekExerciseRows):not(.rest-timer):not(.single-acts){ display:none !important; }
+  #logSheet.single-lift #weekExerciseRows > .edit-row:not(.focus-row){ display:none !important; }
+  #logSheet.single-lift #logDateRow, #logSheet.single-lift .log-hint, #logSheet.single-lift .add-row,
+  #logSheet.single-lift .ask-q, #logSheet.single-lift .score-note{ display:none !important; }
+  #logSheet.single-lift .focus-row .week-ex-name, #logSheet.single-lift .focus-row .row-acts{ display:none !important; }
+  .single-acts{ display:none; }
+  #logSheet.single-lift .single-acts{ display:flex; flex-direction:column; gap:8px; margin-top:var(--sp-3); }
+  .single-acts .single-all{ background:transparent; color:var(--bg); border-color:rgba(var(--ink-rgb),0.3); }
+  /* The lifts on the Workouts card are buttons now: each one logs itself. */
+  .wheel-ex-line[data-lift]{ cursor:pointer; min-height:36px; align-items:center; }
+  #panel-insights .plan-list .plan-item{ cursor:pointer; }
   .log-sheet .set-ticks{ order:9; flex-basis:100%; display:flex; flex-direction:column; gap:6px; margin-top:8px; }
   .set-ticks[hidden]{ display:none !important; }
   /* With the set rows there, the three summary boxes are what Save reads, not what you touch. */
@@ -12733,7 +12745,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.25.001';
+const APP_VERSION = '2026.10.26.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -19881,7 +19893,7 @@ async function extractBlockLines(block){
       (block.details.exercises||[]).forEach(ex=>{ if(ex && ex.name) out.push({ name: ex.name, dose: ex.dose || '' }); });
       return out;
     }
-    for(const ex of (block.details.exercises||[])){
+    for(const [exIdx, ex] of (block.details.exercises||[]).entries()){
       if(!ex || !ex.name) continue;
       // Skill work carries its own prescription text rather than a sets/reps/weight ladder.
       if(ex.isSkillWork){ out.push({ name: ex.name }); continue; }
@@ -19894,7 +19906,7 @@ async function extractBlockLines(block){
         const progression = await suggestProgression(ex, focusInfo);
         if(progression.weight != null) weightLabel = `${progression.weight}kg`;
       } catch(e){}
-      out.push({ name: ex.name, dose: `${sets}×${repsLabel} @ ${weightLabel}` });
+      out.push({ name: ex.name, dose: `${sets}×${repsLabel} @ ${weightLabel}`, lift: exIdx });
     }
     const fin = block.details.finisher;
     if(fin) out.push({ name: `Finisher: ${fin.format}`, dose: `${fin.minutes} min` });
@@ -19964,7 +19976,7 @@ async function weekDayDetailHtml(date, realBlocks, isOff){
     return `<div class="wheel-workout-card${realBlocks.length === 1 ? ' solo' : ''}" data-edit-date="${date}" data-edit-slot="${slot}">
         <div class="wheel-workout-type"><i class="wk-slot">${slot}</i>${typeLabel}<span class="wheel-workout-chevron">\u203a</span></div>
         <div class="wheel-ex-names">${lines.length
-          ? lines.map(l=> `<div class="wheel-ex-line"><span class="wheel-ex-name">${l.name}</span>${l.dose ? `<span class="wheel-ex-dose">${l.dose}</span>` : ''}</div>`).join('')
+          ? lines.map(l=> `<div class="wheel-ex-line"${l.lift != null ? ` data-lift="${l.lift}" role="button" tabindex="0" aria-label="Log ${l.name}"` : ''}><span class="wheel-ex-name">${l.name}</span>${l.dose ? `<span class="wheel-ex-dose">${l.dose}</span>` : ''}</div>`).join('')
           : '<em>No details yet</em>'}</div>
       </div>`;
   }));
@@ -20794,9 +20806,12 @@ async function renderWeekGrid(){
   detailCol.innerHTML = detailHtml;
   if(detailChanged) crossFade(detailCol);
   detailCol.querySelectorAll('[data-edit-date]').forEach(card=>{
-    card.addEventListener('click', ()=>{
+    card.addEventListener('click', e=>{
       const { editDate, editSlot } = card.dataset;
       const match = realBlocks.find(b=>b.slot===editSlot);
+      // A lift on the card logs just that lift; anywhere else on the card opens the session.
+      const line = e.target.closest('.wheel-ex-line[data-lift]');
+      if(line && match && match.block && match.block.type === 'strength'){ openSingleLift(editDate, editSlot, match.block, +line.dataset.lift); return; }
       openBlockEditor(editDate, editSlot, match ? match.block : null);
     });
   });
@@ -20963,6 +20978,58 @@ function closeLogSheet(){
   ensureLogSheet().close({ silent:true });
 }
 let blockEditMinimisable = false;  // a session can be put on the bar; a type picker cannot
+/* ONE LIFT, NOT THE WHOLE SESSION. Tapping a lift on the Workouts card opens the session as
+   usual but shows only that lift's sets, the rest timer and Done: tick through it, Done, and
+   it is kept on the session (the draft, with the bar showing it is under way) while you do
+   the next. Done on the last lift with every set ticked saves the whole session. "Open the
+   whole session" is there for anything else. */
+async function openSingleLift(date, slot, block, idx){
+  await openBlockEditor(date, slot, block);
+  const sheet = document.getElementById('logSheet');
+  const ex = (block.details.exercises || [])[idx];
+  const rows = [...document.querySelectorAll('#weekExerciseRows .edit-row')];
+  const row = rows.find(r => (r.querySelector('.week-ex-name')?.value || '') === (ex && ex.name)) || rows[idx];
+  if(!sheet || !row) return;
+  sheet.classList.add('single-lift');
+  row.classList.add('focus-row');
+  const title = document.getElementById('logSheetTitle');
+  if(title && ex) title.textContent = ex.name;
+  const panel = document.getElementById('blockEditPanel');
+  if(panel && !panel.querySelector('.single-acts')){
+    const acts = document.createElement('div');
+    acts.className = 'single-acts';
+    acts.innerHTML = '<button type="button" class="primary single-done">Done</button><button type="button" class="single-all">Open the whole session</button>';
+    panel.appendChild(acts);
+    acts.querySelector('.single-all').addEventListener('click', ()=>{
+      sheet.classList.remove('single-lift');
+      document.querySelectorAll('#weekExerciseRows .focus-row').forEach(r=> r.classList.remove('focus-row'));
+      const t = document.getElementById('logSheetTitle'); if(t) t.textContent = block.type;
+    });
+    acts.querySelector('.single-done').addEventListener('click', ()=>{
+      const lifts = [...document.querySelectorAll('#weekExerciseRows .set-ticks')].filter(h => h.querySelector('.st-row'));
+      const allDone = lifts.length && lifts.every(h => !h.querySelector('.st-row:not(.done)'));
+      if(allDone){ document.getElementById('logWeekSessionBtn')?.click(); return; }
+      const done = lifts.filter(h => h.querySelector('.st-row.done')).length;
+      showToast(`${ex ? ex.name : 'Lift'} logged \u00b7 ${done} of ${lifts.length} lifts`);
+      ensureLogSheet().close();
+    });
+  }
+  const sp = sheet.querySelector('.lift-sheet-panel'); if(sp) sp.scrollTop = 0;
+}
+/* The lifts in Today's session list do the same: tap one to log just it. Matched by name to
+   today's lifting session, so a warm-up drill or a line that is not a lift does nothing. */
+document.addEventListener('click', async e=>{
+  const item = e.target.closest && e.target.closest('#panel-insights .plan-item');
+  if(!item) return;
+  const name = (item.querySelector('strong')?.textContent || '').trim();
+  if(!name) return;
+  let found = null;
+  try{ found = await todaysBlockAnySlot(); }catch(err){}
+  if(!found || !found.block || found.block.type !== 'strength') return;
+  const idx = (found.block.details.exercises || []).findIndex(x => x && x.name && x.name.trim().toLowerCase() === name.toLowerCase());
+  if(idx < 0) return;
+  openSingleLift(todayStr, found.slot, found.block, idx);
+});
 function closeBlockEditor(opts){
   const keepDraft = !!(opts && opts.keepDraft);
   const panel = document.getElementById('blockEditPanel');
@@ -22192,6 +22259,8 @@ async function wireRunLogging(date, block){
 }
 
 async function openBlockEditor(date, slot, block){
+  document.getElementById('logSheet')?.classList.remove('single-lift');
+  document.querySelectorAll('#weekExerciseRows .focus-row').forEach(r=> r.classList.remove('focus-row'));
   const panel = document.getElementById('blockEditPanel');
   // However you got back in — the bar, Today's marker, the day wheel — the bar's job is done.
   logMinimised = false;
