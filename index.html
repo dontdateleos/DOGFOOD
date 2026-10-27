@@ -1769,6 +1769,8 @@
   button.small{ flex:none; height:36px; padding:0 12px; font-size:var(--fs-tag); }
   button.outline{ background:transparent; color:var(--bg); border-color:rgba(var(--ink-rgb),0.3); }
   button.outline:active{ background:var(--bg); color:var(--ground); opacity:1; }
+  /* The readiness test's answer: the one chosen is filled. */
+  .test-pass-btn[aria-pressed="true"]{ background:var(--bg); color:var(--ground); }
   .status{ font-family:var(--sans); font-size:var(--fs-tag); color:var(--dim); text-align:center; margin-top:8px; min-height:14px; letter-spacing:0.015em; font-weight:var(--fw-medium); }
 
   .log{ margin-top:var(--sp-4); }
@@ -12378,7 +12380,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.22.005';
+const APP_VERSION = '2026.10.27.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -12774,6 +12776,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.10.27.001': 'Mobility, checked against the research and fixed. Stretch time counts when you do it, not when it is planned, and counts the same way everywhere: holds by total time with both sides counted, PNF by its rounds, loaded and eccentric reps through range, and nothing for circles, swings or foam rolling. Lifting earns its share by the set (deep and lengthened lifts most, squats and presses some) instead of switching an area off for a week. Ankles and calves get proper eccentric heel drops (3 x 10-12 each side, bent knee and straight). Each area is capped at about 4 minutes a session, where the benefit stops. The assessment has a None of these yet answer, so your tightest areas get scored and worked. Mobility skills follow each level\u2019s own target, and a readiness test now asks Held it or Not yet \u2014 two holds move you up.',
   '2026.10.22.005': 'The tab switcher under the masthead is five dots in a straight row now, and the tab you are on is a short white pill. Tap a dot or swipe as before.',
   '2026.10.22.004': 'The mark is a flat white face now, with a soft shadow along the bottom so it still reads as round, and its eyes sit a little higher. Same on the app icon.',
   '2026.10.22.003': 'The mark\u2019s eyes are a third bigger and its outer ring is gone \u2014 a plain white face on the masthead and on the app icon.',
@@ -18722,18 +18725,24 @@ async function renderMobilityAssessment(skipCollapse){
     const cells = tests.map((_, j)=>`<i class="${score != null && j < score ? 'on' : ''}"></i>`).join('');
     // Blank when unrated, same as the skill lanes: an empty strip already says "not rated",
     // and eleven repetitions of the words would say it worse.
-    const at = score != null ? (tests[score-1] || '') : '';
+    const at = score != null ? (score === 0 ? 'Not yet' : (tests[score-1] || '')) : '';
     const open = i === idx;
     const lane = `<button type="button" class="skill-lane mob-lane${open ? ' here' : ''}"
         data-domain-at="${i}" aria-expanded="${open}"
-        aria-label="${cap(d)}, ${score != null ? 'rated ' + score + ' of ' + tests.length : 'not rated'}">
+        aria-label="${cap(d)}, ${score === 0 ? 'none of these yet' : score != null ? 'rated ' + score + ' of ' + tests.length : 'not rated'}">
       <span class="skill-lane-name">${cap(d)}</span>
       <span class="skill-lane-cells">${cells}</span>
       <span class="skill-lane-end"><span class="skill-lane-rung">${at}</span></span></button>`;
     if(!open) return lane;
-    return lane + `<div class="mob-check">` + tests.map((text, j)=>{
+    /* NONE OF THESE YET. Rated by ticking the last rung you can do, so someone who cannot do
+       the first one had nothing to tick: the domain stayed unrated, and once anything else
+       was rated, an unrated domain was skipped as "no signal of need". The most restricted
+       area got the least work. This row says so, and scores the domain 0. */
+    const notYet = `<div class="mob-check-row mob-check-none${score === 0 ? ' done' : ''}" data-level="0">`
+      + `<span class="mob-check-num">0</span><span class="mob-check-text">None of these yet</span></div>`;
+    return lane + `<div class="mob-check">` + notYet + tests.map((text, j)=>{
       const lvl = j + 1;
-      const done = (score || 0) >= lvl;
+      const done = score != null && score >= lvl;
       return `<div class="mob-check-row${done ? ' done' : ''}" data-level="${lvl}">`
         + `<span class="mob-check-num">${lvl}</span>`
         + `<span class="mob-check-text">${text}</span></div>`;
@@ -18747,7 +18756,7 @@ async function renderMobilityAssessment(skipCollapse){
     </div>
     <div style="display:none;">
       ${MOBILITY_DOMAINS.map(d=>`<div class="mobility-domain-row" data-domain="${d}">${
-        [1,2,3,4,5].map(l=>`<div class="rating-btn ${mobilityDraftScores[d]===l?'active':''}" data-level="${l}"></div>`).join('')
+        [0,1,2,3,4,5].map(l=>`<div class="rating-btn ${mobilityDraftScores[d]===l?'active':''}" data-level="${l}"></div>`).join('')
       }</div>`).join('')}
     </div>`;
 
@@ -22066,29 +22075,36 @@ async function openBlockEditor(date, slot, block){
         row.dataset.levelIndex = st.levelIndex;
         row.dataset.levelCount = st.levelCount || '';
         row.dataset.sets = st.sets;
-        row.dataset.holdSeconds = st.holdSeconds;
+        row.dataset.holdSeconds = st.holdSeconds != null ? st.holdSeconds : '';
+        row.dataset.reps = st.reps != null ? st.reps : '';
+        row.dataset.perSide = st.perSide ? '1' : '';
         row.dataset.name = st.name || '';
         row.dataset.isReadinessTest = st.isReadinessTest ? '1' : '';
+        if(st.passed != null) row.dataset.passed = st.passed ? '1' : '0';
         if(st.evidence) row.dataset.evidence = st.evidence;
         if(st.nextLevelLabel) row.dataset.nextLevelLabel = st.nextLevelLabel;
         if(st.isReadinessTest){
+          /* HELD IT, OR NOT YET. The test is one attempt at the next level's target, and the
+             answer is what you say here. Two "held it"s across sessions, with the weekly dose
+             sustained, is what moves you up (suggestMobilityAdvance); nothing advances from a
+             single tap any more. */
           row.innerHTML = `
             <div class="mobility-row-info test">
-              <div>${st.skillLabel} readiness test — next: ${st.nextLevelLabel}</div>
+              <div>${st.skillLabel} readiness test — next: ${st.nextLevelLabel} · ${mobilityDoseLabel(st)}</div>
               <div class="mobility-row-actions">
-                <button class="small mark-passed-btn" type="button">Mark passed</button>
+                <button class="small outline test-pass-btn" type="button" data-pass="1" aria-pressed="${st.passed === true}">Held it</button>
+                <button class="small outline test-pass-btn" type="button" data-pass="0" aria-pressed="${st.passed === false}">Not yet</button>
                 <span class="remove-row">×</span>
               </div>
             </div>`;
-          row.querySelector('.mark-passed-btn').addEventListener('click', async ()=>{
-            const ok = await advanceSkillLevel(st.skill);
-            showToast(ok ? `${st.skillLabel} advanced to Level ${st.levelIndex+2}` : 'Could not update — try again');
-            if(ok) row.remove();
-          });
+          row.querySelectorAll('.test-pass-btn').forEach(btn => btn.addEventListener('click', ()=>{
+            row.dataset.passed = btn.dataset.pass;
+            row.querySelectorAll('.test-pass-btn').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+          }));
         } else {
           row.innerHTML = `
             <div class="mobility-row-info">
-              <div>${st.skillLabel} — Level ${st.levelIndex+1}${st.levelCount?'/'+st.levelCount:''} · ${st.sets}×${st.holdSeconds}s ${evidenceBadgeHtml(st.evidence)}</div>
+              <div>${st.skillLabel} — Level ${st.levelIndex+1}${st.levelCount?'/'+st.levelCount:''} · ${mobilityDoseLabel(st)} ${evidenceBadgeHtml(st.evidence)}</div>
               <span class="remove-row">×</span>
             </div>`;
         }
@@ -22301,8 +22317,10 @@ async function openBlockEditor(date, slot, block){
           stretches.push({
             name: row.dataset.name, area:'', skill: row.dataset.skill, skillLabel: row.dataset.skillLabel,
             levelIndex: parseInt(row.dataset.levelIndex, 10), levelCount: row.dataset.levelCount ? parseInt(row.dataset.levelCount, 10) : undefined,
-            sets: parseInt(row.dataset.sets, 10), holdSeconds: parseInt(row.dataset.holdSeconds, 10),
+            sets: parseInt(row.dataset.sets, 10), holdSeconds: parseInt(row.dataset.holdSeconds, 10) || null,
+            reps: parseInt(row.dataset.reps, 10) || null, perSide: row.dataset.perSide === '1',
             isReadinessTest: !!row.dataset.isReadinessTest,
+            passed: row.dataset.passed === '1' ? true : row.dataset.passed === '0' ? false : undefined,
             evidence: row.dataset.evidence || undefined,
             nextLevelLabel: row.dataset.nextLevelLabel || undefined,
             category
@@ -22543,7 +22561,7 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         let name, sets, holdSeconds, area;
         if(row.dataset.skill){
           name = row.dataset.name; sets = parseInt(row.dataset.sets,10)||0; holdSeconds = parseInt(row.dataset.holdSeconds,10)||0; area = '';
-          if(sets || holdSeconds) anyPerformanceEntered = true;
+          if(sets || holdSeconds || row.dataset.reps) anyPerformanceEntered = true;
         } else {
           name = row.querySelector('.week-st-name').value.trim();
           if(!name) return;
@@ -22561,7 +22579,12 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         stretches.push({ name, sets, holdSeconds, area,
           skill: row.dataset.skill || null,
           levelIndex: row.dataset.levelIndex != null && row.dataset.levelIndex !== '' ? parseInt(row.dataset.levelIndex,10) : null,
-          isReadinessTest: row.dataset.isReadinessTest === 'true' });
+          // '1', not 'true': the row writes '1', so a logged test was never recorded as one.
+          isReadinessTest: row.dataset.isReadinessTest === '1',
+          reps: row.dataset.skill ? (parseInt(row.dataset.reps,10) || null) : undefined,
+          perSide: row.dataset.perSide === '1',
+          passed: row.dataset.isReadinessTest === '1'
+            ? (row.dataset.passed === '1' ? true : row.dataset.passed === '0' ? false : undefined) : undefined });
         totalHoldSeconds += sets*holdSeconds;
       });
       if(!anyPerformanceEntered){
@@ -24883,7 +24906,9 @@ function estimateSessionDuration(block, personalPace, personalSets, sessionLengt
       const work = st.reps != null
         ? st.reps * MOBILITY_SECONDS_PER_REP
         : (st.holdSeconds!=null ? st.holdSeconds : 30);
-      totalSeconds += sets * (work + R.mobility.restSecondsBetweenSets) + R.mobility.transitionSeconds;
+      // Each side is a set of its own; the switch between sides is the rest.
+      const sides = stretchSides(st);
+      totalSeconds += sets * sides * (work + R.mobility.restSecondsBetweenSets) + R.mobility.transitionSeconds;
     });
     return Math.round(totalSeconds/60);
   }
@@ -25906,7 +25931,7 @@ async function checkDeloadSignal(){
   try{
     const pos = await getBlockPosition(todayStr);
     if(pos.started && pos.blocksCompleted > 0 && pos.weekInBlock <= 2) return null;
-    if(pos.started && pos.weekInBlock >= pos.length) return null;
+    if(await isDeloadWeek(todayStr)) return null;
     const cfgNow = await getBlockConfig();
     if(pos.started && cfgNow.early && cfgNow.early[pos.start] && pos.length - pos.weekInBlock <= 1) return null;
     // The main lifts first, goal or no goal: several stuck at once is the signal.
@@ -29356,18 +29381,57 @@ async function getOrCreateAutoMobilityGoal(){
 // Builds an actual structured entry for a skill goal — level context, real dosing, and
 // (every other session) a light readiness-test of the NEXT level, rather than repeating
 // "do pike" identically every single generated day with no progression logic at all.
+/* EACH LEVEL'S OWN TARGET. The ladder writes what a level is — "2x30-60s", "2-3x8-10
+   loaded" — and the plan used to ignore it for a fixed 4x45s at every level, so a rep level
+   was prescribed as a hold. The level's target decides hold or reps, the hold length and
+   whether it is per side; the number of sets is then filled toward ~3 min of the skill a
+   session (SKILL_SESSION_SECONDS, which is what MOBILITY_SKILL_DOSING was tuned to), never
+   more than the 4-minute per-session plateau. */
+const SKILL_SESSION_SECONDS = 180;
+function parseLevelTarget(txt){
+  const t = String(txt || '').toLowerCase();
+  if(!t) return null;
+  const perSide = /\/side|each side|per side|each leg/.test(t);
+  const setsM = t.match(/(\d+)(?:\s*[-–]\s*(\d+))?\s*[x\u00d7]/);
+  const sets = setsM ? +(setsM[2] || setsM[1]) : null;
+  const secM = t.match(/(\d+)(?:\s*[-–]\s*(\d+))?\s*s\b/);
+  if(secM) return { sets, holdSeconds: +(secM[2] || secM[1]), perSide };
+  const repM = t.match(/[x\u00d7]\s*(\d+)(?:\s*[-–]\s*(\d+))?/) || t.match(/(\d+)(?:\s*[-–]\s*(\d+))?\s*reps?/);
+  if(repM) return { sets, reps: +(repM[2] || repM[1]), perSide };
+  return null;
+}
+function skillLevelDose(sg, levelIndex){
+  const tree = PROGRESSION_TREES.mobility[sg.skill];
+  const det = tree && tree.levelDetails && tree.levelDetails[levelIndex];
+  const parsed = parseLevelTarget(det && det.holdOrRepTarget);
+  const fallback = MOBILITY_SKILL_DOSING[sg.skill] || { sets: 3, holdSeconds: 30 };
+  if(!parsed) return { ...fallback };
+  const sides = parsed.perSide ? 2 : 1;
+  if(parsed.holdSeconds){
+    const per = parsed.holdSeconds * sides;
+    // At most 4 sets: past that a short-hold level reads as a chore, and the week's
+    // frequency (skill blocks per week) makes up the rest of the dose.
+    const sets = Math.min(4, Math.max(parsed.sets || 2, Math.round(SKILL_SESSION_SECONDS / per)));
+    return { sets: Math.max(1, Math.min(sets, Math.floor(MOBILITY_SESSION_CAP_SECONDS / per))), holdSeconds: parsed.holdSeconds, perSide: parsed.perSide };
+  }
+  return { sets: parsed.sets || 3, reps: parsed.reps, holdSeconds: null, perSide: parsed.perSide };
+}
 function buildMobilitySkillStretches(sg, dayIndex, loadedROMCoverage, sessionType, blocksThisWeek){
   sessionType = sessionType || 'development';
   const tree = PROGRESSION_TREES.mobility[sg.skill];
   if(!tree) return [];
-  let dosing = MOBILITY_SKILL_DOSING[sg.skill] || { sets: 3, holdSeconds: 30 };
+  let dosing = skillLevelDose(sg, sg.levelIndex);
 
   // Session types per the mobility research: maintenance (~10-15min, minimal fatigue,
   // compatible with recovery days) gets reduced volume; goal pursuit (~30-45min,
   // aggressively but progressively developing a specific goal) gets increased volume and
   // more frequent progression-testing; development is the existing baseline, unchanged.
-  if(sessionType==='maintenance') dosing = { sets: Math.max(1, Math.round(dosing.sets*0.5)), holdSeconds: dosing.holdSeconds };
-  else if(sessionType==='goalpursuit') dosing = { sets: dosing.sets+1, holdSeconds: dosing.holdSeconds };
+  if(sessionType==='maintenance') dosing = { ...dosing, sets: Math.max(1, Math.round(dosing.sets*0.5)) };
+  else if(sessionType==='goalpursuit'){
+    const per = dosing.holdSeconds ? dosing.holdSeconds * (dosing.perSide ? 2 : 1) : 0;
+    const more = dosing.sets + 1;
+    dosing = { ...dosing, sets: per && more * per > MOBILITY_SESSION_CAP_SECONDS ? dosing.sets : more };
+  }
   const stretches = [];
   const currentLevel = tree.levels[sg.levelIndex];
 
@@ -29378,7 +29442,7 @@ function buildMobilitySkillStretches(sg, dayIndex, loadedROMCoverage, sessionTyp
   stretches.push({
     name: currentLevel, area:'', skill: sg.skill, skillLabel: tree.label,
     levelIndex: sg.levelIndex, levelCount: tree.levels.length,
-    sets, holdSeconds: dosing.holdSeconds, isReadinessTest: false,
+    sets, holdSeconds: dosing.holdSeconds || null, reps: dosing.reps || null, perSide: !!dosing.perSide, isReadinessTest: false,
     evidence: levelDetail ? levelDetail.evidence : null,
     reducedNote: covering ? `Reduced — ${covering.exerciseName} on ${covering.date} already provided loaded ROM here` : null
   });
@@ -29393,7 +29457,10 @@ function buildMobilitySkillStretches(sg, dayIndex, loadedROMCoverage, sessionTyp
     stretches.push({
       name: `readiness test — next: ${nextLevel}`, area:'', skill: sg.skill, skillLabel: tree.label,
       levelIndex: sg.levelIndex, levelCount: tree.levels.length, nextLevelLabel: nextLevel,
-      sets: 1, holdSeconds: Math.round(dosing.holdSeconds*0.5), isReadinessTest: true
+      // The test is the NEXT level's own target, once: can you do it yet.
+      ...(()=>{ const n = skillLevelDose(sg, sg.levelIndex + 1);
+        return { sets: 1, holdSeconds: n.holdSeconds || null, reps: n.reps || null, perSide: !!n.perSide }; })(),
+      isReadinessTest: true
     });
   }
   return stretches;
@@ -29558,7 +29625,7 @@ const MOBILITY_PROGRESSION_LIBRARY = {
   // "Loaded"/"Weighted" entries that quietly assumed a gym. Weighted variants stay in the
   // rotation for when equipment is available.
   load: {
-    ankles: ['Slow eccentric calf raise', 'Single-leg calf raise off a step', 'Deficit single-leg calf raise', 'Loaded calf raise', 'Weighted ankle rocker'],
+    ankles: ['Slow eccentric calf raise', 'Bent-knee heel drop, slow lower', 'Single-leg calf raise off a step', 'Deficit single-leg calf raise', 'Loaded calf raise', 'Weighted ankle rocker'],
     calves: ['Straight-leg heel drop, slow lower', 'Bent-knee heel drop, slow lower', 'Deficit heel drop, eccentric', 'Loaded straight-leg heel raise', 'Weighted eccentric heel drop'],
     knees: ['Deep split squat', 'Slow-tempo sissy squat', 'Reverse Nordic eccentric', 'Step-down, slow lower', 'Weighted step-down'],
     hips: ['Deep split squat', 'Bridge preparation', 'Single-leg glute bridge', 'Bodyweight Cossack squat', 'Weighted Cossack squat', 'Loaded 90/90 lift-off'],
@@ -29753,8 +29820,14 @@ function mobilityPrescriptionType(name){
 // keeps session duration estimates honest across both kinds.
 const MOBILITY_REPS_BY_HOLD = { 60:10, 45:8, 40:8, 30:8, 20:6, 15:5 };
 const MOBILITY_SECONDS_PER_REP = 4;   // controlled tempo, both directions where relevant
+/* ONE SIDE AT A TIME. A half-kneeling hip-flexor stretch is two stretches, one per leg, and
+   was both shown and counted as one. These are the movements done one limb at a time; they
+   carry perSide, the label says "/side", and the stretch-time count doubles them. */
+const MOBILITY_UNILATERAL_RE = /half-kneeling|single-leg|single leg|single-arm|one-arm|figure-4|pigeon|couch|lunge|split squat|side-lying|sleeper|cross-body|90\/90|knee-to-wall|calf stretch|heel drop|copenhagen|cossack|lateral rock|thread the needle|open book|doorway|corner pec|kneeling hip|tibialis/i;
+function mobilityIsUnilateral(name){ return MOBILITY_UNILATERAL_RE.test(String(name || '')); }
 function mobilityDose(name, spec){
   const type = mobilityPrescriptionType(name);
+  if(mobilityIsUnilateral(name)) spec = { ...spec, perSide: true };
   if(type === 'hold') return { ...spec, prescriptionType:'hold' };
   const hold = spec.holdSeconds != null ? spec.holdSeconds : 30;
   const reps = MOBILITY_REPS_BY_HOLD[hold] || Math.max(5, Math.round(hold / MOBILITY_SECONDS_PER_REP));
@@ -29764,8 +29837,9 @@ function mobilityDoseLabel(st){
   // Some doses do not fit sets × time: "3 min", "10 each way".
   if(st.doseText) return st.doseText;
   const sets = st.sets != null ? st.sets : 2;
-  if(st.reps != null) return `${sets}×${st.reps}`;
-  return `${sets}×${st.holdSeconds != null ? st.holdSeconds : 30}s`;
+  const side = st.perSide ? '/side' : '';
+  if(st.reps != null) return `${sets}×${st.reps}${side}`;
+  return `${sets}×${st.holdSeconds != null ? st.holdSeconds : 30}s${side}`;
 }
 const MOBILITY_INTEGRATE_LIBRARY = ['Deep squat to overhead reach', 'Cossack squat to standing reach', 'Bear crawl to downward dog flow', 'Crab walk to bridge'];
 // Which cross-domain finisher expresses which skill goal. Keeps the last movement of a
@@ -29961,7 +30035,9 @@ async function getPrioritizedMobilityDomains(activeGoalSkills){
 // tapers as you climb the ladder: long static holds at Foundation, shorter active work
 // at Controlled ROM, then loaded sets that behave like strength work. This is what makes
 // a session shrink as you actually improve, rather than staying padded at the ceiling.
-const MOBILITY_LEVEL_TO_CATEGORY = { 1:'access', 2:'control', 3:'load' };
+// 0 is "none of these yet": below the first rung, the most restricted a domain can be, and
+// it gets the gentlest rung.
+const MOBILITY_LEVEL_TO_CATEGORY = { 0:'access', 1:'access', 2:'control', 3:'load' };
 
 // Domains already trained through loaded full range this week don't need a second dose
 // of dedicated stretching on top. Resistance training through full ROM increases joint
@@ -30006,6 +30082,16 @@ const MOBILITY_LEVEL_DOSE = {
   3: { sets:3, holdSeconds:20 }   // loaded — closer to strength dosing than stretching
 };
 const MOBILITY_MAINTENANCE_DOSE = { sets:2, holdSeconds:20 };
+/* ECCENTRICS ARE TRAINING SETS, NOT STRETCHES. Slow lowering work improved ankle
+   dorsiflexion more than stretching does (Kay 2023, g 1.12) in programmes of about 3 x
+   10-15, each side, 2-3 times a week. The stopwatch-matched dose a rep rung got (2 x 5 at
+   level 1) was a third of that. By level, each side; a maintenance week keeps 2 x 8. */
+const MOBILITY_ECCENTRIC_RE = /eccentric|heel drop|nordic|slow lower|step-down/i;
+const MOBILITY_ECCENTRIC_DOSE = {
+  1: { sets:2, reps:10, rangeNote:'partial range, 3 s down' },
+  2: { sets:3, reps:10, rangeNote:'through your current range, 3 s down' },
+  3: { sets:3, reps:12, rangeNote:'full range, 3 s down' }
+};
 // Dose for the loaded rung, by the domain's assessed level. A restricted domain loads
 // through a shorter range for less time — the modality is the same, the exposure isn't.
 const MOBILITY_LOAD_DOSE = {
@@ -30069,18 +30155,14 @@ async function getMobilityDomainsNeedingWork(activeGoalSkills){
   });
 
   const needed = [];
-  const loadedROMDomains = await getLoadedROMDomains(7);
   ordered.forEach(domain=>{
     const score = scores[domain];
     const isGoal = goalDomains.has(domain);
     let category = MOBILITY_LEVEL_TO_CATEGORY[score];
     let reason;
-    // Loaded full-ROM work this week already trained this domain's range. Goal domains
-    // are exempt — a skill target needs its own end-range progression regardless.
-    const loadedCover = loadedROMDomains[domain];
-    if(loadedCover && !isGoal){
-      return;
-    }
+    // Lifting no longer switches a domain off for a week: its sets are credited to the
+    // weekly total (liftRomCredit), and a domain steps aside only once that total reaches
+    // the target, which buildMobilitySession already checks.
     if(score == null){
       if(!calibrating && !isGoal) return;   // assessed elsewhere, skipped here — no signal of need
       category = category || 'access';
@@ -30114,15 +30196,22 @@ function buildMobilitySession({ neededDomains, mobilityGoals, loadedROMCoverage,
   const areaAtCeiling = a => (weekSecondsByArea[a]||0) >= MOBILITY_WEEKLY_TARGET_SECONDS;
   const chargeArea = (a, secs) => { if(a) weekSecondsByArea[a] = (weekSecondsByArea[a]||0) + secs; };
   const chargeIfStatic = (st, a, secs) => { if(countsTowardStaticBudget(st)) chargeArea(a, secs); };
+  /* ~4 MINUTES PER AREA PER SESSION. Gains from one session level off around 4 minutes per
+     muscle (Ingram 2024), so the goal skill, the access rung and the load rung on one area
+     used to stack to 6 or 7 minutes of which the last few did nothing. This session's time
+     per area is tallied, and a rung that would pass the cap is cut to the sets that fit, or
+     dropped when the area is already full. */
+  const sessionArea = {};
+  const sessionCharge = (a, secs) => { if(a) sessionArea[a] = (sessionArea[a] || 0) + secs; };
   const goalStretches = [];
   // How many blocks each skill needs to reach ~10 min/week at its full per-session dose.
   // Beyond that it simply doesn't appear — an extra exposure past the point returns stop
   // is session time another skill or area could use. Skills stagger against each other
   // via their index so they don't all land on the same days.
   const _skillBlockNeed = (sg)=>{
-    const d = MOBILITY_SKILL_DOSING[sg.skill];
-    if(!d) return blocksThisWeek || 4;
-    const perSession = Math.min(MOBILITY_SESSION_CAP_SECONDS, d.sets * d.holdSeconds);
+    const d = skillLevelDose(sg, sg.levelIndex);
+    const perSession = Math.min(MOBILITY_SESSION_CAP_SECONDS, romSecondsFor({ ...d, skill: sg.skill }));
+    if(!perSession) return blocksThisWeek || 4;
     // Readiness tests land on roughly half the skill's sessions and are real held work in
     // the same tissue, so budget for them rather than letting them push past the ceiling.
     const testOverhead = (MOBILITY_SKILL_TEST_SETS * MOBILITY_SKILL_TEST_SECONDS) / 2;
@@ -30141,8 +30230,8 @@ function buildMobilitySession({ neededDomains, mobilityGoals, loadedROMCoverage,
       st.category = 'goal';
       goalStretches.push(st);
       // Charge the skill's time against every muscle group it loads, on every path.
-      const secs = (st.sets||0)*(st.holdSeconds||0);
-      (MOBILITY_SKILL_TARGET_AREAS[sg.skill]||[]).forEach(a=>chargeArea(a, secs));
+      const secs = romSecondsFor(st);
+      (MOBILITY_SKILL_TARGET_AREAS[sg.skill]||[]).forEach(a=>{ chargeArea(a, secs); sessionCharge(a, secs); });
     });
   });
 
@@ -30228,8 +30317,27 @@ function buildMobilitySession({ neededDomains, mobilityGoals, loadedROMCoverage,
       : (cat === 'load'
           ? doseForLevel(MOBILITY_LOAD_DOSE, level)
           : doseForLevel(MOBILITY_LEVEL_DOSE, level));
-    otherStretches.push({ name, area: MOBILITY_DOMAIN_TO_AREA[domain] || '', category: cat, domain, reason,
-      ...mobilityDose(name, spec) });
+    const dosed = mobilityDose(name, spec);
+    if(MOBILITY_ECCENTRIC_RE.test(name) && dosed.prescriptionType === 'reps'){
+      const ecc = sessionType === 'maintenance' ? { sets:2, reps:8 } : doseForLevel(MOBILITY_ECCENTRIC_DOSE, level);
+      // modality, not category: category is the rung the row is grouped under.
+      Object.assign(dosed, { sets: ecc.sets, reps: ecc.reps, holdSeconds: null, modality: 'eccentric' });
+      if(ecc.rangeNote) dosed.rangeNote = ecc.rangeNote;
+    }
+    const item = { name, area: MOBILITY_DOMAIN_TO_AREA[domain] || '', category: cat, domain, reason, ...dosed };
+    const secs = romSecondsFor(item);
+    if(item.area && secs > 0){
+      const room = MOBILITY_SESSION_CAP_SECONDS - (sessionArea[item.area] || 0);
+      if(room <= 0) return false;
+      if(secs > room){
+        const perSet = secs / (item.sets || 1);
+        const fit = Math.floor(room / perSet);
+        if(fit < 1) return false;
+        item.sets = fit;
+      }
+      sessionCharge(item.area, romSecondsFor(item));
+    }
+    otherStretches.push(item);
     return true;
   }
 
@@ -30339,24 +30447,10 @@ async function generateMobilityProgram(numSessions, forcedDates, sessionType){
   // goal-skill work and area-based access work were stacking on the same tissue with no
   // shared budget. Time past the ceiling isn't harmful, it's just wasted session time that
   // another area could use.
-  const weekSecondsByArea = {};
-  // Seed the weekly budget with warm-up and post-session time already committed this week.
-  // Without this the ceiling only saw planned mobility blocks — roughly half of the real
-  // time under stretch — so an area could sit "under budget" while genuinely over it.
-  for(const pfx of ['warmupLog:', 'postMobilityLog:']){
-    try{
-      const logs = await window.storage.list(pfx);
-      const weekDates = getWeekDates();
-      for(const k of (logs.keys||[])){
-        const d = k.replace(pfx, '');
-        if(!weekDates.includes(d)) continue;
-        const rec = JSON.parse((await window.storage.get(k)).value);
-        Object.entries(rec.secondsByArea || {}).forEach(([a, s]) => {
-          weekSecondsByArea[a] = (weekSecondsByArea[a]||0) + s;
-        });
-      }
-    } catch(e){}
-  }
+  // Seeded from the same weekly total everything else reads: what has been done this week,
+  // plus what is already planned for the days still to come (includePlanned), for the week
+  // the dates being filled belong to.
+  const weekSecondsByArea = await loadWeekStretchLedger(weekDatesFrom(placedDates[0]), { includePlanned: true });
 
   // Pre-allocate what the goal skills will consume across the WHOLE week before placing
   // any access work. Charging per-session meant access work placed on day one was already
@@ -30769,7 +30863,11 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
     const cap = result.mobilityHandled ? mobilityDayWanted : 2;
     const mobilitySlots = Math.min(Math.max(0, Math.min(remainingDates.length, clearDays - 1)), cap);
     if(mobilitySlots > 0){
-      const genResult = await generateMobilityProgram(mobilitySlots, remainingDates.slice(0, mobilitySlots), 'maintenance');
+      // The week's one dedicated session, so it gets the real dose. It was the maintenance
+      // dose (2 x 20 s, skill sets halved) on the one day that exists BECAUSE the rest of the
+      // week puts so little held work anywhere; the weekly ledger still stops an area at
+      // the target, so this cannot overshoot.
+      const genResult = await generateMobilityProgram(mobilitySlots, remainingDates.slice(0, mobilitySlots), 'development');
       result.mobilityPlaced = (result.mobilityPlaced||0) + genResult.placed;
       if(genResult.placed > 0) result.mobilityHandled = true;
     }
@@ -31357,46 +31455,97 @@ async function renderTodayBlockContext(forDate){
 // `dates` is optional and defaults to the current week, which is every existing caller.
 // The Sunday review needs it: on Monday it reports on the week just gone, and without this
 // it read the current week's ledger — two hours of stretching last week showing as none.
-async function loadWeekStretchLedger(dates){
+/* LIFTING THAT TRAINS RANGE, CREDITED BY THE SET.
+
+   Full-range resistance training improves range of motion about as much as stretching
+   (Alizadeh 2023, 55 studies: ES 0.73, no different from stretching), though less in people
+   who already train (ES 0.43) and not at all from bodyweight-only work. So a logged set
+   earns time toward the same weekly target:
+
+     LENGTHENED   (longLengthBias: RDL, Nordic, deep split squats, flyes, dips...) 40 s a set
+                  to the primary area, 20 s to the secondary.
+     FULL-RANGE   other loaded compounds (squats, deadlifts, presses, pulls) 15 s a set to
+                  the primary area: they move through range, but not to its end.
+
+   Capped at MOBILITY_SESSION_CAP_SECONDS per area per session, the same per-session
+   plateau stretching has (Ingram 2024). It replaces a flat 112 s per session that also
+   switched the area's own work off for a week: the credit now simply counts, and the area
+   stops getting dedicated work only once it is actually at the weekly target. */
+const LIFT_ROM_SECONDS_PER_SET = { lengthened: 40, lengthenedSecondary: 20, fullRange: 15 };
+function liftRomCredit(session){
+  const out = {};
+  if(!session || session.type !== 'strength' || !Array.isArray(session.exercises)) return out;
+  for(const e of session.exercises){
+    const id = (e.exerciseId && EXERCISE_LIBRARY[e.exerciseId]) ? e.exerciseId : (guessTagsFromLibrary(e.name || '') || {}).exerciseId;
+    const lib = id && EXERCISE_LIBRARY[id];
+    if(!lib) continue;
+    const sets = Array.isArray(e.repsPerSet) && e.repsPerSet.length ? e.repsPerSet.length : (parseInt(e.sets, 10) || 3);
+    const bodyweightOnly = (lib.equipment || []).every(q => q === 'bodyweight' || q === 'partner' || q === 'bench' || q === 'box');
+    const add = (area, secs)=>{ if(area) out[area] = Math.min(MOBILITY_SESSION_CAP_SECONDS, (out[area] || 0) + secs); };
+    if(lib.longLengthBias){
+      add(e.area || lib.area, sets * LIFT_ROM_SECONDS_PER_SET.lengthened);
+      add(e.secondaryArea || lib.secondaryArea, sets * LIFT_ROM_SECONDS_PER_SET.lengthenedSecondary);
+    } else if(!bodyweightOnly && (lib.category === 'main_strength' || lib.category === 'secondary_strength')
+              && ['squat','lunge','hinge','push','pull'].includes(lib.movement)){
+      add(e.area || lib.area, sets * LIFT_ROM_SECONDS_PER_SET.fullRange);
+    }
+  }
+  return out;
+}
+function weekDatesFrom(date){
+  const mon = getWeekStartFor(date || todayStr);
+  return [0,1,2,3,4,5,6].map(i => shiftDateStr(mon, i));
+}
+/* THE WEEK'S TIME UNDER STRETCH, PER AREA — WHAT WAS DONE.
+
+   Done means logged: a mobility session saved from its sheet, cool-down rows ticked, lifting
+   logged (liftRomCredit). Planned blocks used to write here the moment the plan was made,
+   so a week read as covered when nothing had been done, and an area could be dropped from
+   the plan for work that never happened.
+
+   includePlanned is for the planner only: it adds the blocks already planned for days still
+   to come this week (stretchLedger: records, written at generation) so one week's plan does
+   not put the same area on every day. A planned day that has a logged mobility session
+   counts what was logged instead. */
+async function loadWeekStretchLedger(dates, opts){
+  const includePlanned = !!(opts && opts.includePlanned);
   const ledger = {};
   const weekDates = dates || getWeekDates();
-  // Loaded full-ROM work counts toward the same target — see LOADED_ROM_CREDIT_SECONDS.
-  // Read off logged sessions rather than planned ones, so it is credit for work done.
+  const add = (a, secs)=>{ if(a && secs > 0) ledger[a] = (ledger[a] || 0) + secs; };
+  const loggedMobilityDates = new Set();
   try{
     for(const sn of await getAllTrainingSessions()){
-      if(!sn || sn.type !== 'strength' || !sn.exercises) continue;
-      if(!weekDates.includes(sn.date)) continue;
-      const creditedThisSession = new Set();
-      sn.exercises.forEach(e=>{
-        const lib = e.exerciseId ? EXERCISE_LIBRARY[e.exerciseId] : null;
-        // Only long-length loaded work. A short-range machine movement does not train range
-        // of motion just because it was loaded — the same test getLoadedROMDomains applies.
-        if(!lib || !lib.longLengthBias) return;
-        [e.area, e.secondaryArea].filter(Boolean).forEach(area=>{
-          // Once per area per session: three squat variants in one day is one exposure of
-          // that pattern, not three.
-          if(creditedThisSession.has(area)) return;
-          creditedThisSession.add(area);
-          ledger[area] = (ledger[area] || 0) + LOADED_ROM_CREDIT_SECONDS;
-        });
-      });
+      if(!sn || !weekDates.includes(sn.date)) continue;
+      if(sn.type === 'strength'){
+        Object.entries(liftRomCredit(sn)).forEach(([a, secs])=> add(a, secs));
+      } else if(sn.type === 'mobility' && Array.isArray(sn.stretches)){
+        loggedMobilityDates.add(sn.date);
+        for(const st of sn.stretches){
+          const secs = romSecondsFor(st);
+          if(!secs) continue;
+          if(st.area) add(st.area, secs);
+          (MOBILITY_SKILL_TARGET_AREAS[st.skill] || []).forEach(a => add(a, secs));
+        }
+      }
     }
   } catch(e){}
-  for(const pfx of ['warmupLog:', 'postMobilityLog:', 'stretchLedger:']){
+  const prefixes = ['warmupLog:', 'postMobilityLog:'].concat(includePlanned ? ['stretchLedger:'] : []);
+  for(const pfx of prefixes){
     try{
       const logs = await window.storage.list(pfx);
       for(const k of (logs.keys||[])){
         const d = k.replace(pfx, '');
         if(!weekDates.includes(d)) continue;
+        if(pfx === 'stretchLedger:' && (d < todayStr || loggedMobilityDates.has(d))) continue;
         const rec = JSON.parse((await window.storage.get(k)).value);
-        Object.entries(rec.secondsByArea || {}).forEach(([a, s]) => {
-          ledger[a] = (ledger[a]||0) + s;
-        });
+        Object.entries(rec.secondsByArea || {}).forEach(([a, secs]) => add(a, secs));
       }
     } catch(e){}
   }
   return ledger;
 }
+/* PLANNED, NOT DONE: what a generated block intends for that day, read only by the planner
+   (loadWeekStretchLedger with includePlanned). */
 async function saveStretchLedgerFor(date, secondsByArea){
   try{ await window.storage.set(`stretchLedger:${date}`, JSON.stringify({ date, secondsByArea })); } catch(e){}
 }
@@ -31630,19 +31779,44 @@ function countsTowardStaticBudget(stretch){
   if(stretch.skill) return true;
   const cat = (stretch.modality || stretch.category || '').toLowerCase();
   if(STATIC_EXCLUDED_MODALITIES.includes(cat)) return false;
+  // A logged row carries only its name, so rolling is caught by name as well.
+  if(/foam roll|roller|lacrosse|smash|soft tissue release/i.test(stretch.name || '')) return false;
   return true;
 }
 // Seconds of ROM-relevant work in one prescription. Loaded and eccentric work is written
 // in reps, so sets x holdSeconds returns zero for it — the same trap the duration
 // estimator already avoids by pricing reps at a controlled tempo. Without this, loaded
 // control through range counts for nothing however it's classified.
+/* ONE COUNTING RULE, used by every place that credits stretch time (romSecondsFor for a
+   planned or logged item, drillStaticSeconds for a ticked cool-down row):
+
+     HOLDS   sets x hold, x2 when it is done each side. Total time is what the dose-response
+             literature measures (Thomas 2018, Ingram 2024): 3x20s and 1x60s are the same.
+     PNF     cycles x PNF_CYCLE_SECONDS, each side: the contract and the deeper hold after it.
+     REPS    count only when they are loaded through range — load, eccentric, a skill's own
+             reps — at MOBILITY_SECONDS_PER_REP each, each side. Unloaded movement (CARs,
+             cat-cow, circles, swings) is preparation, not time under stretch: zero.
+     ROLL / DYNAMIC   zero (countsTowardStaticBudget). */
+const STRETCH_SIDES_RE = /\/side|each side|per side|each leg|each arm|both sides|a side\b/i;
+function stretchSides(st){
+  if(!st) return 1;
+  if(st.perSide || mobilityIsUnilateral(st.name)) return 2;
+  return STRETCH_SIDES_RE.test(`${st.doseText || ''} ${st.name || ''} ${st.prescription || ''} ${st.hold || ''}`) ? 2 : 1;
+}
+const ROM_LOADED_CATEGORIES = ['load', 'eccentric', 'loaded'];
 function romSecondsFor(stretch){
   if(!stretch || !countsTowardStaticBudget(stretch)) return 0;
   const sets = stretch.sets != null ? stretch.sets : 2;
-  const work = stretch.holdSeconds != null && stretch.holdSeconds > 0
-    ? stretch.holdSeconds
-    : (stretch.reps ? stretch.reps * MOBILITY_SECONDS_PER_REP : 0);
-  return sets * work;
+  const sides = stretchSides(stretch);
+  const cat = (stretch.modality || stretch.category || '').toLowerCase();
+  if(cat === 'pnf'){
+    const cycles = stretch.cycles || stretch.reps || 3;
+    return cycles * PNF_CYCLE_SECONDS * sides;
+  }
+  if(stretch.holdSeconds != null && stretch.holdSeconds > 0) return sets * stretch.holdSeconds * sides;
+  if(stretch.reps && (stretch.skill || ROM_LOADED_CATEGORIES.includes(cat)))
+    return sets * stretch.reps * MOBILITY_SECONDS_PER_REP * sides;
+  return 0;
 }
 // Readiness-test dose, referenced by the skill appearance budget.
 // Minimum weeks at a level before a test is worth taking. Early ROM gains are neural
@@ -31654,8 +31828,9 @@ const MOBILITY_SKILL_MIN_WEEKS_AT_LEVEL = {
   pike: 3, bridge: 3, deepsquat: 3, overheadsquat: 3, pancake: 4,
   frontsplits: 4, middlesplit: 4
 };
-const MOBILITY_SKILL_TEST_SETS = 2;
-const MOBILITY_SKILL_TEST_SECONDS = 30;
+// One attempt at the next level's target, about 45 s of held work on average.
+const MOBILITY_SKILL_TEST_SETS = 1;
+const MOBILITY_SKILL_TEST_SECONDS = 45;
 const MOBILITY_WEEKLY_TARGET_SECONDS = 600;    // 10 min/week of STATIC stretching (Ingram 2024)
 // The threshold where stretching starts working, as opposed to where it stops improving.
 // Ingram's chronic spline puts its knots at 3, 8, 16 and 173 min/week and is close to flat
@@ -31672,7 +31847,7 @@ const MOBILITY_WEEKLY_FLOOR_SECONDS = 300;     // 5 min/week — below this it d
 // already SKIPS them — but nothing ever credited the work, so doing the thing the evidence
 // recommends made the target look less met. One exposure is credited what one block of
 // dedicated stretching credits a domain, measured at ~112s across every configuration.
-const LOADED_ROM_CREDIT_SECONDS = 112;
+// (LOADED_ROM_CREDIT_SECONDS, a flat 112 s per session, is replaced by liftRomCredit.)
 const MOBILITY_WEEKLY_PRODUCTIVE_SECONDS = 300; // 5 min/week — minimum productive (Thomas et al.)
 const MOBILITY_SESSION_CAP_SECONDS = 240;      // 4 min/session — beyond this adds nothing
 const MOBILITY_MIN_WEEKS_AT_DOSE = 2;          // sustained, not a single big week
@@ -31698,7 +31873,7 @@ async function getMobilitySkillProgress(skill){
   // against rewarding.
   const byDate = {};
   working.forEach(h => {
-    const s = (h.sets||0)*(h.holdSeconds||0);
+    const s = romSecondsFor({ ...h, skill: h.skill || true });
     byDate[h.date] = Math.min(MOBILITY_SESSION_CAP_SECONDS, (byDate[h.date]||0) + s);
   });
   const totalSeconds = Object.values(byDate).reduce((a,b)=>a+b, 0);
@@ -31712,9 +31887,9 @@ async function getMobilitySkillProgress(skill){
   const weeksAtDose = Object.values(byWeek).filter(s => s >= MOBILITY_WEEKLY_PRODUCTIVE_SECONDS).length;
   const levels = working.map(h => h.levelIndex).filter(v => v != null);
   const currentLevel = levels.length ? Math.max(...levels) : null;
-  // A readiness test that got logged with real sets/time is the signal that the next
-  // level is achievable — that's exactly what the test exists to find out.
-  const testsPassed = tests.filter(t => (t.sets||0) > 0 && (t.holdSeconds||0) > 0).length;
+  // A test counts as passed only when you said you held it. Logging the row used to be
+  // the pass: the row could not be edited, so every logged attempt read as a success.
+  const testsPassed = tests.filter(t => t.passed === true).length;
   return {
     skill, sessions: working.length, tests: tests.length, testsPassed,
     totalSeconds, currentLevel, weeksAtDose,
@@ -31746,7 +31921,7 @@ async function suggestMobilityAdvance(sg){
   }
   if(p.weeksAtDose < MOBILITY_MIN_WEEKS_AT_DOSE){
     return { skill: sg.skill, label, action:'hold', progress: p,
-      note: `~${targetMin} min/week for ${p.weeksAtDose}wk — ${MOBILITY_MIN_WEEKS_AT_DOSE} before moving up` };
+      note: `~${Math.round(MOBILITY_WEEKLY_PRODUCTIVE_SECONDS/60)} min/week for ${p.weeksAtDose}wk — ${MOBILITY_MIN_WEEKS_AT_DOSE} before moving up` };
   }
   if(p.testsPassed >= 2){
     return { skill: sg.skill, label, action:'advance', progress: p,
@@ -34576,7 +34751,7 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
   const directPicksByArea = {};
   // How many blocks are already behind us — drives the per-block volume increment so
   // successive blocks progress instead of repeating an identical baseline.
-  const strengthStretchLedger = await loadWeekStretchLedger();
+  const strengthStretchLedger = await loadWeekStretchLedger(weekDatesFrom((forcedDates && forcedDates[0]) || todayStr), { includePlanned: true });
   const _blockPos = await getBlockPosition((forcedDates && forcedDates[0]) || todayStr);
   const blocksCompleted = _blockPos.blocksCompleted;
   // Compound the earned step across completed blocks, so sustained good training keeps
@@ -35171,7 +35346,9 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
         domainFilter: compDomains,
         bodyweightOnly: equipmentPrefs.bodyweightMobility,
         weekSecondsByArea: strengthStretchLedger,
-        blocksThisWeek: (sessionLength >= 75 ? placedDates.length : Math.ceil(placedDates.length/2))
+        // A companion now rides every training day, so the week has one block per lift day;
+        // halving it spaced the goal skill across days that do not exist.
+        blocksThisWeek: placedDates.length
       });
 
       const companionBase = `Complementary mobility — today's strength focus is ${tag.replace('_',' ')}, so mobility targets ${compArea} body`;
@@ -35315,7 +35492,7 @@ async function generateRunPlan(tierKey, maxSessions, forcedDates, runSlotByDate,
   for(const sg of runCompanionGoals){ sg._testReady = await isTestReady(sg); }
   const runNeededDomains = await getMobilityDomainsNeedingWork(runCompanionGoals.map(sg=>sg.skill));
   const runLoadedROM = await getRecentLoadedROMCoverage();
-  const runWeekSecondsByArea = await loadWeekStretchLedger();
+  const runWeekSecondsByArea = await loadWeekStretchLedger(weekDatesFrom((forcedDates && forcedDates[0]) || todayStr), { includePlanned: true });
   if(runSlotByDate && forcedDates){
     // Types already decided by the adjacency system during slot planning — use them
     // directly rather than re-deciding, so placement and generation never disagree.
@@ -38239,7 +38416,8 @@ function cooldownBudgetMin(sessionLength){
 // because the Ingram dose-response does not cover them.
 /* A PNF contract-relax cycle, whole. Its printed dose names only the contract phase, so
    this is what the row is worth when one is ticked — see drillStaticSeconds. */
-const PNF_CYCLE_SECONDS = 45;
+// One contract-relax cycle: about 6 s of contraction and 10 s in the deeper position after it.
+const PNF_CYCLE_SECONDS = 16;
 /* A RUN'S PREPARATION IS NOT ONE SIZE, AND IT IS NOT A FRACTION OF A LIFT'S.
 
    This was briefly a single multiplier applied to every run, which the evidence does not
@@ -38639,7 +38817,9 @@ async function generateWarmup(){
   const STATIC_PREP_MAX_SCORE = 2;      // 0-5 assessment scale — a deficit, not just untested
   const STATIC_PREP_CAP_SECONDS = 60;
   let staticPrep = null;
-  if(!runType && warmupCap >= WARMUP_TIME_CAP){
+  // Not before a jump or a throw either: a held stretch is harmless under 60 s, but the
+  // session that opens with power work is the one place it can only cost (Behm 2016).
+  if(!runType && !openerIsPower && warmupCap >= WARMUP_TIME_CAP){
     let scores = {};
     try{
       const a = await getMobilityAssessment();
@@ -38885,10 +39065,22 @@ function drillDoseSeconds(text){
 function drillStaticSeconds(html, group){
   const t = String(html).replace(/<[^>]*>/g, '').trim().toLowerCase();
   if(!t) return 0;
-  if(String(group || '').toUpperCase() === 'PNF' || /^pnf\b/.test(t)) return PNF_CYCLE_SECONDS;
+  const sides = STRETCH_SIDES_RE.test(t) ? 2 : 1;
+  // PNF: the printed cycles (low end of a range, 3 when it does not say), each side.
+  if(String(group || '').toUpperCase() === 'PNF' || /^pnf\b/.test(t)){
+    const m = t.match(/(\d+)\s*(?:[-–]\s*\d+\s*)?(?:cycles?|rounds?)/) || t.match(/[\u00d7x]\s*(\d+)/);
+    return (m ? +m[1] : 3) * PNF_CYCLE_SECONDS * sides;
+  }
   if(/foam roll|roller|lacrosse|smash|release|traction/.test(t)) return 0;
+  const setsM = t.match(/(\d+)\s*[\u00d7x]\s*\d+/);
+  const sets = setsM ? +setsM[1] : 1;
+  // Loaded or eccentric reps through range count, at the same per-rep seconds as a plan item.
+  if(/eccentric|heel drop|nordic|loaded|weighted|jefferson|elephant walk/.test(t) && !/\d+\s*(?:[-–]\s*\d+\s*)?s\b/.test(t)){
+    const r = t.match(/[\u00d7x]\s*(\d+)/);
+    return r ? sets * +r[1] * MOBILITY_SECONDS_PER_REP * sides : 0;
+  }
   if(!/\d+\s*(?:[-–]\s*\d+\s*)?s\b/.test(t)) return 0;
-  return drillDoseSeconds(html)[0];
+  return sets * drillDoseSeconds(html)[0];
 }
 function drillMinutes(items){
   const secs = items.reduce((a, it)=> a + drillDoseSeconds(it) [1] + DRILL_TRANSITION_S, 0);

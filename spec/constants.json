@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.10.22.005",
+ "generatedFrom": "2026.10.27.001",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1086,7 +1086,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.10.22.005",
+  "APP_VERSION": "2026.10.27.001",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1464,6 +1464,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.10.27.001": "Mobility, checked against the research and fixed. Stretch time counts when you do it, not when it is planned, and counts the same way everywhere: holds by total time with both sides counted, PNF by its rounds, loaded and eccentric reps through range, and nothing for circles, swings or foam rolling. Lifting earns its share by the set (deep and lengthened lifts most, squats and presses some) instead of switching an area off for a week. Ankles and calves get proper eccentric heel drops (3 x 10-12 each side, bent knee and straight). Each area is capped at about 4 minutes a session, where the benefit stops. The assessment has a None of these yet answer, so your tightest areas get scored and worked. Mobility skills follow each level’s own target, and a readiness test now asks Held it or Not yet — two holds move you up.",
    "2026.10.22.005": "The tab switcher under the masthead is five dots in a straight row now, and the tab you are on is a short white pill. Tap a dot or swipe as before.",
    "2026.10.22.004": "The mark is a flat white face now, with a soft shadow along the bottom so it still reads as round, and its eyes sit a little higher. Same on the app icon.",
    "2026.10.22.003": "The mark’s eyes are a third bigger and its outer ring is gone — a plain white face on the masthead and on the app icon.",
@@ -3248,6 +3249,7 @@
     "holdSeconds": 30
    }
   },
+  "SKILL_SESSION_SECONDS": 180,
   "MOBILITY_DOMAINS": [
    "ankles",
    "calves",
@@ -3313,6 +3315,7 @@
    "60": 10
   },
   "MOBILITY_SECONDS_PER_REP": 4,
+  "MOBILITY_UNILATERAL_RE": {},
   "SKILL_TO_INTEGRATE": {
    "deepsquat": "Deep squat to overhead reach",
    "overheadsquat": "Deep squat to overhead reach",
@@ -3336,6 +3339,7 @@
   },
   "MOBILITY_REASSESS_DAYS": 42,
   "MOBILITY_LEVEL_TO_CATEGORY": {
+   "0": "access",
    "1": "access",
    "2": "control",
    "3": "load"
@@ -3357,6 +3361,24 @@
   "MOBILITY_MAINTENANCE_DOSE": {
    "sets": 2,
    "holdSeconds": 20
+  },
+  "MOBILITY_ECCENTRIC_RE": {},
+  "MOBILITY_ECCENTRIC_DOSE": {
+   "1": {
+    "sets": 2,
+    "reps": 10,
+    "rangeNote": "partial range, 3 s down"
+   },
+   "2": {
+    "sets": 3,
+    "reps": 10,
+    "rangeNote": "through your current range, 3 s down"
+   },
+   "3": {
+    "sets": 3,
+    "reps": 12,
+    "rangeNote": "full range, 3 s down"
+   }
   },
   "MOBILITY_LOAD_DOSE": {
    "1": {
@@ -3392,6 +3414,11 @@
    "readinessOura",
    "bodyBattery"
   ],
+  "LIFT_ROM_SECONDS_PER_SET": {
+   "lengthened": 40,
+   "lengthenedSecondary": 20,
+   "fullRange": 15
+  },
   "RACE_LONG_MIN_KM": 15,
   "RUN_RAISE_BY_TYPE": {
    "easy": "Walk, then run the first kilometre slower than target pace — that is the warm-up",
@@ -3421,6 +3448,12 @@
    "foam_roll",
    "dynamic"
   ],
+  "STRETCH_SIDES_RE": {},
+  "ROM_LOADED_CATEGORIES": [
+   "load",
+   "eccentric",
+   "loaded"
+  ],
   "MOBILITY_SKILL_MIN_WEEKS_AT_LEVEL": {
    "pike": 3,
    "bridge": 3,
@@ -3430,11 +3463,10 @@
    "frontsplits": 4,
    "middlesplit": 4
   },
-  "MOBILITY_SKILL_TEST_SETS": 2,
-  "MOBILITY_SKILL_TEST_SECONDS": 30,
+  "MOBILITY_SKILL_TEST_SETS": 1,
+  "MOBILITY_SKILL_TEST_SECONDS": 45,
   "MOBILITY_WEEKLY_TARGET_SECONDS": 600,
   "MOBILITY_WEEKLY_FLOOR_SECONDS": 300,
-  "LOADED_ROM_CREDIT_SECONDS": 112,
   "MOBILITY_WEEKLY_PRODUCTIVE_SECONDS": 300,
   "MOBILITY_SESSION_CAP_SECONDS": 240,
   "MOBILITY_MIN_WEEKS_AT_DOSE": 2,
@@ -5730,7 +5762,7 @@
   "WARMUP_TIME_PER_AREA": 3,
   "MOBILITY_TIME_CAP": 15,
   "MOBILITY_TIME_PER_AREA": 7,
-  "PNF_CYCLE_SECONDS": 45,
+  "PNF_CYCLE_SECONDS": 16,
   "RUN_WARMUP_BUDGET": {
    "easy": 3,
    "recovery": 3,
