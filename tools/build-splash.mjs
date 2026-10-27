@@ -81,10 +81,13 @@ const box = await page.evaluate((ground) => {
   s.textContent = `*,*::before,*::after{animation:none!important;transition:none!important}
     .header-brand{background:${ground}!important}
     .header-brand::before,.header-brand::after{display:none!important}
-    #headerDate,#currentTabLabel,#headerScoreBtn,.eye-zzz,.header-brand > .tabs{visibility:hidden!important}`;
+    #headerDate,#currentTabLabel,#headerScoreBtn,.eye-zzz,.header-brand > .tabs,#headerMark{visibility:hidden!important}`;
   document.head.appendChild(s);
-  const rects = [...document.querySelectorAll('.header-brand h1 .logo-line span'),
-                 document.getElementById('headerMark')].map(e => e.getBoundingClientRect());
+  /* The lockup is the name and the small mark that sits after it like a trademark (h1 .tm).
+     The big mark in the banner's corner is cut off by the banner on purpose, so it is not
+     part of the lockup and is hidden, as is everything under the header. */
+  const rects = [...document.querySelectorAll('.header-brand h1 .logo-line span, .header-brand h1 .tm')]
+    .map(e => e.getBoundingClientRect());
   const x0 = Math.min(...rects.map(r => r.left)),  y0 = Math.min(...rects.map(r => r.top));
   const x1 = Math.max(...rects.map(r => r.right)), y1 = Math.max(...rects.map(r => r.bottom));
   return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
