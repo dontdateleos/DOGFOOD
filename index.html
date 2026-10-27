@@ -12,13 +12,13 @@
      Chrome has no name, no icon and no display mode to install with, so the app opened as a
      browser tab. start_url is index.html rather than "./" so the launcher and the service
      worker agree on which spelling of the address they are caching and launching. -->
-<link rel="manifest" href="manifest.webmanifest?v=516daf7d">
+<link rel="manifest" href="manifest.webmanifest?v=443acfe3">
 <meta name="theme-color" content="#0c0d0b">
 <!-- The ground is stamped before anything paints. It has to run here, in the head, off
      localStorage rather than the app's async storage, because the alternative is the page
      drawing itself black and then flipping to bone on every single launch. The masthead is
      dark on both grounds, which is why theme-color above does not move with it. -->
-<script>try{var g=localStorage.getItem('ground')||'bone';if(g==='bone')document.documentElement.dataset.ground='bone';var m=localStorage.getItem('masthead')||'deep';if(m!=='deep')document.documentElement.dataset.masthead=m;}catch(e){}</script>
+<script>try{var g=localStorage.getItem('ground')||'bone';if(g==='bone')document.documentElement.dataset.ground='bone';var m=localStorage.getItem('masthead')||'bright';if(m!=='deep')document.documentElement.dataset.masthead=m;}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Touring">
@@ -32,20 +32,20 @@
      Home Screen — it falls through to the manifest or to a screenshot — and it holds whatever
      it did install harder than any max-age, so new bytes at the old name is a change nobody
      sees. ?v= is a hash of the art: same drawing, same URL; new drawing, new fetch. -->
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=516daf7d">
-<link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1320x2868.png?v=b7f45ed6">
-<link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1290x2796.png?v=b7f45ed6">
-<link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1284x2778.png?v=b7f45ed6">
-<link rel="apple-touch-startup-image" media="(device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1260x2736.png?v=b7f45ed6">
-<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1242x2688.png?v=b7f45ed6">
-<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash/splash-828x1792.png?v=b7f45ed6">
-<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1242x2208.png?v=b7f45ed6">
-<link rel="apple-touch-startup-image" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1206x2622.png?v=b7f45ed6">
-<link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1179x2556.png?v=b7f45ed6">
-<link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1170x2532.png?v=b7f45ed6">
-<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1125x2436.png?v=b7f45ed6">
-<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash/splash-750x1334.png?v=b7f45ed6">
-<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAABsElEQVR4nOxVPU/CUBR9tC/hKyEM4CaTJiZGfwBOAk2EVR3UkcEEdCbGaNRVcDTRHdlUTDAgP0BgkQTc1RlbE6gt9APvZF6VNqLtIpy85fTenPPeTe+9OBCYPD87DYfDyGyUSneJ5LbtJn8ZjS4ha1Ao3Nqk3juyEhhZjLHBCBhQBrGDw6PZufmp6ZlEcovjODLEsix8hBAkQJqBCL2/tzswcJzOpDMn7XZHEIRm85F9Zcl+TKV2srkchCChWq3RNL0QDA7U0S1RvV4n6YOWVmpVg+QfGXR7PZIKokBSRVFI2pMkNKyBWfjHBhN+P0m9Xi9JXU4XSf0+n56Obh+EQoskjUWjGhrT0EhEd18Z7YNisXR1ne92RYZhNtbXvkSzF7lyuWy3O1ZXln9pYArGv+kIGFCtVksURWQBQBbEsSTJHPdGUTa32+10OmGyo78BBi3sCZ7nVbWPPksEBFYHHIxph8MBThgPVz1ZlkEXbi3LmkmOv+UpnQ4Ph6YpcIIHUQSA9vt9VQu4MugqijrQGOu/VOV5E5qcajQbyDKAOH1fqTJMxOPxILPx/PIUj29+AAAA//80qXAuAAAABklEQVQDAMxxzkNlZtJdAAAAAElFTkSuQmCC">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=443acfe3">
+<link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1320x2868.png?v=598b8ff0">
+<link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1290x2796.png?v=598b8ff0">
+<link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1284x2778.png?v=598b8ff0">
+<link rel="apple-touch-startup-image" media="(device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1260x2736.png?v=598b8ff0">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1242x2688.png?v=598b8ff0">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash/splash-828x1792.png?v=598b8ff0">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1242x2208.png?v=598b8ff0">
+<link rel="apple-touch-startup-image" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1206x2622.png?v=598b8ff0">
+<link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1179x2556.png?v=598b8ff0">
+<link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1170x2532.png?v=598b8ff0">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1125x2436.png?v=598b8ff0">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash/splash-750x1334.png?v=598b8ff0">
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAByUlEQVR4nOyUO0vDUBTHb5pXb0xqU1HxMfhYVMRXFVH0UygOgh9BRATRQUQcHFQQUezgIgiKi+AgCI6KtYiOuolLx7aS2uatpx00KU2t0ghCfzfDPTkn5597uOdQ0ejL2PiEJEmo1IgB8eT4iBgZHU4kEsgdQIP0VQpFRuu6oamaYZgEgTweTzGfyGmZcvIpipqW07qq6UZmabqeE0BTFJldFE1jjFmWyZuHyvlHWU5nSMnmu4kKApJZVQX2UGQ4E+a8nBd7MSZJMldAkpJJKamoCvotpmm+JVPwwJ5lWF7gBYGHPdHc0hSLxQzDQKUGShgQAwQvVCA3oZDL/H+BQv2ysrTw9BB+frwPbW/6/ZVWlyj64SW4IADCCiQhGYcGmZ+dXpib8fkEjuO6OjuqAuL5xeWnd2NtZWpyAlwQMDQ4AJ14HY7kzeNYot6eLqvZ120zIWmB4KIEWMZ2Moy9VpO0zyKGptFPBUpFWeBbHPsgHLmzmjm38Orm1ua1m1Yc+wAy8hVcY32DqqmnZ+eLy6uK8jXMbyJ3NdXV9XW18fjr/sHh2vqWk0B5mpYFygJ/MSr6g0HkGv3BPs/uznZrazNygfa29lBo7wMAAP//IpU8LwAAAAZJREFUAwAC3qJNDyBYmQAAAABJRU5ErkJggg==">
 <!-- THE FONT DOES NOT HOLD THE PAGE UP ANY MORE.
      It was pulled by @import from inside the stylesheet, which is the slowest way there is
      to load one: discovered only after the CSS has parsed, render-blocking once it is, and
@@ -71,8 +71,8 @@
    repaint landing mid-transition reads whatever the property is worth AT THAT INSTANT and
    carries on. The mark repaints on every gaze change and every blink; without that, a blink
    during a tab change would snap it to the destination colour. */
-@property --mark-shell{ syntax:'<color>'; inherits:true; initial-value:#fbfaf6; }
-@property --mark-lit{ syntax:'<color>'; inherits:true; initial-value:#ffffff; }
+@property --mark-shell{ syntax:'<color>'; inherits:true; initial-value:#0c0d0b; }
+@property --mark-lit{ syntax:'<color>'; inherits:true; initial-value:#2c2d2a; }
 
   :root{
     /* Type scale. The app had drifted to twelve font sizes and five weights — six of
@@ -328,17 +328,15 @@
        than needing a bone variant — which is also why these are literals rather than var()s
        off the theme. They are what the flying pair wears in transit and what the icon is
        built from, so the mark is the same two colours everywhere it appears. */
-    --mark-shell:#fbfaf6;
+    --mark-shell:#0c0d0b;
     --mark-ink:#fff7ec;
-    /* The soft band along the bottom of the white face (see m.shade in drawMarkCube). */
-    --mark-shade:rgba(12,13,11,0.10);
     /* The eyes, on their own token since the mark went white: ink was both the ring and the
        eyes, and a white face needs dark eyes inside a ring that still reads on the band. */
-    --mark-eye:#0c0d0b;
+    --mark-eye:var(--mark-ink);
     /* The lit crescent along the top. Its own colour rather than a tint of the body, because
        it is not one: sampled off the reference it is #3a3650 against a #151320 body, which no
        single alpha of the cream reproduces — the red needs 0.16 and the blue 0.24. */
-    --mark-lit:#ffffff;
+    --mark-lit:#2c2d2a;
     /* THESE TWO ARE THE FALLBACK NOW, NOT THE WHOLE STORY. Every body.tab-* rotates them into
        its own hue -- see the per-tab block. What stays here is what anything OUTSIDE a tab
        context gets, which is the app icon and nothing else, so the icon is unchanged.
@@ -566,6 +564,45 @@
      The stroke goes with it. It is 0.6px of optical weight, not an outline, so leaving it
      cream would have drawn a pale halo around a coloured word. */
   header h1{ color:var(--band); -webkit-text-stroke-color:var(--band); }
+  /* ONE BANNER HEIGHT ON EVERY TAB. Four titles set on two lines and TOURING sets on one, so
+     Today's band came out 18px shorter and the dots jumped as you swiped onto it. The title
+     always holds two lines' room; in em, so it fits with the fitted size and folds to nothing
+     with the collapse. */
+  /* THE STRIP UNDER THE STATUS BAR IS THE TAB'S BAND. Installed, the page runs under a
+     translucent status bar, and iOS fills that strip from whatever it last sampled at the top
+     of the page -- which was Today's lime on every other tab. A fixed band of the current
+     --banner, exactly the inset tall, sits over it on every tab and through the collapse, and
+     theme-color follows the tab too (see syncThemeColor). */
+  /* NIGHT ON WORKOUTS UNTIL THE MORNING IS LOGGED: a dark version of the lime with cream
+     type, over every masthead setting. The band eases to day when he wakes. */
+  body.tab-insights.morning-pending, html[data-masthead] body.tab-insights.morning-pending{ --banner:#2f3712; }
+  body.tab-insights.morning-pending .header-brand, html[data-masthead] body.tab-insights.morning-pending .header-brand{ --bg:#fff7ec; --ink-rgb:255,247,236; --label:#e9e3c9; }
+  html body.tab-insights.morning-pending header h1{ color:#fff7ec; -webkit-text-stroke-color:#fff7ec; }
+  .header-brand{ transition:background-color 280ms ease; }
+  body.morning-pending .header-brand .header-mark{ cursor:pointer; }
+  body.tab-insights.morning-pending .header-brand .tab-label, body.tab-insights.morning-pending .header-brand .tab-label *{ color:#fff7ec; }
+  body.tab-insights.morning-pending .header-brand .tabs{ --lit:#fff7ec; }
+  /* The corner mark's z's: up and to the left of him, the only side with room, at a size for
+     the band rather than 0.4 of his 120 box, in the band's own ink. */
+  .header-brand .header-mark .eye-zzz{ left:6px; top:2px; }
+  .header-brand .header-mark .eye-zzz i{ font-size:18px; color:#0c0d0b; animation-name:eyeZcorner; }
+  body.morning-pending .header-brand .header-mark .eye-zzz i{ color:#fff7ec; }
+  @keyframes eyeZcorner{
+    0%{   transform:translate(0,0) scale(0.7) rotate(-10deg); opacity:0; }
+    20%{  opacity:0.95; }
+    70%{  opacity:0.55; }
+    100%{ transform:translate(-16px,-22px) scale(1.25) rotate(-16deg); opacity:0; }
+  }
+  body::before{ content:""; position:fixed; left:0; right:0; top:0; height:env(safe-area-inset-top, 0px);
+    background:var(--banner); z-index:60; pointer-events:none; }
+  header h1{ min-height:calc(2em * 0.92); }
+  /* THE LITTLE MARK, WHERE A TRADEMARK WOULD SIT. The logo at its smallest: the ball and two
+     eyes, nothing else, the eyes cut through to the band. In em, on the title's own size, so
+     it shrinks away with the collapse; set off the G by a hair and lifted to the cap line.
+     An <i>, not a <span>, so the width the mark and perch are measured from stays the word. */
+  header h1 .tm{ display:inline-block; width:0.2em; height:0.2em; margin-left:0.07em; vertical-align:top;
+    position:relative; top:0.04em; color:inherit; }
+  header h1 .tm svg{ display:block; width:100%; height:100%; }
   /* THE BANNER TAKES THE TAB'S TINT. It was the ground, which made the masthead the same
      surface as the page under it and left the tab's colour to arrive only once you had
      scrolled to a section band. --field is the tint that already exists for exactly this —
@@ -746,6 +783,12 @@
      part of it has to go on painting behind the header. `hidden` on one axis forces the other
      to `auto`; `clip` is the pair that is allowed to stay `visible`. */
   main.tab-dealing{ position:relative; overflow-x:clip; overflow-y:visible; }
+  /* The drag: this page and the next one side by side, moving with the finger. The next one
+     is the only other panel shown, laid over main at this page's left and width. */
+  main.tab-dragging{ position:relative; overflow-x:clip; overflow-y:visible; }
+  main.tab-dragging .panel.active, .panel.tab-peek{ will-change:transform; background:var(--ground); }
+  .panel.tab-peek{ display:block !important; position:absolute; z-index:2; }
+  main.tab-dragging .group-head{ position:static; }
   .tab-field{ position:absolute; left:0; right:0; top:0; z-index:1; pointer-events:none;
     background:var(--ground); }
   .panel.tab-card{ position:relative; z-index:3; }
@@ -1063,6 +1106,13 @@
     font-family:var(--mono); font-weight:var(--fw-bold); font-size:var(--fs-lg);
     letter-spacing:0.12em; text-transform:uppercase; line-height:1; display:block; }
   #logFab:active{ opacity:0.72; }
+  /* HOLD START TO LOG AS PLANNED. One button: a tap opens the session, holding it fills the
+     pill left to right in lime and, when full, logs today's planned lifting session without
+     opening it. Only armed on a day that has one not yet logged. */
+  body.tab-insights #logFab.hold-armed{ background-image:linear-gradient(var(--block-lime), var(--block-lime)); background-repeat:no-repeat;
+    background-size:0% 100%; }
+  body.tab-insights #logFab.holding{ background-size:100% 100%; transition:background-size 650ms linear, color 200ms; color:#0c0d0b; opacity:1; }
+  .lift-sheet.silent{ visibility:hidden !important; }
   #logFab:focus-visible{ outline:2px solid var(--bg); outline-offset:6px; }
 
   /* THE FORM MARK, STUCK ON THE MARK'S CORNER.
@@ -1104,8 +1154,8 @@
      that comment) rather than copying the mark's scroll-collapse math into a second place.
      24px tall for the same reason the mark's own hit area used to be floored: WCAG 2.2 AA's
      minimum for a real target, not a label. */
-  .header-mark .header-score{ position:absolute; left:calc(100% + 8px); top:50%;
-    transform:translateY(-50%); display:flex; align-items:center; gap:4px;
+  .header-mark .header-score{ position:absolute; left:auto; right:calc(100% + 10px / var(--mk, 1)); top:24px;
+    transform:translateY(-50%) scale(calc(1 / var(--mk, 1))); transform-origin:100% 50%; display:flex; align-items:center; gap:4px;
     background:transparent; border:1px solid rgba(var(--ink-rgb),0.4); border-radius:999px;
     padding:0 10px; min-height:24px; font-family:var(--mono); font-size:var(--fs-tag);
     font-weight:var(--fw-bold); color:var(--bg); letter-spacing:var(--track-ui);
@@ -1130,8 +1180,8 @@
      (today's number, tap for detail) — fine for a readout, wrong for an offer. Filled solid
      in the same orange the reminder has used since the very first version of it, plus a slow
      breathe so it is still finding your eye after the first glance, not just at it. */
-  @keyframes headerScorePulse{ 0%,100%{ transform:translateY(-50%) scale(1); }
-    50%{ transform:translateY(-50%) scale(1.08); } }
+  @keyframes headerScorePulse{ 0%,100%{ transform:translateY(-50%) scale(calc(1 / var(--mk, 1))); }
+    50%{ transform:translateY(-50%) scale(calc(1.08 / var(--mk, 1))); } }
   .header-mark .header-score.needs-tap{ background:var(--block-orange); border-color:var(--block-orange);
     color:var(--banner); animation:headerScorePulse 1800ms ease-in-out infinite; }
   .header-mark .header-score.needs-tap:active{ background:var(--block-orange); opacity:0.8; }
@@ -1316,6 +1366,14 @@
     --mc-scale:1;
     --eye-box-w:40px; --eye-box-h:40px; --eye-gap:10px; --eye-plate:var(--mark-shell); --eye-plate-r:12px;
     --eye-w:6px; --eye-h:18px; --eye-r:3px; --eye-rb:3px; --eye-ink:var(--mark-eye); }
+  /* DRAWN BIG, NOT BLOWN UP. The corner mark is three times the size, and it is laid out and
+     painted at that size (a 120 box, the sphere drawn at 120) rather than a 40 box under
+     scale(3): iOS rasterises a transformed layer at its untransformed size and then stretches
+     the bitmap, which is what made the big face look pixelated. The collapse and the perch
+     only ever scale it DOWN from here, and downscaling stays sharp. MARK_BIG in the collapse
+     has to match the 3 here. */
+  .header-brand .header-mark{ --eye-box-w:120px; --eye-box-h:120px; --eye-gap:30px; --eye-plate-r:36px;
+    --eye-w:18px; --eye-h:54px; --eye-r:9px; --eye-rb:9px; }
   /* Above the score, centred on the number rather than on the number-and-ring pair.
      Absolute, so the expression can change height without moving anything on the page. */
   .score-stack{ position:relative; display:flex; flex-direction:column; align-items:center; }
@@ -1419,10 +1477,10 @@
      in the way, which is the whole point of an optional test. */
   .group-head .head-action{ order:1; flex:none; margin-left:auto;
     font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold);
-    letter-spacing:0.08em; text-transform:uppercase;
+    letter-spacing:0.1em; text-transform:uppercase;
     background:transparent; color:var(--bg);
     border:1px solid rgba(var(--ink-rgb),0.3); border-radius:6px;
-    padding:6px 12px; height:auto; min-height:0; width:auto; cursor:pointer; letter-spacing:0.1em; }
+    display:inline-flex; align-items:center; padding:0 12px; height:36px; min-height:0; width:auto; cursor:pointer; }
   .group-head .head-action:hover{ border-color:var(--bg); }
   /* A tag AND a button: the tag takes the free space, the button sits beside it. */
   .group-head .head-est:not(:empty) ~ .head-action{ margin-left:10px; }
@@ -1722,7 +1780,7 @@
      hung the outer ones a pixel off-screen and clipped them. Collapse the seam only. */
   footer button{ border-radius:0; flex:1 1 0; margin:0; }
   footer button + button{ margin-left:-2px; }
-  button{ font-family:var(--sans); font-size:var(--fs-tag); letter-spacing:0.07em; text-transform:uppercase; font-weight:var(--fw-bold); height:40px; padding:0 16px; border-radius:6px; border:1px solid var(--bg); background:var(--bg); color:var(--ground); flex:1 0 auto; cursor:pointer; transition:opacity 0.08s ease; display:flex; align-items:center; justify-content:center; }
+  button{ font-family:var(--sans); font-size:var(--fs-tag); letter-spacing:0.1em; text-transform:uppercase; font-weight:var(--fw-bold); height:40px; padding:0 16px; border-radius:6px; border:1px solid var(--bg); background:var(--bg); color:var(--ground); flex:1 0 auto; cursor:pointer; transition:opacity 0.08s ease; display:flex; align-items:center; justify-content:center; }
   button:active{ opacity:0.6; }
   .type-btn:active, .tab:active { transform:scale(0.95); }
   .empty-state{ display:flex; flex-direction:column; align-items:center; gap:8px; padding:28px 16px; color:var(--dim); text-align:center; }
@@ -1997,12 +2055,12 @@
     justify-content:space-between; gap:10px; padding:10px var(--gutter); background:var(--reverse-bg); color:var(--bg);
     font-family:var(--sans); font-size:var(--fs-sm); letter-spacing:0.015em; }
   .update-banner-actions{ display:flex; align-items:center; gap:8px; flex:none; }
-  .update-banner button{ height:31px; background:var(--bg); color:var(--ground); border:2px solid var(--bg); }
+  .update-banner button{ height:36px; background:var(--bg); color:var(--ground); border:1px solid var(--bg); }
   .day-rolled{ display:flex; align-items:center; justify-content:space-between; gap:12px;
     padding:12px var(--gutter); background:var(--warn); color:var(--text); font-family:var(--mono);
     font-size:var(--fs-tag); font-weight:var(--fw-bold); letter-spacing:var(--track-ui); }
-  .day-rolled button{ height:31px; flex:0 0 auto; background:var(--ground); color:var(--bg);
-    border:2px solid var(--ground); }
+  .day-rolled button{ height:36px; flex:0 0 auto; background:var(--ground); color:var(--bg);
+    border:1px solid var(--ground); }
   .update-banner-x{ font-size:var(--fs-xl); line-height:1; cursor:pointer; padding:0 6px; opacity:0.7; }
   /* Collapsible Settings sections. Head is a 44px tap target in its own right.
      No justify-content: it used to say space-between, which was right when the head was a
@@ -2268,8 +2326,8 @@
   #trendPeriodPills .type-btn{ flex:0 0 auto; width:auto; padding:0 0 3px; text-align:left;
     background:transparent; border:0; border-bottom:2px solid transparent; border-radius:0;
     font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold);
-    letter-spacing:0.08em; text-transform:uppercase; color:rgba(var(--ink-rgb),0.58);
-    position:relative; }
+    letter-spacing:0.1em; text-transform:uppercase; color:rgba(var(--ink-rgb),0.58);
+    position:relative; min-height:0; }
   /* The drawn box is a word; a finger gets the row's height either side of it. */
   #trendPeriodPills .type-btn::after{ content:''; position:absolute; inset:-11px -8px; }
   #trendPeriodPills .type-btn.active{ background:transparent; color:var(--bg);
@@ -2290,7 +2348,7 @@
      its own first pill row; every ground in the app is dark now, so it is the base, and the
      rows the override never reached (Today's session type, the trends metric and period
      rows) get it too. */
-  .type-btn{ flex:1; text-align:center; padding:10px; border:2px solid rgba(var(--ink-rgb),0.4); border-radius:0; font-family:var(--sans); font-size:var(--fs-sm); color:rgba(var(--ink-rgb),0.65); cursor:pointer; background:transparent; }
+  .type-btn{ flex:1; text-align:center; padding:10px; min-height:40px; border:1px solid rgba(var(--ink-rgb),0.3); border-radius:6px; font-family:var(--sans); font-size:var(--fs-tag); font-weight:var(--fw-bold); letter-spacing:0.1em; text-transform:uppercase; color:var(--bg); cursor:pointer; background:transparent; }
   .type-btn.active{ color:var(--ground); background:var(--bg); border-color:var(--bg); }
 
   .remove-row{ font-family:var(--mono); color:var(--text); font-size:var(--fs-lg); cursor:pointer; padding:0 4px; flex:none; }
@@ -2446,8 +2504,6 @@
   #recoveryDataView > .date-row{ margin-bottom:0; padding-top:var(--sp-2); padding-bottom:var(--sp-2); }
   #recoveryDataView > #sleepDebtOut{ margin-top:0; padding-bottom:var(--sp-3);
     color:var(--dim); }
-  /* This said the above for one pill row on one tab. It is the base now. */
-  body.tab-injuries header, body.tab-settings header, body.tab-data header,
   /* PLAN ROWS. One answer each: a label, the big line, one sentence under it. The whole row
      is the button into its sheet. */
   .plan-rows{ display:flex; flex-direction:column; margin:8px 0 40px; }
@@ -3312,6 +3368,42 @@
   .log-sheet .ex-last-line{ font-family:var(--mono); font-size:var(--log-note); letter-spacing:0.04em;
     color:rgba(var(--ink-rgb),0.5); margin-top:3px; }
   .log-sheet .set-breakdown{ font-size:var(--log-note); margin-top:3px; }
+  /* One-lift mode: only the chosen lift, the rest timer and the two buttons. */
+  #logSheet.single-lift #blockEditPanel > :not(#weekExerciseRows):not(.rest-timer):not(.single-acts){ display:none !important; }
+  #logSheet.single-lift #weekExerciseRows > .edit-row:not(.focus-row){ display:none !important; }
+  #logSheet.single-lift #logDateRow, #logSheet.single-lift .log-hint, #logSheet.single-lift .add-row,
+  #logSheet.single-lift .ask-q, #logSheet.single-lift .score-note{ display:none !important; }
+  #logSheet.single-lift .focus-row .week-ex-name, #logSheet.single-lift .focus-row .row-acts{ display:none !important; }
+  .single-acts{ display:none; }
+  #logSheet.single-lift .single-acts{ display:flex; flex-direction:column; gap:8px; margin-top:var(--sp-3); }
+  .single-acts .single-all{ background:transparent; border:0; color:rgba(var(--ink-rgb),0.55); height:36px; }
+  #logSheet.single-lift .rest-timer .rest-steps{ display:none !important; }
+  /* The lifts on the Workouts card are buttons now: each one logs itself. */
+  .wheel-ex-line[data-lift]{ cursor:pointer; min-height:36px; align-items:center; }
+  #panel-insights .plan-list .plan-item{ cursor:pointer; }
+  .log-sheet .set-ticks{ order:9; flex-basis:100%; display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+  .set-ticks[hidden]{ display:none !important; }
+  /* With the set rows there, the three summary boxes are what Save reads, not what you touch. */
+  .log-sheet .edit-row.has-ticks .log-fields-row, .log-sheet .edit-row.has-ticks .set-breakdown{ display:none !important; }
+  /* QUIET SET ROWS. A line each, a hairline between: the set number, one tappable
+     "8 × 60 kg" in the mono, and a round tick. Dim until ticked, full ink after; the tick
+     fills lime. No boxes. */
+  .st-row{ display:grid; grid-template-columns:22px minmax(0,1fr) 44px; gap:8px; align-items:center;
+    min-height:52px; border-top:1px solid rgba(var(--ink-rgb),0.12); }
+  .st-row:last-of-type{ border-bottom:1px solid rgba(var(--ink-rgb),0.12); }
+  .st-n{ font-family:var(--mono); font-size:var(--fs-xs); color:rgba(var(--ink-rgb),0.45); }
+  .st-row .st-v{ justify-self:start; height:44px; min-height:0; padding:0; background:transparent; border:0; border-radius:0;
+    color:rgba(var(--ink-rgb),0.45); font-family:var(--mono); font-size:var(--fs-lg); font-weight:var(--fw-bold);
+    letter-spacing:0; text-transform:none; font-variant-numeric:tabular-nums; width:auto; flex:none; }
+  .st-row .st-v i{ font-style:normal; font-weight:400; margin:0 0.35em; opacity:0.6; }
+  .st-row .st-v small{ font-size:var(--fs-xs); font-weight:400; margin-left:4px; opacity:0.7; }
+  .st-row .st-ok{ width:40px; height:40px; min-height:0; padding:0; justify-self:end; flex:none; background:transparent; color:rgba(var(--ink-rgb),0.5);
+    border:1.5px solid rgba(var(--ink-rgb),0.3); border-radius:50%; }
+  .st-row .st-ok svg{ width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+  .st-row.done .st-v{ color:var(--bg); }
+  .st-row.done .st-ok{ background:var(--block-lime); border-color:var(--block-lime); color:#0c0d0b; }
+  .st-acts{ display:flex; justify-content:space-between; gap:8px; }
+  .st-acts button{ flex:none; width:auto; height:40px; min-height:0; padding:0; background:transparent; border:0; color:rgba(var(--ink-rgb),0.6); }
 
   /* Add a lift — something you could say, in the voice the rest of the sheet now says things
      in. It used to have "Fill it in as planned" beside it; the sheet does that on open. */
@@ -3589,12 +3681,12 @@
   .progress-snapshot-stats{ display:flex; gap:18px; margin-top:8px; font-family:var(--mono); font-size:var(--fs-tag); }
   .progress-snapshot-stats b{ display:block; font-size:var(--fs-xl); }
   .backup-nudge{ margin-top:12px; padding:10px 12px; border-left:3px solid var(--block-yellow); color:var(--dim); font-size:var(--fs-tag); }
-  .backup-nudge button{ display:inline-flex; width:auto; height:26px; margin-left:8px; padding:0 8px; font-size:var(--fs-xs); }
+  .backup-nudge button{ display:inline-flex; width:auto; height:36px; margin-left:8px; padding:0 12px; font-size:var(--fs-tag); }
   .page-snapshot{ margin:0 0 14px; padding:12px; border:1px solid var(--border); }
   .page-snapshot-head{ font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold); text-transform:uppercase; letter-spacing:.06em; }
   .page-snapshot-copy{ margin:7px 0 0; color:var(--dim); font-size:var(--fs-tag); }
-  .settings-shortcuts{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:0 0 14px; }
-  .settings-shortcuts button{ min-width:0; height:34px; padding:0 8px; font-size:var(--fs-xs); }
+  .settings-shortcuts{ display:grid; grid-template-columns:auto auto auto; gap:8px; margin:0 0 14px; }
+  .settings-shortcuts button{ min-width:0; height:36px; padding:0 12px; font-size:var(--fs-tag); white-space:nowrap; }
   .session-complete{ margin:14px 0; padding:12px; border:2px solid var(--good); }
   .session-complete b{ display:block; font-family:var(--mono); font-size:var(--fs-tag); letter-spacing:.06em; text-transform:uppercase; }
   html[data-high-contrast="true"]{ filter:contrast(1.18); }
@@ -3980,7 +4072,7 @@
   .log-grab-hint{ font-family:var(--mono); font-size:var(--fs-tag); letter-spacing:0.04em;
     text-transform:none; opacity:0.5; white-space:nowrap; }
   .log-toggle-row{ flex-basis:100%; display:flex; gap:6px; margin-top:6px; }
-  .log-toggle-row button{ height:28px; padding:0 10px; font-size:var(--fs-tag); flex:0 0 auto; }
+  .log-toggle-row button{ height:36px; padding:0 12px; font-size:var(--fs-tag); flex:0 0 auto; }
   .log-step{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
   /* Every lift is on the page, so the rows need a line between them or a nine-lift session
      reads as one long form rather than nine things. */
@@ -4070,6 +4162,25 @@
      date/time input's intrinsic width is wider than a third of 358 and without it the row
      runs off the edge — the same trap the tag selects fell into. */
   .morning-panel .morning-night{ display:flex; gap:8px; margin:0 0 var(--sp-3); }
+  .ic-scale{ display:grid; grid-template-columns:repeat(10, minmax(0,1fr)); gap:4px; margin:0 0 6px; }
+  .ic-scale .ic-dot{ height:44px; padding:0; min-width:0; background:transparent; color:var(--bg);
+    border:1px solid rgba(var(--ink-rgb),0.25); border-radius:6px; font-family:var(--mono); letter-spacing:0; }
+  .ic-scale .ic-dot.was{ border-color:var(--bg); border-width:2px; }
+  .ic-scale .ic-dot.on{ background:var(--bg); color:var(--reverse-bg); }
+  .ic-hint{ font-family:var(--mono); font-size:var(--fs-xs); color:rgba(var(--ink-rgb),0.6); margin:0 0 var(--sp-3); }
+  .weigh-big{ display:flex; align-items:baseline; justify-content:center; gap:6px; margin:var(--sp-3) 0 var(--sp-2); }
+  .weigh-big input{ flex:0 0 auto; width:4.4ch !important; max-width:none; font-family:var(--mono); font-size:46px; font-weight:var(--fw-bold); text-align:center;
+    background:transparent; border:0; color:inherit; font-variant-numeric:tabular-nums; padding:0; height:auto; }
+  .weigh-big span{ font-family:var(--mono); font-size:var(--fs-md); opacity:0.6; }
+  .weigh-nudge{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; }
+  .weigh-nudge button{ background:transparent; color:var(--bg); border-color:rgba(var(--ink-rgb),0.3); height:44px; letter-spacing:0.04em; }
+  .morning-usual{ font-family:var(--mono); font-size:var(--fs-tag); line-height:1.5; color:rgba(var(--ink-rgb),0.7); margin:0 0 var(--sp-3); }
+  /* A filled-in usual is the usual, not your answer yet: dimmed until you change it. */
+  .morning-panel input[data-planned]{ opacity:0.62; }
+  /* Done never needs a scroll: it sits at the foot of the sheet however long the sheet is,
+     so an ordinary morning is the tap on him and this one, and nothing between. */
+  .morning-panel button.primary.morning-done{ position:sticky; bottom:0; z-index:2;
+    box-shadow:0 -14px 18px 6px var(--reverse-bg); }
   .morning-panel .mn-field{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:4px; }
   .morning-panel .mn-field input{
     width:100%; min-width:0; height:auto; min-height:0; margin:0;
@@ -5253,16 +5364,26 @@
   html[data-masthead="lifted"] header h1{ color:#fbfaf6; -webkit-text-stroke-color:#fbfaf6; }
 
   /* Bright -- banner L* 60, C* 34. Title ink at 6.12-6.17:1. */
-  html[data-masthead="bright"] body.tab-insights{ --banner:#8a9759; --mark-shell:#afb78a; --mark-lit:#d8eb98; }
-  html[data-masthead="bright"] body.tab-plan{ --banner:#b9865b; --mark-shell:#d2aa8b; --mark-lit:#ffdcc0; }
-  html[data-masthead="bright"] body.tab-injuries{ --banner:#c97990; --mark-shell:#dda2b1; --mark-lit:#ffd9e1; }
-  html[data-masthead="bright"] body.tab-data{ --banner:#a883ba; --mark-shell:#c4a8d0; --mark-lit:#f5d9ff; }
-  html[data-masthead="bright"] body.tab-settings{ --banner:#39a08e; --mark-shell:#7cbeb0; --mark-lit:#6ff8e1; }
-  /* THE MARK IS WHITE WITH BLACK EYES ON EVERY TAB. It used to wear each tab's hue, darkened;
-     now it is one character across the app, and the tab's colour stays with the title. The
-     lit crescent is pure white over a warm white, so the top light still reads. Written after
-     every masthead variant at the same specificity, so it wins all of them. */
-  body[class*="tab-"], html[data-masthead] body[class*="tab-"]{ --mark-shell:#fbfaf6; --mark-lit:#ffffff; }
+  html[data-masthead="bright"] body.tab-insights{ --banner:#a9c23a; --mark-shell:#afb78a; --mark-lit:#d8eb98; }
+  html[data-masthead="bright"] body.tab-plan{ --banner:#fd9839; --mark-shell:#d2aa8b; --mark-lit:#ffdcc0; }
+  html[data-masthead="bright"] body.tab-injuries{ --banner:#ff85a8; --mark-shell:#dda2b1; --mark-lit:#ffd9e1; }
+  html[data-masthead="bright"] body.tab-data{ --banner:#d893fb; --mark-shell:#c4a8d0; --mark-lit:#f5d9ff; }
+  html[data-masthead="bright"] body.tab-settings{ --banner:#00d4b4; --mark-shell:#7cbeb0; --mark-lit:#6ff8e1; }
+  /* BRIGHT IS THE DEFAULT NOW THE MARK IS BLACK. On the dark bands a black mark is a hole in
+     the corner and all the colour sits in the title; on a band that carries the tab's colour,
+     the black title and the black mark are a pair on either side of it. The bands are a step
+     richer than they were (lightness x0.9, saturation x1.22), every one still over 4.7:1 for
+     the black type. The morning button turns black with an orange sun, because an orange
+     disc on a coloured band was a second colour fighting the first. */
+  html[data-masthead="bright"] .header-mark .header-score.needs-tap{ background:#0c0d0b; border-color:#0c0d0b;
+    color:var(--block-orange); }
+  html[data-masthead="bright"] .header-mark .header-score.needs-tap:active{ background:#0c0d0b; }
+  /* THE MARK IS BLACK ON EVERY TAB, with the cream eyes it always had. It used to wear each
+     tab's hue, darkened; the tab's colour now stays with the title and the band, and the mark
+     is one character across the app and on the icon. The lit crescent is a lifted black so the
+     top light still reads. Written after every masthead variant at the same specificity, so it
+     wins all of them. */
+  body[class*="tab-"], html[data-masthead] body[class*="tab-"]{ --mark-shell:#0c0d0b; --mark-lit:#2c2d2a; }
   html[data-masthead="bright"] body.tab-insights .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
   html[data-masthead="bright"] body.tab-plan .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
   html[data-masthead="bright"] body.tab-injuries .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
@@ -5352,7 +5473,7 @@
          can measure the word alone — eyePerchSpot ranges over #currentTabWord, not the label,
          or the mark would fly out past the end of the line and land on the date. -->
     <div id="currentTabLabel" class="tab-label"><span id="currentTabWord">Today</span><span id="currentTabInsight" class="tab-insight" aria-live="polite"></span></div>
-    <h1><div class="logo-line"><span style="margin-right:-0.02em;">T</span><span>o</span><span>u</span><span>r</span><span>i</span><span>n</span><span>g</span></div></h1>
+    <h1><div class="logo-line"><span style="margin-right:-0.02em;">T</span><span>o</span><span>u</span><span>r</span><span>i</span><span>n</span><span>g</span><i class="tm" aria-hidden="true"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="currentColor"/><rect x="6.1" y="6.3" width="2.6" height="6.4" rx="1.3" style="fill:var(--banner)"/><rect x="11.3" y="6.3" width="2.6" height="6.4" rx="1.3" style="fill:var(--banner)"/></svg></i></div></h1>
     <!-- The mark: a solid, drawn face on, which is the same two capsules on the same square
          it has always been until it turns. The .eye-gaze pair stays in the DOM and stays
          hidden here — every other copy of the mark still uses it, and the trip down to the
@@ -5381,10 +5502,10 @@
     <!-- Weekly merged into Today in .659ish — the calendar strip and the week's planning
          controls live on this tab now instead of a separate one. See RETIRED_TABS for the
          deep-link redirect and #panel-insights for where the content actually landed. -->
-    <div class="tab active" data-tab="insights" role="tab" tabindex="0" aria-selected="true" aria-current="page"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Today</span></div>
-    <div class="tab" data-tab="plan" role="tab" tabindex="0" aria-selected="false"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Plan</span></div>
-    <div class="tab" data-tab="injuries" role="tab" tabindex="0" aria-selected="false"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Body</span></div>
-    <div class="tab" data-tab="data" role="tab" tabindex="0" aria-selected="false"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Data</span></div>
+    <div class="tab active" data-tab="insights" role="tab" tabindex="0" aria-selected="true" aria-current="page"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Workouts</span></div>
+    <div class="tab" data-tab="plan" role="tab" tabindex="0" aria-selected="false"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Build</span></div>
+    <div class="tab" data-tab="injuries" role="tab" tabindex="0" aria-selected="false"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Skills</span></div>
+    <div class="tab" data-tab="data" role="tab" tabindex="0" aria-selected="false"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Trends</span></div>
     <div class="tab" data-tab="settings" role="tab" tabindex="0" aria-selected="false"><i class="tab-seg" aria-hidden="true"></i><span class="tab-name">Settings</span></div>
   </div>
   </div>
@@ -6330,8 +6451,15 @@
           <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
         <div class="fields">
           <div id="planWeightDetail"></div>
-          <div class="field-row"><span class="field-label">Today</span><input type="number" step="0.1" id="planWeightInput" placeholder="kg"></div>
-          <button type="button" id="savePlanWeightBtn" class="small" style="margin-top:8px;">Log weight</button>
+          <!-- OPENS ON YOUR LAST WEIGHT, NUDGED NOT DIALED. Most mornings are within half a kilo of
+               the last one, so the number is already there and four steps cover the usual
+               change. Tap the number itself for the wheel. -->
+          <div class="weigh-big"><input type="number" step="0.1" id="planWeightInput" placeholder="kg" aria-label="Weight today, kg"><span>kg</span></div>
+          <div class="weigh-nudge" role="group" aria-label="Adjust">
+            <button type="button" data-d="-0.5">&minus;0.5</button><button type="button" data-d="-0.1">&minus;0.1</button>
+            <button type="button" data-d="0.1">+0.1</button><button type="button" data-d="0.5">+0.5</button>
+          </div>
+          <button type="button" id="savePlanWeightBtn" class="primary" style="margin-top:8px;">Log weight</button>
         </div>
       </div>
     </div>
@@ -7665,9 +7793,10 @@ function applyEyeState(el, st){
 // was still the lime the mark was painted before it became a solid — so every trip between
 // the wordmark and the score flashed a colour the mark does not wear at either end.
 const EYE_SITES = {
-  header: { '--eye-box-w':'40px', '--eye-box-h':'40px', '--eye-gap':'10px',
-            '--eye-plate':'var(--mark-shell)', '--eye-plate-r':'12px',
-            '--eye-w':'6px', '--eye-h':'18px', '--eye-r':'3px', '--eye-rb':'3px',
+  // Three times the old 40, to match the big corner mark (see DRAWN BIG, NOT BLOWN UP).
+  header: { '--eye-box-w':'120px', '--eye-box-h':'120px', '--eye-gap':'30px',
+            '--eye-plate':'var(--mark-shell)', '--eye-plate-r':'36px',
+            '--eye-w':'18px', '--eye-h':'54px', '--eye-r':'9px', '--eye-rb':'9px',
             '--eye-bl':'0%', '--eye-rot':'0deg', '--eye-ink':'var(--mark-eye)' },
   score:  { '--eye-box-w':'42px', '--eye-box-h':'32px', '--eye-gap':'12px',
             '--eye-plate':'transparent', '--eye-plate-r':'0px',
@@ -7696,7 +7825,7 @@ function eyeFullOpen(site){ return parseFloat(EYE_SITES[site]['--eye-h']); }
    reduced-motion guard as the rest of the mark's ambient movement — with motion off the z's
    go too, because a static z stuck above the eyes is a bug, not a quieter version. */
 function markIsAsleep(){
-  return (anim('idleSleep') && eyeCtx.asleep) || (anim('restDayFace') && eyeCtx.restDay);
+  return !!eyeCtx.morning || (anim('idleSleep') && eyeCtx.asleep) || (anim('restDayFace') && eyeCtx.restDay);
 }
 function updateSleepZs(){
   // The drawn mark is redrawn on the way through. It no longer changes with sleep, but this
@@ -8887,8 +9016,7 @@ function mcMounts(){
        mounts, the flight and the icon. */
     out.push({ host:header, id:'mcClipH',
                svg:document.getElementById('headerMarkCube'),
-               shell:'var(--mark-shell)', ink:'var(--mark-eye)', lit:null,
-               shade:'var(--mark-shade)', eyeDy:-0.05 });
+               shell:'var(--mark-shell)', ink:'var(--mark-eye)', lit:'var(--mark-lit)' });
   /* THE FLYING MARK WEARS WHAT IT IS FLYING TO.
 
      This used to read "same tokens as the header's, because it IS the header's on the way
@@ -8955,14 +9083,6 @@ function mcPaint(m){
            + `<path clip-path="url(#${m.id})" fill-rule="evenodd" style="fill:${m.lit}" d="`
            + mcCirc(c, c, h) + mcCirc(c, c + h*MC_LIT_DY, h*MC_LIT_R) + `"/>`;
     }
-    /* THE SHADE, the crescent's mirror: the sphere minus the disc ABOVE it, so what is left is
-       a soft band along the bottom. The white face has no room for a highlight (nothing is
-       whiter than it), so it gets its roundness from below instead. */
-    if(m.shade){
-      out += `<clipPath id="${m.id}S"><circle cx="${c}" cy="${c}" r="${h.toFixed(2)}"/></clipPath>`
-           + `<path clip-path="url(#${m.id}S)" fill-rule="evenodd" style="fill:${m.shade}" d="`
-           + mcCirc(c, c, h) + mcCirc(c, c - h*MC_LIT_DY, h*MC_LIT_R) + `"/>`;
-    }
     /* THE HAIRLINE.
 
        Drawn here rather than as a box-shadow on a host, because the mark has three hosts of
@@ -9005,29 +9125,41 @@ function mcPaint(m){
   const z = h + 0.4;
   let eyes = '';
   for(const face of [0, 180]){
-    const Q = mcProject(0, face, 0), n = P(Q([0,0,1]));
-    if(n[2] <= 0.02) continue;
+    // Each eye decides its own visibility below, so a pair can wrap past the limb one eye at a time.
     /* THE EYES KEEP THEIR SHAPE. .446 shut the drawn eyes when the mark was asleep, and the
        geometry below turns a short eye into a bad one: the eye is a LINE with a round cap, so
        once eh drops under ew the `half` on the next line clamps to 0 and what is left is a
        zero-length line — a dot. Two beady circles where the capsules were, on every tab,
        whenever the app had been left alone for two and a half minutes. The z's say it is
        asleep; they do not need the face deformed to help. */
-    const ew = MC_EYE_W*s;
+    const wd = (mcState.wide || 1) * (mcState.swEh || 1);
+    const ew = MC_EYE_W*s * (1 + (wd - 1) * 0.3);
     const gap = MC_EYE_GAP*s;
-    const eh = MC_EYE_H*s * mcState.blink;
-    const ax = P(Q([1,0,0])), w = Math.max(0.6, ew * Math.hypot(ax[0], ax[1]));
-    const half = Math.max(0, eh/2 - ew/2);
-    const gx = mcState.gx * ew * 0.85;
-    const gy = mcState.gy * s * 0.06 + (m.eyeDy || 0) * s;
-    /* Upright. The pair used to slant, mirrored on sg, to carry the face you had tapped —
-       there is no face to carry now, so the line runs straight up its own axis. */
+    const eh = MC_EYE_H*s * mcState.blink * wd * (mcState.sleepy ? 0.12 : 1);
+    /* THE EYES ARE ON THE BALL, NOT ON A CARD IN FRONT OF IT.
+       They used to be drawn on a flat plane touching the front of the sphere, so a turn slid
+       them sideways and narrowed them but never carried them round: nothing about them said
+       "ball". Each eye is now a patch of the sphere's own surface — its centre, its right edge
+       and its top edge are points on the sphere at angles off the face's centre, all three
+       rotated and projected — and the capsule is drawn through them. Turning carries the eyes
+       round the curve and flattens them toward the limb; looking (gx/gy) moves them across
+       the surface the same way, so a glance to the side is foreshortened too; and past the
+       limb they go round the back. Same sizes at rest as the flat ones. */
+    const sph = (az, el)=> [Math.sin(az)*Math.cos(el)*h, -Math.sin(el)*h, Math.cos(az)*Math.cos(el)*h];
+    const asn = v => Math.asin(Math.max(-0.99, Math.min(0.99, v)));
+    const off = asn((gap/2 + ew/2) / h), dw = asn((ew/2) / h), dh = asn((eh/2) / h);
+    const gAz = asn(mcState.gx * ew * 0.85 / h), gEl = -asn(mcState.gy * s * 0.06 / h);
     for(const sg of [-1,1]){
-      const x = sg * (gap/2 + ew/2) + gx;
-      const a = P(Q([x, -half + gy, z])), b = P(Q([x, half + gy, z]));
-      eyes += `<line x1="${(c+a[0]).toFixed(2)}" y1="${(c+a[1]).toFixed(2)}"`
-           + ` x2="${(c+b[0]).toFixed(2)}" y2="${(c+b[1]).toFixed(2)}"`
-           + ` style="stroke:${m.ink}" stroke-width="${w.toFixed(2)}" stroke-linecap="round"/>`;
+      const az = face * MC_RAD + sg * off + gAz, el = gEl;
+      const pc = P(sph(az, el));
+      if(pc[2] <= 0.04 * h) continue;
+      const pu = P(sph(az + dw, el)), pv = P(sph(az, el + dh));
+      const ux = pu[0]-pc[0], uy = pu[1]-pc[1], vx = pc[0]-pv[0], vy = pc[1]-pv[1];
+      const lu = Math.hypot(ux, uy), lv = Math.max(0.01, Math.hypot(vx, vy));
+      if(lu < 0.25) continue;
+      const ry = Math.min(1, lu / lv);
+      eyes += `<rect x="-1" y="-1" width="2" height="2" rx="1" ry="${ry.toFixed(3)}" style="fill:${m.ink}"`
+           + ` transform="matrix(${ux.toFixed(3)} ${uy.toFixed(3)} ${vx.toFixed(3)} ${vy.toFixed(3)} ${(c+pc[0]).toFixed(2)} ${(c+pc[1]).toFixed(2)})"/>`;
     }
   }
   if(eyes) out += `<clipPath id="${m.id}E"><circle cx="${c}" cy="${c}" r="${h.toFixed(2)}"/></clipPath>`
@@ -9043,10 +9175,10 @@ function mcPaint(m){
      box, since the box is 8% larger than the mark — because a sphere compressing around its
      own centre is a shape being scaled, where one compressing against its footing is an
      object landing on something. */
-  const sq = mcState.sx !== 1 || mcState.sy !== 1 || mcState.ty !== 0;
+  const sq = mcState.sx !== 1 || mcState.sy !== 1 || mcState.ty !== 0 || (mcState.tx || 0) !== 0;
   if(sq){
     svg.style.transformOrigin = '50% 96.3%';
-    svg.style.transform = `translate(-50%,-50%) translate(0,${(mcState.ty * s).toFixed(2)}px)`
+    svg.style.transform = `translate(-50%,-50%) translate(${((mcState.tx || 0) * s).toFixed(2)}px,${(mcState.ty * s).toFixed(2)}px)`
                         + ` scale(${mcState.sx.toFixed(4)},${mcState.sy.toFixed(4)})`;
     svg.dataset.sq = '1';
   } else if(svg.dataset.sq){
@@ -9089,9 +9221,47 @@ function mcPickMove(){
   for(const m of MC_MOVES){ if((r -= m.w) <= 0) return m; }
   return MC_MOVES[0];
 }
+/* ON A TAB SWITCH HE READS THE NEW TITLE, ONE OF TEN WAYS, PICKED AT RANDOM.
+   The mark lives in the bottom-right corner now and the title sits up and to his left, so
+   every one of these turns the sphere up-left toward it and back. They are keyframes on the
+   same rig the idle uses: ry yaw (negative turns his face left, toward the title), rx pitch
+   (positive looks up), rz roll, gx/gy the eyes' own gaze across the face (deg), x/y the body's
+   offset and eh the eye height, at t ms. The order is shuffled so the same one never plays
+   twice running. Turning left brings more of his face in from off the edge, which is half
+   of why these read. */
+const MC_SWITCH = [
+  /* turn and read */      [{t:0},{t:320,ry:-38,rx:14},{t:900,ry:-38,rx:14},{t:1250}],
+  /* read the line */      [{t:0},{t:300,ry:-52,rx:16},{t:520,ry:-52,rx:16},{t:700,ry:-40,rx:16},{t:900,ry:-40,rx:16},{t:1080,ry:-28,rx:12},{t:1250,ry:-28,rx:12},{t:1600}],
+  /* eyes lead */          [{t:0},{t:180,gx:-16,gy:8},{t:420,ry:-30,rx:10,gx:-10,gy:6},{t:950,ry:-30,rx:10,gx:-10,gy:6},{t:1150,ry:-10,rx:3},{t:1400}],
+  /* double take */        [{t:0},{t:140,ry:-24,rx:8},{t:300},{t:520},{t:800,ry:-44,rx:16,eh:1.25},{t:1200,ry:-44,rx:16,eh:1.25},{t:1550}],
+  /* roll to it */         [{t:0},{t:450,ry:-60,rx:8,x:-34},{t:950,ry:-60,rx:8,x:-34},{t:1400}],
+  /* peer over */          [{t:0},{t:380,y:-22,ry:-30,rx:22,rz:-6},{t:950,y:-22,ry:-30,rx:22,rz:-6},{t:1300}],
+  /* curious tilt */       [{t:0},{t:350,ry:-34,rx:12,rz:14},{t:1000,ry:-34,rx:12,rz:14},{t:1350}],
+  /* spin round to it */   [{t:0},{t:600,ry:-400,rx:12},{t:1000,ry:-400,rx:12},{t:1300,ry:-360}],
+  /* nod at it */          [{t:0},{t:300,ry:-36,rx:14},{t:520,ry:-36,rx:14},{t:640,ry:-36,rx:-2},{t:780,ry:-36,rx:14},{t:1000,ry:-36,rx:14},{t:1300}],
+  /* over the shoulder */  [{t:0},{t:420,ry:-72,rx:10},{t:1000,ry:-72,rx:10},{t:1400}],
+];
+const MC_SW0 = { ry:0, rx:0, rz:0, gx:0, gy:0, x:0, y:0, eh:1 };
+let mcSwitchLast = -1;
+function mcSwitchPose(keys, ms){
+  const at = i => Object.assign({}, MC_SW0, keys[i]);
+  if(ms <= keys[0].t) return at(0);
+  for(let i = 1; i < keys.length; i++){
+    if(ms <= keys[i].t){
+      const a = at(i-1), b = at(i), f = mcEase((ms - a.t) / (b.t - a.t)), o = {};
+      for(const k in MC_SW0) o[k] = a[k] + (b[k] - a[k]) * f;
+      return o;
+    }
+  }
+  return at(keys.length - 1);
+}
 function markCubeTurn(){                       // the tab you picked, on the eyes' own beat
-  if(mcState.step || mcState.queue.length) return;
-  mcQueue(MC_MOVES[Math.random() < 0.6 ? 0 : 1].steps());
+  if(!mcState.raf || mcState.sleepy) return;
+  let n = Math.floor(Math.random() * MC_SWITCH.length);
+  if(n === mcSwitchLast) n = (n + 1 + Math.floor(Math.random() * (MC_SWITCH.length - 1))) % MC_SWITCH.length;
+  mcSwitchLast = n;
+  mcState.queue = []; mcState.step = null;
+  mcState.sw = { keys:MC_SWITCH[n], t0:performance.now(), from:{ rx:mcState.rx, ry:mcState.ry, rz:mcState.rz } };
 }
 function mcQueue(steps){
   const from = { rx:mcState.rx, ry:mcState.ry, rz:mcState.rz };
@@ -9131,13 +9301,45 @@ function startMarkCube(){
     const t = (now - mcState.born) / 1000;
     if(!mcState.step && mcState.queue.length){
       const to = mcState.queue.shift();
+      /* THE EYES GO FIRST. A head that turns with its eyes fixed is a model on a turntable;
+         one whose eyes get there a beat early is looking at something. Any turn of more than
+         ten degrees aims the gaze the way it is going for the length of the step, and a turn
+         back to face on brings it home. */
+      { const dy = (to.ry == null ? mcState.ry : to.ry) - mcState.ry, dx = (to.rx == null ? mcState.rx : to.rx) - mcState.rx;
+        if(Math.abs(dy) > 10 && Math.abs(dy) < 300 || Math.abs(dx) > 10 && Math.abs(dx) < 300){
+          mcState.aimGx = Math.max(-0.7, Math.min(0.7, dy / 40));
+          mcState.aimGy = Math.max(-0.7, Math.min(0.7, -dx / 30));
+          mcState.gazeAt = now + Math.max(1, to.ms) + (to.hold || 0);
+        } }
       mcState.step = { t0:now, ms:Math.max(1, to.ms), hold:to.hold,
                        from:{ rx:mcState.rx, ry:mcState.ry, rz:mcState.rz },
                        to:{ rx: to.rx == null ? mcState.rx : to.rx,
                             ry: to.ry == null ? mcState.ry : to.ry,
                             rz: to.rz == null ? mcState.rz : to.rz } };
     }
-    if(mcState.step){
+    if(mcState.sw){
+      /* A switch read owns the pose until it ends. Units: gaze degrees to the rig's gaze
+         fraction (about 13 deg to one eye-width across, 7 deg to one step down, sign flipped
+         because the rig's y runs down), body px on a 92px sphere to fractions of it. */
+      const sw = mcState.sw, ms = now - sw.t0, last = sw.keys[sw.keys.length - 1].t;
+      const p = mcSwitchPose(sw.keys, ms);
+      // Ease in from wherever the idle had him, over the first 160ms.
+      const k = Math.min(1, ms / 160);
+      mcState.rx = sw.from.rx + (p.rx - sw.from.rx) * k;
+      mcState.ry = sw.from.ry + (p.ry - sw.from.ry) * k;
+      mcState.rz = sw.from.rz + (p.rz - sw.from.rz) * k;
+      mcState.gx = mcState.aimGx = p.gx / 13;
+      mcState.gy = mcState.aimGy = -p.gy / 7;
+      mcState.gazeAt = now + 900;
+      mcState.tx = p.x / 92;
+      if(!mcState.body) mcState.ty = p.y / 92;
+      mcState.swEh = p.eh;
+      if(ms >= last){
+        mcState.ry %= 360; mcState.rx %= 360;
+        mcState.tx = 0; if(!mcState.body) mcState.ty = 0; mcState.swEh = 1;
+        mcState.sw = null; mcState.nextAt = now + 2500 + Math.random() * 2500;
+      }
+    } else if(mcState.step){
       const st = mcState.step, f = Math.min(1, (now - st.t0) / st.ms), e = mcEase(f);
       mcState.rx = st.from.rx + (st.to.rx - st.from.rx) * e;
       mcState.ry = st.from.ry + (st.to.ry - st.from.ry) * e;
@@ -9146,19 +9348,20 @@ function startMarkCube(){
         // A full turn lands where it started; keep the angle small so it never drifts away.
         mcState.ry %= 360; mcState.rx %= 360;
         mcState.step = null;
-        if(!mcState.queue.length) mcState.nextAt = now + 3200 + Math.random() * 6000;
+        if(!mcState.queue.length) mcState.nextAt = now + 1500 + Math.random() * 3000;
       }
-    } else if(now > mcState.nextAt){
+    } else if(now > mcState.nextAt && !mcState.sleepy){
       /* A body move is not a queue of poses, so it is dispatched rather than queued — and it
          books the next slot itself, which the queue would otherwise have done on draining. */
       const mv = mcPickMove();
-      if(mv.body){ markBody(mv.body); mcState.nextAt = now + 3200 + Math.random() * 6000; }
+      if(mv.body){ markBody(mv.body); mcState.nextAt = now + 1500 + Math.random() * 3000; }
       else mcQueue(mv.steps());
     } else {
       // Between moves it is not frozen, just quiet.
-      mcState.rx += ((2.5 * Math.sin(t * 0.31)) - mcState.rx) * 0.04;
-      mcState.ry += ((3.5 * Math.sin(t * 0.23 + 1.1)) - mcState.ry) * 0.04;
-      mcState.rz += (0 - mcState.rz) * 0.06;
+      // Livelier between moves (was 2.5 / 3.5 and no lean): it sways, turns and leans a little.
+      mcState.rx += ((6 * Math.sin(t * 0.37)) - mcState.rx) * 0.05;
+      mcState.ry += ((9 * Math.sin(t * 0.29 + 1.1)) - mcState.ry) * 0.05;
+      mcState.rz += ((3 * Math.sin(t * 0.21 + 2.3)) - mcState.rz) * 0.05;
     }
     /* Advanced beside the queue, not inside it, so a bounce can play over a drift. */
     if(mcState.body){
@@ -9167,14 +9370,21 @@ function startMarkCube(){
       else { const b = B.f(e / B.ms); mcState.sx = b.sx; mcState.sy = b.sy; mcState.ty = b.ty; }
     }
     if(now > mcState.gazeAt){
-      mcState.gazeAt = now + 1400 + Math.random() * 3200;
-      mcState.aimGx = (Math.random() * 2 - 1) * 0.5;
-      mcState.aimGy = (Math.random() * 2 - 1) * 0.5;
+      mcState.gazeAt = now + 900 + Math.random() * 2200;
+      mcState.aimGx = (Math.random() * 2 - 1) * 0.75;
+      mcState.aimGy = (Math.random() * 2 - 1) * 0.75;
     }
     mcState.gx += (mcState.aimGx - mcState.gx) * 0.06;
     mcState.gy += (mcState.aimGy - mcState.gy) * 0.06;
     if(now > mcState.blinkAt){ mcState.blinkAt = now + 3200 + Math.random() * 4600; mcState.blink = 0.08;
       setTimeout(()=>{ mcState.blink = 1; }, 110); }
+    /* THE EYES WIDEN ON THEIR OWN every four to nine seconds: up fast, held, eased back. A
+       third taller and a touch wider at the top, so it reads as interest, not a stretch. */
+    if(!mcState.wideAt) mcState.wideAt = now + 2500;
+    if(now > mcState.wideAt && !mcState.sleepy){ mcState.wideT0 = now; mcState.wideAt = now + 4000 + Math.random() * 5000; }
+    { const e = (now - (mcState.wideT0 || -1e9)) / 1100;
+      mcState.wide = e < 0 || e >= 1 ? 1
+        : 1 + 0.34 * (e < 0.14 ? e / 0.14 : e < 0.6 ? 1 : 1 - mcEase((e - 0.6) / 0.4)); }
     drawMarkCube();
     mcState.raf = requestAnimationFrame(step);
   };
@@ -9392,6 +9602,14 @@ function withEyesBusy(promise, host){
 /* The header mark only. The perch used to take a tap too, and it is never shown now — a
    visibility:hidden element takes no pointer events, so that binding could not fire. On the
    band the mark is the chip, and the chip's own tap opens the five faces. */
+/* Asleep on Workouts, the mark is the check-in button. Capture phase, so it runs before the
+   press-and-hold stare the mark otherwise does. */
+document.addEventListener('click', e=>{
+  if(!todayNeedsLog || currentTabName() !== 'insights') return;
+  if(!e.target.closest || !e.target.closest('.header-brand .header-mark')) return;
+  e.stopPropagation();
+  maybeAskMorning(true);
+}, true);
 function bindEyeTap(){
   [null].forEach(id=>{
     const el = id ? document.getElementById(id) : document.querySelector('.header-mark');
@@ -11088,7 +11306,60 @@ async function refreshHeaderLogBtn(){
   try{ started = !!(await loggingStartedAt(todayStr)); } catch(e){}
   btn.setAttribute('aria-label', logged ? 'Edit today' + '\u2019' + 's session'
                                 : started ? 'Resume workout' : 'Start workout');
+  let armed = false;
+  try{
+    const found = !logged && !started ? await todaysBlockAnySlot() : null;
+    armed = !!(found && found.block && found.block.type === 'strength');
+  }catch(e){}
+  btn.classList.toggle('hold-armed', armed);
+  if(armed) btn.setAttribute('aria-label', 'Start workout. Hold to log it as planned');
 }
+/* Opens today's session out of sight, lets the sheet fill itself with the plan the way it
+   always does on open, and presses its own Save, so this is exactly a session logged
+   untouched: same records, same history, same toasts. */
+async function logTodayAsPlanned(){
+  const btn = document.getElementById('logFab');
+  const found = await todaysBlockAnySlot();
+  if(!found || !found.block || found.block.type !== 'strength'){ await openLogFromAnywhere(); return; }
+  const sheet = document.getElementById('logSheet');
+  if(btn) btn.disabled = true;
+  if(sheet) sheet.classList.add('silent');
+  try{
+    await openBlockEditor(todayStr, found.slot, found.block);
+    for(let i = 0; i < 40; i++){
+      if(document.querySelector('#weekExerciseRows .edit-row .week-ex-name') && document.getElementById('logWeekSessionBtn')) break;
+      await new Promise(r => setTimeout(r, 50));
+    }
+    document.getElementById('logWeekSessionBtn')?.click();
+    await new Promise(r => setTimeout(r, 900));
+    showToast('Logged as planned');
+  } finally {
+    if(sheet) sheet.classList.remove('silent');
+    if(btn) btn.disabled = false;
+    refreshHeaderLogBtn().catch(()=>{});
+  }
+}
+(function wireStartHold(){
+  const btn = document.getElementById('logFab');
+  if(!btn) return;
+  const HOLD_MS = 650;
+  let t = null, fired = false;
+  const cancel = ()=>{ clearTimeout(t); t = null; btn.classList.remove('holding'); };
+  btn.addEventListener('pointerdown', ()=>{
+    fired = false;
+    if(!btn.classList.contains('hold-armed')) return;
+    btn.classList.add('holding');
+    t = setTimeout(()=>{
+      t = null; fired = true; btn.classList.remove('holding');
+      try{ navigator.vibrate && navigator.vibrate(18); }catch(e){}
+      logTodayAsPlanned().catch(()=>{});
+    }, HOLD_MS);
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(ev=> btn.addEventListener(ev, cancel));
+  btn.addEventListener('contextmenu', e=> e.preventDefault());
+  // The tap that ends a completed hold must not also open the sheet.
+  btn.addEventListener('click', e=>{ if(fired){ fired = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+})();
 (function setupHeaderLogBtn(){
   const btn = document.getElementById('logFab');
   if(!btn) return;
@@ -11121,6 +11392,14 @@ async function refreshHeaderLogBtn(){
 // the saturated hue now belongs to the section bands, which sit on this. Kept in step with
 // the body.tab-* rules above them, which paint the canvas this backdrop covers, so a
 // rubber-band scroll past the end of the page shows the same colour as the page.
+/* The browser's own top bar and the status-bar strip take theme-color, so it follows the
+   band rather than staying the near-black it was written as when the masthead was dark. */
+function syncThemeColor(){
+  try{
+    const c = getComputedStyle(document.body).getPropertyValue('--banner').trim();
+    if(c) document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.setAttribute('content', c));
+  }catch(e){}
+}
 const TAB_BACKDROP_COLOR = {
   insights:'var(--ground)', plan:'var(--ground)',
   injuries:'var(--ground)', data:'var(--ground)', settings:'var(--ground)'
@@ -11317,7 +11596,7 @@ function renderTabInsight(tab){
     .then(()=> tabInsightFor(tab))
     .then(text=>{
       if(mine !== tabInsightToken) return;
-      el.textContent = text || '';
+      el.textContent = (tab === 'insights' && todayNeedsLog) ? 'tap him to start the day' : (text || '');
       if(typeof updateEyePerch === 'function') updateEyePerch();
     })
     .catch(err=>{
@@ -11445,6 +11724,7 @@ function activateTab(name, opts){
   // The log badge only ever belongs on Today — gone the instant you leave, back the instant
   // you return if todayNeedsLog is still true.
   refreshHeaderLogBadge();
+  syncThemeColor();
   const backdropEl = document.getElementById('scrollBackdrop');
   backdropEl.style.backgroundColor = TAB_BACKDROP_COLOR[name] || TAB_BACKDROP_COLOR.insights;
   const tabButton = document.querySelector(`.tab[data-tab="${name}"]`);
@@ -11931,9 +12211,22 @@ tabs.forEach(t=>{
    something that scrolls sideways itself, which it finds by walking up from the target
    rather than by keeping a list of selectors that would rot. */
 (function wireTabSwipe(){
-  const SWIPE_MIN = 56;        // shorter than this is a tap that wandered
-  const SLOPE = 1.2;           // and it has to be this much more sideways than not
-  let x0 = 0, y0 = 0, dx = 0, dy = 0, live = false;
+  /* THE PAGE FOLLOWS THE FINGER, INSTAGRAM'S WAY.
+
+     It used to wait for the finger to lift and then deal the next page in on a fixed 440ms
+     curve, so the motion was the app's, not yours. Now the page moves 1:1 under the finger
+     from the moment the drag is clearly sideways, the next page comes in beside it, and on
+     release it carries on at the speed you let go at: a flick of any length commits, a slow
+     drag commits past a third of the screen, anything else springs back. Past the first and
+     last tab it gives, at a quarter of the drag, and comes back.
+
+     Vertical drags are left to the page: nothing is decided until the finger has moved 10px,
+     and if that was mostly down, this lets go for the rest of the gesture. Once it is
+     sideways, touchmove is cancelled so the page cannot scroll under it. */
+  const LOCK_PX = 10, SLOPE = 1.2;
+  const COMMIT_FRAC = 0.32, FLICK_V = 0.35;   // px per ms
+  let x0 = 0, y0 = 0, dx = 0, mode = null;   // null: undecided, 'x': ours, 'y': the page's
+  let here = -1, cur = null, peek = null, peekIdx = -1, W = 0, samples = [], anim = [];
 
   const scrollsSideways = el =>{
     for(let n = el; n && n !== document.body; n = n.parentElement){
@@ -11944,60 +12237,140 @@ tabs.forEach(t=>{
     }
     return false;
   };
+  const reduce = ()=> !uiAnim('tabLift');
 
   function begin(x, y, target){
-    live = false; dx = dy = 0;
-    if(!target || target.closest('input, textarea, select, [role="tab"], .wheel-workout-card')) return;
-    if(scrollsSideways(target)) return;
-    x0 = x; y0 = y; live = true;
+    mode = 'off';
+    if(!target || target.closest('input, textarea, select, [role="tab"], .wheel-workout-card, .lift-sheet, .morning-sheet, #logFab')) return;
+    if(window.__weekHold || scrollsSideways(target)) return;
+    if([...document.querySelectorAll('.lift-sheet.sheet-open, .morning-sheet')].some(el=> getComputedStyle(el).display !== 'none')) return;
+    if(anim.length) return;                    // still settling the last one
+    x0 = x; y0 = y; dx = 0; mode = null; samples = [{ x, t: performance.now() }];
   }
-  function update(x, y){ if(live){ dx = x - x0; dy = y - y0; } }
-
-  /* DECIDED WHEN THE GESTURE ENDS, INCLUDING WHEN THE BROWSER ENDS IT.
-
-     Stepping during the move worked exactly once. Chromium watches a sideways drag to see
-     whether it is going to become a scroll, and when it decides it might, it takes the
-     pointer -- so the last good delta is kept as the finger moves and read when it stops. A
-     cancelled gesture still delivers the swipe it had already travelled. It also means the
-     tab changes on release, which is the right moment for a move you cannot half-make. */
+  function setPeek(dir){
+    const idx = here + dir;
+    if(idx === peekIdx) return;
+    clearPeek();
+    if(idx < 0 || idx >= SWEEP_TABS.length) return;
+    const el = document.getElementById('panel-' + SWEEP_TABS[idx]);
+    if(!el) return;
+    const main = document.querySelector('main');
+    const mainAt = main.getBoundingClientRect(), curAt = cur.getBoundingClientRect();
+    const hdr = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdr-h')) || 0;
+    // Its top shows just under the header even when this page is scrolled down, so what
+    // slides in is the start of the next page, not a slice of its middle.
+    const topVp = Math.max(curAt.top, hdr);
+    el.classList.add('tab-peek');
+    el.style.top = (topVp - mainAt.top) + 'px';
+    el.style.left = (curAt.left - mainAt.left) + 'px';
+    el.style.width = curAt.width + 'px';
+    peek = el; peekIdx = idx;
+  }
+  function clearPeek(){
+    if(peek){ peek.classList.remove('tab-peek'); ['top','left','width','transform'].forEach(k=> peek.style.removeProperty(k)); }
+    peek = null; peekIdx = -1;
+  }
+  function paint(){
+    const atEdge = (dx > 0 && here === 0) || (dx < 0 && here === SWEEP_TABS.length - 1);
+    const x = atEdge ? dx * 0.25 : dx;
+    cur.style.transform = `translate3d(${x}px,0,0)`;
+    if(peek) peek.style.transform = `translate3d(${x + (dx < 0 ? W : -W)}px,0,0)`;
+  }
+  function update(x, y, ev){
+    if(mode === 'off' || mode === 'y') return;
+    const ddx = x - x0, ddy = y - y0;
+    if(mode === null){
+      if(Math.abs(ddx) < LOCK_PX && Math.abs(ddy) < LOCK_PX) return;
+      if(Math.abs(ddx) < Math.abs(ddy) * SLOPE || reduce()){ mode = Math.abs(ddx) >= Math.abs(ddy) * SLOPE ? 'x-late' : 'y'; if(mode === 'y') return; }
+      if(mode !== 'x-late'){
+        here = SWEEP_TABS.indexOf(document.querySelector('.tab.active').dataset.tab);
+        cur = document.getElementById('panel-' + SWEEP_TABS[here]);
+        if(here < 0 || !cur){ mode = 'off'; return; }
+        W = cur.getBoundingClientRect().width + 28;
+        document.querySelector('main').classList.add('tab-dragging');
+        mode = 'x';
+        x0 = x;                                 // no jump: start from where the lock happened
+      }
+    }
+    if(mode === 'x-late'){ dx = ddx; return; }  // reduced motion: decided on release, as before
+    if(ev && ev.cancelable) ev.preventDefault();
+    dx = x - x0;
+    const now = performance.now();
+    samples.push({ x, t: now }); while(samples.length > 2 && now - samples[0].t > 90) samples.shift();
+    setPeek(dx < 0 ? 1 : -1);
+    paint();
+  }
+  function velocity(){
+    if(samples.length < 2) return 0;
+    const a = samples[0], b = samples[samples.length - 1];
+    return (b.x - a.x) / Math.max(1, b.t - a.t);
+  }
   function finish(){
-    if(!live) return;
-    live = false;
-    if(window.__weekHold) return;              // a held day being carried across the strip
-    if(Math.abs(dx) < SWIPE_MIN || Math.abs(dx) < Math.abs(dy) * SLOPE) return;
-    const here = SWEEP_TABS.indexOf(document.querySelector('.tab.active').dataset.tab);
-    const next = here + (dx < 0 ? 1 : -1);      // drag left, go right along the bar
-    if(next < 0 || next >= SWEEP_TABS.length) return;
-    const t = document.querySelector(`.tab[data-tab="${SWEEP_TABS[next]}"]`);
-    if(t) activateTabViaUi(t);
+    if(mode === 'x-late'){
+      mode = 'off';
+      if(Math.abs(dx) < 56) return;
+      const h = SWEEP_TABS.indexOf(document.querySelector('.tab.active').dataset.tab), n = h + (dx < 0 ? 1 : -1);
+      const t = n >= 0 && n < SWEEP_TABS.length && document.querySelector(`.tab[data-tab="${SWEEP_TABS[n]}"]`);
+      if(t) activateTabViaUi(t);
+      return;
+    }
+    if(mode !== 'x'){ mode = 'off'; return; }
+    mode = 'off';
+    const v = velocity();
+    const dir = dx < 0 ? 1 : -1;
+    const can = !!peek;
+    const commit = can && (Math.abs(dx) > W * COMMIT_FRAC || (Math.abs(v) > FLICK_V && Math.sign(v) === Math.sign(dx)));
+    const atEdge = !can;
+    const from = atEdge ? dx * 0.25 : dx;
+    const to = commit ? -dir * W : 0;
+    const left = Math.abs(to - from);
+    // Carry on at the release speed, then ease down; never slower than a short settle.
+    const ms = Math.round(Math.max(170, Math.min(340, left / Math.max(Math.abs(v), 1.1))));
+    const ease = 'cubic-bezier(0.18, 0.8, 0.25, 1)';
+    anim = [cur.animate([{ transform:`translate3d(${from}px,0,0)` }, { transform:`translate3d(${to}px,0,0)` }], { duration: ms, easing: ease, fill:'forwards' })];
+    if(peek) anim.push(peek.animate([{ transform:`translate3d(${from + dir * W}px,0,0)` }, { transform:`translate3d(${to + dir * W}px,0,0)` }], { duration: ms, easing: ease, fill:'forwards' }));
+    cur.style.removeProperty('transform'); if(peek) peek.style.removeProperty('transform');
+    const name = commit ? SWEEP_TABS[here + dir] : null;
+    anim[0].onfinish = ()=>{
+      if(commit){
+        const t = document.querySelector(`.tab[data-tab="${name}"]`);
+        tabs.forEach(tb=>{ const on = tb === t; tb.classList.toggle('active', on); tb.setAttribute('aria-selected', on ? 'true' : 'false');
+          if(on) tb.setAttribute('aria-current', 'page'); else tb.removeAttribute('aria-current'); });
+        if(t){ document.getElementById('currentTabWord').textContent = t.textContent; noteTabTap(t); }
+        uiLastTabDir = dir;
+        activateTab(name, { deferSlide:true });
+        const p = document.getElementById('panel-' + name);
+        if(p) p.classList.remove('panel-enter');   // it has already arrived; no fade on top
+        fieldDrift(name);
+        window.headerCollapseSuspended = false; updateHeaderCollapse();
+      }
+      anim.forEach(a=>{ try{ a.cancel(); }catch(e){} }); anim = [];
+      clearPeek();
+      document.querySelector('main').classList.remove('tab-dragging');
+    };
   }
 
-  /* TOUCH EVENTS RATHER THAN POINTER EVENTS, ON THE PHONE.
-
-     This is where it actually runs, and pointer events do not survive there. Measured on a
-     real touch stream: pointerdown fires, and Chromium cancels the pointer on the same frame
-     -- before a single pointermove -- because it has not decided yet whether the gesture
-     belongs to the page. touchmove keeps coming the whole way through. So the phone is driven
-     off touch and the desktop off pointer, which is also the only place a mouse exists. */
+  /* TOUCH ON THE PHONE, POINTER ON THE DESKTOP — see the note this replaced: Chromium cancels
+     a touch pointer before its first move, touch events keep coming. touchmove is NOT passive
+     now, because a sideways drag has to stop the page scrolling under it. */
   document.addEventListener('touchstart', e=>{
-    if(e.touches.length !== 1){ live = false; return; }
+    if(e.touches.length !== 1){ mode = 'off'; return; }
     begin(e.touches[0].clientX, e.touches[0].clientY, e.target);
   }, { passive:true });
   document.addEventListener('touchmove', e=>{
-    if(e.touches.length !== 1){ live = false; return; }
-    update(e.touches[0].clientX, e.touches[0].clientY);
-  }, { passive:true });
+    if(e.touches.length !== 1){ if(mode === 'x') finish(); mode = 'off'; return; }
+    update(e.touches[0].clientX, e.touches[0].clientY, e);
+  }, { passive:false });
   document.addEventListener('touchend', finish, { passive:true });
   document.addEventListener('touchcancel', finish, { passive:true });
 
   document.addEventListener('pointerdown', e=>{
-    if(e.pointerType === 'touch') return;               // the block above owns those
-    if(e.button !== 0) return;
+    if(e.pointerType === 'touch' || e.button !== 0) return;
     begin(e.clientX, e.clientY, e.target);
   }, { passive:true });
   document.addEventListener('pointermove', e=>{
     if(e.pointerType === 'touch') return;
-    update(e.clientX, e.clientY);
+    update(e.clientX, e.clientY, null);
   }, { passive:true });
   document.addEventListener('pointerup', e=>{ if(e.pointerType !== 'touch') finish(); }, { passive:true });
   document.addEventListener('pointercancel', e=>{ if(e.pointerType !== 'touch') finish(); }, { passive:true });
@@ -12174,12 +12547,13 @@ function renderHeaderDate(){
   set('.hd-day', String(now.getDate()));
   set('.hd-mon', now.toLocaleDateString(undefined, { month:'long' }));
   el.setAttribute('aria-label', now.toLocaleDateString(undefined, { weekday:'long', day:'numeric', month:'long' }));
-  // The date starts where the logo starts. It sat at the top of the black instead, which
-  // put it on a level of its own above everything else in the header.
-  const h1 = document.querySelector('.header-brand h1');
+  // The date starts level with the tab's label (TODAY, PLAN…). It used to start on the
+  // title's cap line; with the big mark now under it, it moves up a row to give the face
+  // room, and the label line is the one thing already up there for it to line up with.
+  const h1 = document.getElementById('currentTabWord');
   const first = el.querySelector('.hd-dow');
   if(h1 && first){
-    const top = h1.offsetTop + capTopOffset(h1) - capTopOffset(first);
+    const top = h1.getBoundingClientRect().top - el.offsetParent.getBoundingClientRect().top + capTopOffset(h1) - capTopOffset(first);
     el.style.top = Math.round(top) + 'px';
   }
 }
@@ -13947,13 +14321,26 @@ function updateHeaderCollapse(){
   const MARK_TOP = 57;
   // The header mark's top is written from here, so the sag has to be added in rather than
   // read off the custom property the way the score slot does it.
-  mark.style.top = (lerp(MARK_TOP, 30, progress) + (typeof eyeSagPx === 'function' ? eyeSagPx() : 0)) + 'px';
-  mark.style.left = (logoOriginX + (logoTextWidth + MARK_GAP) * (fontSize/46)) + 'px';
+  /* BIG, IN THE CORNER, CUT OFF BY THE BANNER (Touring). Open, the mark is MARK_BIG times its
+     size, pinned under the date and pushed past the band's bottom edge so only the top of the
+     face shows: it peeks up at you rather than sitting beside the title as a logo. Scaled from
+     its bottom-right corner, so the collapse below shrinks it down and out of the band the way
+     it came, and the perch takes over exactly as before. MARK_TOP and MARK_GAP above stay
+     for the perch maths and the flying eyes, which still read the lockup position. */
+  const MARK_BIG = 3, MARK_RIGHT = -30, MARK_SUNK = 0.36;   // a quarter off the right edge, a little more under the band
+  const bandH = brandEl ? brandEl.getBoundingClientRect().height : 146;
+  const bandW = brandEl ? brandEl.clientWidth : window.innerWidth;
+  mark.style.transformOrigin = '100% 100%';
+  const MARK_BOX = 40 * MARK_BIG;
+  mark.style.left = (bandW - MARK_RIGHT - MARK_BOX) + 'px';
+  mark.style.top = (bandH + MARK_BOX * MARK_SUNK - MARK_BOX + (typeof eyeSagPx === 'function' ? eyeSagPx() : 0)) + 'px';
   // Widening a touch as it shrinks reads as the mark being squeezed out of the way,
   // where an even scale just reads as it being turned off. The bulge peaks mid-collapse
   // and is gone at both ends, so it never fights the finger.
   const squash = anim('collapseSquash') ? 1 + EYE_ANIM.collapseSquash.amt * progress * (1 - progress) * 4 : 1;
   mark.style.transform = `scale(${(1-progress) * squash}, ${1-progress})`;
+  // The score rides inside the mark; it un-scales by this so it stays its own size.
+  mark.style.setProperty('--mk', Math.max(0.01, 1-progress).toFixed(4));
   // Perched, it is not part of the wordmark any more — it sits beside the tab's name on the
   // one row the collapsed header still has, at half size, and stays there until the score
   // scrolls back into view.
@@ -13962,7 +14349,10 @@ function updateHeaderCollapse(){
     if(spot){
       mark.style.left = spot.left + 'px';
       mark.style.top = (spot.top + (typeof eyeSagPx === 'function' ? eyeSagPx() : 0)) + 'px';
-      mark.style.transform = `scale(${EYE_PERCH_SCALE})`;
+      // The box is MARK_BIG times the old 40 now, so the perch divides it back out.
+      mark.style.transform = `scale(${EYE_PERCH_SCALE / MARK_BIG})`;
+      mark.style.transformOrigin = '';
+      mark.style.setProperty('--mk', '1');
     }
   }
   // The header is sticky and shrinks as you scroll, so a heading that tucks under it has to
@@ -13989,12 +14379,11 @@ function updateHeaderCollapse(){
    "Every reading", "Your set-up". A masthead reading THE DATA is a filing cabinet. These are
    written as second lines that complete their first, which is the same two-line shape Dogfood
    already has, so the lockup is one thing in all five states. */
-const TAB_TITLES = {
-  plan:     ['The','plan'],
-  injuries: ['Your','body'],
-  data:     ['Every','reading'],
-  settings: ['Your','set-up']
-};
+/* TOURING ON EVERY TAB NOW. The band's colour and the label above the name say which page
+   you are on; the name says what app you are in, the way a masthead does. The per-tab titles
+   (The plan, Your body, Every reading, Your set-up) are switched off here rather than deleted
+   from the path that builds them: an entry in this table brings that tab's title back. */
+const TAB_TITLES = {};
 /* Dogfood's own markup, kept whole. The per-letter margins in it are hand-set optical kerning
    on a drawn wordmark — rebuilding it from a string would throw them away, and they are the
    difference between the brand and the same six letters typed. Read at parse time, which is
@@ -15303,16 +15692,46 @@ async function setMorningContext(field, value){
   entry.date = todayStr;
   try{ await window.storage.set(keyFor(todayStr), JSON.stringify(entry)); } catch(e){}
 }
-async function maybeAskMorning(){
-  if(!todayIsSetUp) return;                       // nothing to contextualise before there is a plan
+/* YOUR USUAL NIGHT: the median hours and wake time of the last fourteen nights that have
+   them, so the check-in opens already holding an ordinary morning. Null fields with no
+   history. Medians, not means, so one bad night does not move what "usual" is. */
+async function usualNight(){
+  const out = { hrs:null, wake:null };
+  try{
+    const res = await window.storage.list('entry:');
+    const keys = (res && res.keys || []).filter(k => k !== keyFor(todayStr)).sort().reverse().slice(0, 14);
+    const hrs = [], wake = [];
+    for(const k of keys){
+      try{
+        const e = JSON.parse((await window.storage.get(k)).value);
+        if(e && isFinite(parseFloat(e.durationHrs))) hrs.push(parseFloat(e.durationHrs));
+        if(e && typeof e.wakeClock === 'string' && /^\d{1,2}:\d{2}/.test(e.wakeClock)){
+          const [h, m] = e.wakeClock.split(':').map(Number); wake.push(h * 60 + m);
+        }
+      }catch(err){}
+    }
+    const med = a => { if(!a.length) return null; const b = [...a].sort((x, y)=> x - y); return b[Math.floor((b.length - 1) / 2)]; };
+    const mh = med(hrs); if(mh != null) out.hrs = Math.round(mh * 4) / 4;
+    const mw = med(wake);
+    if(mw != null){ const r = Math.round(mw / 5) * 5; out.wake = String(Math.floor(r / 60)).padStart(2, '0') + ':' + String(r % 60).padStart(2, '0'); }
+  }catch(e){}
+  return out;
+}
+async function maybeAskMorning(force){
   if(document.querySelector('.morning-sheet')) return;
-  if(await morningAlreadyAsked()) return;
+  if(!force){
+    if(!todayIsSetUp) return;                       // nothing to contextualise before there is a plan
+    if(await morningAlreadyAsked()) return;
+  }
   let entry = null;
   try{ entry = JSON.parse((await window.storage.get(keyFor(todayStr))).value); } catch(e){}
-  try{
-    const logged = (await getAllTrainingSessions()).some(sn => sn.date === todayStr);
-    if(logged) return;
-  } catch(e){}
+  if(!force){
+    try{
+      const logged = (await getAllTrainingSessions()).some(sn => sn.date === todayStr);
+      if(logged) return;
+    } catch(e){}
+  }
+  const usual = await usualNight();
 
   const dots = (id, opts) => `<div class="subj-scale" id="${id}">` + opts.map(([v, t]) =>
     `<button type="button" class="subj-dot" data-v="${v}">${t}</button>`).join('') + `</div>`;
@@ -15340,9 +15759,9 @@ async function maybeAskMorning(){
       <div class="morning-q">Last night</div>
       <div class="morning-night">
         <label class="mn-field"><input type="text" inputmode="decimal" id="morningSleepHrs"
-          data-field="durationHrs" placeholder="7.5" aria-label="Hours slept"><span class="mn-unit">hours</span></label>
+          data-field="durationHrs" placeholder="7.5" aria-label="Hours slept"${usual.hrs != null ? ` value="${usual.hrs}" data-planned="1"` : ''}><span class="mn-unit">hours</span></label>
         <label class="mn-field"><input type="time" id="morningWakeClock"
-          data-field="wakeClock" aria-label="Time you woke"><span class="mn-unit">woke</span></label>
+          data-field="wakeClock" aria-label="Time you woke"${usual.wake ? ` value="${usual.wake}" data-planned="1"` : ''}><span class="mn-unit">woke</span></label>
         <label class="mn-field"><input type="text" inputmode="numeric" id="morningRestingHR"
           data-field="restingHR" placeholder="52" aria-label="Resting heart rate"><span class="mn-unit">rhr</span></label>
       </div>
@@ -15354,7 +15773,7 @@ async function maybeAskMorning(){
            decide whether it has enough to report at all. Skipping it holds that average down
            for as long as you skip it, and nothing on screen ever said so. A ring fills it
            from bedtime_end, so this is aimed at the people who type. -->
-      <div class="morning-why">The time you woke is what regularity is measured from — the one
+      <div class="morning-why"${usual.wake ? ' hidden' : ''}>The time you woke is what regularity is measured from — the one
         of these three the score cannot get any other way.</div>` : '';
 
   const sheet = document.createElement('div');
@@ -15362,6 +15781,7 @@ async function maybeAskMorning(){
   sheet.innerHTML = `<div class="morning-panel" role="dialog" aria-modal="true" aria-label="This morning">
       <div class="lift-sheet-head"><span>This morning</span>
         <button type="button" class="lift-sheet-x" aria-label="Not now">\u00d7</button></div>
+      ${(askNight && (usual.hrs != null || usual.wake)) ? '<div class="morning-usual">Filled in with your usual night. Change anything that was different, then Done.</div>' : ''}
       ${nightRow}
       <div class="morning-q">Alcohol last night</div>
       ${dots('morningAlcohol', [[0,'None'],[1,'A drink or two'],[2,'More']])}
@@ -15370,11 +15790,22 @@ async function maybeAskMorning(){
       <div class="score-note" style="margin-top:var(--sp-3); color:rgba(var(--ink-rgb),0.6);">
         A drink or a bug is attributed rather than read as fatigue \u2014 the day still scores
         honestly, it just stops setting what normal looks like for you.</div>
-      <button type="button" class="primary morning-done">Done</button>
+      <button type="button" class="primary morning-done">${askNight && (usual.hrs != null || usual.wake) ? 'Done, usual night' : 'Done'}</button>
     </div>`;
 
   // Dialed, not typed — see the note on wireWheelField. Only when nightRow actually rendered
   // them; a synced ring skips this question and there is nothing here to wire.
+  /* THE ORDINARY ANSWER IS ALREADY PICKED. Most mornings are no drinks and not ill, so those
+     are selected on open (unless today already holds an answer) and Done saves them. A
+     different morning is one tap on the other option. */
+  [['morningAlcohol', 'alcohol'], ['morningUnwell', 'unwell']].forEach(([id, f])=>{
+    const box = sheet.querySelector('#' + id); if(!box) return;
+    const have = entry && entry[f] != null && entry[f] !== '' ? String(entry[f]) : null;
+    const v = have != null ? have : '0';
+    box.querySelectorAll('.subj-dot').forEach(b=> b.classList.toggle('on', b.dataset.v === v));
+    box.classList.add('answered');
+    if(have == null) box.dataset.planned = '1';
+  });
   if(askNight){
     wireWheelField(sheet.querySelector('#morningSleepHrs'), { title:'Hours slept', min:0, max:12, step:0.25, decimals:2, unit:'hours' });
     wireWheelField(sheet.querySelector('#morningRestingHR'), { title:'Resting heart rate', min:30, max:120, step:1, unit:'bpm' });
@@ -15410,13 +15841,26 @@ async function maybeAskMorning(){
   // takes; the separate keydown path this used to need existed only to get past the hold.
 
   sheet.addEventListener('click', async e=>{
-    if(e.target === sheet || e.target.closest('.lift-sheet-x') || e.target.closest('.morning-done')){ await close(); return; }
+    if(e.target.closest('.morning-done')){
+      // Done takes what is on screen, defaults and all: the usual night and the picked dots.
+      for(const el of sheet.querySelectorAll('input[data-field][data-planned]')){
+        if(el.value.trim()){ await setMorningContext(el.dataset.field, el.value.trim()); nightChanged = true; }
+      }
+      for(const [id, f] of [['morningAlcohol', 'alcohol'], ['morningUnwell', 'unwell']]){
+        const box = sheet.querySelector('#' + id);
+        const on = box && box.querySelector('.subj-dot.on');
+        if(box && box.dataset.planned && on){ await setMorningContext(f, on.dataset.v); nightChanged = true; }
+      }
+      await close(); return;
+    }
+    if(e.target === sheet || e.target.closest('.lift-sheet-x')){ await close(); return; }
     const dot = e.target.closest('.subj-dot');
     if(dot){
       const box = dot.closest('.subj-scale');
       const clearing = dot.classList.contains('on');
       box.querySelectorAll('.subj-dot').forEach(b=> b.classList.toggle('on', !clearing && b === dot));
       box.classList.toggle('answered', !clearing);
+      delete box.dataset.planned;
       await setMorningContext(box.id === 'morningAlcohol' ? 'alcohol' : 'unwell',
         clearing ? null : dot.dataset.v);
     }
@@ -15430,6 +15874,7 @@ async function maybeAskMorning(){
     const raw = el.value.trim();
     const ok = raw === '' || el.type === 'time' || isFinite(parseFloat(raw));
     if(!ok){ el.value = ''; return; }
+    delete el.dataset.planned;
     await setMorningContext(el.dataset.field, raw === '' ? null : raw);
     nightChanged = true;
   });
@@ -19464,7 +19909,7 @@ async function extractBlockLines(block){
       (block.details.exercises||[]).forEach(ex=>{ if(ex && ex.name) out.push({ name: ex.name, dose: ex.dose || '' }); });
       return out;
     }
-    for(const ex of (block.details.exercises||[])){
+    for(const [exIdx, ex] of (block.details.exercises||[]).entries()){
       if(!ex || !ex.name) continue;
       // Skill work carries its own prescription text rather than a sets/reps/weight ladder.
       if(ex.isSkillWork){ out.push({ name: ex.name }); continue; }
@@ -19477,7 +19922,7 @@ async function extractBlockLines(block){
         const progression = await suggestProgression(ex, focusInfo);
         if(progression.weight != null) weightLabel = `${progression.weight}kg`;
       } catch(e){}
-      out.push({ name: ex.name, dose: `${sets}×${repsLabel} @ ${weightLabel}` });
+      out.push({ name: ex.name, dose: `${sets}×${repsLabel} @ ${weightLabel}`, lift: exIdx });
     }
     const fin = block.details.finisher;
     if(fin) out.push({ name: `Finisher: ${fin.format}`, dose: `${fin.minutes} min` });
@@ -19547,7 +19992,7 @@ async function weekDayDetailHtml(date, realBlocks, isOff){
     return `<div class="wheel-workout-card${realBlocks.length === 1 ? ' solo' : ''}" data-edit-date="${date}" data-edit-slot="${slot}">
         <div class="wheel-workout-type"><i class="wk-slot">${slot}</i>${typeLabel}<span class="wheel-workout-chevron">\u203a</span></div>
         <div class="wheel-ex-names">${lines.length
-          ? lines.map(l=> `<div class="wheel-ex-line"><span class="wheel-ex-name">${l.name}</span>${l.dose ? `<span class="wheel-ex-dose">${l.dose}</span>` : ''}</div>`).join('')
+          ? lines.map(l=> `<div class="wheel-ex-line"${l.lift != null ? ` data-lift="${l.lift}" role="button" tabindex="0" aria-label="Log ${l.name}"` : ''}><span class="wheel-ex-name">${l.name}</span>${l.dose ? `<span class="wheel-ex-dose">${l.dose}</span>` : ''}</div>`).join('')
           : '<em>No details yet</em>'}</div>
       </div>`;
   }));
@@ -20377,9 +20822,12 @@ async function renderWeekGrid(){
   detailCol.innerHTML = detailHtml;
   if(detailChanged) crossFade(detailCol);
   detailCol.querySelectorAll('[data-edit-date]').forEach(card=>{
-    card.addEventListener('click', ()=>{
+    card.addEventListener('click', e=>{
       const { editDate, editSlot } = card.dataset;
       const match = realBlocks.find(b=>b.slot===editSlot);
+      // A lift on the card logs just that lift; anywhere else on the card opens the session.
+      const line = e.target.closest('.wheel-ex-line[data-lift]');
+      if(line && match && match.block && match.block.type === 'strength'){ openSingleLift(editDate, editSlot, match.block, +line.dataset.lift); return; }
       openBlockEditor(editDate, editSlot, match ? match.block : null);
     });
   });
@@ -20546,6 +20994,58 @@ function closeLogSheet(){
   ensureLogSheet().close({ silent:true });
 }
 let blockEditMinimisable = false;  // a session can be put on the bar; a type picker cannot
+/* ONE LIFT, NOT THE WHOLE SESSION. Tapping a lift on the Workouts card opens the session as
+   usual but shows only that lift's sets, the rest timer and Done: tick through it, Done, and
+   it is kept on the session (the draft, with the bar showing it is under way) while you do
+   the next. Done on the last lift with every set ticked saves the whole session. "Open the
+   whole session" is there for anything else. */
+async function openSingleLift(date, slot, block, idx){
+  await openBlockEditor(date, slot, block);
+  const sheet = document.getElementById('logSheet');
+  const ex = (block.details.exercises || [])[idx];
+  const rows = [...document.querySelectorAll('#weekExerciseRows .edit-row')];
+  const row = rows.find(r => (r.querySelector('.week-ex-name')?.value || '') === (ex && ex.name)) || rows[idx];
+  if(!sheet || !row) return;
+  sheet.classList.add('single-lift');
+  row.classList.add('focus-row');
+  const title = document.getElementById('logSheetTitle');
+  if(title && ex) title.textContent = ex.name;
+  const panel = document.getElementById('blockEditPanel');
+  if(panel && !panel.querySelector('.single-acts')){
+    const acts = document.createElement('div');
+    acts.className = 'single-acts';
+    acts.innerHTML = '<button type="button" class="primary single-done">Done</button><button type="button" class="single-all">Open the whole session</button>';
+    panel.appendChild(acts);
+    acts.querySelector('.single-all').addEventListener('click', ()=>{
+      sheet.classList.remove('single-lift');
+      document.querySelectorAll('#weekExerciseRows .focus-row').forEach(r=> r.classList.remove('focus-row'));
+      const t = document.getElementById('logSheetTitle'); if(t) t.textContent = block.type;
+    });
+    acts.querySelector('.single-done').addEventListener('click', ()=>{
+      const lifts = [...document.querySelectorAll('#weekExerciseRows .set-ticks')].filter(h => h.querySelector('.st-row'));
+      const allDone = lifts.length && lifts.every(h => !h.querySelector('.st-row:not(.done)'));
+      if(allDone){ document.getElementById('logWeekSessionBtn')?.click(); return; }
+      const done = lifts.filter(h => h.querySelector('.st-row.done')).length;
+      showToast(`${ex ? ex.name : 'Lift'} logged \u00b7 ${done} of ${lifts.length} lifts`);
+      ensureLogSheet().close();
+    });
+  }
+  const sp = sheet.querySelector('.lift-sheet-panel'); if(sp) sp.scrollTop = 0;
+}
+/* The lifts in Today's session list do the same: tap one to log just it. Matched by name to
+   today's lifting session, so a warm-up drill or a line that is not a lift does nothing. */
+document.addEventListener('click', async e=>{
+  const item = e.target.closest && e.target.closest('#panel-insights .plan-item');
+  if(!item) return;
+  const name = (item.querySelector('strong')?.textContent || '').trim();
+  if(!name) return;
+  let found = null;
+  try{ found = await todaysBlockAnySlot(); }catch(err){}
+  if(!found || !found.block || found.block.type !== 'strength') return;
+  const idx = (found.block.details.exercises || []).findIndex(x => x && x.name && x.name.trim().toLowerCase() === name.toLowerCase());
+  if(idx < 0) return;
+  openSingleLift(todayStr, found.slot, found.block, idx);
+});
 function closeBlockEditor(opts){
   const keepDraft = !!(opts && opts.keepDraft);
   const panel = document.getElementById('blockEditPanel');
@@ -21775,6 +22275,8 @@ async function wireRunLogging(date, block){
 }
 
 async function openBlockEditor(date, slot, block){
+  document.getElementById('logSheet')?.classList.remove('single-lift');
+  document.querySelectorAll('#weekExerciseRows .focus-row').forEach(r=> r.classList.remove('focus-row'));
   const panel = document.getElementById('blockEditPanel');
   // However you got back in — the bar, Today's marker, the day wheel — the bar's job is done.
   logMinimised = false;
@@ -21833,9 +22335,7 @@ async function openBlockEditor(date, slot, block){
            the lot — same comma-joined lists underneath either way, sets just a count of them.
            Said once, since it's the one thing about these boxes that isn't self-evident from
            using them. -->
-      <div class="log-hint">Tap SETS, REPS or KG to dial a set in — <b>+ another set</b> banks
-        it and starts the next, <b>⌫</b> undoes the last one or clears the box, so a drop
-        set or a ramp is still one place to look.</div>
+      <div class="log-hint">Tick a set to log it as shown, and the rest timer starts. Tap a number if it was different.</div>
       <div class="score-note">For weight, choose a load you can control for every planned rep; leave it blank if you are still finding it out.</div>
       <div id="weekExerciseRows"></div><div class="add-row" id="addWeekExerciseRow">Add a lift</div>
       <!-- The run block has always had one. A strength session did not, so "gym was rammed,
@@ -21880,6 +22380,7 @@ async function openBlockEditor(date, slot, block){
     ${fieldsHtml}
     <div class="log-acts">
       <button id="logWeekSessionBtn" class="log-act go">Save</button>
+      ${block.type === 'strength' ? '<button id="logAsPlannedBtn" class="log-act">Done as planned</button>' : ''}
       <button id="closeWeekBlockBtn" class="log-act">Put away</button>
       <button id="deleteWeekBlockBtn" class="log-act">Delete</button>
     </div>
@@ -21978,10 +22479,12 @@ async function openBlockEditor(date, slot, block){
           <input type="text" class="week-ex-weight" placeholder="${ph(ghostWeight, '')}" title="${resultUnitFor(name) ? 'how far or how high \u2014 your best of the session' : 'weight actually used \u2014 one number for every set (100), or per-set for a ramp or a drop set (60,80,100)'}" inputmode="decimal"><span class="log-op log-unit">${resultUnitFor(name) ? 'best ' + resultUnitFor(name) : 'kg'}</span>
         </div>
         <div class="set-breakdown" hidden></div>
+        <div class="set-ticks"></div>
         <!-- BW and F were two unlabelled letters on the row you touch more than any other in
              the app, with their meanings in title attributes that a phone never shows. One
              lift is on screen at a time now, so there is room to say the words. -->
         <div class="log-toggle-row">
+          ${lastSetsFor(name) ? '<button type="button" class="week-ex-same small" title="log exactly what you did last time">Same as last</button>' : ''}
           <button type="button" class="week-ex-bw small outline" title="fill the weight box with your logged bodyweight">Bodyweight</button>
           <button type="button" class="week-ex-fail small outline" title="mark that the last set was taken to failure">To failure</button>
         </div>
@@ -22016,6 +22519,22 @@ async function openBlockEditor(date, slot, block){
       // Blank silently defaults to 0 in volume-load math, which undercounts calisthenics
       // work (a pull-up genuinely moves bodyweight, that's real training stress) — one tap
       // records it accurately instead of requiring mental math or a trip to Settings.
+      /* ONE TAP: LAST TIME, EXACTLY. Every set's reps and weight from the last session of this
+         lift go into the boxes in full ink, as yours. The plan's dim numbers are what you
+         get by not touching the row; this is for the day you repeated last time instead. */
+      row.querySelector('.week-ex-same')?.addEventListener('click', function(){
+        const h = lastSetsFor(row.querySelector('.week-ex-name').value);
+        if(!h) return;
+        const fmt = v => String(+(+v).toFixed(2));
+        [['.week-ex-reps', h.reps.map(fmt).join(',')], ['.week-ex-weight', h.weight.map(fmt).join(',')], ['.week-ex-sets', String(h.reps.length)]].forEach(([sel, v])=>{
+          const el = row.querySelector(sel); if(!el || !v) return;
+          el.value = v; delete el.dataset.planned;
+          el.dispatchEvent(new Event('input', { bubbles:true }));
+          el.dispatchEvent(new Event('change', { bubbles:true }));
+        });
+        blockEditDirty = true;
+        this.classList.add('on');
+      });
       row.querySelector('.week-ex-bw').addEventListener('click', async ()=>{
         const metrics = await getLatestBodyMetrics(todayStr);
         const weightInput = row.querySelector('.week-ex-weight');
@@ -22180,7 +22699,7 @@ async function openBlockEditor(date, slot, block){
   applyLogDraft(panel, await loadLogDraft(date, slot));
   // Last, so that anything actually logged or drafted is already in the boxes and the plan
   // only lands where there is nothing.
-  if(block.type === 'strength') logExRows().forEach(row=>{ prefillPlanned(row); refreshOverPlan(row); refreshWeightWhy(row); });
+  if(block.type === 'strength') logExRows().forEach(row=>{ prefillPlanned(row); refreshOverPlan(row); refreshWeightWhy(row); initSetTicks(row); });
   /* THE SUBSTITUTION, SHOWN HAPPENING RATHER THAN ALREADY DONE.
 
      Change a lift twice and the generator stops asking for the original — applyExerciseSwaps
@@ -22350,6 +22869,16 @@ async function openBlockEditor(date, slot, block){
     } catch(e){ /* surfaced by the caller's own toast — see logWeekSessionBtn below */ }
     return deferred;
   }
+/* DONE AS PLANNED, FROM INSIDE THE SHEET: every set not yet ticked is ticked as shown, so
+   the lifts you logged stay as you logged them and the rest go in as they read, then Save. */
+document.getElementById('logAsPlannedBtn')?.addEventListener('click', ()=>{
+  // One at a time: each tick repaints its lift's rows, so a list taken up front goes stale.
+  document.querySelectorAll('#weekExerciseRows .set-ticks').forEach(host=>{
+    for(let b, n = 0; (b = host.querySelector('.st-row:not(.done) .st-ok')) && n < 50; n++) b.click();
+  });
+  if(typeof stopRestTimer === 'function') stopRestTimer();
+  document.getElementById('logWeekSessionBtn')?.click();
+});
 document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=>{
     // The plan as it stood before this save rewrites it with what you logged — the one copy
     // of "the session you were meant to do" that can still move to a later day if you did a
@@ -23143,7 +23672,8 @@ async function refreshInjuries(){
         </div>
         <div class="injury-actions">
           ${!inj.resolved ? `<input type="number" min="1" max="10" step="1" inputmode="numeric" class="injury-rerate" data-id="${inj.id}" placeholder="1-10" style="max-width:62px;" aria-label="How is it today, 1 to 10">
-          <button class="small rerate-btn" data-id="${inj.id}">Update</button>` : ''}
+          <button class="small rerate-btn" data-id="${inj.id}">Update</button>
+          <button class="small check-today-btn" data-id="${inj.id}">Check in</button>` : ''}
           <button class="small diagnose-btn" data-id="${inj.id}">What led to this</button>
           ${!inj.resolved ? `<button class="small resolve-btn" data-id="${inj.id}">Mark resolved</button>` : ''}
           <button class="small outline delete-btn" data-id="${inj.id}">Delete</button>
@@ -23164,6 +23694,7 @@ async function refreshInjuries(){
        has been since anybody asked. */
     // Bound here rather than delegated, for the reason every other button on this card is:
     // the list is rebuilt whole on each refresh and a listener on a removed node goes with it.
+    list.querySelectorAll('.check-today-btn').forEach(btn=> btn.addEventListener('click', ()=> openInjuryCheckSheet()));
     list.querySelectorAll('.diagnose-btn').forEach(btn=>{
       const inj = injuries.find(x=> String(x.id) === btn.dataset.id);
       if(inj) btn.addEventListener('click', ()=> showInjuryDiagnosis(inj));
@@ -23690,7 +24221,7 @@ async function logRecDecision(type, meta, decision, card, title){
     // The card is the only place the trigger is explained, so it hands straight off rather
     // than leaving you to find a button whose label does not mention any of this.
     if(type==='injury_check' && decision==='accepted'){
-      activateTab('injuries');
+      openInjuryCheckSheet();
     }
     if(type==='mobility_retest' && decision==='accepted'){
       mobilityAssessmentAutoOpen = true;
@@ -26600,7 +27131,7 @@ function compactSetList(values, label){
   return values.every(v=> v === values[0]) ? label(values[0]) : values.map(label).join(',');
 }
 
-function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, setsValue, onCommit }){
+function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, setsValue, history, onCommit }){
   const titleEl = document.getElementById('multiWheelPickerTitle');
   const bankEl = document.getElementById('multiWheelBank');
   const backBtn = document.getElementById('multiWheelBackBtn');
@@ -26625,7 +27156,7 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
   // from the start when the field already had something in it, true the moment that wheel is
   // actually moved, false otherwise. Tapping in on reps alone and leaving without ever moving
   // the weight wheel must not write a weight that was never there — see the commit below.
-  let repsTouched = repsValues.length > 0, weightTouched = weightValues.length > 0;
+  let repsTouched = repsValues.length > 0 || !!(history && history.reps && history.reps.length), weightTouched = weightValues.length > 0 || !!(history && history.weight && history.weight.length);
   /* Whether anything was done in the sheet at all: a wheel moved, a set banked or unbanked.
      A sheet opened and closed without any of that writes NOTHING — not even values equal to
      what was already there, since the set count derived on the way out can differ from a
@@ -26644,8 +27175,16 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
   };
 
   const mid = (lo, hi)=> Math.round((lo + hi) / 2);
-  const repsStart = n ? repsFull[n - 1] : (reps.defaultValue != null ? reps.defaultValue : mid(reps.min, reps.max));
-  const weightStart = n ? weightFull[n - 1] : (weight.defaultValue != null ? weight.defaultValue : mid(weight.min, weight.max));
+  /* WHERE THE WHEELS START: LAST TIME, SET BY SET. A row nobody has touched yet (history is
+     only passed then) opens on set one of the last session of this lift, reps and weight,
+     and each + moves the wheels on to that session's next set, so a session that matches
+     last time is a run of + presses with no scrolling at all. Past the last set it had,
+     they stay where they are. Rows already holding your numbers open on those. */
+  const hist = history && history.reps && history.reps.length ? history : null;
+  const histAt = i => hist ? { reps: hist.reps[Math.min(i, hist.reps.length - 1)],
+    weight: hist.weight && hist.weight.length ? hist.weight[Math.min(i, hist.weight.length - 1)] : null } : null;
+  const repsStart = hist ? histAt(0).reps : n ? repsFull[n - 1] : (reps.defaultValue != null ? reps.defaultValue : mid(reps.min, reps.max));
+  const weightStart = hist && histAt(0).weight != null ? histAt(0).weight : n ? weightFull[n - 1] : (weight.defaultValue != null ? weight.defaultValue : mid(weight.min, weight.max));
 
   const repsWheel = mkSetWheelColumn({ col:'mwRepsCol', scroll:'mwRepsScroll', track:'mwRepsTrack' }, { min:reps.min, max:reps.max, label:reps.title, onInteract:()=>{ repsTouched = true; dirty = true; } });
   repsWheel.build(repsStart, reps.step || 1, 0);
@@ -26659,8 +27198,11 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
     dirty = true;
     banked.push({ reps: repsWheel.current(), weight: weightWheel.current() });
     renderBank();
-    repsWheel.build(repsWheel.current(), reps.step || 1, 0);
-    weightWheel.build(weightWheel.current(), weightStep(), weightDecimals());
+    // Next set: last session's same set if it had one, else the set just banked.
+    const nx = hist && banked.length < hist.reps.length ? histAt(banked.length) : null;
+    repsWheel.build(nx ? nx.reps : repsWheel.current(), reps.step || 1, 0);
+    weightWheel.build(nx && nx.weight != null ? nx.weight : weightWheel.current(), weightStep(), weightDecimals());
+    if(hist){ repsTouched = true; weightTouched = true; }
   };
   if(addBtn) addBtn.addEventListener('click', onAdd);
 
@@ -26725,6 +27267,116 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
    only commits once something was actually done in the sheet), so an untouched plan keeps
    its dim .dataset.planned — the same rule typing always followed. Once something WAS done,
    only the fields whose value actually changed are written. */
+/* ONE TICK A SET.
+
+   Under each lift, its sets as rows: last time's reps and weight for that set, dimmed (or
+   the plan's, for a lift with no history). Tick a set and it is logged exactly as shown, in
+   full ink, and the rest timer starts on its own. Tap either number to change that set on
+   the wheel, which logs it too. Copy set 1 puts the first set's numbers on every set not
+   yet ticked; + Set adds one like the last.
+
+   The sets/reps/weight boxes are still what Save reads. Ticked sets are written into them
+   as per-set lists; untick everything and the boxes go back to the plan they opened on, so
+   a lift you never touch saves as planned, as it always has. */
+function initSetTicks(row){
+  const host = row.querySelector('.set-ticks');
+  if(!host) return;
+  const repsEl = row.querySelector('.week-ex-reps'), weightEl = row.querySelector('.week-ex-weight'), setsEl = row.querySelector('.week-ex-sets');
+  if(!repsEl || !weightEl) return;
+  const nameEl = row.querySelector('.week-ex-name');
+  const list = v => String(v || '').trim() ? String(v).split(SET_LIST_SEP).map(parseFloat).filter(isFinite) : [];
+  const typed = !repsEl.dataset.planned && list(repsEl.value).length;
+  const orig = [repsEl, weightEl, setsEl].map(el => el ? { v: el.value, planned: el.dataset.planned } : null);
+  let sets;
+  if(typed){
+    const r = list(repsEl.value), w = list(weightEl.value), n = Math.max(r.length, parseInt(setsEl && setsEl.value, 10) || 0);
+    sets = Array.from({ length: Math.max(1, n) }, (_, i)=> ({ reps: r[Math.min(i, r.length - 1)], weight: w.length ? w[Math.min(i, w.length - 1)] : null, done: true }));
+  } else {
+    const h = nameEl ? lastSetsFor(nameEl.value) : null;
+    const pn = parseInt(setsEl && setsEl.value, 10) || 0;
+    if(h){
+      const n = Math.max(h.reps.length, pn || 0);
+      sets = Array.from({ length: n }, (_, i)=> ({ reps: h.reps[Math.min(i, h.reps.length - 1)],
+        weight: h.weight.length ? h.weight[Math.min(i, h.weight.length - 1)] : null, done: false }));
+    } else {
+      const r = list(repsEl.value), w = list(weightEl.value);
+      if(!r.length) { host.hidden = true; return; }
+      sets = Array.from({ length: Math.max(1, pn || r.length) }, (_, i)=> ({ reps: r[Math.min(i, r.length - 1)], weight: w.length ? w[Math.min(i, w.length - 1)] : null, done: false }));
+    }
+  }
+  row.classList.add('has-ticks');
+  const unit = resultUnitFor(nameEl ? nameEl.value : '') || 'kg';
+  const fmt = v => v == null ? '\u2013' : String(+(+v).toFixed(2));
+  const tick = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>';
+  const write = ()=>{
+    const done = sets.filter(x => x.done);
+    const put = (el, v, planned)=>{ if(!el || el.value === v) { if(el){ if(planned) el.dataset.planned = planned; else delete el.dataset.planned; } return; }
+      el.value = v; if(planned) el.dataset.planned = planned; else delete el.dataset.planned;
+      el.dispatchEvent(new Event('input', { bubbles:true })); el.dispatchEvent(new Event('change', { bubbles:true })); };
+    if(!done.length){ [repsEl, weightEl, setsEl].forEach((el, i)=> orig[i] && put(el, orig[i].v, orig[i].planned)); return; }
+    put(repsEl, done.map(x => fmt(x.reps)).join(','), null);
+    put(weightEl, done.every(x => x.weight == null) ? '' : done.map(x => fmt(x.weight)).join(','), null);
+    put(setsEl, String(done.length), null);
+    blockEditDirty = true;
+  };
+  const restNow = ()=>{
+    const go = document.getElementById('restGoBtn');
+    if(go && !restTimerId) go.click();
+    else if(restTimerId){ restEndsAt = Date.now() + restChosen * 1000; tickRestTimer(); }
+  };
+  const paint = ()=>{
+    // One line a set: the number, "8 × 60 kg" as one thing to tap, and the tick.
+    host.innerHTML = sets.map((x, i)=> `<div class="st-row${x.done ? ' done' : ''}" data-i="${i}">
+        <span class="st-n">${i + 1}</span>
+        <button type="button" class="st-v" aria-label="Set ${i + 1}: ${fmt(x.reps)} reps, ${fmt(x.weight)} ${unit}. Change">${fmt(x.reps)}<i>\u00d7</i>${fmt(x.weight)}<small>${x.weight == null ? '' : unit}</small></button>
+        <button type="button" class="st-ok" aria-pressed="${x.done}" aria-label="${x.done ? 'Undo' : 'Log'} set ${i + 1}">${tick}</button>
+      </div>`).join('') + `<div class="st-acts">
+        <button type="button" class="st-add">+ Add set</button>
+        <button type="button" class="st-copy"${sets.length > 1 ? '' : ' hidden'}>Same as set 1</button></div>`;
+  };
+  host.addEventListener('click', e=>{
+    const r = e.target.closest('.st-row'); const i = r ? +r.dataset.i : -1;
+    if(e.target.closest('.st-ok')){
+      sets[i].done = !sets[i].done; paint(); write();
+      if(sets[i].done) restNow();
+      return;
+    }
+    if(e.target.closest('.st-v')){
+      const x = sets[i];
+      openSetWheelPicker({ title: `Set ${i + 1}`, reps: { title:'Reps', min:1, max:50, step:1, unit:'reps' },
+        weight: { title: unit === 'kg' ? 'Weight' : 'Result', min:0, max: unit === 'kg' ? 400 : 500, step: unit === 'kg' ? 2.5 : 1, decimalStep:0.5, decimals:2, allowDecimal:true, unit },
+        repsValues: [x.reps], weightValues: x.weight != null ? [x.weight] : [], setsValue: 1,
+        onCommit: (rj, wj)=>{
+          const rr = list(rj), ww = list(wj);
+          if(!rr.length && !ww.length) return;
+          if(rr.length) x.reps = rr[rr.length - 1];
+          if(ww.length) x.weight = ww[ww.length - 1];
+          const wasDone = x.done; x.done = true; paint(); write();
+          if(!wasDone) restNow();
+        } });
+      return;
+    }
+    if(e.target.closest('.st-copy')){
+      sets.forEach((x, j)=>{ if(j && !x.done){ x.reps = sets[0].reps; x.weight = sets[0].weight; } }); paint(); return;
+    }
+    if(e.target.closest('.st-add')){
+      const last = sets[sets.length - 1]; sets.push({ reps: last.reps, weight: last.weight, done: false }); paint(); return;
+    }
+  });
+  paint();
+}
+/* Last session of a lift, set by set: { reps:[...], weight:[...] }, or null with no history.
+   A session logged as one number for every set (3 x 8 @ 60) is spread across its sets. */
+function lastSetsFor(name){
+  const g = exerciseHistory[exHistKey(name)];
+  if(!g) return null;
+  const n = Math.max(1, parseInt(g.sets, 10) || 1);
+  const reps = (g.repsPerSet && g.repsPerSet.length) ? g.repsPerSet.map(Number)
+    : (g.reps != null && isFinite(+g.reps) ? Array(n).fill(+g.reps) : []);
+  const weight = (g.weightPerSet && g.weightPerSet.length) ? g.weightPerSet.map(Number)
+    : (g.weight != null && isFinite(+g.weight) ? Array(reps.length || n).fill(+g.weight) : []);
+  return reps.length ? { reps, weight } : null;
+}
 function wireSetWheelField(row, { title, reps, weight }){
   const repsInput = row.querySelector('.week-ex-reps');
   const weightInput = row.querySelector('.week-ex-weight');
@@ -26746,8 +27398,11 @@ function wireSetWheelField(row, { title, reps, weight }){
        8,8,8,3 and 20,20,20,100. A planned row now opens on one set, starting at the plan's
        numbers; + is how you add the rest. */
     const plannedSets = !!(setsInput && setsInput.dataset.planned);
+    const untouched = !typedValue(repsInput) && !typedValue(weightInput);
+    const nameEl = row.querySelector('.week-ex-name');
+    const h = untouched && nameEl ? lastSetsFor(nameEl.value) : null;
     openSetWheelPicker({
-      title, reps, weight,
+      title, reps, weight, history: h,
       repsValues: parseList(repsInput.value), weightValues: parseList(weightInput.value),
       setsValue: (!plannedSets && isFinite(parsedSets)) ? parsedSets : 0,
       onCommit: (repsJoined, weightJoined, setCount)=>{
@@ -26991,8 +27646,22 @@ async function paintPlanWeightSheet(){
     <div class="score-note">${why}</div>
     ${recent.length ? `<div class="score-note">${recent.map(r => `${fmtShortDate(r.date)} ${r.weight.toFixed(1)}`).join(' · ')}</div>` : ''}`;
   const inp = document.getElementById('planWeightInput');
-  if(g.trend.latest) inp.value = g.trend.latest.weight;
+  if(g.trend.latest) inp.value = (+g.trend.latest.weight).toFixed(1);
+  syncWeighLabel();
 }
+function syncWeighLabel(){
+  const w = parseFloat(document.getElementById('planWeightInput').value);
+  const b = document.getElementById('savePlanWeightBtn');
+  if(b) b.textContent = w > 0 ? `Save ${w.toFixed(1)} kg` : 'Log weight';
+}
+document.getElementById('planWeightInput').addEventListener('change', syncWeighLabel);
+document.querySelectorAll('#planWeightSheet .weigh-nudge button').forEach(btn=> btn.addEventListener('click', ()=>{
+  const inp = document.getElementById('planWeightInput');
+  const cur = parseFloat(inp.value);
+  const base = cur > 0 ? cur : 75;
+  inp.value = (Math.round((base + parseFloat(btn.dataset.d)) * 10) / 10).toFixed(1);
+  syncWeighLabel();
+}));
 document.getElementById('planWeightRow').addEventListener('click', async ()=>{ await paintPlanWeightSheet(); planWeightSheet.open(); });
 document.getElementById('savePlanWeightBtn').addEventListener('click', async ()=>{
   const w = parseFloat(document.getElementById('planWeightInput').value);
@@ -36972,8 +37641,70 @@ const MOBILITY_RETEST_FLOOR_DAYS = 28;
    points from the last reading you actually gave. A model still saying what you said is not
    worth a card, and asking every morning is the nagging the retest card was careful to
    avoid. */
-const INJURY_CHECK_MIN_DAYS = 7;
-const INJURY_CHECK_MIN_DRIFT = 2;
+/* ONCE A DAY NOW, AND ONE TAP. The card used to wait a week and two points of drift because
+   asking was a trip to Skills and a wheel. It is a sheet that opens on the last rating you
+   gave with "Same as last time" as the big button, so a day where nothing changed costs one
+   tap, and the model gets a real reading every day instead of a guess for a week. */
+const INJURY_CHECK_MIN_DAYS = 1;
+const INJURY_CHECK_MIN_DRIFT = -Infinity;
+/* THE DAILY INJURY CHECK. One row of 1-10 per live injury, opening on the last rating you
+   gave (outlined, and picked). The button says what saving will mean: "Same as last time",
+   or "Better" / "Worse" with the number. Saving re-rates each injury the way the Skills card's
+   Update does — today becomes the onset and the number the new start of the decay. */
+async function openInjuryCheckSheet(){
+  if(document.querySelector('.injury-check-sheet')) return;
+  const live = [];
+  try{
+    const res = await window.storage.list('injury:');
+    for(const k of (res && res.keys) || []){
+      try{ const inj = JSON.parse((await window.storage.get(k)).value); if(inj && !inj.resolved && inj.initialSeverity != null) live.push(inj); }catch(e){}
+    }
+  }catch(e){}
+  if(!live.length){ activateTab('injuries'); return; }
+  const last = inj => Math.max(1, Math.min(10, Math.round(inj.initialSeverity)));
+  const sheet = document.createElement('div');
+  sheet.className = 'morning-sheet injury-check-sheet';
+  sheet.innerHTML = `<div class="morning-panel" role="dialog" aria-modal="true" aria-label="Injury check">
+      <div class="lift-sheet-head"><span>Injury check</span>
+        <button type="button" class="lift-sheet-x" aria-label="Not now">\u00d7</button></div>
+      ${live.map(inj => `<div class="morning-q">How is the ${String(inj.part || 'injury').toLowerCase()} today?</div>
+        <div class="ic-scale" data-id="${inj.id}" data-last="${last(inj)}" role="group" aria-label="${inj.part}, 1 to 10">
+          ${Array.from({ length:10 }, (_, i)=> `<button type="button" class="ic-dot${i + 1 === last(inj) ? ' was on' : ''}" data-v="${i + 1}">${i + 1}</button>`).join('')}
+        </div>
+        <div class="ic-hint">Outlined is your last rating, ${last(inj)} out of 10. Lower is better.</div>`).join('')}
+      <button type="button" class="primary morning-done ic-save">Same as last time</button>
+    </div>`;
+  const label = ()=>{
+    const scales = [...sheet.querySelectorAll('.ic-scale')];
+    const now = sc => +sc.querySelector('.ic-dot.on').dataset.v;
+    const moved = scales.map(sc => now(sc) - +sc.dataset.last);
+    const btn = sheet.querySelector('.ic-save');
+    if(scales.length === 1) btn.textContent = moved[0] === 0 ? 'Same as last time' : `${moved[0] < 0 ? 'Better' : 'Worse'} \u00b7 save ${now(scales[0])}/10`;
+    else btn.textContent = moved.every(m => m === 0) ? 'Same as last time' : 'Save';
+  };
+  const close = ()=>{ sheet.classList.remove('sheet-open'); setTimeout(()=> sheet.remove(), SHEET_MS); };
+  sheet.addEventListener('click', async e=>{
+    const dot = e.target.closest('.ic-dot');
+    if(dot){ dot.closest('.ic-scale').querySelectorAll('.ic-dot').forEach(b=> b.classList.toggle('on', b === dot)); label(); return; }
+    if(e.target.closest('.ic-save')){
+      for(const sc of sheet.querySelectorAll('.ic-scale')){
+        const v = +sc.querySelector('.ic-dot.on').dataset.v;
+        try{
+          const inj = JSON.parse((await window.storage.get(`injury:${sc.dataset.id}`)).value);
+          inj.initialSeverity = v; inj.date = todayStr; inj.confirmedOn = todayStr;
+          await window.storage.set(`injury:${sc.dataset.id}`, JSON.stringify(inj));
+        }catch(err){ console.error(err); }
+      }
+      close();
+      showToast('Injury check saved');
+      try{ refreshInjuries(); generateWarmup(); generateRecommendations(); }catch(err){}
+      return;
+    }
+    if(e.target === sheet || e.target.closest('.lift-sheet-x')) close();
+  });
+  document.body.appendChild(sheet);
+  requestAnimationFrame(()=> sheet.classList.add('sheet-open'));
+}
 async function buildInjuryCheckCard(){
   let stale = [];
   try{
@@ -36987,16 +37718,16 @@ async function buildInjuryCheckCard(){
       const modelled = severityNow(inj.initialSeverity, inj.date, inj.halfLife);
       const drift = inj.initialSeverity - modelled;
       if(drift < INJURY_CHECK_MIN_DRIFT) continue;
-      stale.push({ part: inj.part, days, said: inj.initialSeverity, now: Math.round(modelled * 10) / 10 });
+      stale.push({ id: inj.id, part: inj.part, days, said: inj.initialSeverity, now: Math.round(modelled * 10) / 10 });
     }
   } catch(e){}
   if(!stale.length) return null;
   const signals = stale.map(x =>
-    `${x.part}: you said ${x.said} out of 10 ${x.days} days ago, and it is being treated as ${x.now} today.`);
-  signals.push('That number is a decay curve, not a measurement. Re-rate it on Body and the model starts again from what you actually feel — including upwards, if it got worse.');
+    `${x.part}: last rated ${x.said} out of 10${x.days === 1 ? ' yesterday' : `, ${x.days} days ago`}.`);
+  signals.push('Check opens on that number. If nothing changed it is one tap.');
   return { type:'injury_check', title: stale.length === 1
-      ? `How is the ${stale[0].part} now?`
-      : `${stale.length} injuries have not been checked in a while`,
+      ? `How is the ${stale[0].part} today?`
+      : `How are your ${stale.length} injuries today?`,
     signals, confidence:null, meta:{ parts: stale.map(x=>x.part) } };
 }
 
@@ -37166,7 +37897,20 @@ function refreshHeaderLogBadge(){
   const sunrise = document.getElementById('headerScoreSunrise');
   const out = document.getElementById('headerScoreOut');
   const btn = document.getElementById('headerScoreBtn');
-  if(btn) btn.hidden = !onToday;
+  /* ASLEEP UNTIL YOU LOG, AND NIGHT UNTIL HE WAKES. The sunrise pill is gone: before this
+     morning's check-in the mark sleeps (eyes shut, z's off him, no idle moves) on a night
+     version of the band, and tapping HIM opens the check-in. Logging wakes him with a widen
+     and brings the day up. Off Workouts none of this applies. */
+  const wasAsleep = mcState.sleepy;
+  mcState.sleepy = needsLog;
+  eyeCtx.morning = needsLog;
+  document.body.classList.toggle('morning-pending', needsLog);
+  if(wasAsleep && !needsLog && onToday){ mcState.wideAt = 1; markReact('nod'); renderTabInsight('insights'); }
+  if(typeof updateSleepZs === 'function') updateSleepZs();
+  syncThemeColor();
+  const ins = document.getElementById('currentTabInsight');
+  if(ins && onToday && needsLog) ins.textContent = 'tap him to start the day';
+  if(btn) btn.hidden = !onToday || needsLog;
   if(sunrise) sunrise.hidden = !needsLog;
   if(out) out.hidden = needsLog;
   if(btn) btn.classList.toggle('needs-tap', needsLog);
@@ -40322,8 +41066,8 @@ function setMasthead(name){
 }
 const mastheadSelectEl = document.getElementById('mastheadSelect');
 if(mastheadSelectEl){
-  let saved = 'deep';
-  try{ saved = localStorage.getItem('masthead') || 'deep'; }catch(e){}
+  let saved = 'bright';
+  try{ saved = localStorage.getItem('masthead') || 'bright'; }catch(e){}
   mastheadSelectEl.value = MASTHEAD_NAMES[saved] ? saved : 'deep';
   /* Reflect the stored value WITHOUT writing one back. setMasthead persists, and calling it
      here used to stamp a choice into storage the moment the app opened — which made "never

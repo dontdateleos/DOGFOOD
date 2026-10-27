@@ -447,15 +447,15 @@
   "EYE_INNER_HTML": "<div class=\"eye-gaze\"><div class=\"eye-motion\"><span></span><span></span></div></div>",
   "EYE_SITES": {
    "header": {
-    "--eye-box-w": "40px",
-    "--eye-box-h": "40px",
-    "--eye-gap": "10px",
+    "--eye-box-w": "120px",
+    "--eye-box-h": "120px",
+    "--eye-gap": "30px",
     "--eye-plate": "var(--mark-shell)",
-    "--eye-plate-r": "12px",
-    "--eye-w": "6px",
-    "--eye-h": "18px",
-    "--eye-r": "3px",
-    "--eye-rb": "3px",
+    "--eye-plate-r": "36px",
+    "--eye-w": "18px",
+    "--eye-h": "54px",
+    "--eye-r": "9px",
+    "--eye-rb": "9px",
     "--eye-bl": "0%",
     "--eye-rot": "0deg",
     "--eye-ink": "var(--mark-eye)"
@@ -586,6 +586,269 @@
    }
   ],
   "MC_W": 24,
+  "MC_SWITCH": [
+   [
+    {
+     "t": 0
+    },
+    {
+     "t": 320,
+     "ry": -38,
+     "rx": 14
+    },
+    {
+     "t": 900,
+     "ry": -38,
+     "rx": 14
+    },
+    {
+     "t": 1250
+    }
+   ],
+   [
+    {
+     "t": 0
+    },
+    {
+     "t": 300,
+     "ry": -52,
+     "rx": 16
+    },
+    {
+     "t": 520,
+     "ry": -52,
+     "rx": 16
+    },
+    {
+     "t": 700,
+     "ry": -40,
+     "rx": 16
+    },
+    {
+     "t": 900,
+     "ry": -40,
+     "rx": 16
+    },
+    {
+     "t": 1080,
+     "ry": -28,
+     "rx": 12
+    },
+    {
+     "t": 1250,
+     "ry": -28,
+     "rx": 12
+    },
+    {
+     "t": 1600
+    }
+   ],
+   [
+    {
+     "t": 0
+    },
+    {
+     "t": 180,
+     "gx": -16,
+     "gy": 8
+    },
+    {
+     "t": 420,
+     "ry": -30,
+     "rx": 10,
+     "gx": -10,
+     "gy": 6
+    },
+    {
+     "t": 950,
+     "ry": -30,
+     "rx": 10,
+     "gx": -10,
+     "gy": 6
+    },
+    {
+     "t": 1150,
+     "ry": -10,
+     "rx": 3
+    },
+    {
+     "t": 1400
+    }
+   ],
+   [
+    {
+     "t": 0
+    },
+    {
+     "t": 140,
+     "ry": -24,
+     "rx": 8
+    },
+    {
+     "t": 300
+    },
+    {
+     "t": 520
+    },
+    {
+     "t": 800,
+     "ry": -44,
+     "rx": 16,
+     "eh": 1.25
+    },
+    {
+     "t": 1200,
+     "ry": -44,
+     "rx": 16,
+     "eh": 1.25
+    },
+    {
+     "t": 1550
+    }
+   ],
+   [
+    {
+     "t": 0
+    },
+    {
+     "t": 450,
+     "ry": -60,
+     "rx": 8,
+     "x": -34
+    },
+    {
+     "t": 950,
+     "ry": -60,
+     "rx": 8,
+     "x": -34
+    },
+    {
+     "t": 1400
+    }
+   ],
+   [
+    {
+     "t": 0
+    },
+    {
+     "t": 380,
+     "y": -22,
+     "ry": -30,
+     "rx": 22,
+     "rz": -6
+    },
+    {
+     "t": 950,
+     "y": -22,
+     "ry": -30,
+     "rx": 22,
+     "rz": -6
+    },
+    {
+     "t": 1300
+    }
+   ],
+   [
+    {
+     "t": 0
+    },
+    {
+     "t": 350,
+     "ry": -34,
+     "rx": 12,
+     "rz": 14
+    },
+    {
+     "t": 1000,
+     "ry": -34,
+     "rx": 12,
+     "rz": 14
+    },
+    {
+     "t": 1350
+    }
+   ],
+   [
+    {
+     "t": 0
+    },
+    {
+     "t": 600,
+     "ry": -400,
+     "rx": 12
+    },
+    {
+     "t": 1000,
+     "ry": -400,
+     "rx": 12
+    },
+    {
+     "t": 1300,
+     "ry": -360
+    }
+   ],
+   [
+    {
+     "t": 0
+    },
+    {
+     "t": 300,
+     "ry": -36,
+     "rx": 14
+    },
+    {
+     "t": 520,
+     "ry": -36,
+     "rx": 14
+    },
+    {
+     "t": 640,
+     "ry": -36,
+     "rx": -2
+    },
+    {
+     "t": 780,
+     "ry": -36,
+     "rx": 14
+    },
+    {
+     "t": 1000,
+     "ry": -36,
+     "rx": 14
+    },
+    {
+     "t": 1300
+    }
+   ],
+   [
+    {
+     "t": 0
+    },
+    {
+     "t": 420,
+     "ry": -72,
+     "rx": 10
+    },
+    {
+     "t": 1000,
+     "ry": -72,
+     "rx": 10
+    },
+    {
+     "t": 1400
+    }
+   ]
+  ],
+  "MC_SW0": {
+   "ry": 0,
+   "rx": 0,
+   "rz": 0,
+   "gx": 0,
+   "gy": 0,
+   "x": 0,
+   "y": 0,
+   "eh": 1
+  },
   "TOAST_MS": 1800,
   "EYE_FLINCH_SELECTOR": "#clearAllWeekBtn, #clearAllDataBtn, .remove-row, .rec-actions .dismiss-btn",
   "EYE_EMPTY_TABS": {
@@ -1568,25 +1831,8 @@
    "balanced": "Balanced",
    "longevity": "Longevity"
   },
-  "TAB_TITLES": {
-   "plan": [
-    "The",
-    "plan"
-   ],
-   "injuries": [
-    "Your",
-    "body"
-   ],
-   "data": [
-    "Every",
-    "reading"
-   ],
-   "settings": [
-    "Your",
-    "set-up"
-   ]
-  },
-  "WORDMARK_HTML": "<div class=\"logo-line\"><span style=\"margin-right:-0.02em;\">T</span><span>o</span><span>u</span><span>r</span><span>i</span><span>n</span><span>g</span></div>",
+  "TAB_TITLES": {},
+  "WORDMARK_HTML": "<div class=\"logo-line\"><span style=\"margin-right:-0.02em;\">T</span><span>o</span><span>u</span><span>r</span><span>i</span><span>n</span><span>g</span><i class=\"tm\" aria-hidden=\"true\"><svg viewBox=\"0 0 20 20\"><circle cx=\"10\" cy=\"10\" r=\"10\" fill=\"currentColor\"></circle><rect x=\"6.1\" y=\"6.3\" width=\"2.6\" height=\"6.4\" rx=\"1.3\" style=\"fill:var(--banner)\"></rect><rect x=\"11.3\" y=\"6.3\" width=\"2.6\" height=\"6.4\" rx=\"1.3\" style=\"fill:var(--banner)\"></rect></svg></i></div>",
   "SHIFT_MS": 560,
   "CONFIRM_FILL_STEPS": 14,
   "SIG_TAU": 7,
@@ -5687,8 +5933,8 @@
    "metcon": "Metcon"
   },
   "MOBILITY_RETEST_FLOOR_DAYS": 28,
-  "INJURY_CHECK_MIN_DAYS": 7,
-  "INJURY_CHECK_MIN_DRIFT": 2,
+  "INJURY_CHECK_MIN_DAYS": 1,
+  "INJURY_CHECK_MIN_DRIFT": null,
   "TENDINOPATHY_PROTOCOL": {
    "high": "Reactive/painful phase: isometric loading for immediate analgesic effect — wall sit or leg press hold (patellar) / heel-raise hold (Achilles), 5×30-45s at ~70% effort, daily.",
    "mid": "Progressive loading: heavy-slow-resistance (3-4s tempo up/down), 3x/week, 3-4 sets of 6-15 reps — or an eccentric heel-drop program, 3×15 reps, 2×/day. HSR and eccentric show comparable long-term efficacy; HSR is often better tolerated (less session pain).",
