@@ -4353,6 +4353,8 @@
   .lift-sheet-head{ display:flex; justify-content:space-between; align-items:center;
     font-family:var(--mono); font-size:var(--fs-xl); font-weight:var(--fw-bold);
     text-transform:uppercase; letter-spacing:-0.02em; margin-bottom:var(--sp-3); }
+  .mw-mark{ position:relative; flex:none; width:40px; height:40px; margin:-6px 12px -6px auto; }
+  .mw-mark[hidden]{ display:none; }
   .lift-sheet-x{ width:auto; flex:none; height:30px; padding:0 10px; background:transparent;
     color:var(--bg); border:2px solid rgba(var(--ink-rgb),0.4); font-size:var(--fs-md); }
   /* Save/Clear were a fixed footer bar that only stood while Settings' Logging section was
@@ -5868,6 +5870,9 @@
     <div class="lift-sheet" id="multiWheelPickerSheet" style="display:none;">
       <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Log a set">
         <div class="lift-sheet-head"><span id="multiWheelPickerTitle"></span>
+          <!-- He watches you pick the weight: his lids come down as the set gets heavy. A mount
+               of the same drawn mark, sharing its state; see markStrain. -->
+          <span class="mw-mark" id="mwMarkHost" aria-hidden="true" hidden><svg class="mark-cube" id="mwMarkCube" aria-hidden="true"></svg></span>
           <button type="button" class="lift-sheet-x" aria-label="Done">&times;</button></div>
         <div class="fields">
           <!-- Sets already dialed in, read left to right in the order they'll save in, each
@@ -7588,7 +7593,20 @@ const EYE_ANIM = {
   // — Sixth.
   chipBlinks:     { on:true, note:'The docked face blinks on its own clock — set by what you told it, not by what the score says' },
   chipAndMark:    { on:true, note:'The pair and the docked face notice each other now and then, and what passes between them depends on whether they agree', chance:0.22, restMs:24000 },
-  tearOnFlight:   { on:true, note:'The mark tears as it lands — flying between the wordmark and the score, and perching as you scroll past it', px:6 }
+  tearOnFlight:   { on:true, note:'The mark tears as it lands — flying between the wordmark and the score, and perching as you scroll past it', px:6 },
+
+  // — Seventh: after Grok's companions. The drawn mark only; lids, breath and a voice.
+  markBreathes:   { on:true, note:'A slow rise and fall between moves, slower and deeper asleep' },
+  followThumb:    { on:true, note:'His eyes follow your finger wherever it lands or drags, and his head turns after them' },
+  poke:           { on:true, note:'Tap him on Workouts: the top and he ducks, a side and he turns away, three quick and he has had enough' },
+  happyOnPR:      { on:true, note:'Happy arched eyes and a hop when a logged lift beats your best' },
+  strainOnHeavy:  { on:true, note:'His lids come down as you dial a heavy set, and he trembles past your last best' },
+  worried:        { on:true, note:'Worried lids after an injury, a missed session, a low score or a REDUCE card' },
+  eyeRoll:        { on:true, note:'A gentle eye roll when you skip the day’s workout or swap the same lift again' },
+  thinking:       { on:true, note:'Scans while something slow runs, then eyes wide and a nod when it lands' },
+  talks:          { on:true, note:'What he says beside the tab name types out a word at a time, his eyes bobbing on each' },
+  doneDance:      { on:true, note:'A short dance when you finish the day’s session' },
+  streakGreeting: { on:true, note:'His good-morning gets warmer the longer your run of logged days', lvl2:7, lvl3:28, lvl4:56 }
 };
 window.EYE_ANIM = EYE_ANIM;
 /* Calm mode. prefers-reduced-motion is all-or-nothing and lives in iOS Settings rather
@@ -9044,6 +9062,14 @@ function mcMounts(){
      darkened until they clear 3:1 on their own. */
   if(dsvg) out.push({ host:dock, id:'mcClipD', svg:dsvg, shell:'var(--mc-shell)',
     ink:'currentColor', lit:'rgba(255,255,255,0.22)', rim:'var(--bg)' });
+  /* The set wheel's own copy, in the sheet's dark pocket: so it is the pocket's ink, cream,
+     with dark eyes, the way the mark looks on the icon's light ground. Only while the sheet
+     is open and the row is a weighed lift. */
+  const mw = document.getElementById('mwMarkHost');
+  const mws = mw && !mw.hidden && document.getElementById('multiWheelPickerSheet');
+  if(mws && mws.style.display !== 'none')
+    out.push({ host:mw, id:'mcClipW', svg:document.getElementById('mwMarkCube'),
+               shell:'var(--bg)', ink:'var(--reverse-bg)', lit:null });
   return out;
 }
 function drawMarkCube(){ for(const m of mcMounts()) mcPaint(m); }
@@ -9132,7 +9158,7 @@ function mcPaint(m){
        zero-length line — a dot. Two beady circles where the capsules were, on every tab,
        whenever the app had been left alone for two and a half minutes. The z's say it is
        asleep; they do not need the face deformed to help. */
-    const wd = (mcState.wide || 1) * (mcState.swEh || 1);
+    const wd = (mcState.wide || 1) * (mcState.swEh || 1) * (mcState.talkEh || 1);
     const ew = MC_EYE_W*s * (1 + (wd - 1) * 0.3);
     const gap = MC_EYE_GAP*s;
     const eh = MC_EYE_H*s * mcState.blink * wd * (mcState.sleepy ? 0.12 : 1);
@@ -9158,8 +9184,19 @@ function mcPaint(m){
       const lu = Math.hypot(ux, uy), lv = Math.max(0.01, Math.hypot(vx, vy));
       if(lu < 0.25) continue;
       const ry = Math.min(1, lu / lv);
-      eyes += `<rect x="-1" y="-1" width="2" height="2" rx="1" ry="${ry.toFixed(3)}" style="fill:${m.ink}"`
-           + ` transform="matrix(${ux.toFixed(3)} ${uy.toFixed(3)} ${vx.toFixed(3)} ${vy.toFixed(3)} ${(c+pc[0]).toFixed(2)} ${(c+pc[1]).toFixed(2)})"/>`;
+      /* THE LIDS, in the eye's own space (x across it, y down it, each -1..1), so they turn and
+         foreshorten with the eye. Drawn in the shell's colour over it: the top one is a band
+         that comes down and tips by lidA, inner corner down for positive; the lower one is an
+         ellipse that rises into the eye and leaves a happy arch. */
+      let lids = '';
+      if(!m.line){
+        const lt = mcState.lidT || 0, lb = mcState.lidB || 0;
+        if(lt > 0.01) lids += `<rect x="-1.8" y="-1.7" width="3.6" height="${(0.7 + 2*lt).toFixed(3)}"`
+          + ` transform="rotate(${(-sg * (mcState.lidA || 0)).toFixed(2)})" style="fill:${m.shell}"/>`;
+        if(lb > 0.01) lids += `<ellipse cx="0" cy="${(2.3 - 1.75*lb).toFixed(3)}" rx="1.7" ry="1.35" style="fill:${m.shell}"/>`;
+      }
+      eyes += `<g transform="matrix(${ux.toFixed(3)} ${uy.toFixed(3)} ${vx.toFixed(3)} ${vy.toFixed(3)} ${(c+pc[0]).toFixed(2)} ${(c+pc[1]).toFixed(2)})">`
+           + `<rect x="-1" y="-1" width="2" height="2" rx="1" ry="${ry.toFixed(3)}" style="fill:${m.ink}"/>${lids}</g>`;
     }
   }
   if(eyes) out += `<clipPath id="${m.id}E"><circle cx="${c}" cy="${c}" r="${h.toFixed(2)}"/></clipPath>`
@@ -9175,11 +9212,16 @@ function mcPaint(m){
      box, since the box is 8% larger than the mark — because a sphere compressing around its
      own centre is a shape being scaled, where one compressing against its footing is an
      object landing on something. */
-  const sq = mcState.sx !== 1 || mcState.sy !== 1 || mcState.ty !== 0 || (mcState.tx || 0) !== 0;
+  /* Breath and an act's own squash multiply whatever the body move or the shift is doing,
+     volume kept; a tremble rides the x offset. */
+  const bs = (mcState.breath || 1) * (mcState.actSy || 1);
+  const esy = mcState.sy * bs, esx = mcState.sx / Math.sqrt(bs);
+  const etx = (mcState.tx || 0) + (mcState.shake ? mcState.shake * Math.sin(performance.now() / 14) * 0.012 : 0);
+  const sq = esx !== 1 || esy !== 1 || mcState.ty !== 0 || etx !== 0;
   if(sq){
     svg.style.transformOrigin = '50% 96.3%';
-    svg.style.transform = `translate(-50%,-50%) translate(${((mcState.tx || 0) * s).toFixed(2)}px,${(mcState.ty * s).toFixed(2)}px)`
-                        + ` scale(${mcState.sx.toFixed(4)},${mcState.sy.toFixed(4)})`;
+    svg.style.transform = `translate(-50%,-50%) translate(${(etx * s).toFixed(2)}px,${(mcState.ty * s).toFixed(2)}px)`
+                        + ` scale(${esx.toFixed(4)},${esy.toFixed(4)})`;
     svg.dataset.sq = '1';
   } else if(svg.dataset.sq){
     // Back under the stylesheet's own centring rather than a hardcoded copy of it.
@@ -9261,6 +9303,7 @@ function markCubeTurn(){                       // the tab you picked, on the eye
   if(n === mcSwitchLast) n = (n + 1 + Math.floor(Math.random() * (MC_SWITCH.length - 1))) % MC_SWITCH.length;
   mcSwitchLast = n;
   mcState.queue = []; mcState.step = null;
+  if(mcState.act) mcActClear();
   mcState.sw = { keys:MC_SWITCH[n], t0:performance.now(), from:{ rx:mcState.rx, ry:mcState.ry, rz:mcState.rz } };
 }
 function mcQueue(steps){
@@ -9281,6 +9324,222 @@ function markReact(name){
   if(mv) mcQueue(mv.steps());
 }
 const mcEase = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
+
+/* ---------- WHAT HE FEELS: LIDS, BREATH, ACTS ----------
+   Grok's companions breathe between lines, look back at you, flinch when poked, move with
+   what they say and wear the mood of the conversation. These are those ideas on our mark.
+
+   ACTS are keyframe runs like MC_SWITCH, with three new channels the face never had: LIDS.
+   lt is the top lid (0 open, 1 shut), la slopes it (positive: inner corners down, set or
+   cross; negative: outer corners down, worried), lb is a lower lid that rises into a happy
+   arch. They are drawn in the shell's own colour over each eye, in the eye's own space, so
+   they ride the sphere with it. gx/gy here are the same gaze units mcState uses (about ±1),
+   not MC_SWITCH's degrees; x/y are body offsets in units of the mark's size, sy a squash
+   (sx follows it, volume kept), sh a tremble. An act starts from wherever he is, so nothing
+   snaps, and owns the rig until its last key. */
+const MC_ACT0 = { rx:0, ry:0, rz:0, gx:0, gy:0, x:0, y:0, eh:1, lt:0, la:0, lb:0, sy:1, sh:0 };
+const MC_HAPPY = 0.9;
+function mcActPose(keys, ms){
+  const at = i => Object.assign({}, MC_ACT0, keys[i]);
+  if(ms <= keys[0].t) return at(0);
+  for(let i = 1; i < keys.length; i++){
+    if(ms <= keys[i].t){
+      const a = at(i-1), b = at(i), f = mcEase((ms - a.t) / Math.max(1, b.t - a.t)), o = {};
+      for(const k in MC_ACT0) o[k] = a[k] + (b[k] - a[k]) * f;
+      return o;
+    }
+  }
+  return at(keys.length - 1);
+}
+const H_ = MC_HAPPY;
+const MC_ACTS = {
+  /* A new best: squash, hop with the eyes closing into arches, a little rock, settle. */
+  pr: { key:'happyOnPR', keys:()=> [
+    { t:140, sy:0.84, eh:0.9 },
+    { t:330, sy:1.1, y:-0.2, lb:H_, rx:-10 },
+    { t:560, sy:0.86, lb:H_ },
+    { t:760, sy:1.03, lb:H_ },
+    { t:900, lb:H_, rz:-6 }, { t:1250, lb:H_, rz:6 }, { t:1600, lb:H_ },
+    { t:2100, lb:H_ }, { t:2500 } ] },
+  /* The last set of the day: a short dance on a 380ms beat, happy the whole way. */
+  dance: { key:'doneDance', keys:()=>{
+    const k = [], beat = 380; let t = 0;
+    for(let i = 0; i < 6; i++){ const d = i % 2 ? 1 : -1;
+      k.push({ t:t + beat*0.45, rz:12*d, x:0.05*d, y:-0.07, sy:1.06, lb:H_, gx:-0.2*d },
+             { t:t + beat, rz:9*d, x:0.04*d, sy:0.9, lb:H_ });
+      t += beat; }
+    k.push({ t:t + 250, lb:H_, sy:1.02 }, { t:t + 700 });
+    return k; } },
+  /* Lids slope down at the outside; a look down and a tilt, then up at you. */
+  worry: { key:'worried', keys:()=> [
+    { t:500, lt:0.28, la:-16, gy:0.4, rx:-6, rz:6 },
+    { t:1500, lt:0.3, la:-17, gy:0.45, rx:-8, rz:9 },
+    { t:1900, lt:0.26, la:-16, gy:-0.3, gx:-0.2, rx:6, rz:7 },
+    { t:3000, lt:0.26, la:-16, gy:-0.3, gx:-0.2, rx:6, rz:7 },
+    { t:3500 } ] },
+  /* Half-lidded, up and over, and a sigh. Rare and gentle: teasing, not judging. */
+  roll: { key:'eyeRoll', keys:()=> [
+    { t:250, lt:0.38, gx:-0.6, gy:0.1 },
+    { t:550, lt:0.3, gx:-0.5, gy:-0.85, rx:6 },
+    { t:850, lt:0.3, gx:0.55, gy:-0.7, rx:6, ry:6 },
+    { t:1150, lt:0.4, gx:0.2, gy:0.1 },
+    { t:1350, lt:0.42, sy:0.94 }, { t:1700, lt:0.4, sy:1.02 },
+    { t:2300, lt:0.36 }, { t:2700 } ] },
+  /* Whatever was slow has finished: eyes wide, a nod. */
+  gotIt: { key:'thinking', keys:()=> [
+    { t:250, gy:-0.3, rx:6, eh:1.35 }, { t:480, rx:16, eh:1.3 }, { t:700, rx:-6, eh:1.2 },
+    { t:900, rx:4 }, { t:1400 } ] },
+  /* Mornings, by how long the run is. Level 1 is the nod he already gave. */
+  hi2: { key:'streakGreeting', keys:()=> [
+    { t:160, eh:1.3, sy:0.9 }, { t:360, eh:1.3, sy:1.1, y:-0.12, rx:-6 }, { t:580, sy:0.94 },
+    { t:800, gx:-0.4, gy:-0.3, ry:-14, rx:6 }, { t:1700, gx:-0.4, gy:-0.3, ry:-14, rx:6 }, { t:2100 } ] },
+  hi3: { key:'streakGreeting', keys:()=> [
+    { t:160, eh:1.35, sy:0.9 },
+    { t:360, eh:1.3, sy:1.12, y:-0.16, rx:-8 },
+    { t:560, sy:0.88, lb:H_ }, { t:700, sy:1.05, y:-0.08, lb:H_ }, { t:840, sy:0.94, lb:H_ },
+    { t:1000, lb:H_, rz:-8, ry:-14 }, { t:1200, lb:H_, rz:8, ry:14 }, { t:1400, lb:H_, rz:-8, ry:-14 },
+    { t:1600, lb:H_ }, { t:2300, lb:H_ }, { t:2700 } ] },
+  hi4: { key:'streakGreeting', keys:()=> [
+    { t:160, eh:1.35, sy:0.88 },
+    { t:420, eh:1.3, sy:1.12, y:-0.2, rx:-8, ry:-180 },
+    { t:700, sy:0.88, lb:H_, ry:-360 }, { t:860, sy:1.05, y:-0.08, lb:H_, ry:-360 }, { t:1000, sy:0.94, lb:H_, ry:-360 },
+    { t:1200, lb:H_, rz:-8, ry:-374 }, { t:1400, lb:H_, rz:8, ry:-346 }, { t:1600, lb:H_, ry:-360 },
+    { t:2300, lb:H_, ry:-360 }, { t:2700, ry:-360 } ] },
+  /* Pokes. Top: he ducks. Side: turns away, still looking at you. Three quick: had enough. */
+  duck: { key:'poke', keys:()=> [ { t:80, sy:0.76, eh:0.25 }, { t:240, sy:1.1, y:-0.05, eh:1.25 },
+                                  { t:400, sy:0.95, eh:1.1 }, { t:620 } ] },
+  dodge: { key:'poke', keys:o=>{ const d = (o && o.side) || 1;
+    return [ { t:110, ry:42*d, rz:-9*d, eh:0.3, sy:0.93 }, { t:300, ry:42*d, rz:-6*d, gx:-0.7*d, eh:1.1 },
+             { t:950, ry:40*d, rz:-5*d, gx:-0.7*d }, { t:1350 } ]; } },
+  huff: { key:'poke', keys:()=> [ { t:160, lt:0.46, la:18, gx:-0.5, gy:-0.2, ry:-8, sy:0.95 },
+    { t:1100, lt:0.46, la:18, gx:-0.5, gy:-0.2, ry:-8 },
+    { t:1500, lt:0.46, la:18, ry:75, rx:-4 }, { t:2400, lt:0.46, la:18, ry:75, rx:-4 },
+    { t:2700, ry:30, gx:-0.6, lt:0.3, la:12 }, { t:3300 } ] },
+  /* A heavy set landed: a big blink and a sigh. */
+  sigh: { key:'strainOnHeavy', keys:()=> [ { t:150, eh:0.1, sy:1.04 }, { t:350, eh:1.15, sy:1.05, y:-0.02 },
+                                           { t:900, sy:0.97 }, { t:1300 } ] },
+};
+const mcNorm = v => { v = ((v % 360) + 540) % 360 - 180; return v === -180 ? 180 : v; };
+function mcActClear(){
+  mcState.act = null;
+  mcState.tx = 0; if(!mcState.body) mcState.ty = 0;
+  mcState.swEh = 1; mcState.lidT = 0; mcState.lidA = 0; mcState.lidB = 0; mcState.actSy = 1; mcState.shake = 0;
+}
+/* Plays an act on the mark if it is on screen, awake, and the row for it is on. `force` is
+   the Settings preview, which plays a row whatever its switch says. Returns whether it ran. */
+function markAct(name, opts){
+  const A = MC_ACTS[name];
+  opts = opts || {};
+  if(!A || !mcState.raf) return false;
+  if(mcState.sleepy && !opts.evenAsleep) return false;
+  if(!opts.force && !anim(A.key)) return false;
+  const keys = A.keys(opts);
+  const from = { t:0, rx:mcNorm(mcState.rx), ry:mcNorm(mcState.ry), rz:mcNorm(mcState.rz), gx:mcState.gx, gy:mcState.gy,
+                 x:mcState.tx || 0, y:mcState.ty || 0, eh:mcState.swEh || 1, lt:mcState.lidT || 0, la:mcState.lidA || 0,
+                 lb:mcState.lidB || 0, sy:mcState.actSy || 1, sh:0 };
+  mcState.queue = []; mcState.step = null; mcState.sw = null; mcState.think = null;
+  mcState.rx = from.rx; mcState.ry = from.ry; mcState.rz = from.rz;
+  mcState.act = { keys:[from, ...keys.filter(k => k.t > 0)], t0:performance.now(), onFrame:opts.onFrame };
+  if(opts.say) markSay(opts.say, { holdMs:opts.holdMs });
+  return true;
+}
+
+/* HE SAYS IT. The line beside the tab's name is his: it types out a word at a time while his
+   eyes bob on each word and he looks over at it, then hands the line back to the page after a
+   beat. Anything that redraws the line (a tab switch, a new insight) takes it back at once —
+   the shared token is what says so. aria-busy while it types, so a screen reader hears the
+   line once rather than word by word. */
+let markSayTimer = null;
+function markSay(text, opts){
+  const el = document.getElementById('currentTabInsight');
+  if(!el || !text) return;
+  opts = opts || {};
+  clearTimeout(markSayTimer);
+  const mine = ++tabInsightToken;
+  const words = String(text).split(/\s+/).filter(Boolean);
+  const finish = ()=>{
+    el.removeAttribute('aria-busy');
+    el.textContent = text;
+    if(typeof updateEyePerch === 'function') updateEyePerch();
+    markSayTimer = setTimeout(()=>{ if(mine === tabInsightToken) renderTabInsight(currentTabName()); }, opts.holdMs || 2800);
+  };
+  if(!anim('talks') || !mcState.raf || mcState.sleepy){ finish(); return; }
+  el.setAttribute('aria-busy', 'true');
+  let i = 0;
+  const next = ()=>{
+    if(mine !== tabInsightToken){ el.removeAttribute('aria-busy'); return; }
+    i++;
+    el.textContent = words.slice(0, i).join(' ');
+    mcState.talkAt = performance.now();
+    if(i < words.length) markSayTimer = setTimeout(next, 230);
+    else finish();
+  };
+  next();
+}
+
+/* THINKING. While something slow runs his eyes scan back and forth, looking up; when it is
+   done and it took long enough to notice, his eyes go wide and he nods. Returns the stopper. */
+function markThink(){
+  if(!mcState.raf || mcState.sleepy || !anim('thinking')) return ()=>{};
+  const t0 = performance.now();
+  mcState.queue = []; mcState.step = null;
+  mcState.think = { t0 };
+  return ()=>{
+    if(!mcState.think || mcState.think.t0 !== t0) return;
+    mcState.think = null;
+    if(performance.now() - t0 > 700) markAct('gotIt');
+  };
+}
+
+/* HE WATCHES YOUR THUMB. Wherever a finger lands or drags, his eyes go to it and his head
+   follows a little after. Only a position and a time are kept here; the rig does the rest. */
+function mcNoteFinger(x, y){
+  if(!anim('followThumb')) return;
+  mcState.finger = { x, y, at:performance.now() };
+}
+document.addEventListener('touchstart', e=>{ const t = e.touches && e.touches[0]; if(t) mcNoteFinger(t.clientX, t.clientY); }, { passive:true, capture:true });
+document.addEventListener('touchmove', e=>{ const t = e.touches && e.touches[0]; if(t) mcNoteFinger(t.clientX, t.clientY); }, { passive:true, capture:true });
+document.addEventListener('mousedown', e=> mcNoteFinger(e.clientX, e.clientY), { passive:true, capture:true });
+document.addEventListener('mousemove', e=>{ if(e.buttons) mcNoteFinger(e.clientX, e.clientY); }, { passive:true, capture:true });
+/* Where to look for a finger, or null. Measured off the header mark itself, which is in the
+   corner, in the wordmark or perched, depending on the scroll. Looking down is held to less
+   than looking up: the corner mark is cut off by the band's bottom edge. */
+function mcFollowAim(now){
+  const f = mcState.finger;
+  if(!f || now - f.at > 1600 || mcState.sleepy) return null;
+  const host = document.querySelector('.header-mark');
+  if(!host) return null;
+  const r = host.getBoundingClientRect();
+  const dx = f.x - (r.left + r.width/2), dy = f.y - (r.top + r.height/2);
+  const len = Math.hypot(dx, dy) || 1, m = Math.min(1, len / 120);
+  const gx = dx/len * m * 0.95, gy = Math.min(0.6, dy/len * m * 0.95);
+  return { gx, gy, ry:gx * 24, rx:Math.max(-8, -gy * 16) };
+}
+
+/* POKES. Where the finger landed decides it: on the top half he ducks, on a side he turns
+   away from it and keeps an eye on you. Three inside two seconds and he has had enough. */
+const mcPokes = [];
+function markPoke(x, y){
+  const host = document.querySelector('.header-mark');
+  if(!host) return false;
+  const now = Date.now();
+  while(mcPokes.length && now - mcPokes[0] > 2000) mcPokes.shift();
+  mcPokes.push(now);
+  if(mcPokes.length >= 3){ mcPokes.length = 0; return markAct('huff'); }
+  const r = host.getBoundingClientRect();
+  const dx = x - (r.left + r.width/2), dy = y - (r.top + r.height/2);
+  if(dy < -0.3 * r.height/2 && Math.abs(dx) < Math.abs(dy) * 1.4) return markAct('duck');
+  return markAct('dodge', { side: dx < 0 ? 1 : -1 });
+}
+
+/* STRAIN. While you dial a weight, how hard the set is (its estimated max against the lift's
+   last best) sets how far his lids come down and how hard his brows set. Past the last best
+   he trembles. A hold, not an act: it follows the wheel for as long as the wheel is open. */
+function markStrain(effort){
+  if(effort == null || !anim('strainOnHeavy')){ mcState.hold = null; return; }
+  const k = Math.max(0, Math.min(1, (effort - 0.86) / 0.18));
+  mcState.hold = { lt:0.42 * k, la:17 * k, sh: effort >= 1.0 ? Math.min(1, 0.45 + (effort - 1) * 10) : 0 };
+}
 function startMarkCube(){
   const svg = document.getElementById('headerMarkCube');
   if(!svg) return;
@@ -9291,7 +9550,8 @@ function startMarkCube(){
   if(eyeCalm || eyeMotionOff()){
     if(mcState.raf){ cancelAnimationFrame(mcState.raf); mcState.raf = null; }
     Object.assign(mcState, { rx:0, ry:0, rz:0, gx:0, gy:0, blink:1, step:null, queue:[],
-                             sx:1, sy:1, ty:0, body:null });
+                             sx:1, sy:1, ty:0, body:null, think:null, hold:null, breath:1, talkEh:1 });
+    mcActClear();
     drawMarkCube(); return;
   }
   if(mcState.raf) return;
@@ -9299,7 +9559,7 @@ function startMarkCube(){
   mcState.nextAt = mcState.born + 2200;
   const step = (now)=>{
     const t = (now - mcState.born) / 1000;
-    if(!mcState.step && mcState.queue.length){
+    if(!mcState.act && !mcState.step && mcState.queue.length){
       const to = mcState.queue.shift();
       /* THE EYES GO FIRST. A head that turns with its eyes fixed is a model on a turntable;
          one whose eyes get there a beat early is looking at something. Any turn of more than
@@ -9317,7 +9577,24 @@ function startMarkCube(){
                             ry: to.ry == null ? mcState.ry : to.ry,
                             rz: to.rz == null ? mcState.rz : to.rz } };
     }
-    if(mcState.sw){
+    let follow = null;
+    if(mcState.act){
+      /* An act owns every channel it names until its last key, and hands back a face at rest. */
+      const a = mcState.act, ms = now - a.t0, last = a.keys[a.keys.length - 1].t;
+      const p = mcActPose(a.keys, ms);
+      mcState.rx = p.rx; mcState.ry = p.ry; mcState.rz = p.rz;
+      mcState.gx = mcState.aimGx = p.gx; mcState.gy = mcState.aimGy = p.gy;
+      mcState.gazeAt = now + 900;
+      mcState.tx = p.x; if(!mcState.body) mcState.ty = p.y;
+      mcState.swEh = p.eh; mcState.lidT = p.lt; mcState.lidA = p.la; mcState.lidB = p.lb;
+      mcState.actSy = p.sy; mcState.shake = p.sh;
+      if(a.onFrame) a.onFrame(ms);
+      if(ms >= last){
+        mcActClear();
+        mcState.rx = mcNorm(mcState.rx); mcState.ry = mcNorm(mcState.ry); mcState.rz = mcNorm(mcState.rz);
+        mcState.nextAt = now + 2500 + Math.random() * 2500; mcState.gazeAt = now + 1200;
+      }
+    } else if(mcState.sw){
       /* A switch read owns the pose until it ends. Units: gaze degrees to the rig's gaze
          fraction (about 13 deg to one eye-width across, 7 deg to one step down, sign flipped
          because the rig's y runs down), body px on a 92px sphere to fractions of it. */
@@ -9350,6 +9627,24 @@ function startMarkCube(){
         mcState.step = null;
         if(!mcState.queue.length) mcState.nextAt = now + 1500 + Math.random() * 3000;
       }
+    } else if(mcState.think){
+      // Scanning: eyes up and back and forth on a 320ms beat, the head leaning into each look.
+      const d = Math.floor((now - mcState.think.t0) / 320) % 2 ? 1 : -1;
+      mcState.ry = mcNorm(mcState.ry);
+      mcState.aimGx = 0.7 * d; mcState.aimGy = -0.55; mcState.gazeAt = now + 400;
+      mcState.rx += (8 - mcState.rx) * 0.08; mcState.ry += (0 - mcState.ry) * 0.08; mcState.rz += (3 * d - mcState.rz) * 0.08;
+      mcState.nextAt = now + 1500;
+    } else if(now - (mcState.talkAt || -1e9) < 800){
+      // Talking: he looks over at the line he is saying, up and to his left.
+      mcState.ry = mcNorm(mcState.ry);
+      mcState.aimGx = -0.6; mcState.aimGy = -0.5; mcState.gazeAt = now + 600;
+      mcState.rx += (12 - mcState.rx) * 0.1; mcState.ry += (-26 - mcState.ry) * 0.1; mcState.rz += (0 - mcState.rz) * 0.1;
+      mcState.nextAt = Math.max(mcState.nextAt, now + 1500);
+    } else if((follow = mcFollowAim(now))){
+      mcState.ry = mcNorm(mcState.ry);
+      mcState.aimGx = follow.gx; mcState.aimGy = follow.gy; mcState.gazeAt = now + 500;
+      mcState.rx += (follow.rx - mcState.rx) * 0.12; mcState.ry += (follow.ry - mcState.ry) * 0.12; mcState.rz += (0 - mcState.rz) * 0.12;
+      mcState.nextAt = Math.max(mcState.nextAt, now + 1800);
     } else if(now > mcState.nextAt && !mcState.sleepy){
       /* A body move is not a queue of poses, so it is dispatched rather than queued — and it
          books the next slot itself, which the queue would otherwise have done on draining. */
@@ -9374,8 +9669,25 @@ function startMarkCube(){
       mcState.aimGx = (Math.random() * 2 - 1) * 0.75;
       mcState.aimGy = (Math.random() * 2 - 1) * 0.75;
     }
-    mcState.gx += (mcState.aimGx - mcState.gx) * 0.06;
-    mcState.gy += (mcState.aimGy - mcState.gy) * 0.06;
+    { const gk = (follow || mcState.think) ? 0.2 : 0.06;
+      mcState.gx += (mcState.aimGx - mcState.gx) * gk;
+      mcState.gy += (mcState.aimGy - mcState.gy) * gk; }
+    /* Lids outside an act ease toward whatever is being held (a heavy set on the wheel), or
+       open. The tremble goes with them. */
+    if(!mcState.act){
+      const hd = mcState.hold || { lt:0, la:0, sh:0 };
+      mcState.lidT = (mcState.lidT || 0) + (hd.lt - (mcState.lidT || 0)) * 0.12;
+      mcState.lidA = (mcState.lidA || 0) + (hd.la - (mcState.lidA || 0)) * 0.12;
+      mcState.lidB = (mcState.lidB || 0) * 0.85;
+      mcState.shake = hd.sh || 0;
+    }
+    /* BREATHING. A slow rise and fall under everything else, about one breath every four
+       seconds, slower and deeper asleep. Small, but it is what stops him reading as a still. */
+    mcState.breath = anim('markBreathes')
+      ? 1 + (mcState.sleepy ? 0.026 : 0.016) * Math.sin(t * Math.PI * 2 / (mcState.sleepy ? 6 : 4.2)) : 1;
+    /* Each word he says dips his eyes once, like a mouth moving. */
+    { const e = (now - (mcState.talkAt || -1e9)) / 200;
+      mcState.talkEh = e >= 0 && e < 1 ? 1 - 0.22 * Math.sin(Math.PI * e) : 1; }
     if(now > mcState.blinkAt){ mcState.blinkAt = now + 3200 + Math.random() * 4600; mcState.blink = 0.08;
       setTimeout(()=>{ mcState.blink = 1; }, 110); }
     /* THE EYES WIDEN ON THEIR OWN every four to nine seconds: up fast, held, eased back. A
@@ -9548,7 +9860,8 @@ function firstOpenOfDay(){
 // Scans while something slow is running, and stops when it is told to. Returns the stopper
 // so the caller cannot forget to hand it back.
 function eyesBusy(){
-  if(!anim('busyOnGenerate')) return ()=>{};
+  const thought = markThink();
+  if(!anim('busyOnGenerate')) return thought;
   let side = 1, alive = true;
   const px = 4, since = Date.now();
   const tick = ()=>{
@@ -9558,7 +9871,7 @@ function eyesBusy(){
     busyTimer = setTimeout(tick, eyeScanInterval(Date.now() - since));
   };
   tick();
-  return ()=>{ alive = false; clearTimeout(busyTimer); eyeGaze(0, 0, 300); scheduleIdle(600); };
+  return ()=>{ alive = false; clearTimeout(busyTimer); eyeGaze(0, 0, 300); scheduleIdle(600); thought(); };
 }
 let busyTimer = null;
 
@@ -9610,6 +9923,8 @@ document.addEventListener('click', e=>{
   e.stopPropagation();
   maybeAskMorning(true);
 }, true);
+// Where the last press on the mark landed, which is what a poke reads to decide its answer.
+let eyePressAt = null;
 function bindEyeTap(){
   [null].forEach(id=>{
     const el = id ? document.getElementById(id) : document.querySelector('.header-mark');
@@ -9619,7 +9934,8 @@ function bindEyeTap(){
     // The press starts on the mark but ends wherever your finger happens to be: a release
     // bound to the element itself is missed the moment you slide off it, which would leave
     // a stare running with nothing to end it.
-    el.addEventListener('pointerdown', ()=>{
+    el.addEventListener('pointerdown', e=>{
+      eyePressAt = { x:e.clientX, y:e.clientY };
       eyeMarkPressStart(which);
       const end = ()=>{
         window.removeEventListener('pointerup', end);
@@ -10144,6 +10460,17 @@ function eyePreviewAction(key){
     case 'flinch':          return eyeGesture([{transform:'translateX(0) scale(1)'},
                               {transform:'translateX(2px) scale(0.9)'},{transform:'translateX(0) scale(1)'}], 260, { easing:'ease-out' });
     case 'sideEye':         return eyeGaze(-5, 0, 260, 1500);
+    // The seventh batch is the drawn mark's, so the preview plays on him, up in the header.
+    case 'happyOnPR':       return markAct('pr', { force:true, say:'new best · squat 140 kg' });
+    case 'doneDance':       return markAct('dance', { force:true, say:'workout done' });
+    case 'worried':         return markAct('worry', { force:true });
+    case 'eyeRoll':         return markAct('roll', { force:true });
+    case 'poke':            return markAct('dodge', { force:true, side:1 });
+    case 'streakGreeting':  return markAct('hi3', { force:true, say:'28 days running' });
+    case 'thinking':        { if(!anim('thinking')) return markAct('gotIt', { force:true });
+                              const done = markThink(); setTimeout(done, 1900); return; }
+    case 'talks':           return markSay('like this, a word at a time');
+    case 'strainOnHeavy':   { markStrain(1.03); setTimeout(()=>{ markStrain(null); markAct('sigh', { force:true }); }, 1600); return; }
     default:                return blinkOnce(el, null);
   }
 }
@@ -10379,6 +10706,10 @@ function eyeMarkPressEnd(which){
     const tab = document.querySelector('.tab[data-tab="insights"]');
     if(tab){ activateTabViaUi(tab); return; }
   }
+  /* ON WORKOUTS, A TAP IS A POKE: where it lands decides what he does. A keyboard press has
+     no point to land on, so it still gets the blink. */
+  const at = eyePressAt; eyePressAt = null;
+  if(which === 'header' && at && anim('poke') && mcState.raf && !mcState.sleepy && markPoke(at.x, at.y)) return;
   if(!anim('blinkOnTap') || !el) return;
   stopIdle();
   blinkOnce(el, ()=>scheduleIdle());
@@ -12754,7 +13085,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.27.002';
+const APP_VERSION = '2026.10.28.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13150,6 +13481,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.10.28.001': 'He has more to say. He breathes between moves and follows your finger around the screen. On Workouts, tap him to poke him: the top and he ducks, a side and he turns away, three quick and he has had enough. He gets happy eyes and a hop on a new best, and does a little dance when the day\u2019s session is saved. As you dial a heavy set on the wheel his lids come down, and past your last best he trembles. He looks worried after an injury, a missed day or a low score, and rolls his eyes if you skip today. While a plan builds he thinks, then nods. What he says beside the tab name types out a word at a time, and his good-morning gets warmer the longer your streak. Calm mode in Settings turns all of it off.',
   '2026.10.27.002': 'Touring is Dogfood again: the name on every tab, the home-screen name and the launch screen. Re-add the app to your home screen once to pick up the name.',
   '2026.10.27.001': 'Mobility, checked against the research and fixed. Stretch time counts when you do it, not when it is planned, and counts the same way everywhere: holds by total time with both sides counted, PNF by its rounds, loaded and eccentric reps through range, and nothing for circles, swings or foam rolling. Lifting earns its share by the set (deep and lengthened lifts most, squats and presses some) instead of switching an area off for a week. Ankles and calves get proper eccentric heel drops (3 x 10-12 each side, bent knee and straight). Each area is capped at about 4 minutes a session, where the benefit stops. The assessment has a None of these yet answer, so your tightest areas get scored and worked. Mobility skills follow each level\u2019s own target, and a readiness test now asks Held it or Not yet \u2014 two holds move you up.',
   '2026.10.22.005': 'The tab switcher under the masthead is five dots in a straight row now, and the tab you are on is a short white pill. Tap a dot or swipe as before.',
@@ -20336,6 +20668,8 @@ async function openDayActions(date){
     }
     if(act === 'off') await setDayOff(date, true);
     if(act === 'on') await setDayOff(date, false);
+    // Clearing today's planned session is skipping it, and he has an opinion about that.
+    if((act === 'clear' || act === 'off') && date === todayStr && blocks.length) setTimeout(()=> markAct('roll'), 400);
     offerWeekUndo(undo, act === 'clear' ? 'clear' : 'day change');
     showUndoToast(act === 'clear' ? `${logDateWords(date)} cleared`
       : act === 'off' ? `Nothing will be planned for ${logDateWords(date)}`
@@ -20683,7 +21017,98 @@ async function renderProgressSnapshot(){
   host.innerHTML = `<div class="progress-snapshot"><div class="progress-snapshot-head">Since you started</div><div class="progress-snapshot-stats"><span><b>${sessions.length}</b>sessions</span><span><b>${trainedDays}</b>training days</span>${longest ? `<span><b>${longest}km</b>longest run</span>` : ''}</div></div>`;
 }
 async function showSessionComplete(session){
+  /* First time this session is saved, not an edit of it: an edit keeps its timestamp, and the
+     summary already holds it. Only the first save gets the celebration. */
+  let first = true;
+  try{ const prev = JSON.parse((await window.storage.get(`sessionSummary:${session.date}`)).value);
+       if(prev && prev.timestamp === session.timestamp) first = false; }catch(e){}
   try{ await window.storage.set(`sessionSummary:${session.date}`, JSON.stringify(session)); }catch(e){}
+  if(first && session.date === todayStr) setTimeout(()=>{ markSessionDone(session).catch(()=>{}); }, 520);
+}
+/* The best set in a session that beats everything logged before it, as { name, weight, reps },
+   or null. Same Epley comparison and 1% margin the old widen used, but it says WHICH lift, so
+   he can say it. A lift's first ever entry is a first entry, not a best. */
+async function sessionBestLift(session){
+  if(!session || session.type !== 'strength' || !session.exercises) return null;
+  const sets = e => {
+    const r = (e.repsPerSet && e.repsPerSet.length) ? e.repsPerSet.map(Number) : [Number(e.reps)];
+    const w = (e.weightPerSet && e.weightPerSet.length) ? e.weightPerSet.map(Number) : [Number(e.weight)];
+    return r.map((reps, i)=> ({ reps, weight: w[Math.min(i, w.length - 1)] })).filter(x => x.reps > 0 && x.weight > 0);
+  };
+  // Only lifts measured in kilograms: a jump measured in centimetres has no Epley max.
+  const inKg = name => { const u = resultUnitFor(name); return !u || u === 'kg'; };
+  const best = {};
+  for(const e of session.exercises){
+    if(!e.name || !inKg(e.name)) continue;
+    for(const x of sets(e)){
+      const v = calculateE1RM(x.weight, x.reps);
+      if(!v || v.confidence === 'discard') continue;
+      const k = e.name.trim().toLowerCase();
+      if(!best[k] || v.value > best[k].v) best[k] = { v:v.value, name:e.name.trim(), weight:x.weight, reps:x.reps };
+    }
+  }
+  if(!Object.keys(best).length) return null;
+  const prior = {};
+  try{
+    (await getAllTrainingSessions()).forEach(s=>{
+      if(s.type !== 'strength' || !s.exercises || s.timestamp === session.timestamp) return;
+      s.exercises.forEach(e=>{
+        if(!e.name) return;
+        for(const x of sets(e)){
+          const v = calculateE1RM(x.weight, x.reps);
+          if(!v || v.confidence === 'discard') continue;
+          const k = e.name.trim().toLowerCase();
+          if(prior[k] == null || v.value > prior[k]) prior[k] = v.value;
+        }
+      });
+    });
+  }catch(e){ return null; }
+  let top = null;
+  for(const k in best){
+    if(prior[k] == null || best[k].v <= prior[k] * 1.01) continue;
+    const gain = best[k].v / prior[k];
+    if(!top || gain > top.gain) top = { ...best[k], gain };
+  }
+  return top;
+}
+/* GOOD MORNING. Logging this morning wakes him, and how he says hello depends on the days
+   before it. A planned session yesterday with nothing logged gets the worried face, no
+   scolding; a low score gets the same; otherwise the greeting grows with the run of logged
+   days: a nod in the first week, a hop from a week, happy eyes from four, a spin from eight. */
+async function markWake(){
+  const y = shiftDateStr(todayStr, -1);
+  let missed = false;
+  try{
+    if(!(await isDayOff(y))){
+      let planned = false;
+      for(const sl of ['am','pm']){ const b = await blockOn(y, sl); if(b && b.type !== 'rest') planned = true; }
+      // Only once there is a history to have missed from: a first morning never opens on this.
+      if(planned && (await getAllTrainingSessions()).some(sn => sn.date < y)){
+        const r = await window.storage.list(`training:${y}`); missed = !(r && r.keys && r.keys.length); }
+    }
+  }catch(e){ missed = false; }
+  if(missed && markAct('worry', { say:'fresh start today', holdMs:3400 })) return;
+  /* The score lands a beat after the log does. */
+  await new Promise(r => setTimeout(r, 900));
+  if(eyeScore != null && eyeScore < 40 && markAct('worry', { say:'low score \u00b7 go easy', holdMs:3400 })) return;
+  const c = EYE_ANIM.streakGreeting, n = loggedStreak || 0;
+  const lvl = n >= c.lvl4 ? 'hi4' : n >= c.lvl3 ? 'hi3' : n >= c.lvl2 ? 'hi2' : null;
+  if(lvl && markAct(lvl, { say:`${n} days running`, holdMs:2600 })) return;
+  markReact('nod');
+}
+/* A best gets the happy hop and its name said; otherwise the first save of the day gets the
+   dance. Played on the header mark once the log sheet is out of the way. */
+async function markSessionDone(session){
+  const pr = await sessionBestLift(session);
+  /* The line beside WORKOUTS has room for about 21 characters at 390 wide, so he says the
+     most he can fit: the lift and the weight, the lift, or the weight. */
+  if(pr){
+    const name = pr.name.toLowerCase(), kg = `${+(+pr.weight).toFixed(2)} kg`;
+    const say = [`best · ${name} ${kg}`, `new best · ${name}`, `new best · ${kg}`].find(x => x.length <= 21) || 'new best';
+    if(markAct('pr', { say, holdMs:3600 })) return;
+  }
+  const mins = session.durationMin;
+  markAct('dance', { say: mins ? `workout done · ${mins} min` : 'workout done', holdMs:3000 });
 }
 async function renderSessionComplete(){
   const host = document.getElementById('sessionCompleteCard');
@@ -21848,6 +22273,8 @@ async function noteExerciseSwap(fromName, toName){
     ? { from, to, count: prior.count + 1, at: Date.now() }
     : { from, to, count: 1, at: Date.now() };
   try{ await window.storage.set(EX_SWAP_KEY, JSON.stringify(swaps)); } catch(e){}
+  // The same lift swapped out for the same thing again: a look, before the app learns it.
+  if(swaps[key].count === 2) setTimeout(()=> markAct('roll'), 600);
   if(swaps[key].count === SWAP_LEARN_AT) showToast(`Noted — ${to} instead of ${from} from now on`);
 }
 /* Applied once, where the block is written, rather than at each of the dozen places an
@@ -23567,6 +23994,7 @@ async function addInjury(){
     showToast('Injury logged');
     flashConfirm(document.getElementById('addInjuryBtn'));
     eyeWince();
+    markAct('worry', { say:'noted \u00b7 plan adjusted' });
     refreshInjuries();
     generateWarmup();
     return true;
@@ -24025,7 +24453,10 @@ function confRulerHtml(confidence){
 
 function buildRecCard(type, title, signals, confidence, meta){
   // A card telling you to back off is the one piece of bad news the mark should register.
-  if(type === 'reduce' && anim('wince')) setTimeout(()=>{ eyeWince(); markReact('tilt'); }, 250);
+  if(type === 'reduce') setTimeout(()=>{
+    if(anim('wince')) eyeWince();
+    if(!markAct('worry', { say:'go lighter today' }) && anim('wince')) markReact('tilt');
+  }, 250);
   const isReview = type === 'week_review' || type === 'block_review';
   const card = document.createElement('div');
   card.className = `rec-card ${type} tone-${REC_TONE[type] || 'flat'}`;
@@ -27061,7 +27492,9 @@ function mkSetWheelColumn(ids, opts){
   const applyHighlight = idx=>{
     rows.forEach((r,i)=>{ r.classList.toggle('wheel-sel', i===idx); r.classList.toggle('wheel-near', Math.abs(i-idx)===1); });
     col.setAttribute('aria-valuenow', rows[idx] ? rows[idx].dataset.v : '');
+    const moved = idx !== curIdx;
     curIdx = idx;
+    if(moved && opts.onChange && rows[idx]) opts.onChange(parseFloat(rows[idx].dataset.v));
   };
   const scrollToIndex = (idx, smooth)=> scrollHost.scrollTo({ top: idx * WHEEL_ROW_H, behavior: smooth ? 'smooth' : 'auto' });
   const build = (centerOn, step, decimals)=>{
@@ -27132,7 +27565,7 @@ function compactSetList(values, label){
   return values.every(v=> v === values[0]) ? label(values[0]) : values.map(label).join(',');
 }
 
-function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, setsValue, history, onCommit }){
+function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, setsValue, history, onCommit, lift }){
   const titleEl = document.getElementById('multiWheelPickerTitle');
   const bankEl = document.getElementById('multiWheelBank');
   const backBtn = document.getElementById('multiWheelBackBtn');
@@ -27187,10 +27620,31 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
   const repsStart = hist ? histAt(0).reps : n ? repsFull[n - 1] : (reps.defaultValue != null ? reps.defaultValue : mid(reps.min, reps.max));
   const weightStart = hist && histAt(0).weight != null ? histAt(0).weight : n ? weightFull[n - 1] : (weight.defaultValue != null ? weight.defaultValue : mid(weight.min, weight.max));
 
-  const repsWheel = mkSetWheelColumn({ col:'mwRepsCol', scroll:'mwRepsScroll', track:'mwRepsTrack' }, { min:reps.min, max:reps.max, label:reps.title, onInteract:()=>{ repsTouched = true; dirty = true; } });
+  /* HOW HEAVY IS THIS, for the mark's lids: the set's Epley max over the lift's reference,
+     which is the best set of its last session, or with no history the set it opens on taken
+     as about nine tenths of a max. Only for a lift weighed in kilograms. */
+  const mwHost = document.getElementById('mwMarkHost');
+  const strainRef = (()=>{
+    if(!lift || (weight.unit && weight.unit !== 'kg')) return null;
+    const h = lastSetsFor(lift);
+    let ref = 0;
+    if(h) h.reps.forEach((r, i)=>{ const w = h.weight[Math.min(i, h.weight.length - 1)]; const v = w > 0 && calculateE1RM(w, r); if(v && v.value > ref) ref = v.value; });
+    if(!ref && weightStart > 0){ const v = calculateE1RM(weightStart, repsStart); if(v) ref = v.value / 0.9; }
+    return ref > 0 ? ref : null;
+  })();
+  let strainEffort = null, repsWheel = null, weightWheel = null;
+  const strainNow = ()=>{
+    if(!strainRef || !repsWheel || !weightWheel) return;
+    const v = calculateE1RM(weightWheel.current(), repsWheel.current());
+    strainEffort = v ? v.value / strainRef : null;
+    markStrain(strainEffort);
+  };
+  if(mwHost) mwHost.hidden = !(strainRef && anim('strainOnHeavy'));
+  repsWheel = mkSetWheelColumn({ col:'mwRepsCol', scroll:'mwRepsScroll', track:'mwRepsTrack' }, { min:reps.min, max:reps.max, label:reps.title, onInteract:()=>{ repsTouched = true; dirty = true; }, onChange:strainNow });
   repsWheel.build(repsStart, reps.step || 1, 0);
-  const weightWheel = mkSetWheelColumn({ col:'mwWeightCol', scroll:'mwWeightScroll', track:'mwWeightTrack' }, { min:weight.min, max:weight.max, label:weight.title, onInteract:()=>{ weightTouched = true; dirty = true; } });
+  weightWheel = mkSetWheelColumn({ col:'mwWeightCol', scroll:'mwWeightScroll', track:'mwWeightTrack' }, { min:weight.min, max:weight.max, label:weight.title, onInteract:()=>{ weightTouched = true; dirty = true; }, onChange:strainNow });
   weightWheel.build(weightStart, weightStep(), weightDecimals());
+  strainNow();
   renderBank();
 
   // Banks the pair on both wheels right now and starts the next set on the same two numbers
@@ -27238,6 +27692,10 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
   setWheelCommit = ()=>{
     repsWheel.destroy();
     weightWheel.destroy();
+    // He lets the breath out: a heavy set picked gets the sigh, and either way the lids open.
+    markStrain(null);
+    if(mwHost) mwHost.hidden = true;
+    if(dirty && !cleared && strainEffort != null && strainEffort >= 0.97) markAct('sigh');
     if(addBtn) addBtn.removeEventListener('click', onAdd);
     if(decimalBtn) decimalBtn.removeEventListener('click', onDecimalToggle);
     if(backBtn) backBtn.removeEventListener('click', onBack);
@@ -27346,7 +27804,7 @@ function initSetTicks(row){
       const x = sets[i];
       openSetWheelPicker({ title: `Set ${i + 1}`, reps: { title:'Reps', min:1, max:50, step:1, unit:'reps' },
         weight: { title: unit === 'kg' ? 'Weight' : 'Result', min:0, max: unit === 'kg' ? 400 : 500, step: unit === 'kg' ? 2.5 : 1, decimalStep:0.5, decimals:2, allowDecimal:true, unit },
-        repsValues: [x.reps], weightValues: x.weight != null ? [x.weight] : [], setsValue: 1,
+        repsValues: [x.reps], weightValues: x.weight != null ? [x.weight] : [], setsValue: 1, lift: nameEl ? nameEl.value : '',
         onCommit: (rj, wj)=>{
           const rr = list(rj), ww = list(wj);
           if(!rr.length && !ww.length) return;
@@ -27403,7 +27861,7 @@ function wireSetWheelField(row, { title, reps, weight }){
     const nameEl = row.querySelector('.week-ex-name');
     const h = untouched && nameEl ? lastSetsFor(nameEl.value) : null;
     openSetWheelPicker({
-      title, reps, weight, history: h,
+      title, reps, weight, history: h, lift: nameEl ? nameEl.value : '',
       repsValues: parseList(repsInput.value), weightValues: parseList(weightInput.value),
       setsValue: (!plannedSets && isFinite(parsedSets)) ? parsedSets : 0,
       onCommit: (repsJoined, weightJoined, setCount)=>{
@@ -37495,6 +37953,7 @@ async function renderTodayWorkoutSummary(){
     await syncPlannedSessionMirror(todayStr);
     offerWeekUndo([{ key, value:before.value, date:todayStr }], 'skip');
     showToast('Skipped today — undo is available in Weekly');
+    setTimeout(()=> markAct('roll'), 400);
     renderTodayWorkoutSummary();
     renderWeekGrid();
   });
@@ -37906,7 +38365,7 @@ function refreshHeaderLogBadge(){
   mcState.sleepy = needsLog;
   eyeCtx.morning = needsLog;
   document.body.classList.toggle('morning-pending', needsLog);
-  if(wasAsleep && !needsLog && onToday){ mcState.wideAt = 1; markReact('nod'); renderTabInsight('insights'); }
+  if(wasAsleep && !needsLog && onToday){ mcState.wideAt = 1; renderTabInsight('insights'); markWake().catch(()=>{ markReact('nod'); }); }
   if(typeof updateSleepZs === 'function') updateSleepZs();
   syncThemeColor();
   const ins = document.getElementById('currentTabInsight');
