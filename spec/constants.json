@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.11.01.002",
+ "generatedFrom": "2026.11.01.003",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1475,7 +1475,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.11.01.002",
+  "APP_VERSION": "2026.11.01.003",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1853,6 +1853,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.11.01.003": "Fixed the header growing taller every time you switched tabs. The colour flood now sits behind the header properly and keeps up if the header is still opening.",
    "2026.11.01.002": "Switching tabs, the new colour floods out across the header from where he sits while his pixels rain out and back in, and he lands with a bounce. Every so often he glitches for a moment, all on his own.",
    "2026.11.01.001": "He is pixels now. Same moves, same moods, same everything, drawn on a fine grid of square pixels, so when he turns his eyes step across it a pixel at a time. Hops and squashes move him across the grid instead of stretching it, and a blink always leaves a line.",
    "2026.10.28.001": "He has more to say. He breathes between moves and follows your finger around the screen. On Workouts, tap him to poke him: the top and he ducks, a side and he turns away, three quick and he has had enough. He gets happy eyes and a hop on a new best, and does a little dance when the day’s session is saved. As you dial a heavy set on the wheel his lids come down, and past your last best he trembles. He looks worried after an injury, a missed day or a low score, and rolls his eyes if you skip today. While a plan builds he thinks, then nods. What he says beside the tab name types out a word at a time, and his good-morning gets warmer the longer your streak. Calm mode in Settings turns all of it off.",
