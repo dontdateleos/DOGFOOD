@@ -9073,7 +9073,96 @@ function mcMounts(){
   return out;
 }
 function drawMarkCube(){ for(const m of mcMounts()) mcPaint(m); }
+/* HE IS PIXELS NOW. Nothing about how he moves changed: the rig still works out the same
+   pose every frame. Only the painting did. A fixed grid of square pixels, MC_PIXELS across
+   his width, pinned to his resting centre so it never swims; each pixel takes the colour of
+   whatever part of him is under it (4 samples, majority), so as he turns his eyes step across
+   the grid a pixel at a time. Squash, hops and the tremble are mapped back through the same
+   transform the svg used to wear, so they move him across the grid instead of stretching the
+   pixels. A shut eye never drops below one row, so a blink still reads as a line. One path per
+   colour keeps it to a handful of elements however many pixels there are. The outline dress
+   (m.line) keeps the smooth painter. */
+const MC_PIXELS = 34, MC_PIXEL_MIN = 1.5;
 function mcPaint(m){
+  if(m.line) return mcPaintSmooth(m);
+  const svg = m.svg, host = m.host;
+  if(!svg || !host) return;
+  const cs = getComputedStyle(host);
+  const k = parseFloat(cs.getPropertyValue('--mc-scale'));
+  const s = (parseFloat(cs.width) || 40) * (k > 0 ? k : 1);
+  if(!(s > 0)) return;
+  const B = Math.round(s * 1.08), c = B/2, h = s/2;
+  svg.setAttribute('width', B); svg.setAttribute('height', B);
+  svg.setAttribute('viewBox', `0 0 ${B} ${B}`);
+  const cell = Math.max(MC_PIXEL_MIN, s / MC_PIXELS);
+  const P = mcProject(mcState.rx, mcState.ry, mcState.rz);
+  // The eyes, from the same maths as the smooth painter, kept as inverse matrices.
+  const wd = (mcState.wide || 1) * (mcState.swEh || 1) * (mcState.talkEh || 1);
+  const ew = MC_EYE_W*s * (1 + (wd - 1) * 0.3), gap = MC_EYE_GAP*s;
+  const eh = Math.max(cell * 1.05, MC_EYE_H*s * mcState.blink * wd * (mcState.sleepy ? 0.12 : 1));
+  const sph = (az, el)=> [Math.sin(az)*Math.cos(el)*h, -Math.sin(el)*h, Math.cos(az)*Math.cos(el)*h];
+  const asn = v => Math.asin(Math.max(-0.99, Math.min(0.99, v)));
+  const off = asn((gap/2 + ew/2) / h), dw = asn((ew/2) / h), dh = asn((eh/2) / h);
+  const gAz = asn(mcState.gx * ew * 0.85 / h), gEl = -asn(mcState.gy * s * 0.06 / h);
+  const eyes = [];
+  for(const face of [0, 180]) for(const sg of [-1, 1]){
+    const az = face * MC_RAD + sg * off + gAz, el = gEl, pc = P(sph(az, el));
+    if(pc[2] <= 0.04 * h) continue;
+    const pu = P(sph(az + dw, el)), pv = P(sph(az, el + dh));
+    const ux = pu[0]-pc[0], uy = pu[1]-pc[1], vx = pc[0]-pv[0], vy = pc[1]-pv[1];
+    const lu = Math.hypot(ux, uy), lv = Math.max(0.01, Math.hypot(vx, vy));
+    if(lu < 0.25) continue;
+    const det = ux*vy - vx*uy; if(Math.abs(det) < 1e-6) continue;
+    eyes.push({ ex:c + pc[0], ey:c + pc[1], ia:vy/det, ib:-vx/det, ic:-uy/det, id:ux/det, ry:Math.min(1, lu/lv), sg });
+  }
+  const lt = mcState.lidT || 0, la = (mcState.lidA || 0) * MC_RAD, lb = mcState.lidB || 0;
+  const inEye = (x, y)=>{
+    for(const e of eyes){
+      const dx = x - e.ex, dy = y - e.ey, lx = e.ia*dx + e.ib*dy, ly = e.ic*dx + e.id*dy;
+      if(Math.abs(lx) > 1 || Math.abs(ly) > 1) continue;
+      const cy0 = 1 - e.ry; if(Math.abs(ly) > cy0 && Math.hypot(lx, (Math.abs(ly) - cy0)/e.ry) > 1) continue;
+      if(lt > 0.01){ const a = e.sg * la, rx = lx*Math.cos(a) - ly*Math.sin(a), ryy = lx*Math.sin(a) + ly*Math.cos(a);
+        if(Math.abs(rx) <= 1.8 && ryy >= -1.7 && ryy <= -1.7 + 0.7 + 2*lt) continue; }
+      if(lb > 0.01 && Math.hypot(lx/1.7, (ly - (2.3 - 1.75*lb))/1.35) <= 1) continue;
+      return true;
+    }
+    return false;
+  };
+  const rimW = m.rim ? Math.max(0.75, s * MC_RIM_W) : 0;
+  const rox = c - mcState.gx * s * MC_RIM_THROW_X, roy = c - mcState.gy * s * MC_RIM_THROW_Y;
+  const bs = (mcState.breath || 1) * (mcState.actSy || 1);
+  const esy = mcState.sy * bs, esx = mcState.sx / Math.sqrt(bs);
+  const etx = ((mcState.tx || 0) + (mcState.shake ? mcState.shake * Math.sin(performance.now()/14) * 0.012 : 0)) * s, ety = mcState.ty * s;
+  const ox = 0.5*B, oy = 0.963*B;
+  // 0 none, 1 body, 2 lit, 3 eye, 4 rim
+  const roleAt = (X, Y)=>{
+    const x = ox + (X - etx - ox) / esx, y = oy + (Y - ety - oy) / esy;
+    const d = Math.hypot(x - c, y - c);
+    if(d > h){ if(rimW && d <= h + rimW + 1){ const dd = Math.hypot(x - rox, y - roy); if(dd >= h - 0.5 && dd <= h + rimW) return 4; } return 0; }
+    if(inEye(x, y)) return 3;
+    if(rimW){ const dd = Math.hypot(x - rox, y - roy); if(dd >= h) return 4; }
+    return m.lit && Math.hypot(x - c, y - (c + h*MC_LIT_DY)) > h*MC_LIT_R ? 2 : 1;
+  };
+  const g = Math.max(0.4, cell * 0.14), sz = (cell - g).toFixed(2);
+  const cx = ox + (c - ox)*esx + etx, cy = oy + (c - oy)*esy + ety, hx = h*esx + rimW + cell, hy = h*esy + rimW + cell;
+  const i0 = Math.floor((cx - hx - c)/cell), i1 = Math.ceil((cx + hx - c)/cell);
+  const j0 = Math.floor((cy - hy - c)/cell), j1 = Math.ceil((cy + hy - c)/cell);
+  const d = ['', '', '', '', ''];
+  const SAMPLES = [[0.3,0.3],[0.7,0.3],[0.3,0.7],[0.7,0.7]];
+  for(let j = j0; j < j1; j++) for(let i = i0; i < i1; i++){
+    const X0 = c + i*cell, Y0 = c + j*cell, n = [0,0,0,0,0];
+    for(const [a, b] of SAMPLES) n[roleAt(X0 + a*cell, Y0 + b*cell)]++;
+    if(n[1] + n[2] + n[3] + n[4] < 2) continue;
+    const r = n[3] >= 2 ? 3 : n[4] >= 2 ? 4 : (n[2] > n[1] ? 2 : 1);
+    d[r] += `M${(X0 + g/2).toFixed(2)} ${(Y0 + g/2).toFixed(2)}h${sz}v${sz}h-${sz}z`;
+  }
+  const fill = [null, m.shell, m.lit || m.shell, m.ink, m.rim];
+  let out = '';
+  for(const r of [1, 2, 4, 3]) if(d[r]) out += `<path d="${d[r]}" style="fill:${fill[r]}"/>`;
+  svg.innerHTML = out;
+  if(svg.dataset.sq){ svg.style.transform = ''; svg.style.transformOrigin = ''; delete svg.dataset.sq; }
+}
+function mcPaintSmooth(m){
   const svg = m.svg, host = m.host;
   if(!svg || !host) return;
   /* --mc-scale multiplies the DRAWING inside a box that does not move. The box keeps its
@@ -13085,7 +13174,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.10.28.001';
+const APP_VERSION = '2026.11.01.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13481,6 +13570,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.01.001': 'He is pixels now. Same moves, same moods, same everything, drawn on a fine grid of square pixels, so when he turns his eyes step across it a pixel at a time. Hops and squashes move him across the grid instead of stretching it, and a blink always leaves a line.',
   '2026.10.28.001': 'He has more to say. He breathes between moves and follows your finger around the screen. On Workouts, tap him to poke him: the top and he ducks, a side and he turns away, three quick and he has had enough. He gets happy eyes and a hop on a new best, and does a little dance when the day\u2019s session is saved. As you dial a heavy set on the wheel his lids come down, and past your last best he trembles. He looks worried after an injury, a missed day or a low score, and rolls his eyes if you skip today. While a plan builds he thinks, then nods. What he says beside the tab name types out a word at a time, and his good-morning gets warmer the longer your streak. Calm mode in Settings turns all of it off.',
   '2026.10.27.002': 'Touring is Dogfood again: the name on every tab, the home-screen name and the launch screen. Re-add the app to your home screen once to pick up the name.',
   '2026.10.27.001': 'Mobility, checked against the research and fixed. Stretch time counts when you do it, not when it is planned, and counts the same way everywhere: holds by total time with both sides counted, PNF by its rounds, loaded and eccentric reps through range, and nothing for circles, swings or foam rolling. Lifting earns its share by the set (deep and lengthened lifts most, squats and presses some) instead of switching an area off for a week. Ankles and calves get proper eccentric heel drops (3 x 10-12 each side, bent knee and straight). Each area is capped at about 4 minutes a session, where the benefit stops. The assessment has a None of these yet answer, so your tightest areas get scored and worked. Mobility skills follow each level\u2019s own target, and a readiness test now asks Held it or Not yet \u2014 two holds move you up.',
