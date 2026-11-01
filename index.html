@@ -1003,6 +1003,9 @@
   .toast-icon{ display:inline-block; vertical-align:middle; margin-right:6px; width:14px; height:14px; }
 
   .header-brand{ display:block; position:relative; }
+  /* The tab-switch colour flood (markTabFlood): behind the content, over the band. */
+  .header-brand.flooding{ isolation:isolate; }
+  .band-flood{ position:absolute; inset:0; width:100%; height:100%; z-index:-1; pointer-events:none; }
   /* The label names the tab you are on, so it is the one piece of chrome that changes with
      the tab and has no colour of its own — cream, beside a cream wordmark, saying nothing
      twice. One colour for it, used nowhere else in this corner, and the corner has two voices
@@ -7606,7 +7609,11 @@ const EYE_ANIM = {
   thinking:       { on:true, note:'Scans while something slow runs, then eyes wide and a nod when it lands' },
   talks:          { on:true, note:'What he says beside the tab name types out a word at a time, his eyes bobbing on each' },
   doneDance:      { on:true, note:'A short dance when you finish the day’s session' },
-  streakGreeting: { on:true, note:'His good-morning gets warmer the longer your run of logged days', lvl2:7, lvl3:28, lvl4:56 }
+  streakGreeting: { on:true, note:'His good-morning gets warmer the longer your run of logged days', lvl2:7, lvl3:28, lvl4:56 },
+
+  // — Eighth: now that he is pixels.
+  tabRainFlood:   { on:true, note:'On a tab switch his pixels rain out as the new tab\u2019s colour floods the header from where he sits, then rain back in' },
+  pixelGlitch:    { on:true, note:'Every so often, at random, a quick glitch: rows of him jump sideways and a few pixels flash' }
 };
 window.EYE_ANIM = EYE_ANIM;
 /* Calm mode. prefers-reduced-motion is all-or-nothing and lives in iOS Settings rather
@@ -9083,6 +9090,58 @@ function drawMarkCube(){ for(const m of mcMounts()) mcPaint(m); }
    colour keeps it to a handful of elements however many pixels there are. The outline dress
    (m.line) keeps the smooth painter. */
 const MC_PIXELS = 34, MC_PIXEL_MIN = 1.5;
+const MC_FX_MS = { rain:900, glitch:340 };
+const mcHash = (a, b)=>{ const v = Math.sin(a*127.1 + b*311.7) * 43758.5453; return v - Math.floor(v); };
+function mcFxNow(){
+  const f = mcState.fx; if(!f) return null;
+  const p = (performance.now() - f.t0) / MC_FX_MS[f.type];
+  if(p >= 1){ mcState.fx = null; return null; }
+  return { type:f.type, p, seed:f.seed || 0 };
+}
+function markPixelFx(type){
+  if(!mcState.raf || mcState.sleepy) return false;
+  mcState.fx = { type, t0:performance.now(), seed:Math.floor(Math.random()*997) };
+  return true;
+}
+/* THE TAB'S COLOUR FLOODS OUT FROM HIM. The header keeps the old colour while a canvas behind
+   its content fills with the new one in square pixels, spreading from his centre with a ragged
+   edge, and the header takes the new colour when the flood has covered it. Isolation is on for
+   the length of it only, so the canvas can sit behind the content and above the band. */
+let bandFloodRaf = null;
+function markTabFlood(from, to){
+  const brand = document.querySelector('.header-brand'), mark = document.querySelector('.header-mark');
+  if(!brand || !mark || !from || !to || from === to) return false;
+  let cv = document.getElementById('bandFlood');
+  if(!cv){ cv = document.createElement('canvas'); cv.id = 'bandFlood'; cv.className = 'band-flood'; cv.setAttribute('aria-hidden', 'true'); brand.prepend(cv); }
+  if(bandFloodRaf) cancelAnimationFrame(bandFloodRaf);
+  const br = brand.getBoundingClientRect(), mr = mark.getBoundingClientRect();
+  const w = br.width, h = br.height, dpr = Math.min(2, devicePixelRatio || 1);
+  cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr);
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const cx = mr.left - br.left + mr.width/2, cy = mr.top - br.top + mr.height/2;
+  const cell = 6, far = Math.hypot(Math.max(cx, w - cx), Math.max(cy, h - cy)) + 20, t0 = performance.now(), ms = 620;
+  brand.classList.add('flooding');
+  brand.style.transition = 'none'; brand.style.backgroundColor = from;
+  const step = now=>{
+    const p = Math.min(1, (now - t0)/ms), r = (1 - Math.pow(1 - p, 3)) * far;
+    ctx.clearRect(0, 0, w, h); ctx.fillStyle = to;
+    for(let y = 0; y < h; y += cell) for(let x = 0; x < w; x += cell){
+      const dd = Math.hypot(x + cell/2 - cx, y + cell/2 - cy) + (mcHash(x, y) - 0.5)*26;
+      if(dd < r - 6) ctx.fillRect(x, y, cell, cell);
+      else if(dd < r){ ctx.fillRect(x, y, cell - 1, cell - 1); }
+      else if(dd < r + 10){ ctx.globalAlpha = 0.45; ctx.fillRect(x, y, cell - 1, cell - 1); ctx.globalAlpha = 1; }
+    }
+    if(p < 1){ bandFloodRaf = requestAnimationFrame(step); return; }
+    bandFloodRaf = null;
+    brand.style.backgroundColor = '';
+    ctx.clearRect(0, 0, w, h);
+    brand.classList.remove('flooding');
+    requestAnimationFrame(()=>{ brand.style.transition = ''; });
+    markBody('boing');
+  };
+  bandFloodRaf = requestAnimationFrame(step);
+  return true;
+}
 function mcPaint(m){
   if(m.line) return mcPaintSmooth(m);
   const svg = m.svg, host = m.host;
@@ -9147,18 +9206,34 @@ function mcPaint(m){
   const cx = ox + (c - ox)*esx + etx, cy = oy + (c - oy)*esy + ety, hx = h*esx + rimW + cell, hy = h*esy + rimW + cell;
   const i0 = Math.floor((cx - hx - c)/cell), i1 = Math.ceil((cx + hx - c)/cell);
   const j0 = Math.floor((cy - hy - c)/cell), j1 = Math.ceil((cy + hy - c)/cell);
-  const d = ['', '', '', '', ''];
+  const d = ['', '', '', '', '', ''];
   const SAMPLES = [[0.3,0.3],[0.7,0.3],[0.3,0.7],[0.7,0.7]];
+  /* Pixel effects ride on top: RAIN drops each column out of the bottom and back in from above
+     (the tab switch), GLITCH throws bands of rows sideways and flashes a few pixels (now and
+     then, at random). Both move whole pixels, so he stays on the grid. */
+  const fx = mcFxNow(), H = 2.4 * h;
   for(let j = j0; j < j1; j++) for(let i = i0; i < i1; i++){
     const X0 = c + i*cell, Y0 = c + j*cell, n = [0,0,0,0,0];
     for(const [a, b] of SAMPLES) n[roleAt(X0 + a*cell, Y0 + b*cell)]++;
     if(n[1] + n[2] + n[3] + n[4] < 2) continue;
-    const r = n[3] >= 2 ? 3 : n[4] >= 2 ? 4 : (n[2] > n[1] ? 2 : 1);
-    d[r] += `M${(X0 + g/2).toFixed(2)} ${(Y0 + g/2).toFixed(2)}h${sz}v${sz}h-${sz}z`;
+    let r = n[3] >= 2 ? 3 : n[4] >= 2 ? 4 : (n[2] > n[1] ? 2 : 1), dx = 0, dy = 0;
+    if(fx){
+      const q = fx.p;
+      if(fx.type === 'rain'){
+        const dl = mcHash(i, 7) * 0.5;
+        if(q < 0.35){ const k = Math.max(0, Math.min(1, (q/0.35 - dl*0.6)/0.5)); dy = k*k*H; }
+        else { const k = Math.max(0, Math.min(1, ((q - 0.35)/0.65 - dl)/0.5)); if(k <= 0) continue; dy = -Math.pow(1 - k, 3) * H; }
+      } else if(fx.type === 'glitch'){
+        const bucket = Math.floor(q*7), band = Math.floor(j/3);
+        if(mcHash(band, bucket + fx.seed) > 0.55) dx = Math.round((mcHash(bucket + fx.seed, band) - 0.5)*7) * cell;
+        if(mcHash(i + bucket*31 + fx.seed, j) > 0.94) r = 5;
+      }
+    }
+    d[r] += `M${(X0 + dx + g/2).toFixed(2)} ${(Y0 + dy + g/2).toFixed(2)}h${sz}v${sz}h-${sz}z`;
   }
-  const fill = [null, m.shell, m.lit || m.shell, m.ink, m.rim];
+  const fill = [null, m.shell, m.lit || m.shell, m.ink, m.rim, m.ink];
   let out = '';
-  for(const r of [1, 2, 4, 3]) if(d[r]) out += `<path d="${d[r]}" style="fill:${fill[r]}"/>`;
+  for(const r of [1, 2, 4, 3, 5]) if(d[r]) out += `<path d="${d[r]}" style="fill:${fill[r]}"/>`;
   svg.innerHTML = out;
   if(svg.dataset.sq){ svg.style.transform = ''; svg.style.transformOrigin = ''; delete svg.dataset.sq; }
 }
@@ -9774,6 +9849,12 @@ function startMarkCube(){
        seconds, slower and deeper asleep. Small, but it is what stops him reading as a still. */
     mcState.breath = anim('markBreathes')
       ? 1 + (mcState.sleepy ? 0.026 : 0.016) * Math.sin(t * Math.PI * 2 / (mcState.sleepy ? 6 : 4.2)) : 1;
+    /* Now and then, at random, a glitch: six to eighteen seconds apart, awake and idle only. */
+    if(!mcState.glitchAt) mcState.glitchAt = now + 8000;
+    if(now > mcState.glitchAt){
+      mcState.glitchAt = now + 6000 + Math.random() * 12000;
+      if(anim('pixelGlitch') && !mcState.fx && !mcState.act && !mcState.sleepy) markPixelFx('glitch');
+    }
     /* Each word he says dips his eyes once, like a mouth moving. */
     { const e = (now - (mcState.talkAt || -1e9)) / 200;
       mcState.talkEh = e >= 0 && e < 1 ? 1 - 0.22 * Math.sin(Math.PI * e) : 1; }
@@ -10559,6 +10640,8 @@ function eyePreviewAction(key){
     case 'thinking':        { if(!anim('thinking')) return markAct('gotIt', { force:true });
                               const done = markThink(); setTimeout(done, 1900); return; }
     case 'talks':           return markSay('like this, a word at a time');
+    case 'tabRainFlood':    { markPixelFx('rain'); return; }
+    case 'pixelGlitch':     { markPixelFx('glitch'); return; }
     case 'strainOnHeavy':   { markStrain(1.03); setTimeout(()=>{ markStrain(null); markAct('sigh', { force:true }); }, 1600); return; }
     default:                return blinkOnce(el, null);
   }
@@ -12070,8 +12153,17 @@ function activateTab(name, opts){
   setTimeout(applyEyeFreshness, 0);
 
   tabs.forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+  // The band's colour as it stands, read before the class swap changes it, for the flood.
+  const fromTab = currentTabName(), brandEl = document.querySelector('.header-brand');
+  const fromBand = brandEl ? getComputedStyle(brandEl).backgroundColor : null;
   document.body.className = document.body.className.replace(/\btab-\w+\b/g, '').trim();
   document.body.classList.add('tab-'+name);
+  /* A real change of tab: the new colour floods out from him while his pixels rain out and
+     back in. Both behind one row in the eye list. */
+  if(fromTab !== name && brandEl && anim('tabRainFlood') && mcState.raf && !mcState.sleepy){
+    const toBand = getComputedStyle(brandEl).getPropertyValue('--banner').trim();
+    if(markTabFlood(fromBand, toBand)) markPixelFx('rain');
+  }
   const targetPanel = document.getElementById('panel-'+name);
   panels.forEach(p=>{
     if(p===targetPanel){ p.classList.add('active'); p.classList.remove('panel-enter'); void p.offsetWidth; p.classList.add('panel-enter'); }
@@ -13174,7 +13266,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.01.001';
+const APP_VERSION = '2026.11.01.002';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13570,6 +13662,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.01.002': 'Switching tabs, the new colour floods out across the header from where he sits while his pixels rain out and back in, and he lands with a bounce. Every so often he glitches for a moment, all on his own.',
   '2026.11.01.001': 'He is pixels now. Same moves, same moods, same everything, drawn on a fine grid of square pixels, so when he turns his eyes step across it a pixel at a time. Hops and squashes move him across the grid instead of stretching it, and a blink always leaves a line.',
   '2026.10.28.001': 'He has more to say. He breathes between moves and follows your finger around the screen. On Workouts, tap him to poke him: the top and he ducks, a side and he turns away, three quick and he has had enough. He gets happy eyes and a hop on a new best, and does a little dance when the day\u2019s session is saved. As you dial a heavy set on the wheel his lids come down, and past your last best he trembles. He looks worried after an injury, a missed day or a low score, and rolls his eyes if you skip today. While a plan builds he thinks, then nods. What he says beside the tab name types out a word at a time, and his good-morning gets warmer the longer your streak. Calm mode in Settings turns all of it off.',
   '2026.10.27.002': 'Touring is Dogfood again: the name on every tab, the home-screen name and the launch screen. Re-add the app to your home screen once to pick up the name.',
