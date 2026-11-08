@@ -7606,10 +7606,7 @@ const EYE_ANIM = {
   thinking:       { on:true, note:'Scans while something slow runs, then eyes wide and a nod when it lands' },
   talks:          { on:true, note:'What he says beside the tab name types out a word at a time, his eyes bobbing on each' },
   doneDance:      { on:true, note:'A short dance when you finish the day’s session' },
-  streakGreeting: { on:true, note:'His good-morning gets warmer the longer your run of logged days', lvl2:7, lvl3:28, lvl4:56 },
-
-  // — Eighth: now that he is pixels.
-  pixelGlitch:    { on:true, note:'Every so often, at random, a quick glitch: rows of him jump sideways and a few pixels flash' }
+  streakGreeting: { on:true, note:'His good-morning gets warmer the longer your run of logged days', lvl2:7, lvl3:28, lvl4:56 }
 };
 window.EYE_ANIM = EYE_ANIM;
 /* Calm mode. prefers-reduced-motion is all-or-nothing and lives in iOS Settings rather
@@ -9085,24 +9082,20 @@ function drawMarkCube(){ for(const m of mcMounts()) mcPaint(m); }
    pixels. A shut eye never drops below one row, so a blink still reads as a line. One path per
    colour keeps it to a handful of elements however many pixels there are. The outline dress
    (m.line) keeps the smooth painter. */
-/* FINE GRAIN (.11.08.002): 56 across and no gaps between pixels, so the body reads solid and
-   the pixels show only at his edges and eyes. Each square overlaps its neighbour by a hair so
-   anti-aliasing never opens a seam between them. It was 34 across with the band showing
-   through every gap, which read as mesh. */
-const MC_PIXELS = 56, MC_PIXEL_MIN = 1.5, MC_PIXEL_OVERLAP = 0.35;
-const MC_FX_MS = { glitch:340 };
-const mcHash = (a, b)=>{ const v = Math.sin(a*127.1 + b*311.7) * 43758.5453; return v - Math.floor(v); };
-function mcFxNow(){
-  const f = mcState.fx; if(!f) return null;
-  const p = (performance.now() - f.t0) / MC_FX_MS[f.type];
-  if(p >= 1){ mcState.fx = null; return null; }
-  return { type:f.type, p, seed:f.seed || 0 };
-}
-function markPixelFx(type){
-  if(!mcState.raf || mcState.sleepy) return false;
-  mcState.fx = { type, t0:performance.now(), seed:Math.floor(Math.random()*997) };
-  return true;
-}
+/* FINE GRAIN: 72 across (56 until .11.08.003) and no gaps between pixels, so the body reads
+   solid and the pixels show only at his edges and eyes. Each square overlaps its neighbour by
+   a hair so anti-aliasing never opens a seam between them. It was 34 across with the band
+   showing through every gap, which read as mesh. The random glitch that rode on this came out
+   in .11.08.003. */
+const MC_PIXELS = 72, MC_PIXEL_MIN = 1.5, MC_PIXEL_OVERLAP = 0.35;
+/* THE LIT CAP IS PART OF HIM. It used to be a fixed crescent on the screen, so he could nod,
+   roll or turn and the light on his crown stayed put, which read as a sticker. It is now a
+   cap on the sphere itself: every point whose direction from his centre lies within a set
+   angle of MC_CAP_AXIS, in his own frame (up and tipped back a little), rotated with him by
+   the same projection as the eyes. At rest it lands where the old crescent was: the same
+   0.39 of his radius deep at the crown and meeting the edge at the same height. Nod and it
+   slides back or forward, roll and it tilts, turn and it shifts across him. */
+const MC_CAP_AXIS = [0, -0.919, -0.394], MC_CAP_K = 0.251;
 function mcPaint(m){
   if(m.line) return mcPaintSmooth(m);
   const svg = m.svg, host = m.host;
@@ -9154,6 +9147,7 @@ function mcPaint(m){
   const esy = mcState.sy * bs, esx = mcState.sx / Math.sqrt(bs);
   const etx = ((mcState.tx || 0) + (mcState.shake ? mcState.shake * Math.sin(performance.now()/14) * 0.012 : 0)) * s, ety = mcState.ty * s;
   const ox = 0.5*B, oy = 0.963*B;
+  const capAxis = P(MC_CAP_AXIS);
   // 0 none, 1 body, 2 lit, 3 eye, 4 rim
   const roleAt = (X, Y)=>{
     const x = ox + (X - etx - ox) / esx, y = oy + (Y - ety - oy) / esy;
@@ -9161,17 +9155,16 @@ function mcPaint(m){
     if(d > h){ if(rimW && d <= h + rimW + 1){ const dd = Math.hypot(x - rox, y - roy); if(dd >= h - 0.5 && dd <= h + rimW) return 4; } return 0; }
     if(inEye(x, y)) return 3;
     if(rimW){ const dd = Math.hypot(x - rox, y - roy); if(dd >= h) return 4; }
-    return m.lit && Math.hypot(x - c, y - (c + h*MC_LIT_DY)) > h*MC_LIT_R ? 2 : 1;
+    if(!m.lit) return 1;
+    // The cap, on the sphere and turning with him: see MC_CAP_AXIS.
+    const nx = (x - c)/h, ny = (y - c)/h, nz = Math.sqrt(Math.max(0, 1 - nx*nx - ny*ny));
+    return nx*capAxis[0] + ny*capAxis[1] + nz*capAxis[2] > MC_CAP_K ? 2 : 1;
   };
   const cx = ox + (c - ox)*esx + etx, cy = oy + (c - oy)*esy + ety, hx = h*esx + rimW + cell, hy = h*esy + rimW + cell;
   const i0 = Math.floor((cx - hx - c)/cell), i1 = Math.ceil((cx + hx - c)/cell);
   const j0 = Math.floor((cy - hy - c)/cell), j1 = Math.ceil((cy + hy - c)/cell);
-  const d = ['', '', '', '', '', ''];
+  const d = ['', '', '', '', ''];
   const SAMPLES = [[0.3,0.3],[0.7,0.3],[0.3,0.7],[0.7,0.7]];
-  /* GLITCH rides on top: now and then, at random, bands of rows jump sideways and a few pixels
-     flash. It moves whole pixels, so he stays on the grid. (The tab-switch rain and colour
-     flood were here and came out: too much on every swipe.) */
-  const fx = mcFxNow();
   /* Each row is written as runs: neighbouring pixels of one colour become one rectangle, so a
      row of 40 body pixels is one rect rather than 40. */
   const hgt = (cell + MC_PIXEL_OVERLAP).toFixed(2);
@@ -9184,21 +9177,15 @@ function mcPaint(m){
       const X0 = c + i*cell, Y0 = c + j*cell, n = [0,0,0,0,0];
       for(const [a, b] of SAMPLES) n[roleAt(X0 + a*cell, Y0 + b*cell)]++;
       if(n[1] + n[2] + n[3] + n[4] < 2){ flush(); continue; }
-      let r = n[3] >= 2 ? 3 : n[4] >= 2 ? 4 : (n[2] > n[1] ? 2 : 1), dx = 0;
-      if(fx && fx.type === 'glitch'){
-        const bucket = Math.floor(fx.p*7), band = Math.floor(j/3);
-        if(mcHash(band, bucket + fx.seed) > 0.55) dx = Math.round((mcHash(bucket + fx.seed, band) - 0.5)*7) * cell;
-        if(mcHash(i + bucket*31 + fx.seed, j) > 0.94) r = 5;
-      }
-      const x = X0 + dx;
+      const r = n[3] >= 2 ? 3 : n[4] >= 2 ? 4 : (n[2] > n[1] ? 2 : 1), x = X0;
       if(run && run.r === r && Math.abs(run.x + run.w - x) < 0.01) run.w += cell;
       else { flush(); run = { r, x, y:Y0, w:cell }; }
     }
     flush();
   }
-  const fill = [null, m.shell, m.lit || m.shell, m.ink, m.rim, m.ink];
+  const fill = [null, m.shell, m.lit || m.shell, m.ink, m.rim];
   let out = '';
-  for(const r of [1, 2, 4, 3, 5]) if(d[r]) out += `<path d="${d[r]}" style="fill:${fill[r]}"/>`;
+  for(const r of [1, 2, 4, 3]) if(d[r]) out += `<path d="${d[r]}" style="fill:${fill[r]}"/>`;
   svg.innerHTML = out;
   if(svg.dataset.sq){ svg.style.transform = ''; svg.style.transformOrigin = ''; delete svg.dataset.sq; }
 }
@@ -9814,12 +9801,6 @@ function startMarkCube(){
        seconds, slower and deeper asleep. Small, but it is what stops him reading as a still. */
     mcState.breath = anim('markBreathes')
       ? 1 + (mcState.sleepy ? 0.026 : 0.016) * Math.sin(t * Math.PI * 2 / (mcState.sleepy ? 6 : 4.2)) : 1;
-    /* Now and then, at random, a glitch: six to eighteen seconds apart, awake and idle only. */
-    if(!mcState.glitchAt) mcState.glitchAt = now + 8000;
-    if(now > mcState.glitchAt){
-      mcState.glitchAt = now + 6000 + Math.random() * 12000;
-      if(anim('pixelGlitch') && !mcState.fx && !mcState.act && !mcState.sleepy) markPixelFx('glitch');
-    }
     /* Each word he says dips his eyes once, like a mouth moving. */
     { const e = (now - (mcState.talkAt || -1e9)) / 200;
       mcState.talkEh = e >= 0 && e < 1 ? 1 - 0.22 * Math.sin(Math.PI * e) : 1; }
@@ -10605,7 +10586,6 @@ function eyePreviewAction(key){
     case 'thinking':        { if(!anim('thinking')) return markAct('gotIt', { force:true });
                               const done = markThink(); setTimeout(done, 1900); return; }
     case 'talks':           return markSay('like this, a word at a time');
-    case 'pixelGlitch':     { markPixelFx('glitch'); return; }
     case 'strainOnHeavy':   { markStrain(1.03); setTimeout(()=>{ markStrain(null); markAct('sigh', { force:true }); }, 1600); return; }
     default:                return blinkOnce(el, null);
   }
@@ -13221,7 +13201,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.08.002';
+const APP_VERSION = '2026.11.08.003';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13617,6 +13597,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.08.003': 'Finer grain, no more random glitch, and the light on top of his head now moves with him: it slides back when he looks up, comes forward when he looks down, tilts when he leans and shifts as he turns.',
   '2026.11.08.002': 'Fine grain: his pixels are smaller and sit edge to edge, so he reads solid and the pixel look shows only at his outline and his eyes. Same moves as ever.',
   '2026.11.08.001': 'Switching tabs is calm again: the colour flood and the pixel rain are gone. He still reads the new title, and still glitches now and then on his own.',
   '2026.11.01.003': 'Fixed the header growing taller every time you switched tabs. The colour flood now sits behind the header properly and keeps up if the header is still opening.',
