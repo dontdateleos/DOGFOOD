@@ -9085,7 +9085,11 @@ function drawMarkCube(){ for(const m of mcMounts()) mcPaint(m); }
    pixels. A shut eye never drops below one row, so a blink still reads as a line. One path per
    colour keeps it to a handful of elements however many pixels there are. The outline dress
    (m.line) keeps the smooth painter. */
-const MC_PIXELS = 34, MC_PIXEL_MIN = 1.5;
+/* FINE GRAIN (.11.08.002): 56 across and no gaps between pixels, so the body reads solid and
+   the pixels show only at his edges and eyes. Each square overlaps its neighbour by a hair so
+   anti-aliasing never opens a seam between them. It was 34 across with the band showing
+   through every gap, which read as mesh. */
+const MC_PIXELS = 56, MC_PIXEL_MIN = 1.5, MC_PIXEL_OVERLAP = 0.35;
 const MC_FX_MS = { glitch:340 };
 const mcHash = (a, b)=>{ const v = Math.sin(a*127.1 + b*311.7) * 43758.5453; return v - Math.floor(v); };
 function mcFxNow(){
@@ -9159,7 +9163,6 @@ function mcPaint(m){
     if(rimW){ const dd = Math.hypot(x - rox, y - roy); if(dd >= h) return 4; }
     return m.lit && Math.hypot(x - c, y - (c + h*MC_LIT_DY)) > h*MC_LIT_R ? 2 : 1;
   };
-  const g = Math.max(0.4, cell * 0.14), sz = (cell - g).toFixed(2);
   const cx = ox + (c - ox)*esx + etx, cy = oy + (c - oy)*esy + ety, hx = h*esx + rimW + cell, hy = h*esy + rimW + cell;
   const i0 = Math.floor((cx - hx - c)/cell), i1 = Math.ceil((cx + hx - c)/cell);
   const j0 = Math.floor((cy - hy - c)/cell), j1 = Math.ceil((cy + hy - c)/cell);
@@ -9169,20 +9172,29 @@ function mcPaint(m){
      flash. It moves whole pixels, so he stays on the grid. (The tab-switch rain and colour
      flood were here and came out: too much on every swipe.) */
   const fx = mcFxNow();
-  for(let j = j0; j < j1; j++) for(let i = i0; i < i1; i++){
-    const X0 = c + i*cell, Y0 = c + j*cell, n = [0,0,0,0,0];
-    for(const [a, b] of SAMPLES) n[roleAt(X0 + a*cell, Y0 + b*cell)]++;
-    if(n[1] + n[2] + n[3] + n[4] < 2) continue;
-    let r = n[3] >= 2 ? 3 : n[4] >= 2 ? 4 : (n[2] > n[1] ? 2 : 1), dx = 0, dy = 0;
-    if(fx){
-      const q = fx.p;
-      if(fx.type === 'glitch'){
-        const bucket = Math.floor(q*7), band = Math.floor(j/3);
+  /* Each row is written as runs: neighbouring pixels of one colour become one rectangle, so a
+     row of 40 body pixels is one rect rather than 40. */
+  const hgt = (cell + MC_PIXEL_OVERLAP).toFixed(2);
+  for(let j = j0; j < j1; j++){
+    let run = null;
+    const flush = ()=>{ if(!run) return;
+      d[run.r] += `M${run.x.toFixed(2)} ${run.y.toFixed(2)}h${(run.w + MC_PIXEL_OVERLAP).toFixed(2)}v${hgt}h-${(run.w + MC_PIXEL_OVERLAP).toFixed(2)}z`;
+      run = null; };
+    for(let i = i0; i < i1; i++){
+      const X0 = c + i*cell, Y0 = c + j*cell, n = [0,0,0,0,0];
+      for(const [a, b] of SAMPLES) n[roleAt(X0 + a*cell, Y0 + b*cell)]++;
+      if(n[1] + n[2] + n[3] + n[4] < 2){ flush(); continue; }
+      let r = n[3] >= 2 ? 3 : n[4] >= 2 ? 4 : (n[2] > n[1] ? 2 : 1), dx = 0;
+      if(fx && fx.type === 'glitch'){
+        const bucket = Math.floor(fx.p*7), band = Math.floor(j/3);
         if(mcHash(band, bucket + fx.seed) > 0.55) dx = Math.round((mcHash(bucket + fx.seed, band) - 0.5)*7) * cell;
         if(mcHash(i + bucket*31 + fx.seed, j) > 0.94) r = 5;
       }
+      const x = X0 + dx;
+      if(run && run.r === r && Math.abs(run.x + run.w - x) < 0.01) run.w += cell;
+      else { flush(); run = { r, x, y:Y0, w:cell }; }
     }
-    d[r] += `M${(X0 + dx + g/2).toFixed(2)} ${(Y0 + dy + g/2).toFixed(2)}h${sz}v${sz}h-${sz}z`;
+    flush();
   }
   const fill = [null, m.shell, m.lit || m.shell, m.ink, m.rim, m.ink];
   let out = '';
@@ -13209,7 +13221,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.08.001';
+const APP_VERSION = '2026.11.08.002';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13605,6 +13617,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.08.002': 'Fine grain: his pixels are smaller and sit edge to edge, so he reads solid and the pixel look shows only at his outline and his eyes. Same moves as ever.',
   '2026.11.08.001': 'Switching tabs is calm again: the colour flood and the pixel rain are gone. He still reads the new title, and still glitches now and then on his own.',
   '2026.11.01.003': 'Fixed the header growing taller every time you switched tabs. The colour flood now sits behind the header properly and keeps up if the header is still opening.',
   '2026.11.01.002': 'Switching tabs, the new colour floods out across the header from where he sits while his pixels rain out and back in, and he lands with a bounce. Every so often he glitches for a moment, all on his own.',
