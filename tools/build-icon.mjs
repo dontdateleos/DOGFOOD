@@ -23,7 +23,7 @@ import { dirname, join } from 'path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const URL_ = process.env.ICON_URL || 'http://localhost:8899/index.html';
-const EXEC = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const EXEC = process.env.CHROME || '/opt/pw-browsers/chromium';
 /* The mark's own two colours are READ off the page rather than repeated here, for the same
    reason the drawing is: a copy of them in this file is a copy that goes stale the next time
    the mark is repainted, and it went stale exactly once already. The limb darkening needs no

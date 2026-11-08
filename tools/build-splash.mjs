@@ -27,7 +27,7 @@ import { dirname, join } from 'path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const URL_ = process.env.ICON_URL || 'http://localhost:8899/index.html';
-const EXEC = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const EXEC = process.env.CHROME || '/opt/pw-browsers/chromium';
 
 /* The ground is the manifest's background_color, read from the manifest rather than repeated:
    it is the colour the standalone app paints before the page does, and the colour Android's
