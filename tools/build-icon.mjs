@@ -68,6 +68,11 @@ const cube = await page.evaluate(() => {
   mcState.blink = 1; mcState.wide = 1; mcState.gx = 0; mcState.gy = 0;
   // The body moves too, or a bounce caught mid-flight would park the drawing squashed.
   mcState.body = null; mcState.sx = 1; mcState.sy = 1; mcState.ty = 0;
+  // Awake and plain: before the morning check-in he sleeps with his eyes shut to slits, and
+  // the moods can leave a lid or a squash behind. None of that belongs on the icon.
+  mcState.sleepy = false; mcState.act = null; mcState.sw = null; mcState.think = null; mcState.hold = null;
+  mcState.lidT = 0; mcState.lidA = 0; mcState.lidB = 0; mcState.swEh = 1; mcState.talkEh = 1;
+  mcState.actSy = 1; mcState.breath = 1; mcState.tx = 0; mcState.shake = 0;
   drawMarkCube();
   const svg = document.getElementById('headerMarkCube');
   // The body is the first drawn shape and it IS the whole extent. Which element it is says
