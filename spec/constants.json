@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.11.09.001",
+ "generatedFrom": "2026.11.09.002",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -358,6 +358,10 @@
     "note": "The pair and the docked face notice each other now and then, and what passes between them depends on whether they agree",
     "chance": 0.22,
     "restMs": 24000
+   },
+   "launchCurtain": {
+    "on": true,
+    "note": "Opening the app: he lifts off the wordmark, looks round, and flies up to the header as the black opens out"
    },
    "tearOnFlight": {
     "on": true,
@@ -1467,7 +1471,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.11.09.001",
+  "APP_VERSION": "2026.11.09.002",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1845,6 +1849,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.11.09.002": "A launch animation: as the app opens he lifts off the wordmark, grows, blinks and looks round, then flies up to his corner of the header as the black opens out from where he lands. Tap to skip it; calm mode turns it off.",
    "2026.11.09.001": "He is signal red now, on every tab, beside the name and on the app icon. Re-add the app to your home screen once to pick up the new icon.",
    "2026.11.08.004": "He is smooth again, as clean as the rest of the app. The light on his head still moves with him as he nods, leans and turns.",
    "2026.11.08.003": "Finer grain, no more random glitch, and the light on top of his head now moves with him: it slides back when he looks up, comes forward when he looks down, tilts when he leans and shifts as he turns.",
