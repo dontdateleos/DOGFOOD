@@ -73,6 +73,8 @@ const cube = await page.evaluate(() => {
   mcState.sleepy = false; mcState.act = null; mcState.sw = null; mcState.think = null; mcState.hold = null;
   mcState.lidT = 0; mcState.lidA = 0; mcState.lidB = 0; mcState.swEh = 1; mcState.talkEh = 1;
   mcState.actSy = 1; mcState.breath = 1; mcState.tx = 0; mcState.shake = 0;
+  // Lit as at noon whatever the time it is built, and his edge still (no jelly).
+  mcState.sunHour = 12; mcState.jelly = 0; mcState.jPrev = null;
   drawMarkCube();
   const svg = document.getElementById('headerMarkCube');
   // The body is the first drawn shape and it IS the whole extent. Which element it is says

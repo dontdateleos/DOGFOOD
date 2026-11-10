@@ -12,7 +12,7 @@
      Chrome has no name, no icon and no display mode to install with, so the app opened as a
      browser tab. start_url is index.html rather than "./" so the launcher and the service
      worker agree on which spelling of the address they are caching and launching. -->
-<link rel="manifest" href="manifest.webmanifest?v=863252a7">
+<link rel="manifest" href="manifest.webmanifest?v=f2307588">
 <meta name="theme-color" content="#0c0d0b">
 <!-- The ground is stamped before anything paints. It has to run here, in the head, off
      localStorage rather than the app's async storage, because the alternative is the page
@@ -32,7 +32,7 @@
      Home Screen — it falls through to the manifest or to a screenshot — and it holds whatever
      it did install harder than any max-age, so new bytes at the old name is a change nobody
      sees. ?v= is a hash of the art: same drawing, same URL; new drawing, new fetch. -->
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=863252a7">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=f2307588">
 <link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1320x2868.png?v=a5bd2438">
 <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1290x2796.png?v=a5bd2438">
 <link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1284x2778.png?v=a5bd2438">
@@ -45,7 +45,7 @@
 <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1170x2532.png?v=a5bd2438">
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1125x2436.png?v=a5bd2438">
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash/splash-750x1334.png?v=a5bd2438">
-<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAB1klEQVR4nOyUPSwEQRiGZ2ZnVvbv7rbARQQn0YhCpaBRKJBoVTqJKERxlUYkKokodBJRiFYlFAqJQiWRSBCiIQhOxM/atfbnZq0Q2eH27nCrurfad75v3yffZPfD1s1FdmZcwBCUWiaFXHoSGmODIueBaPRMIY4u3ZeIPPz91NENWzccw3BM06PUNV+o6+Z8H2FMRAFASASRSCIvS0SWvvR8AKht61cZS9MsXQe02Jl8sKU9+Q/Wo/Z+AhHyMRXxmJysRjz/dmIM9emXGdvPLbV4WZZrkvC8sxlEKQQiVhlQUDhPTekfkLp7uZj6srN9PzdL7+8+SygeTwyPCm0d2dubp5VlY20lLIRLN1TmLIidXepIGikxyPOkPoUrq8ytzc+qny519UBCUDwhtLVbe7vZzHXOnNAr4ptbgpY0NDK2PpWnOajQK0KywniOY+vM9kWKAn4K8McPWs9xGOsyFmIC/ggAjs1aJ19zcQA+aAtM8AuAR7NBS9lt+MUCL3QBh35Fztlp0FoHe0FrHx0wzacnITHh/4F9uM8lVFyVpNqDsb6qLS0w1eMjiDGuTgLXfd5Yf1ycDwOU13UZUAb8B4C0tILI5IcjdXwK19aBCERSTerE9CsAAAD//+azxpAAAAAGSURBVAMA5Nii1HFqES8AAAAASUVORK5CYII=">
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAABeUlEQVR4nOyVPUvDQBjHL8ldpNY0zdDaQWwruJQOTh3s0qGD+gGc/AAO0qGDi4i4iODkJoiDuDoVHToIDg5SKAq1WBy0tBR8w9a+qM2rmcod9OJrBCH/7cf/4flxR8LB7kOtsbYkn+XAb2cgFhcXV7kU05Lzp8CGaLWqWrlmqokIsDMssDmOwBH8AwG06ITZOffUDOeR3vK5+tamXn/qVawoeudTrlhce7xvZfY7hxnaEi4d8vUtBhNJaSHNCh6G51EwDH3+15PjXmtudyenGYRY0euKTXYL59rdbd891CviI1EcUWiMwGDYYhgP9YrYIYFgjiN7hhgWBPBVgXl8HA1FIVAlkIEI/FAAFJlExWr4cwIexw9O8A2BoWs46u22BQLDAJRQvyKlUsaxWyzgKJeKxHD5hrKG/h/IlxecV4L+gN5sdLIHzb0dor0qMRDC4QBQ1Zej7PPuNk3gPJmOwBH8hQBFJ4BtMZez0vI6HBkFNgSFx6WVjXcAAAD//7N3CbMAAAAGSURBVAMAEYZzBLgA0ooAAAAASUVORK5CYII=">
 <!-- THE FONT DOES NOT HOLD THE PAGE UP ANY MORE.
      It was pulled by @import from inside the stylesheet, which is the slowest way there is
      to load one: discovered only after the CSS has parsed, render-blocking once it is, and
@@ -5491,6 +5491,29 @@
     if(prefs && prefs.launchCurtain === false) return;
   }catch(e){}
   const NS = 'http://www.w3.org/2000/svg';
+  const SHADED = false;   // matches MC_SHADING in the main script: one flat colour for now
+  /* His sunlit patch at this hour, the same construction as mcSunDir and mcCapPath in the main
+     script (which has not loaded yet), so he opens lit the way he will be in the header. */
+  function sunCap(){
+    const d = new Date(), hr = d.getHours() + d.getMinutes()/60, f = (hr - 6)/12*Math.PI, up = Math.sin(f);
+    let A = [-Math.cos(f), -up, up > 0 ? 0.35 : 0.35 + up*1.25]; const al = Math.hypot(A[0], A[1], A[2]); A = A.map(x => x/al);
+    const k = 0.28, r = Math.sqrt(1 - k*k), c = 50, h = 50;
+    let u = Math.abs(A[2]) < 0.9 ? [A[1], -A[0], 0] : [0, A[2], -A[1]]; const ul = Math.hypot(u[0], u[1], u[2]) || 1; u = u.map(x => x/ul);
+    const v = [A[1]*u[2] - A[2]*u[1], A[2]*u[0] - A[0]*u[2], A[0]*u[1] - A[1]*u[0]], N = 96, pts = [];
+    for(let i = 0; i < N; i++){ const t = i/N*Math.PI*2, ct = Math.cos(t), st = Math.sin(t);
+      pts.push([0,1,2].map(j => k*A[j] + r*(u[j]*ct + v[j]*st))); }
+    const vis = pts.map(q => q[2] > 0), XY = q => (c + q[0]*h).toFixed(2) + ',' + (c + q[1]*h).toFixed(2);
+    if(vis.every(Boolean)) return 'M' + pts.map(XY).join('L') + 'Z';
+    if(!vis.some(Boolean)) return A[2] > k ? 'M0,50a50,50 0 1 0 100,0a50,50 0 1 0 -100,0Z' : '';
+    const s0 = vis.findIndex((x, i)=> x && !vis[(i - 1 + N) % N]), run = [];
+    for(let i = 0; i < N && vis[(s0 + i) % N]; i++) run.push(pts[(s0 + i) % N]);
+    const last = (s0 + run.length - 1) % N;
+    const edge = (a, b)=>{ const t = a[2]/(a[2] - b[2]), x = a[0] + (b[0] - a[0])*t, y = a[1] + (b[1] - a[1])*t, l = Math.hypot(x, y) || 1; return [x/l, y/l, 0]; };
+    const e0 = edge(pts[(s0 - 1 + N) % N], pts[s0]), e1 = edge(pts[(last + 1) % N], pts[last]);
+    const t1 = Math.atan2(e1[1], e1[0]), t0 = Math.atan2(e0[1], e0[0]);
+    const span = ((t0 - t1) % (Math.PI*2) + Math.PI*2) % (Math.PI*2), tm = t1 + span/2, fwd = Math.cos(tm)*A[0] + Math.sin(tm)*A[1] > k;
+    return 'M' + [e0, ...run, e1].map(XY).join('L') + 'A50 50 0 ' + ((fwd ? span : Math.PI*2 - span) > Math.PI ? 1 : 0) + ' ' + (fwd ? 1 : 0) + ' ' + XY(e0).replace(',', ' ') + 'Z';
+  }
   const cu = document.createElement('div'); cu.id = 'curtain'; cu.setAttribute('aria-hidden', 'true');
   const letters = [['D',-0.01],['O',-0.03],['G',0],['F',-0.04],['O',0.005],['O',-0.025],['D',0]];
   cu.innerHTML = '<div class="cu-ground"><div class="cu-word">'
@@ -5498,7 +5521,7 @@
     + `<svg class="cu-mark" viewBox="0 0 100 100" width="100" height="100"><g class="cu-body">
          <clipPath id="cuClip"><circle cx="50" cy="50" r="50"/></clipPath>
          <circle cx="50" cy="50" r="50" fill="#e3402a"/>
-         <path clip-path="url(#cuClip)" fill-rule="evenodd" fill="#ff7b62" d="M0,50a50,50 0 1 0 100,0a50,50 0 1 0 -100,0ZM-26.7,96.1a76.7,76.7 0 1 0 153.4,0a76.7,76.7 0 1 0 -153.4,0Z"/>
+         ${SHADED ? `<path clip-path="url(#cuClip)" fill="#ff7b62" d="${sunCap()}"/>` : ''}
          <g class="cu-eyes"><rect x="32" y="38.5" width="13" height="23" rx="6.5" fill="#fff7ec"/><rect x="55" y="38.5" width="13" height="23" rx="6.5" fill="#fff7ec"/></g>
        </g></svg>`;
   document.documentElement.classList.add('curtain-on');
@@ -7696,6 +7719,7 @@ const EYE_ANIM = {
   // — Sixth.
   chipBlinks:     { on:true, note:'The docked face blinks on its own clock — set by what you told it, not by what the score says' },
   chipAndMark:    { on:true, note:'The pair and the docked face notice each other now and then, and what passes between them depends on whether they agree', chance:0.22, restMs:24000 },
+  jellyEdge:      { on:true, note:'His outline wobbles like jelly when he moves, and settles when he stops' },
   launchCurtain:  { on:true, note:'Opening the app: he lifts off the wordmark, looks round, and flies up to the header as the black opens out' },
   tearOnFlight:   { on:true, note:'The mark tears as it lands — flying between the wordmark and the score, and perching as you scroll past it', px:6 },
 
@@ -9177,21 +9201,49 @@ function mcMounts(){
   return out;
 }
 function drawMarkCube(){ for(const m of mcMounts()) mcPaint(m); }
-/* THE LIT CAP IS PART OF HIM. It used to be a fixed crescent on the screen, so he could nod,
-   roll or turn and the light on his crown stayed put, which read as a sticker. It is a cap on
-   the sphere itself: every point whose direction from his centre lies within a set angle of
-   MC_CAP_AXIS, in his own frame (up and tipped back a little), rotated with him by the same
-   projection as the eyes. At rest it lands where the old crescent was: 0.39 of his radius deep
-   at the crown and meeting the edge at the same height. Nod and it slides back or forward,
-   roll and it tilts, turn and it shifts across him.
+/* LIT BY THE SUN (.11.10.001). The two-tone light on him comes from a light in the world, not
+   one painted on him: the lit patch is every part of his surface that faces the sun, so he can
+   turn as he likes and the light stays where the light is. The sun keeps the clock. At 6am it
+   comes from his left, low; at noon from overhead and a little in front; at 6pm from his
+   right; below the horizon it drops behind him and only a thin rim along his underside
+   catches it. mcState.sunHour, when set, overrides the clock (the icon builder pins noon).
 
-   Drawn smooth: the cap's rim is a circle on the sphere, so its visible part is sampled,
-   turned with him, and closed along his outline on whichever side is lit. (He was drawn in
-   pixels from .11.01 to .11.08; that came out in .11.08.004 for being less clean than the
-   rest of the app.) */
-const MC_CAP_AXIS = [0, -0.919, -0.394], MC_CAP_K = 0.251;
-function mcCapPath(P, c, h){
-  const A = P(MC_CAP_AXIS), k = MC_CAP_K, r = Math.sqrt(1 - k*k);
+   Before this the cap was part of him and turned with him (.11.08), and before that a crescent
+   fixed on the screen. mcCapPath draws either kind: give it the light's direction as it
+   reaches the screen and how wide the patch is.
+
+   Drawn smooth: the patch's rim is a circle on the sphere, so its visible part is sampled and
+   closed along his outline on whichever side is lit. */
+/* OFF FOR NOW (.11.10.001): he is one flat colour, no light on him at all. Everything below
+   still works; set this true to bring the sunlit patch back. */
+const MC_SHADING = false;
+const MC_SUN_K = 0.28;
+function mcSunDir(){
+  let hr = mcState.sunHour;
+  if(hr == null){ const d = new Date(); hr = d.getHours() + d.getMinutes()/60; }
+  const f = (hr - 6)/12 * Math.PI, up = Math.sin(f);
+  const v = [-Math.cos(f), -up, up > 0 ? 0.35 : 0.35 + up*1.25], l = Math.hypot(v[0], v[1], v[2]);
+  return v.map(x => x/l);
+}
+/* THE JELLY EDGE (.11.10.001). Perfect at rest; when he moves, his outline wobbles and settles,
+   by how fast he is turning, squashing or hopping (mcState.jelly, kept by the rig). Four slow
+   waves round his rim, turned with his roll so the wobble belongs to him. */
+const MC_JELLY = [[2, 1, 6.5, 0.7], [3, 0.8, -8, 2.1], [4, 0.6, 9.5, 4.0], [5, 0.4, -11, 5.3]];
+function mcJellyPath(c, h){
+  const amp = Math.min(0.06, (mcState.jelly || 0) * 0.0016);
+  if(!(amp > 0.0015)) return null;
+  const t = performance.now()/1000, rot = (mcState.rz || 0) * MC_RAD, N = 96;
+  let d = '';
+  for(let i = 0; i < N; i++){
+    const th = i/N * Math.PI*2; let w = 0;
+    for(const [k, a, sp, ph] of MC_JELLY) w += a * Math.sin(k*(th - rot) + ph + sp*t);
+    const r = h * (1 + amp*w);
+    d += (i ? 'L' : 'M') + (c + Math.cos(th)*r).toFixed(2) + ',' + (c + Math.sin(th)*r).toFixed(2);
+  }
+  return d + 'Z';
+}
+function mcCapPath(A, k, c, h){
+  const r = Math.sqrt(1 - k*k);
   let u = Math.abs(A[2]) < 0.9 ? [A[1], -A[0], 0] : [0, A[2], -A[1]];
   const ul = Math.hypot(u[0], u[1], u[2]) || 1; u = u.map(x => x/ul);
   const v = [A[1]*u[2] - A[2]*u[1], A[2]*u[0] - A[0]*u[2], A[0]*u[1] - A[1]*u[0]];
@@ -9236,6 +9288,9 @@ function mcPaint(m){
   svg.setAttribute('width', B); svg.setAttribute('height', B);
   svg.setAttribute('viewBox', `0 0 ${B} ${B}`);
   const P = mcProject(mcState.rx, mcState.ry, mcState.rz);
+  // His outline: a circle, or the jelly while he is moving. Shared by the body and both clips.
+  const jelly = m.line ? null : mcJellyPath(c, h);
+  const shapeEl = jelly ? `<path d="${jelly}"/>` : `<circle cx="${c}" cy="${c}" r="${h.toFixed(2)}"/>`;
   let out = '';
   if(m.line){
     /* THE OUTLINE IS THE SAME SOLID, UNPAINTED.
@@ -9246,13 +9301,12 @@ function mcPaint(m){
     out += `<circle cx="${c}" cy="${c}" r="${r.toFixed(2)}" fill="none"`
          + ` style="stroke:${m.line}" stroke-width="${t.toFixed(2)}"/>`;
   } else {
-    out += `<circle cx="${c}" cy="${c}" r="${h.toFixed(2)}" style="fill:${m.shell}"/>`;
-    /* The crescent, as the sphere MINUS the disc below it. Even-odd over the two circles and
-       clipped to the sphere, so what is left is exactly the lit arc — one filled shape, in one
-       colour, that never has to know what the body underneath it is. */
-    if(m.lit){
-      const cap = mcCapPath(P, c, h);
-      if(cap) out += `<clipPath id="${m.id}"><circle cx="${c}" cy="${c}" r="${h.toFixed(2)}"/></clipPath>`
+    out += shapeEl.replace('/>', ` style="fill:${m.shell}"/>`);
+    /* The sunlit patch, clipped to his outline. While the jelly is wobbling it is drawn on a
+       slightly bigger ball so it reaches into any bulge past the circle. */
+    if(m.lit && MC_SHADING){
+      const cap = mcCapPath(mcSunDir(), MC_SUN_K, c, jelly ? h*1.07 : h);
+      if(cap) out += `<clipPath id="${m.id}">${shapeEl}</clipPath>`
            + `<path clip-path="url(#${m.id})" style="fill:${m.lit}" d="${cap}"/>`;
     }
     /* THE HAIRLINE.
@@ -9345,7 +9399,7 @@ function mcPaint(m){
            + `<rect x="-1" y="-1" width="2" height="2" rx="1" ry="${ry.toFixed(3)}" style="fill:${m.ink}"/>${lids}</g>`;
     }
   }
-  if(eyes) out += `<clipPath id="${m.id}E"><circle cx="${c}" cy="${c}" r="${h.toFixed(2)}"/></clipPath>`
+  if(eyes) out += `<clipPath id="${m.id}E">${shapeEl}</clipPath>`
                 + `<g clip-path="url(#${m.id}E)">${eyes}</g>`;
   svg.innerHTML = out;
   /* THE SQUASH GOES ON THE SVG, NOT ON THE HOST.
@@ -9831,6 +9885,14 @@ function startMarkCube(){
        seconds, slower and deeper asleep. Small, but it is what stops him reading as a still. */
     mcState.breath = anim('markBreathes')
       ? 1 + (mcState.sleepy ? 0.026 : 0.016) * Math.sin(t * Math.PI * 2 / (mcState.sleepy ? 6 : 4.2)) : 1;
+    /* How fast he is moving, for the jelly edge: turn, squash and hop, smoothed. */
+    { const cur = [mcState.rx, mcState.ry, mcState.rz, mcState.sy * (mcState.actSy || 1), mcState.ty, mcState.tx || 0], pv = mcState.jPrev;
+      if(pv && anim('jellyEdge')){
+        const v = Math.abs(mcNorm(cur[0] - pv[0])) + Math.abs(mcNorm(cur[1] - pv[1])) + Math.abs(mcNorm(cur[2] - pv[2]))
+                + 300 * (Math.abs(cur[3] - pv[3]) + Math.abs(cur[4] - pv[4]) + Math.abs(cur[5] - pv[5]));
+        mcState.jelly = (mcState.jelly || 0) + (Math.min(60, v) * 4 - (mcState.jelly || 0)) * 0.08;
+      } else mcState.jelly = 0;
+      mcState.jPrev = cur; }
     /* Each word he says dips his eyes once, like a mouth moving. */
     { const e = (now - (mcState.talkAt || -1e9)) / 200;
       mcState.talkEh = e >= 0 && e < 1 ? 1 - 0.22 * Math.sin(Math.PI * e) : 1; }
@@ -13231,7 +13293,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.09.002';
+const APP_VERSION = '2026.11.10.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13627,6 +13689,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.10.001': 'He is one flat red now, no shading, and his edge wobbles like jelly when he moves and settles when he stops. The app icon matches.',
   '2026.11.09.002': 'A launch animation: as the app opens he lifts off the wordmark, grows, blinks and looks round, then flies up to his corner of the header as the black opens out from where he lands. Tap to skip it; calm mode turns it off.',
   '2026.11.09.001': 'He is signal red now, on every tab, beside the name and on the app icon. Re-add the app to your home screen once to pick up the new icon.',
   '2026.11.08.004': 'He is smooth again, as clean as the rest of the app. The light on his head still moves with him as he nods, leans and turns.',
