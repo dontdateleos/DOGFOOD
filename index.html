@@ -12,7 +12,7 @@
      Chrome has no name, no icon and no display mode to install with, so the app opened as a
      browser tab. start_url is index.html rather than "./" so the launcher and the service
      worker agree on which spelling of the address they are caching and launching. -->
-<link rel="manifest" href="manifest.webmanifest?v=f2307588">
+<link rel="manifest" href="manifest.webmanifest?v=7e02089b">
 <meta name="theme-color" content="#0c0d0b">
 <!-- The ground is stamped before anything paints. It has to run here, in the head, off
      localStorage rather than the app's async storage, because the alternative is the page
@@ -32,7 +32,7 @@
      Home Screen — it falls through to the manifest or to a screenshot — and it holds whatever
      it did install harder than any max-age, so new bytes at the old name is a change nobody
      sees. ?v= is a hash of the art: same drawing, same URL; new drawing, new fetch. -->
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=f2307588">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=7e02089b">
 <link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1320x2868.png?v=a5bd2438">
 <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1290x2796.png?v=a5bd2438">
 <link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1284x2778.png?v=a5bd2438">
@@ -45,7 +45,7 @@
 <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1170x2532.png?v=a5bd2438">
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/splash-1125x2436.png?v=a5bd2438">
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash/splash-750x1334.png?v=a5bd2438">
-<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAABeUlEQVR4nOyVPUvDQBjHL8ldpNY0zdDaQWwruJQOTh3s0qGD+gGc/AAO0qGDi4i4iODkJoiDuDoVHToIDg5SKAq1WBy0tBR8w9a+qM2rmcod9OJrBCH/7cf/4flxR8LB7kOtsbYkn+XAb2cgFhcXV7kU05Lzp8CGaLWqWrlmqokIsDMssDmOwBH8AwG06ITZOffUDOeR3vK5+tamXn/qVawoeudTrlhce7xvZfY7hxnaEi4d8vUtBhNJaSHNCh6G51EwDH3+15PjXmtudyenGYRY0euKTXYL59rdbd891CviI1EcUWiMwGDYYhgP9YrYIYFgjiN7hhgWBPBVgXl8HA1FIVAlkIEI/FAAFJlExWr4cwIexw9O8A2BoWs46u22BQLDAJRQvyKlUsaxWyzgKJeKxHD5hrKG/h/IlxecV4L+gN5sdLIHzb0dor0qMRDC4QBQ1Zej7PPuNk3gPJmOwBH8hQBFJ4BtMZez0vI6HBkFNgSFx6WVjXcAAAD//7N3CbMAAAAGSURBVAMAEYZzBLgA0ooAAAAASUVORK5CYII=">
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAABvElEQVR4nOxVPUvDQBh+k1xbm2hrQWsF8Qt1qII6uDhZB7WLiH/Bf+DkUhxcBP0H4iDi6iAuHdwUCuJkS6tQrG2n1qFJm7b5aOqFCs2VpCCYQcjDkdyT583zwHvHHZJKxdZ5zOui4K/R0IA5PKFqRwcc0wZ7IGoUss8dg6PbNNgMJ8AJ+AcBqJ+4HoHVNWAHIfsG8TsQq12J5WB7F+bCUOXh+RFeEr8PWFyBzejPPLysP29vumpkBxZX9YknCNF9+CrDZ9bUxrpFE9MEDY4TdDREFk+BBWiJ580Vr5cs7HvcsqzpZ2yOysm02zc04Pd7/D48uiJDdk9tEVQjKc30+Ep8tcnzslDVXfALDyjompvj3L5BGrk4VSV+UhUyTzUyRZIb+aKmKrJQk0XRKPUuMpY7FR6FCJArldJTArF639R6Y2Rrb2B2oRvQbAqFIpjBche1ySZotVrH2kgN1ZaXiuUuUvI5I5VSr0YqZ1JEce7DwgbfmtOjpoKcTjLDARQMaUJFjN8L15eE+p6hEEJjIbwY9Yc4f3VhFUAVNsJgJ5zT1AlwAnCAa2kFbAM2pwOxUzQxCTbANTMfOD77BgAA///JyISjAAAABklEQVQDAEPpn8tjn/p/AAAAAElFTkSuQmCC">
 <!-- THE FONT DOES NOT HOLD THE PAGE UP ANY MORE.
      It was pulled by @import from inside the stylesheet, which is the slowest way there is
      to load one: discovered only after the CSS has parsed, render-blocking once it is, and
@@ -5387,6 +5387,14 @@
      top light still reads. Written after every masthead variant at the same specificity, so it
      wins all of them. */
   body[class*="tab-"], html[data-masthead] body[class*="tab-"]{ --mark-shell:#e3402a; --mark-lit:#ff7b62; }
+  /* THE SKY (.11.10.002): the band shades with the time of day (see applySky), and once it is
+     dark enough the type in it turns cream, the way it does on the night band before the
+     morning check-in. After every masthead variant so it wins them all. */
+  body.sky-dark .header-brand, html[data-masthead] body.sky-dark .header-brand{ --bg:#fff7ec !important; --ink-rgb:255,247,236 !important; --label:#e9e3c9 !important; --sand:#fff7ec !important; }
+  html body.sky-dark header h1{ color:#fff7ec !important; -webkit-text-stroke-color:#fff7ec !important; }
+  body.sky-dark .header-brand .tab-label, body.sky-dark .header-brand .tab-label *{ color:#fff7ec !important; }
+  body.sky-dark .header-brand .tabs{ --lit:#fff7ec !important; }
+  body.sky-dark .header-brand .header-mark .eye-zzz i{ color:#fff7ec !important; }
   html[data-masthead="bright"] body.tab-insights .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
   html[data-masthead="bright"] body.tab-plan .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
   html[data-masthead="bright"] body.tab-injuries .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
@@ -5491,7 +5499,7 @@
     if(prefs && prefs.launchCurtain === false) return;
   }catch(e){}
   const NS = 'http://www.w3.org/2000/svg';
-  const SHADED = false;   // matches MC_SHADING in the main script: one flat colour for now
+  const SHADED = true;    // matches MC_SHADING in the main script
   /* His sunlit patch at this hour, the same construction as mcSunDir and mcCapPath in the main
      script (which has not loaded yet), so he opens lit the way he will be in the header. */
   function sunCap(){
@@ -7719,6 +7727,7 @@ const EYE_ANIM = {
   // — Sixth.
   chipBlinks:     { on:true, note:'The docked face blinks on its own clock — set by what you told it, not by what the score says' },
   chipAndMark:    { on:true, note:'The pair and the docked face notice each other now and then, and what passes between them depends on whether they agree', chance:0.22, restMs:24000 },
+  skyShade:       { on:true, note:'The header band shades with the time of day, warm at sunrise and sunset, deep at night, and he is lit by the sun' },
   jellyEdge:      { on:true, note:'His outline wobbles like jelly when he moves, and settles when he stops' },
   launchCurtain:  { on:true, note:'Opening the app: he lifts off the wordmark, looks round, and flies up to the header as the black opens out' },
   tearOnFlight:   { on:true, note:'The mark tears as it lands — flying between the wordmark and the score, and perching as you scroll past it', px:6 },
@@ -9214,9 +9223,8 @@ function drawMarkCube(){ for(const m of mcMounts()) mcPaint(m); }
 
    Drawn smooth: the patch's rim is a circle on the sphere, so its visible part is sampled and
    closed along his outline on whichever side is lit. */
-/* OFF FOR NOW (.11.10.001): he is one flat colour, no light on him at all. Everything below
-   still works; set this true to bring the sunlit patch back. */
-const MC_SHADING = false;
+/* On (.11.10.002). It was off for one version, when he was one flat colour. */
+const MC_SHADING = true;
 const MC_SUN_K = 0.28;
 function mcSunDir(){
   let hr = mcState.sunHour;
@@ -11933,7 +11941,51 @@ async function logTodayAsPlanned(){
 // rubber-band scroll past the end of the page shows the same colour as the page.
 /* The browser's own top bar and the status-bar strip take theme-color, so it follows the
    band rather than staying the near-black it was written as when the masthead was dark. */
+/* THE SKY. The band takes the time of day: warm and a little dark around sunrise, its own
+   colour by day (a touch brighter at noon, and lighter on the side the sun is on), warm again
+   at sunset, and deep at night, when its type turns cream (body.sky-dark). Keyframes on the
+   hour, between the tab's own band and the app's black. The night band before the morning
+   check-in is left as it is. Runs wherever the theme colour is synced (every tab switch and
+   every change to the morning state) and once a minute. */
+const SKY_INK = [12,13,11], SKY_WHITE = [255,255,255], SKY_DAWN = [255,154,107], SKY_DUSK = [255,127,85];
+const skyMix = (a, b, t)=> a.map((v, i)=> v + (b[i] - v)*t);
+function skyBandAt(B, hr){
+  const K = [[0, skyMix(B, SKY_INK, 0.76)], [5, skyMix(B, SKY_INK, 0.76)],
+    [6.5, skyMix(skyMix(B, SKY_DAWN, 0.3), SKY_INK, 0.2)], [8, B], [12.5, skyMix(B, SKY_WHITE, 0.07)], [16.5, B],
+    [18.2, skyMix(skyMix(B, SKY_DUSK, 0.34), SKY_INK, 0.22)], [19.8, skyMix(B, SKY_INK, 0.6)],
+    [21, skyMix(B, SKY_INK, 0.76)], [24, skyMix(B, SKY_INK, 0.76)]];
+  for(let i = 1; i < K.length; i++) if(hr <= K[i][0]){ const f = (hr - K[i-1][0])/(K[i][0] - K[i-1][0]); return skyMix(K[i-1][1], K[i][1], f); }
+  return K[K.length - 1][1];
+}
+function skyParse(str){
+  str = String(str || '').trim();
+  let m = str.match(/^#([0-9a-f]{6})$/i); if(m) return [0, 2, 4].map(i => parseInt(m[1].slice(i, i + 2), 16));
+  m = str.match(/^#([0-9a-f]{3})$/i); if(m) return [...m[1]].map(ch => parseInt(ch + ch, 16));
+  m = str.match(/rgba?\(([^)]+)\)/); if(m) return m[1].split(',').slice(0, 3).map(v => parseFloat(v));
+  return null;
+}
+function skyLum(c){ const s = c.map(v => { v /= 255; return v <= 0.03928 ? v/12.92 : Math.pow((v + 0.055)/1.055, 2.4); });
+  return 0.2126*s[0] + 0.7152*s[1] + 0.0722*s[2]; }
+function applySky(){
+  const b = document.body, brand = document.querySelector('.header-brand');
+  b.style.removeProperty('--banner');
+  const off = !(EYE_ANIM.skyShade && EYE_ANIM.skyShade.on) || b.classList.contains('morning-pending');
+  if(off){ b.classList.remove('sky-dark'); if(brand) brand.style.backgroundImage = ''; return; }
+  const base = skyParse(getComputedStyle(b).getPropertyValue('--banner')); if(!base) return;
+  let hr = mcState.sunHour; if(hr == null){ const d = new Date(); hr = d.getHours() + d.getMinutes()/60; }
+  const c = skyBandAt(base, hr);
+  b.style.setProperty('--banner', '#' + c.map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join(''));
+  b.classList.toggle('sky-dark', skyLum(c) < 0.2);
+  if(brand){
+    const L = mcSunDir(), up = Math.max(0, -L[1]), a = 0.16 * up * Math.abs(L[0]);
+    brand.style.backgroundImage = a > 0.004
+      ? `linear-gradient(${L[0] < 0 ? 'to right' : 'to left'}, rgba(255,255,255,${a.toFixed(3)}), rgba(0,0,0,0.05))` : '';
+  }
+}
+setInterval(()=>{ try{ syncThemeColor(); }catch(e){} }, 60000);
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) try{ syncThemeColor(); }catch(e){} });
 function syncThemeColor(){
+  try{ applySky(); }catch(e){}
   try{
     const c = getComputedStyle(document.body).getPropertyValue('--banner').trim();
     if(c) document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.setAttribute('content', c));
@@ -13293,7 +13345,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.10.001';
+const APP_VERSION = '2026.11.10.002';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13689,6 +13741,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.10.002': 'He is lit by the sun now: from the left in the morning, from above at midday, from the right in the evening. The header follows the day too, warm at sunrise and sunset and deep at night, when its type turns cream.',
   '2026.11.10.001': 'He is one flat red now, no shading, and his edge wobbles like jelly when he moves and settles when he stops. The app icon matches.',
   '2026.11.09.002': 'A launch animation: as the app opens he lifts off the wordmark, grows, blinks and looks round, then flies up to his corner of the header as the black opens out from where he lands. Tap to skip it; calm mode turns it off.',
   '2026.11.09.001': 'He is signal red now, on every tab, beside the name and on the app icon. Re-add the app to your home screen once to pick up the new icon.',
