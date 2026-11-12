@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.11.10.002",
+ "generatedFrom": "2026.11.12.001",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1507,7 +1507,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.11.10.002",
+  "APP_VERSION": "2026.11.12.001",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1885,6 +1885,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.11.12.001": "The little red dot after Dogfood is just a dot now, no eyes, and it sits a touch closer to the D.",
    "2026.11.10.002": "He is lit by the sun now: from the left in the morning, from above at midday, from the right in the evening. The header follows the day too, warm at sunrise and sunset and deep at night, when its type turns cream.",
    "2026.11.10.001": "He is one flat red now, no shading, and his edge wobbles like jelly when he moves and settles when he stops. The app icon matches.",
    "2026.11.09.002": "A launch animation: as the app opens he lifts off the wordmark, grows, blinks and looks round, then flies up to his corner of the header as the black opens out from where he lands. Tap to skip it; calm mode turns it off.",
@@ -2003,7 +2004,7 @@
    "longevity": "Longevity"
   },
   "TAB_TITLES": {},
-  "WORDMARK_HTML": "<div class=\"logo-line\"><span style=\"margin-right:-0.01em;\">D</span><span style=\"margin-right:-0.03em;\">o</span><span>g</span><span style=\"margin-right:-0.04em;\">f</span><span style=\"margin-right:0.005em;\">o</span><span style=\"margin-right:-0.025em;\">o</span><span>d</span><i class=\"tm\" aria-hidden=\"true\"><svg viewBox=\"0 0 20 20\"><circle cx=\"10\" cy=\"10\" r=\"10\" style=\"fill:var(--mark-shell)\"></circle><rect x=\"6.1\" y=\"6.3\" width=\"2.6\" height=\"6.4\" rx=\"1.3\" style=\"fill:var(--mark-eye)\"></rect><rect x=\"11.3\" y=\"6.3\" width=\"2.6\" height=\"6.4\" rx=\"1.3\" style=\"fill:var(--mark-eye)\"></rect></svg></i></div>",
+  "WORDMARK_HTML": "<div class=\"logo-line\"><span style=\"margin-right:-0.01em;\">D</span><span style=\"margin-right:-0.03em;\">o</span><span>g</span><span style=\"margin-right:-0.04em;\">f</span><span style=\"margin-right:0.005em;\">o</span><span style=\"margin-right:-0.025em;\">o</span><span>d</span><i class=\"tm\" aria-hidden=\"true\"><svg viewBox=\"0 0 20 20\"><circle cx=\"10\" cy=\"10\" r=\"10\" style=\"fill:var(--mark-shell)\"></circle></svg></i></div>",
   "SHIFT_MS": 560,
   "CONFIRM_FILL_STEPS": 14,
   "SIG_TAU": 7,
@@ -3201,7 +3202,7 @@
     "movement": "push"
    },
    "hinge": {
-    "name": "Romanian Deadlift",
+    "name": "Deadlift",
     "area": "hamstrings",
     "secondaryArea": "lower_back",
     "movement": "hinge"
