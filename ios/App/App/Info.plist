@@ -28,6 +28,8 @@
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Dogfood reads your heart rate variability, resting heart rate, sleep, breathing rate, wrist temperature, steps and runs from Apple Health to work out how recovered you are and to plan your training. It never writes to Health, and your health data stays on this iPhone.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Dogfood only reads from Apple Health and never saves anything to it. Apple asks every Health app to include this note.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
