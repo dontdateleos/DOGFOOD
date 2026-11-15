@@ -13439,7 +13439,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.025';
+const APP_VERSION = '2026.11.15.026';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13835,6 +13835,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.026': 'The widget now shows the same number as the app, even before Charge has enough history to take over. It goes blank at midnight instead of showing last night\'s number, and the long-day drain keeps ticking down on it while the app is closed.',
   '2026.11.15.025': 'Charge on your lock screen and home screen: a Dogfood widget showing your charge, where it went today, and your next session. Long-press the lock screen, Customise, and add Dogfood. It updates whenever the app works the number out.',
   '2026.11.15.024': 'Garmin runs log themselves: a run that reaches Apple Health is logged as the run planned that day (or an easy one), with its heart rate, so it counts on your week, your Charge and your Performance. A low Charge before a lifting session now offers to trim it to the main lifts or move it to tomorrow, and a run planned before a lift offers to swap them. Trends shows Charge as it really goes: up overnight, down through each day. And how much a session drains you is learned from your own days with two sessions.',
   '2026.11.15.023': 'The number is your Charge now: how much you have left to perform with. It starts each morning where your readiness is, drops with every workout (more for a bigger one than your usual), with a busier-than-usual day on your feet and with a very long day, and only refills when you sleep. The line under it says where it went (woke at 78 \u00b7 lift \u221214). A second workout is read against what is left. And each session now gets a Performance score of its own when you finish it: how it went against your trend, beside the charge you had going in.',
@@ -18556,23 +18557,50 @@ const WidgetBridge = (()=>{
   try{ const C = window.Capacitor; return C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin ? C.registerPlugin('WidgetBridge') : null; }
   catch(e){ return null; }
 })();
-async function pushChargeToWidget(sr){
-  if(!WidgetBridge || !sr || !sr.available) return;
+/* What the widget is sent is exactly what the headline shows, whichever model produced it:
+   Charge once Systemic Readiness has earned the number, the capacity or early read before
+   that, and nothing at all on a day with no reading (shown = null), so yesterday's evening
+   number never sits on the lock screen the next morning. The widget cannot see Health, so the
+   one drain it can carry on with by itself is the clock: the long-day points. It is sent the
+   charge without them and the moment they start, and draws them hour by hour (DogfoodWidget). */
+async function pushChargeToWidget(sr, shown){
+  if(!WidgetBridge) return;
   try{
-    const ch = sr.charge;
+    if(shown == null){ await WidgetBridge.update({ day: todayStr }); return; }
+    const ch = sr && sr.available ? sr.charge : null;
     const merged = [];
-    (ch ? ch.parts : []).forEach(p=>{ const m = merged.find(x=> x.label === p.label); if(m){ m.pts += p.pts; m.n++; } else merged.push({ ...p, n: 1 }); });
+    let longPts = 0;
+    (ch ? ch.parts : []).forEach(p=>{
+      if(p.label === 'long day'){ longPts += p.pts; return; }
+      const m = merged.find(x=> x.label === p.label); if(m){ m.pts += p.pts; m.n++; } else merged.push({ ...p, n: 1 });
+    });
+    let longFrom = null;
+    if(ch){
+      try{
+        const entry = JSON.parse((await window.storage.get(keyFor(todayStr))).value);
+        const wake = entry && typeof entry.wakeClock === 'string' ? entry.wakeClock.split(':').map(Number) : null;
+        const wakeH = wake && !isNaN(wake[0]) ? wake[0] + (wake[1] || 0) / 60 : 7;
+        longFrom = localDateFrom(todayStr).getTime() + (wakeH + CHARGE_LONG_DAY_H) * 3600000;
+      } catch(e){}
+    }
     let session = null;
     try{
       const found = await todaysBlockAnySlot();
       const done = (await getAllTrainingSessions()).some(sn=> sn && sn.date === todayStr && found && found.block && sn.type === found.block.type);
       if(found && found.block && (found.block.type === 'strength' || found.block.type === 'run')) session = done ? 'Done for today' : sessionTitle(found.block);
     } catch(e){}
-    await WidgetBridge.update({
-      charge: ch ? ch.charge : sr.shown, start: ch ? ch.start : sr.shown,
-      drain: merged.map(p=> `${p.n > 1 ? p.label + 's' : p.label} \u2212${p.pts}`).join(' \u00b7 '),
+    const payload = {
+      day: todayStr,
+      charge: Math.round(shown),
+      base: Math.round(shown + longPts),
       session: session || ''
-    });
+    };
+    if(ch){
+      payload.start = Math.round(ch.start);
+      payload.drain = merged.map(p=> `${p.n > 1 ? p.label + 's' : p.label} \u2212${p.pts}`).join(' \u00b7 ');
+      if(longFrom != null){ payload.longFrom = longFrom; payload.longMax = CHARGE_LONG_DAY_MAX; }
+    }
+    await WidgetBridge.update(payload);
   } catch(e){}
 }
 async function refreshCharge(){
@@ -18581,7 +18609,7 @@ async function refreshCharge(){
     lastSrResult.charge = await computeCharge(lastSrResult);
     const shown = updateOverallScore(null, null, null, null, null, lastSrResult);
     syncHeaderScore(shown);
-    pushChargeToWidget(lastSrResult);
+    pushChargeToWidget(lastSrResult, shown);
   } catch(e){}
 }
 setInterval(refreshCharge, 15 * 60 * 1000);
@@ -40467,6 +40495,7 @@ async function generateRecommendations(){
     if(scoreOut){ scoreOut.textContent = '\u2014'; scoreOut.classList.add('score-waiting'); delete scoreOut.dataset.value; }
     if(scoreLbl) scoreLbl.textContent = 'Not logged yet';
     syncHeaderScore(null);
+    pushChargeToWidget(null, null);
     // The ring offer is rendered INTO the card container, and the container now folds — so
     // collapsing the stack would hide the one action this state still has to offer. It is not
     // a card and does not belong behind the stack's handle: shown outright when there is one,
@@ -40511,7 +40540,7 @@ async function generateRecommendations(){
   lastSrResult = srResult;
   renderReadinessConfidence(srResult);
   const overallShown = updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, entry, srResult);
-  pushChargeToWidget(srResult);
+  pushChargeToWidget(srResult, overallShown);
   renderScoreTrace(overallShown);
   syncHeaderScore(overallShown);
 
