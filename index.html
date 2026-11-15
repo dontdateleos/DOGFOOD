@@ -6395,7 +6395,7 @@ if(!window.__pnHold)window.__curtain();
               <button id="generateProgramFromGoalsBtn" class="small">Generate</button>
               <button class="small outline" id="clearAllWeekBtn">Clear everything</button>
             </div>
-            <div class="week-actions"><button type="button" class="small outline" id="exportCalendarBtn">Export calendar</button><button type="button" class="small outline" id="rebalanceWeekBtn">Rebalance week</button></div>
+            <div class="week-actions"><button type="button" class="small outline" id="exportCalendarBtn">Export calendar</button><button type="button" class="small outline" id="rebalanceWeekBtn">Rebalance week</button><button type="button" class="small outline" id="topUpWeekBtn">Top up arms &amp; shoulders</button></div>
             <button type="button" id="undoWeekChangeBtn" class="small outline" style="display:none; margin-top:8px;">Undo last change</button>
             <div id="deloadSuggestedNote" class="score-note note-live" style="display:none;"></div>
           </div>
@@ -13419,7 +13419,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.020';
+const APP_VERSION = '2026.11.15.021';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13815,6 +13815,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.021': 'Keep the week you like and still get the arm and shoulder work: Build \u2192 Top up arms & shoulders adds what your planned weeks are short of into the strength days you already have, at the end of each, only where it still fits the session. Your days, sessions and exercises stay exactly as they are, and Undo puts it back.',
   '2026.11.15.020': 'Lateral raises too, and rear delts on a muscle goal: the same fault as the arms (presses counted for the side delts, so the raises came last and were cut). How much protected small-muscle work a week gets now follows how long you lift in it, so a short week keeps its rows and presses, and the work goes on the day with the most time to spare.',
   '2026.11.15.019': 'Arms get trained. Every generated week now holds direct biceps and triceps work: two exercises each (six sets) on a muscle goal, one each (three sets) otherwise, and a short session drops other accessories before it drops them. Before, your presses and rows counted for so much arm work that curls and extensions were picked last and then cut to fit the time, so many weeks had none. Generate again to get them in this week.',
   '2026.11.15.018': 'Your scale counts now. In the iPhone app your weight and body fat come from Apple Health (a Withings writes them there), morning weigh-in first, and never over a day you saved yourself. Weight is read as a smoothed trend rather than this morning\u2019s water, for your bodyweight lifts and strength level; body fat is the middle of the last two weeks, so one odd reading can no longer start a cut; pull-ups and dips now count toward how the score learns; and waking more than 1% under your trend is read as short on water.',
@@ -20916,6 +20917,24 @@ async function restoreWeekUndo(){
   renderTodayWorkoutSummary();
 }
 document.getElementById('undoWeekChangeBtn').addEventListener('click', ()=>{ restoreWeekUndo().catch(()=>showToast('Could not restore that change', true)); });
+document.getElementById('topUpWeekBtn')?.addEventListener('click', async ()=>{
+  const btn = document.getElementById('topUpWeekBtn');
+  btn.disabled = true;
+  try{
+    const r = await topUpSmallMuscleWork();
+    const dayName = d=> localDateFrom(d).toLocaleDateString([], { weekday:'short' });
+    if(r.added.length){
+      showToast(`Added ${r.added.map(a=> `${a.name} (${dayName(a.date)})`).join(', ')}`);
+    } else if(r.missed.length){
+      showToast(`No room left this week for ${r.missed.join(', ').toLowerCase()} \u2014 a longer session or another day would fit it`, true);
+    } else {
+      showToast('Nothing to add \u2014 your planned weeks already have their arm and shoulder work');
+    }
+    renderWeekGrid();
+    renderTodayWorkoutSummary();
+  } catch(e){ showToast('Could not top up the week', true); }
+  finally{ btn.disabled = false; }
+});
 
 /* YOU DID A DIFFERENT SESSION. Legs sore, so Upper today instead of the planned Lower — and
    until now the log recorded it as Lower (the record took the plan's tag whatever the lifts
@@ -30338,6 +30357,107 @@ function markMovementUsed(ex, usedNames){
   exerciseIdentityKeys(ex).forEach(k => usedNames.add(k));
 }
 
+/* The direct small-muscle floor for a week: see DIRECT ARM WORK, GUARANTEED in the
+   generator for why it exists and why it scales with the week's lifting minutes. One table,
+   read by the generator and by Top up, so the two can never ask for different amounts. */
+function smallMuscleFloor(goalType, isDeload, liftMinutes){
+  const growing = goalType === 'hypertrophy' && !isDeload;
+  if(growing){
+    if(liftMinutes >= 240) return { biceps: 6, triceps: 6, side_delts: 6, rear_delts: 3 };
+    if(liftMinutes >= 160) return { biceps: 3, triceps: 3, side_delts: 6, rear_delts: 3 };
+    return { biceps: 3, triceps: 3, side_delts: 3 };
+  }
+  return liftMinutes >= 160 ? { biceps: 3, triceps: 3, side_delts: 3 } : { biceps: 3, triceps: 3 };
+}
+
+/* TOP UP: THE FLOOR, WITHOUT REGENERATING. Adds the direct arm and shoulder work a planned
+   week is short of into the strength days it already has, and changes nothing else: same
+   days, same sessions, same exercises, same order. For a week planned before the floor
+   existed, or one you have shaped by hand and do not want rebuilt. Today and the days after
+   it only, never a day already logged; the week's earlier days still count toward what it
+   already holds. A day takes an addition only if it still fits its session length (five
+   minutes of give), and the day with the most time to spare goes first. Undoable. */
+async function topUpSmallMuscleWork(){
+  let setup = {};
+  try{ setup = JSON.parse((await window.storage.get('settings:trainingSetup')).value) || {}; } catch(e){}
+  const sessionLength = parseInt(setup.sessionLength, 10) || 60;
+  const goals = await getCurrentGoals(todayStr);
+  const goalType = goals && goals.list && goals.list[0] ? goals.list[0].type : null;
+  let logged = [];
+  try{ logged = await getAllTrainingSessions(); } catch(e){}
+  const loggedDates = new Set(logged.filter(sn=> sn && sn.type === 'strength').map(sn=> sn.date));
+  const personalSets = await getPersonalSetsByCategory();
+  const equipmentPrefs = await getEquipmentPrefs();
+  const injuryMovementFlags = await getInjuryMovementFlags();
+  const keys = ((await window.storage.list('weekplan:')).keys || []);
+  const byWeek = {};
+  for(const k of keys){
+    const m = /^weekplan:(\d{4}-\d{2}-\d{2}):(am|pm)$/.exec(k);
+    if(!m) continue;
+    const date = m[1];
+    if(date < getWeekStartFor(todayStr)) continue;
+    let block = null;
+    try{ block = JSON.parse((await window.storage.get(k)).value); } catch(e){}
+    if(!block || block.type !== 'strength' || !block.details || !Array.isArray(block.details.exercises)) continue;
+    const wk = getWeekStartFor(date);
+    (byWeek[wk] = byWeek[wk] || []).push({ key: k, date, block, raw: JSON.stringify(block) });
+  }
+  const undo = [], added = [], missed = [];
+  const areaOf = ex=>{ const g = ex.area ? null : guessTagsFromLibrary(ex.name || ''); return ex.area || (g && g.primary) || ''; };
+  for(const wk of Object.keys(byWeek).sort()){
+    const days = byWeek[wk];
+    const isDeload = await isDeloadWeek(wk);
+    const floor = smallMuscleFloor(goalType, isDeload, days.length * sessionLength);
+    const usedNames = new Set();
+    days.forEach(d=> d.block.details.exercises.forEach(ex=>{ markMovementUsed(EXERCISE_LIBRARY[ex.exerciseId] || ex, usedNames); }));
+    const directPicksByArea = {};
+    const weekRotationIndex = Math.floor(new Date(wk).getTime() / (7*24*60*60*1000));
+    const changed = new Set();
+    for(const area of Object.keys(floor)){
+      const have = ()=> days.reduce((a, d)=> a + d.block.details.exercises.reduce((b, ex)=> b + (areaOf(ex) === area ? (+ex.sets || 0) : 0), 0), 0);
+      for(let guard = 0; guard < 4 && have() < floor[area]; guard++){
+        const slackOf = d=>{
+          try{ return sessionLength - estimateSessionDuration({ type:'strength', details:{ exercises: d.block.details.exercises, plannedFocus: d.block.details.plannedFocus } }, null, personalSets, sessionLength); }
+          catch(e){ return 0; }
+        };
+        const open = days.filter(d=> d.date >= todayStr && !loggedDates.has(d.date)
+          && (TAG_TO_AREAS[d.block.details.workoutTag] || TAG_TO_AREAS.full_body).includes(area))
+          .sort((a, b)=> (a.block.details.exercises.some(ex=> areaOf(ex) === area) - b.block.details.exercises.some(ex=> areaOf(ex) === area)) || (slackOf(b) - slackOf(a)));
+        let placed = false;
+        for(const d of open){
+          const picks = selectVolumeGapAccessories({
+            tag: area + '_only', weekSetsByArea: { [area]: 0 }, daysRemaining: 1, goalType,
+            emphasisAreas: [area], blockPhase: 'accumulation', bodyweightOnly: !!equipmentPrefs.bodyweightAll,
+            usedNames, injuryMovementFlags, maxPicks: 1, weekRotationIndex, directPicksByArea
+          });
+          if(!picks.length) break;
+          const pk = picks[0];
+          assignPrescription(pk, d.block.details.plannedFocus, personalSets);
+          if(isDeload) pk.sets = Math.max(2, Math.ceil((+pk.sets || 3) * DELOAD_CUT));
+          pk.armFloor = true;
+          const trial = d.block.details.exercises.concat([pk]);
+          let est = 0;
+          try{ est = estimateSessionDuration({ type:'strength', details:{ exercises: trial, plannedFocus: d.block.details.plannedFocus } }, null, personalSets, sessionLength); } catch(e){}
+          if(est > sessionLength + 5){ usedNames.delete(pk.name); continue; }
+          d.block.details.exercises.push(pk);
+          changed.add(d);
+          added.push({ date: d.date, name: pk.name });
+          placed = true;
+          break;
+        }
+        if(!placed){ missed.push(BODY_AREAS[area] || area); break; }
+      }
+    }
+    for(const d of changed){
+      undo.push({ key: d.key, value: d.raw, date: d.date });
+      await window.storage.set(d.key, JSON.stringify(d.block));
+      await syncPlannedSessionMirror(d.date);
+    }
+  }
+  if(undo.length) offerWeekUndo(undo, 'top up');
+  return { added, missed: [...new Set(missed)] };
+}
+
 function selectVolumeGapAccessories({ tag, weekSetsByArea, daysRemaining, goalType, usedNames, injuryMovementFlags, maxPicks, emphasisAreas, blockPhase, bodyweightOnly, weekRotationIndex, directPicksByArea, blocksCompleted, blockProgressionFactor }){
   weekRotationIndex = weekRotationIndex || 0;
   directPicksByArea = directPicksByArea || {};
@@ -37585,13 +37705,8 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
                      under 2h40: arms and laterals 3 each
        other goals   2h40+: arms and laterals 3 each
                      under: arms 3 each */
-  const growing = topGoalType === 'hypertrophy' && effectiveBlockPhase !== 'deload';
   const liftMinutes = dayStates.length * (sessionLength || 60);
-  const ARM_FLOOR_SETS = growing
-    ? (liftMinutes >= 240 ? { biceps: 6, triceps: 6, side_delts: 6, rear_delts: 3 }
-      : liftMinutes >= 160 ? { biceps: 3, triceps: 3, side_delts: 6, rear_delts: 3 }
-      : { biceps: 3, triceps: 3, side_delts: 3 })
-    : (liftMinutes >= 160 ? { biceps: 3, triceps: 3, side_delts: 3 } : { biceps: 3, triceps: 3 });
+  const ARM_FLOOR_SETS = smallMuscleFloor(topGoalType, effectiveBlockPhase === 'deload', liftMinutes);
   const directArmSets = area => dayStates.reduce((acc, st)=> acc + st.exercises.reduce((a, ex)=>{
     const g = ex.area ? null : guessTagsFromLibrary(ex.name || '');
     return a + (((ex.area || (g && g.primary)) === area) ? (+ex.sets || 0) : 0);
