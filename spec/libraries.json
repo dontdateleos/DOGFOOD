@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.11.12.001",
+ "generatedFrom": "2026.11.15.001",
  "generatedBy": "tools/spec-dump.mjs",
  "libraries": {
   "EXERCISE_LIBRARY": {
@@ -6400,11 +6400,11 @@
     "foamRoll": "Foam roll thoracic spine extensions, 10-12 slow passes",
     "static": "Thread the needle hold, 30-45s each side",
     "dynamic": "Cat-cow and open book rotations, 8-10 each side",
-    "pnf": "Not typically PNF'd directly — pair foam rolling with active rotation holds instead",
+    "pnf": null,
     "eccentric": "Loaded pullover, slow lower — 3 sets x 8-10"
    },
    "lower_back": {
-    "foamRoll": "Avoid direct lower-back rolling — foam roll glutes/hips instead to offload it",
+    "foamRoll": null,
     "static": "Child's pose hold, 45-60s",
     "dynamic": "Cat-cow, bird dog, 8-10 reps each",
     "pnf": "Band-assisted hip flexor/hamstring PNF (addresses lower back indirectly), 3-4 cycles",
@@ -6414,7 +6414,7 @@
     "foamRoll": "Full-body roll: calves, quads, hamstrings, upper back, 30-45s each",
     "static": "Brief static hold circuit through major muscle groups, 30s each",
     "dynamic": "Easy cardio + dynamic stretch circuit",
-    "pnf": "Pick 1-2 tightest areas from above for targeted PNF work rather than doing all areas",
+    "pnf": null,
     "eccentric": "Slow eccentric circuit — pick one loaded stretch per restricted area, 3s lowers"
    }
   },
