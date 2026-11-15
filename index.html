@@ -1735,6 +1735,8 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .score-ghost[hidden]{ display:none; }
   .score-stack > .score-num{ position:relative; z-index:1; }
   .score-label{ font-family:var(--sans); font-size:var(--fs-tag); color:var(--dim);  letter-spacing:0.05em; margin-top:4px; -webkit-text-stroke:0.15px currentColor; }
+  /* What the number has meant for you, in kilos or seconds: one quiet line under the gauge. */
+  .score-meaning{ font-family:var(--sans); font-size:var(--fs-tag); color:var(--dim); text-align:center; max-width:34ch; margin:6px auto 0; line-height:1.4; text-wrap:balance; }
   .score-note{ font-size:var(--fs-tag); color:var(--dim); margin-top:8px; line-height:1.4; letter-spacing:0.015em; font-weight:var(--fw-medium); }
   /* ---------- TWO VOICES IN A NOTE ----------
 
@@ -5996,6 +5998,7 @@ if(!window.__pnHold)window.__curtain();
         <span class="conf-chevron" id="scoreChevron">▾</span>
       </div>
     </div>
+    <div class="score-meaning" id="scoreMeaning" hidden></div>
     <div id="scoreTrace" role="img" aria-label=""></div>
     <!-- The suggestion, small, in the column the trace used to face across. -->
     <div id="recLeft" role="button" tabindex="0" style="display:none;"></div>
@@ -13416,7 +13419,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.015';
+const APP_VERSION = '2026.11.15.016';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13812,6 +13815,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.016': 'The score reads today for what today asks. A lifting day and a running day are weighed differently and each learns from its own sessions; it counts what is still spent in the muscles today\u2019s session uses (heavy squats yesterday matter to today\u2019s deadlift, not your bench); and it notices a late bedtime, a heart rate that bottomed out late in the night, and jet lag after a time-zone change. Once it has enough sessions, a line under the number says what it has meant for you in kilos or seconds per km, and how well it has tracked you. Progress no longer reads as readiness: each session is judged against your trend through it. And the illness check stands down properly: it compares each night with a moving normal and clears within days, where a slow drift in resting heart rate could hold the score down for weeks.',
   '2026.11.15.015': 'The readiness number now answers how well you can perform today, and tunes itself to you by checking each morning against what you then did: your top sets against that lift\u2019s recent normal, your runs\u2019 speed per heartbeat against your recent runs. It also reads fitness minus fatigue from your whole training history (so a hard week turns into a good one instead of just reading as tired), how much you walked yesterday outside training, and how long you will have been awake at the hour you usually train. Last night\u2019s sleep now counts as last night, not as an average of the week around it. 50 is a typical day for you, 100 your best, 0 your worst. All automatic.',
   '2026.11.15.014': 'Apple Health is the one source now, and the Oura connection is gone. Your Oura and Garmin apps write to Health and Dogfood reads it there: sleep from the ring (one night, not the ring and the watch added together), resting heart rate from the lowest half hour asleep, time awake from your sleep stages, and a run recorded by both kept once. HRV is out of the score, since neither shares it with Health, and the device boxes in the check-in have gone with it. Trends shows resting heart rate and sleep instead.',
   '2026.11.15.013': 'On iPhone you now feel it: a light tap on every button, a tick for each row a wheel passes and each tab you swipe to, a knock when a hold lands, and a buzz when something saves or fails. Settings → Appearance has a switch if you would rather not.',
@@ -14385,6 +14389,21 @@ document.addEventListener('change', e=>{
   const t = e.target;
   if(t && t.matches && t.matches('select')) haptic('tick');
 }, true);
+/* WHICH TIME ZONE THE PHONE WAS IN, BY DAY. Kept on the device (it is a fact about this
+   phone) so a flight shows up as a shift: see jetLagZ. Recorded on every open; fourteen days
+   is all the jet-lag term ever looks back. */
+const TZ_LOG_KEY = 'settings:tzByDate';
+function tzLog(){ try{ return JSON.parse(localStorage.getItem(TZ_LOG_KEY) || '{}') || {}; } catch(e){ return {}; } }
+(function noteTimeZone(){
+  try{
+    const log = tzLog();
+    const d = new Date(), key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    log[key] = -d.getTimezoneOffset();
+    const keep = Object.keys(log).sort().slice(-21);
+    const out = {}; keep.forEach(k=>{ out[k] = log[k]; });
+    localStorage.setItem(TZ_LOG_KEY, JSON.stringify(out));
+  } catch(e){}
+})();
 const NATIVE_HEALTH_KEY = 'settings:nativeHealth';
 const NATIVE_HEALTH_LAST_KEY = 'settings:nativeHealthLastSync';
 const NATIVE_HEALTH_AUTH_KEY = 'settings:nativeHealthAuth';
@@ -14443,6 +14462,8 @@ async function syncNativeHealth(days){
       gap('activeCalories', num(d.activeCalories, 0));
       gap('durationHrs', num(d.sleepHours, 2));
       gap('wakeClock', hhmm(d.wakeAt));
+      gap('bedClock', hhmm(d.bedStart));
+      own('hrNadirFrac', num(d.hrNadirFrac, 2));
       if(awakeOf(existing) == null) gap('awakeMin', num(d.awakeMin, 0));
       own('sleepSource', typeof d.sleepSource === 'string' ? d.sleepSource : null);
       if(typeof d.wristTempC === 'number'){
@@ -15427,6 +15448,16 @@ function effectiveN(n, rho){ return n * (1 - rho) / (1 + rho); }
 /* One channel's normalisation. `values` is oldest-first over the trailing window, with nulls
    where nothing was observed. Returns the smoothed level, the acute deviation, and how much
    of the baseline actually exists yet. */
+/* A channel already on the score's own scale (local fatigue, jet lag): no z-scoring, maturity
+   from how many days carry a reading. The same shape regularity builds inline. */
+function absoluteChannel(series){
+  const obs = series.filter(v=> v != null && !isNaN(v));
+  if(!obs.length) return { n:0, nEff:0, M:0, z:0, zAcute:0, zUsed:0, available:false };
+  const last = [...series].reverse().find(v=> v != null && !isNaN(v));
+  const M = Math.min(1, obs.length / 10);
+  return { n:obs.length, nEff:obs.length, M, z:last, zAcute:last, zUsed: M * last, available:true,
+           zSeries: series, zAcuteSeries: series };
+}
 function normaliseChannel(values, opts){
   const o = opts || {};
   const obs = values.filter(v=>v != null && !isNaN(v));
@@ -15753,6 +15784,112 @@ async function buildSignalWindowUncached(asOfDate, days){
   _sessions.forEach(sn=>{ if(sn && sn.startedAt){ const t = new Date(sn.startedAt); if(!isNaN(t)) startHours.push(t.getHours() + t.getMinutes() / 60); } });
   entries.forEach(e=>{ if(e && Array.isArray(e.appleRuns)) e.appleRuns.forEach(r=>{ const t = r && r.start ? new Date(r.start) : null; if(t && !isNaN(t)) startHours.push(t.getHours() + t.getMinutes() / 60); }); });
   const trainHour = startHours.length >= 5 ? medianOf(startHours.slice(-30)) : null;
+  /* WHEN THE NIGHT BOTTOMED OUT. Heart rate normally reaches its low in the first half of the
+     night; a low that comes late, close to waking, is a body still busy with something (a
+     drink, a late meal, a hard day, a bug). Stored as 0 at falling asleep to 1 at waking. Read
+     against your own normal, and one-sided: later than usual costs, earlier earns nothing,
+     because an early low is the ordinary night rather than a good one. Negated before
+     scoring so the one-sided rule keeps the late side. */
+  const nadirSeries = pick(e=> e.hrNadirFrac == null || isNaN(+e.hrNadirFrac) ? null : -(+e.hrNadirFrac));
+  /* BED LATER THAN USUAL. Going to bed well past your habit costs the next day even at the
+     same hours slept: the body clock and the sleep are out of step. Minutes past midnight,
+     unwrapped around your median like wake time, negated and one-sided the same way: later
+     costs, earlier does not earn. */
+  const bedRaw = pick(e=>{
+    if(!e.bedClock || typeof e.bedClock !== 'string') return null;
+    const [h, m] = e.bedClock.split(':').map(Number);
+    return (isNaN(h) || isNaN(m)) ? null : h * 60 + m;
+  });
+  const bedMedian = medianOf(bedRaw.filter(v=>v != null).map(v=> v < 720 ? v + 1440 : v));
+  const bedSeries = bedRaw.map(v=>{
+    if(v == null || bedMedian == null) return null;
+    let x = v < 720 ? v + 1440 : v;           // after midnight counts as late, not early
+    let d = x - bedMedian;
+    if(d > 720) d -= 1440; else if(d < -720) d += 1440;
+    return -(bedMedian + d);
+  });
+  /* WHICH MUSCLES TODAY ASKS FOR, AND WHAT IS LEFT IN THEM. Tissue readiness already tracks
+     damage per muscle group (tissueDamage); this asks it the question the score needs: for
+     the groups this session will use, how much of their usual capacity is still spent. Today
+     reads the plan; a past day reads what you actually trained, which is what lets the
+     learning engine judge this term against real performance. Runs use the legs. */
+  const RUN_AREAS = ['quads_knees', 'hamstrings', 'calves', 'glutes', 'ankles'];
+  const areasOfExercises = list=>{
+    const out = new Set();
+    (list || []).forEach(ex=>{
+      if(!ex || !ex.name) return;
+      const g = (!ex.area) ? guessTagsFromLibrary(ex.name) : null;
+      const a = ex.area || (g && g.primary);
+      if(a && a !== 'full_body') out.add(a);
+    });
+    return [...out];
+  };
+  const asOf = dates[dates.length - 1];
+  let planKind = null, planAreas = [], planLift = null, planRunType = null;
+  for(const slot of ['am', 'pm']){
+    let b = null;
+    try{ b = JSON.parse((await window.storage.get(`weekplan:${asOf}:${slot}`)).value); } catch(err){}
+    if(!b || !b.type) continue;
+    if(b.type === 'strength' && planKind == null){
+      planKind = 'lift';
+      const exs = (b.details && b.details.exercises) || [];
+      planAreas = areasOfExercises(exs);
+      const main = exs.find(ex=> ex && ex.name);
+      planLift = main ? main.name : null;
+    } else if(b.type === 'run' && planKind == null){
+      planKind = 'run'; planAreas = RUN_AREAS.slice();
+      planRunType = (b.details && (b.details.runType || b.details.type)) || null;
+    }
+  }
+  const strengthSessions = _sessions.filter(sn=> sn && sn.type === 'strength' && sn.date);
+  const areasByDate = {};
+  _sessions.forEach(sn=>{
+    if(!sn || !sn.date) return;
+    const a = sn.type === 'run' ? RUN_AREAS : areasOfExercises(sn.exercises);
+    areasByDate[sn.date] = [...new Set([...(areasByDate[sn.date] || []), ...a])];
+  });
+  entries.forEach(e=>{ if(e && Array.isArray(e.appleRuns) && e.appleRuns.length) areasByDate[e.date] = [...new Set([...(areasByDate[e.date] || []), ...RUN_AREAS])]; });
+  if(planAreas.length && !areasByDate[asOf]) areasByDate[asOf] = planAreas;
+  // Capacity per group: the 90th percentile of its own morning damage over the last 90 days.
+  const capOf = {};
+  if(strengthSessions.length){
+    const hist = {};
+    for(let k = Math.min(90, dates.length) - 1; k >= 0; k -= 3){
+      const d = dates[dates.length - 1 - k];
+      const dm = tissueDamage(strengthSessions.filter(sn=> sn.date < d), d).damage;
+      Object.keys(dm).forEach(a=>{ (hist[a] = hist[a] || []).push(dm[a]); });
+    }
+    Object.keys(hist).forEach(a=>{
+      const v = hist[a].filter(x=> x > 0).sort((x,y)=> x-y);
+      if(v.length >= 5) capOf[a] = v[Math.min(v.length - 1, Math.floor(0.9 * v.length))];
+    });
+  }
+  const localSeries = dates.map(d=>{
+    const want = (areasByDate[d] || []).filter(a=> capOf[a] > 0);
+    if(!want.length) return null;
+    const dm = tissueDamage(strengthSessions.filter(sn=> sn.date < d), d).damage;
+    // Share of capacity still spent in the groups the day uses, 0 fresh to about 1 at your
+    // own heavy end; read as up to -2.5 so a wrecked pair of legs counts like two bad nights.
+    const spent = want.reduce((acc, a)=> acc + (1 - Math.exp(-(dm[a] || 0) / capOf[a])), 0) / want.length;
+    return Math.max(-SIG_CLAMP, -2.5 * spent);
+  });
+  /* JET LAG. The phone's time zone by day (TZ_LOG_KEY). After a shift of H hours the body
+     clock catches up at roughly an hour a day, so the cost is the hours not yet caught up,
+     a third of a point each, up to 1.5. Null when nothing has shifted in a fortnight, so a
+     person who never travels does not carry a constant zero in their budget. */
+  const tzl = tzLog();
+  const jetSeries = dates.map(d=>{
+    const known = Object.keys(tzl).filter(k=> k <= d && k >= shiftDateStr(d, -14)).sort();
+    if(known.length < 2) return null;
+    let change = null;
+    for(let k = 1; k < known.length; k++){
+      if(tzl[known[k]] !== tzl[known[k - 1]]) change = { at: known[k], h: Math.abs(tzl[known[k]] - tzl[known[k - 1]]) / 60 };
+    }
+    if(!change) return null;
+    const days = Math.round((localDateFrom(d) - localDateFrom(change.at)) / 86400000);
+    const left = Math.max(0, change.h - days);
+    return left > 0 ? -Math.min(1.5, left / 3) : null;
+  });
   /* FORM — WHERE YOUR LIFTS HAVE ACTUALLY BEEN LATELY.
 
      Every other channel in this window is a measurement of your body at rest. None of them is
@@ -15837,6 +15974,11 @@ async function buildSignalWindowUncached(asOfDate, days){
     fitFatigue: normaliseChannel(ffSeries, { baselineMask }),
     // Inverted: more walking yesterday than usual is a little less in the legs today.
     activity: normaliseChannel(activitySeries, { invert:true, baselineMask }),
+    nadir:    normaliseChannel(nadirSeries, { negativeOnly:true, baselineMask }),
+    bedtime:  normaliseChannel(bedSeries, { negativeOnly:true, baselineMask }),
+    // Absolute, like regularity: already on the score's own scale.
+    localFatigue: absoluteChannel(localSeries),
+    jetLag:   absoluteChannel(jetSeries),
     // Not inverted: more form is more readiness, which is the one channel here where the
     // obvious direction is the right one.
     form:     normaliseChannel(formSeries, { baselineMask }),
@@ -15892,6 +16034,7 @@ async function buildSignalWindowUncached(asOfDate, days){
     hrvSource: hrvRec.source, hrvSourceSince: hrvRec.since,
     hrvBaseline: hrvBaselineFrom(hrvSeries.filter((v, i)=> !baselineMask[i])),
     wakeMedianMin: wakeMedian, wakeMinutes: wakeMin, trainHour, drinkMask, unwellMask, baselineMask,
+    planKind, planAreas, planLift, planRunType,
     drankLastNight: !!drinkMask[drinkMask.length - 1],
     rhrBaseline: medianOf(rhrSeries.filter(v=>v != null)),
     observedNights, windowNights: possible,
@@ -15982,23 +16125,57 @@ const LEARN_MAX_SHIFT = 0.6;        // a learned weight can never move more than
    runs are pooled. */
 function performanceOutcomes(sessions, win, idxOf){
   const out = [];
-  const sorted = (sessions || []).filter(sn=> sn && sn.date).slice().sort((a,b)=> a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
-  const liftHist = {}, runHist = {}, effHist = [];
   const clampR = r => Math.max(-0.3, Math.min(0.3, r));
-  const recent = (list, date, days)=> list.filter(h=> h.date < date && h.date >= shiftDateStr(date, -days)).slice(-5).map(h=> h.v);
+  /* THE NORMAL A SESSION IS JUDGED AGAINST: your trend through it, not the sessions just
+     before it. A baseline built from the last few sessions soaks up everything that moves
+     slowly (sleep debt, a fatigued week, fitness built over a block), so the learning saw
+     those terms predict nothing and turned them down, which was the label being wrong rather
+     than the terms. Found by simulation: the score tracked true capacity at r = 0.81 while
+     the old label agreed with true capacity at only 0.44.
+
+     So the normal is a straight line through every measurement of the same lift (or run
+     measure) within 60 days either side, the session itself left out. Long-term progress is
+     what a line removes; the week-to-week ups and downs readiness is about are left in. This
+     is a label for learning, written after the fact, which is why it may look forward; the
+     morning score never sees it. Four points over three weeks or more, else the median of
+     what there is; three points at least, else nothing. Held within 5% below the lowest and
+     8% above the highest so one odd session cannot fling it. */
+  const normalAt = (list, date)=>{
+    const lo = shiftDateStr(date, -60), hi = shiftDateStr(date, 60);
+    const pts = list.filter(h=> h.date !== date && h.date >= lo && h.date <= hi);
+    if(pts.length < 3) return null;
+    const vals = pts.map(h=> h.v);
+    const med = medianOf(vals);
+    const x = pts.map(h=> (localDateFrom(h.date) - localDateFrom(date)) / 86400000);
+    if(pts.length < 4 || (Math.max(...x) - Math.min(...x)) < 21) return med;
+    const mx = x.reduce((a,b)=>a+b,0) / x.length, my = vals.reduce((a,b)=>a+b,0) / vals.length;
+    let sxy = 0, sxx = 0;
+    x.forEach((xi, k)=>{ sxy += (xi - mx) * (vals[k] - my); sxx += (xi - mx) * (xi - mx); });
+    if(!sxx) return med;
+    const at0 = my - (sxy / sxx) * mx;   // the line at the session's own date (x = 0)
+    return Math.max(Math.min(...vals) * 0.95, Math.min(Math.max(...vals) * 1.08, at0));
+  };
   const hrFor = (date, durMin)=>{
     const i = idxOf[date];
     const e = i != null ? win.entries[i] : null;
     const runs = e && Array.isArray(e.appleRuns) ? e.appleRuns : [];
-    const m = runs.find(r=> r && r.avgHR && r.durationMin && (!durMin || Math.abs(r.durationMin - durMin) <= Math.max(5, durMin * 0.2)));
-    return m ? m : null;
+    return runs.find(r=> r && r.avgHR && r.durationMin && (!durMin || Math.abs(r.durationMin - durMin) <= Math.max(5, durMin * 0.2))) || null;
   };
   const push = (date, kind, r)=>{ const i = idxOf[date]; if(i != null && win.entries[i] && isFinite(r)) out.push({ i, date, kind, r: clampR(r) }); };
+
+  /* First every measurement, then every judgement, because the normal looks both ways. */
+  const lifts = {};          // lift name -> [{date, v: best e1RM}]
+  const liftSessions = [];   // [{date, names: [...] }]
+  const eff = [];            // speed per heartbeat, logged and Health-only runs together
+  const paceByType = {};     // run type -> [{date, v: min/km}]
+  const runMeas = [];        // [{date, effV?, type?, paceV?}]
   const loggedRunDates = new Set();
-  for(const sn of sorted){
+  (sessions || []).forEach(sn=>{
+    if(!sn || !sn.date) return;
     if(sn.type === 'strength'){
-      const rs = [];
+      const names = [];
       (sn.exercises || []).forEach(ex=>{
+        // Sets left at their prescribed reps measure the programme, not you.
         if(!ex || ex.repsPrefilled) return;
         const ws = Array.isArray(ex.weightPerSet) && ex.weightPerSet.length ? ex.weightPerSet : [ex.weight];
         const reps = Array.isArray(ex.repsPerSet) && ex.repsPerSet.length ? ex.repsPerSet : [ex.reps];
@@ -16011,40 +16188,51 @@ function performanceOutcomes(sessions, win, idxOf){
         });
         if(best == null) return;
         const name = (ex.name || '').trim().toLowerCase();
-        const hist = liftHist[name] = liftHist[name] || [];
-        const prior = recent(hist, sn.date, 120);
-        if(prior.length >= 3) rs.push(best / medianOf(prior) - 1);
-        hist.push({ date: sn.date, v: best });
+        (lifts[name] = lifts[name] || []).push({ date: sn.date, v: best });
+        names.push(name);
       });
-      if(rs.length) push(sn.date, 'lift', rs.reduce((a,b)=>a+b,0) / rs.length);
+      if(names.length) liftSessions.push({ date: sn.date, names });
     } else if(sn.type === 'run' && sn.distanceKm > 0 && sn.durationMin > 0){
       loggedRunDates.add(sn.date);
       const hr = hrFor(sn.date, sn.durationMin);
-      if(hr){
-        const eff = (sn.distanceKm / sn.durationMin) / hr.avgHR;
-        const prior = recent(effHist, sn.date, 180);
-        if(prior.length >= 3){ push(sn.date, 'run', eff / medianOf(prior) - 1); effHist.push({ date: sn.date, v: eff }); continue; }
-        effHist.push({ date: sn.date, v: eff });
-      }
-      const type = sn.runType || 'run';
-      const hist = runHist[type] = runHist[type] || [];
-      const pace = sn.durationMin / sn.distanceKm;
-      const prior = recent(hist, sn.date, 180);
-      if(prior.length >= 3) push(sn.date, 'run', medianOf(prior) / pace - 1);
-      hist.push({ date: sn.date, v: pace });
+      const m = { date: sn.date };
+      if(hr){ m.effV = (sn.distanceKm / sn.durationMin) / hr.avgHR; eff.push({ date: sn.date, v: m.effV }); }
+      m.type = sn.runType || 'run';
+      m.paceV = sn.durationMin / sn.distanceKm;
+      (paceByType[m.type] = paceByType[m.type] || []).push({ date: sn.date, v: m.paceV });
+      runMeas.push(m);
     }
-  }
-  // Runs only Health saw: speed per heartbeat, against the same efficiency history.
+  });
+  // Runs only Health saw: speed per heartbeat alone, since a run with no type has no fair
+  // pace to be compared with.
   win.dates.forEach((d, i)=>{
     const e = win.entries[i];
     if(!e || loggedRunDates.has(d) || !Array.isArray(e.appleRuns)) return;
     e.appleRuns.forEach(r=>{
       if(!r || !(r.distanceKm > 0) || !(r.durationMin > 0) || !(r.avgHR > 0)) return;
-      const eff = (r.distanceKm / r.durationMin) / r.avgHR;
-      const prior = recent(effHist.slice().sort((a,b)=> a.date < b.date ? -1 : 1), d, 180);
-      if(prior.length >= 3) push(d, 'run', eff / medianOf(prior) - 1);
-      effHist.push({ date: d, v: eff });
+      const v = (r.distanceKm / r.durationMin) / r.avgHR;
+      eff.push({ date: d, v }); runMeas.push({ date: d, effV: v });
     });
+  });
+  liftSessions.forEach(ls=>{
+    const rs = [];
+    ls.names.forEach(name=>{
+      const mine = lifts[name].filter(h=> h.date === ls.date);
+      const v = Math.max(...mine.map(h=> h.v));
+      const n0 = normalAt(lifts[name], ls.date);
+      if(n0) rs.push(v / n0 - 1);
+    });
+    if(rs.length) push(ls.date, 'lift', rs.reduce((a,b)=>a+b,0) / rs.length);
+  });
+  runMeas.forEach(m=>{
+    if(m.effV != null){
+      const n0 = normalAt(eff, m.date);
+      if(n0){ push(m.date, 'run', m.effV / n0 - 1); return; }
+    }
+    if(m.paceV != null && m.type){
+      const n0 = normalAt(paceByType[m.type], m.date);
+      if(n0) push(m.date, 'run', n0 / m.paceV - 1);   // faster than normal is better
+    }
   });
   return out;
 }
@@ -16103,47 +16291,79 @@ async function learnWeights(asOfDate){
   const keys = Object.keys(SR_WEIGHTS);
   // Each session against its own day's sleep debt. Today's debt for every past session made
   // the input constant, its correlation zero, and the weight shrink however good the evidence.
-  const paired = outcomes.map(o=>({ y:o.y, parts: srComponentsAt(win, o.i, sleepDebtZ(win, o.i)) }));
+  const paired = outcomes.map(o=>({ y:o.y, r:o.r, kind:o.kind, parts: srComponentsAt(win, o.i, sleepDebtZ(win, o.i)) }));
   if(paired.length < LEARN_MIN_SESSIONS){
     _learnedCache = { date, at:Date.now(), value:null };
     return null;
   }
 
-  const learned = {}, detail = {};
-  keys.forEach(k=>{
-    const pts = paired.filter(p=> p.parts[k] != null && !isNaN(p.parts[k]));
-    if(pts.length < LEARN_MIN_SESSIONS){ learned[k] = SR_WEIGHTS[k]; return; }
-    const xs = pts.map(p=>p.parts[k]), ys = pts.map(p=>p.y);
-    // Unweighted now that every label carries the same weight. It used to pass a per-session
-    // weight here; with blinding gone there is nothing to tell the sessions apart.
-    let r = pearson(xs, ys);
-    /* n_eff, not n. The daily series is autocorrelated, which makes a naive interval far too
-       narrow, so the count is discounted before it is believed.
-       It used to be discounted twice: Kish's formula first, because a weighted correlation
-       has a smaller effective sample than its count, and then the autocorrelation. The
-       weights went with blinding and Kish's term went with them — every session counts one
-       now, and the Kish n of a uniform weighting is just the count. */
-    const rho = lag1Autocorr(xs);
-    const nEff = Math.max(2, effectiveN(pts.length, rho));
-    // Only the part of the correlation bigger than its own error bar counts.
-    const se = (1 - r * r) / Math.sqrt(nEff - 1);
-    const shrunk = Math.sign(r) * Math.max(0, Math.abs(r) - se);
-    // How far the prior is allowed to move, from how much evidence there is.
-    const lambda = Math.min(1, nEff / LEARN_FULL_AT) * LEARN_MAX_SHIFT;
-    // A component that shows nothing fades toward zero; one that shows a real positive
-    // relationship gains. Never inverted — a negative correlation on this little data is
-    // noise, and letting it flip a sign would have the app rewarding bad sleep.
-    const factor = 1 + lambda * (Math.max(0, shrunk) * 2 - 1);
-    learned[k] = Math.max(0, SR_WEIGHTS[k] * factor);
-    detail[k] = { r: Math.round(r * 100) / 100, shrunk: Math.round(shrunk * 100) / 100,
-                  n: pts.length, nEff: Math.round(nEff * 10) / 10,
-                  weight: Math.round(learned[k] * 1000) / 1000 };
+  /* Learned against a base: the kind's own tilted priors (kindPriors), so lifting and
+     running each move from where the research puts them, on their own sessions. */
+  const learnFrom = (pairs, base)=>{
+    const learned = {}, detail = {};
+    keys.forEach(k=>{
+      const pts = pairs.filter(p=> p.parts[k] != null && !isNaN(p.parts[k]));
+      if(pts.length < LEARN_MIN_SESSIONS){ learned[k] = base[k]; return; }
+      const xs = pts.map(p=>p.parts[k]), ys = pts.map(p=>p.y);
+      // Unweighted: every label carries the same weight.
+      let r = pearson(xs, ys);
+      /* n_eff, not n. The daily series is autocorrelated, which makes a naive interval far
+         too narrow, so the count is discounted before it is believed. */
+      const rho = lag1Autocorr(xs);
+      const nEff = Math.max(2, effectiveN(pts.length, rho));
+      // Only the part of the correlation bigger than its own error bar counts.
+      const se = (1 - r * r) / Math.sqrt(nEff - 1);
+      const shrunk = Math.sign(r) * Math.max(0, Math.abs(r) - se);
+      // How far the prior is allowed to move, from how much evidence there is.
+      const lambda = Math.min(1, nEff / LEARN_FULL_AT) * LEARN_MAX_SHIFT;
+      // A component that shows nothing fades toward zero; one that shows a real positive
+      // relationship gains. Never inverted — a negative correlation on this little data is
+      // noise, and letting it flip a sign would have the app rewarding bad sleep.
+      const factor = 1 + lambda * (Math.max(0, shrunk) * 2 - 1);
+      learned[k] = Math.max(0, base[k] * factor);
+      detail[k] = { r: Math.round(r * 100) / 100, shrunk: Math.round(shrunk * 100) / 100,
+                    n: pts.length, nEff: Math.round(nEff * 10) / 10,
+                    weight: Math.round(learned[k] * 1000) / 1000 };
+    });
+    // Renormalised so the composite stays on the same scale as the priors.
+    const total = Object.values(learned).reduce((a,b)=>a+b, 0);
+    const priorTotal = Object.values(base).reduce((a,b)=>a+b, 0);
+    if(total > 0) keys.forEach(k=>{ learned[k] = learned[k] * priorTotal / total; });
+    return { weights: learned, detail };
+  };
+  const all = learnFrom(paired, SR_WEIGHTS);
+  const byKind = {}, detailByKind = {}, nByKind = {};
+  ['lift', 'run'].forEach(kind=>{
+    const these = paired.filter(p=> p.kind === kind);
+    nByKind[kind] = these.length;
+    if(these.length >= LEARN_MIN_SESSIONS){
+      const r = learnFrom(these, kindPriors(kind));
+      byKind[kind] = r.weights; detailByKind[kind] = r.detail;
+    }
   });
-  // Renormalised so the composite stays on the same scale as the priors.
-  const total = Object.values(learned).reduce((a,b)=>a+b, 0);
-  const priorTotal = Object.values(SR_WEIGHTS).reduce((a,b)=>a+b, 0);
-  if(total > 0) keys.forEach(k=>{ learned[k] = learned[k] * priorTotal / total; });
-  const value = { weights: learned, detail, n: paired.length, dropped, loadSlope: Math.round(slope * 100) / 100 };
+  /* WHAT THE NUMBER HAS MEANT, IN YOUR OWN UNITS. Each session's morning is scored with the
+     weights its kind would use, on the same budget the live score uses, and the outcome is
+     regressed on it: how much better or worse than your normal the sessions have gone per ten
+     points of score, and how closely the score has tracked them (its track record, r). Fitted
+     only where there is enough to say it: twelve sessions of the kind. */
+  const budgetKeys = keys.filter(k=> paired.some(p=> p.parts[k] != null && !isNaN(p.parts[k])));
+  const budget = budgetKeys.reduce((a,k)=> a + SR_WEIGHTS[k], 0);
+  const calib = {};
+  ['lift', 'run'].forEach(kind=>{
+    const these = paired.filter(p=> p.kind === kind);
+    if(these.length < LEARN_MIN_SESSIONS || !budget) return;
+    const W = byKind[kind] || kindPriors(kind);
+    const xs = these.map(p=> srRawFrom(p.parts, 1, W, budget).raw);
+    const ys = these.map(p=> p.r);
+    const mx = xs.reduce((a,b)=>a+b,0) / xs.length, my = ys.reduce((a,b)=>a+b,0) / ys.length;
+    let sxy = 0, sxx = 0;
+    xs.forEach((x, k)=>{ sxy += (x - mx) * (ys[k] - my); sxx += (x - mx) * (x - mx); });
+    if(!sxx) return;
+    const r = pearson(xs, ys);
+    calib[kind] = { per10: Math.round(sxy / sxx * 10 * 10000) / 10000, r: Math.round(r * 100) / 100, n: these.length };
+  });
+  const learned = all.weights, detail = all.detail;
+  const value = { weights: learned, detail, byKind, detailByKind, nByKind, calib, n: paired.length, dropped, loadSlope: Math.round(slope * 100) / 100 };
   _learnedCache = { date, at:Date.now(), value };
   return value;
 }
@@ -16633,7 +16853,9 @@ const SR_COMPONENT_LABELS = {
   rhrAcute:'Resting HR last night', sleep:'Sleep',
   hrvAcute:'HRV last night', sleepDebt:'Sleep debt', regularity:'Sleep regularity',
   illnessCh:'Breathing & temp', fitFatigue:'Fitness minus fatigue',
-  activity:'Activity outside training', circadian:'Hours since waking'
+  activity:'Activity outside training', circadian:'Hours since waking',
+  localFatigue:'Muscles for today', nadir:'Overnight low, timing', bedtime:'Bedtime',
+  jetLag:'Jet lag'
 };
 async function renderLearnedWeights(){
   const el = document.getElementById('learnedWeights');
@@ -17083,13 +17305,36 @@ async function computeAdaptation(asOfDate){
 const CUSUM_K = 0.5, CUSUM_H = 4, ILLNESS_MIN_CHANNELS = 2, ILLNESS_PERSIST_DAYS = 2;
 const ILLNESS_GATE = 0.4;
 
-function cusumAlarms(series, mu, sigma){
-  // One-sided: only excursions in the bad direction accumulate.
+/* AGAINST A MOVING NORMAL, AND ABLE TO STAND DOWN. Two faults, both found by simulating a
+   season of data with a known illness in it:
+
+   1. The baseline was one median over the whole window, so any slow drift (resting HR a beat
+      or two higher through a heavy block) counted as an excursion, added up day after day,
+      and fired the gate for three weeks on someone who was never ill.
+   2. The sum had no ceiling. Four days at +5 bpm built it to four times the threshold, and
+      at half a sigma a day of drain the gate stayed shut for about three weeks after the
+      illness had gone.
+
+   So each day is compared with the median of the 7 to 35 days before it (the week just gone
+   is left out so an illness does not become its own normal), which a slow drift moves with
+   and a fever does not; and the sum is capped two sigma above the threshold, which clears in
+   about four normal days once things settle. One-sided as before: only excursions in the bad
+   direction accumulate. `mu` is the fallback normal while there is too little history for a
+   moving one. */
+const CUSUM_CAP = 2;   // sigma above the threshold the sum may reach
+function cusumAlarms(series, mu, sigma, mask){
   const out = [];
   let S = 0;
-  series.forEach(v=>{
-    if(v == null || mu == null || !sigma){ out.push(false); return; }
-    S = Math.max(0, S + (v - mu - CUSUM_K * sigma));
+  series.forEach((v, i)=>{
+    if(v == null || !sigma){ out.push(false); return; }
+    const base = [];
+    for(let j = Math.max(0, i - 35); j <= i - 7; j++){
+      const b = series[j];
+      if(b != null && !(mask && mask[j])) base.push(b);
+    }
+    const m = base.length >= 7 ? medianOf(base) : mu;
+    if(m == null){ out.push(false); return; }
+    S = Math.min((CUSUM_H + CUSUM_CAP) * sigma, Math.max(0, S + (v - m - CUSUM_K * sigma)));
     out.push(S > CUSUM_H * sigma);
   });
   return out;
@@ -17104,7 +17349,7 @@ function illnessRadar(win){
   // before symptoms in the published cohorts.
   const rhr = win.entries.map(e=> e && e.restingHR != null ? e.restingHR : null);
   const rhrObs = rhr.filter((v,i)=> v != null && !win.baselineMask[i]);
-  if(rhrObs.length >= 10) ch.push({ name:'resting HR', alarms: cusumAlarms(rhr, medianOf(rhrObs), radarSigma(rhrObs, ILLNESS_SIGMA_FLOOR.rhr)) });
+  if(rhrObs.length >= 10) ch.push({ name:'resting HR', alarms: cusumAlarms(rhr, medianOf(rhrObs), radarSigma(rhrObs, ILLNESS_SIGMA_FLOOR.rhr), win.baselineMask) });
   // HRV falling, so the sign is flipped to make a fall an excursion upward.
   const hrvRaw = win.entries.map((e, i)=>{
     if(!e || !win.hrvSource) return null;
@@ -17114,7 +17359,7 @@ function illnessRadar(win){
     return v == null ? null : -Math.log(v);
   });
   const hrvObs = hrvRaw.filter((v,i)=> v != null && !win.baselineMask[i]);
-  if(hrvObs.length >= 10) ch.push({ name:'HRV', alarms: cusumAlarms(hrvRaw, medianOf(hrvObs), radarSigma(hrvObs, ILLNESS_SIGMA_FLOOR.hrv)) });
+  if(hrvObs.length >= 10) ch.push({ name:'HRV', alarms: cusumAlarms(hrvRaw, medianOf(hrvObs), radarSigma(hrvObs, ILLNESS_SIGMA_FLOOR.hrv), win.baselineMask) });
   // Respiratory rate and skin temperature, both rising. These are what the published work
   // actually used — NightSignal and TemPredict are built on temperature and heart rate — so
   // with all four this is the design they validated rather than a two-channel approximation
@@ -17123,7 +17368,7 @@ function illnessRadar(win){
     .forEach(([name, get, floor])=>{
       const raw = win.entries.map(e=> e ? (get(e) ?? null) : null);
       const obs = raw.filter((v,i)=> v != null && !win.baselineMask[i]);
-      if(obs.length >= 10) ch.push({ name, alarms: cusumAlarms(raw, medianOf(obs), radarSigma(obs, floor)) });
+      if(obs.length >= 10) ch.push({ name, alarms: cusumAlarms(raw, medianOf(obs), radarSigma(obs, floor), win.baselineMask) });
     });
   if(ch.length < ILLNESS_MIN_CHANNELS) return { available:false, firing:false };
 
@@ -17469,8 +17714,36 @@ const SR_WEIGHTS = {
   hrvAcute:    0.056,  // damped, so one catastrophic night registers without noise driving it
   regularity:  0.040,  // Windred 2023 — predicts independently of duration, near-zero cost
   activity:    0.040,  // yesterday's steps outside training, against your normal
-  circadian:   0.050   // hours since waking at the hour you train
+  circadian:   0.050,  // hours since waking at the hour you train
+  /* What is still spent in the muscles today's session uses. Local, mechanical fatigue that
+     no heart-rate signal can see (the reason tissue readiness exists), and for a lifter the
+     most direct thing between them and a top set, so it starts as one of the larger terms. */
+  localFatigue:0.080,
+  nadir:       0.030,  // heart rate bottoming out late in the night
+  bedtime:     0.030,  // to bed later than your habit
+  jetLag:      0.040   // time-zone hours not yet caught up
 };
+/* LIFTING AND RUNNING ARE NOT READ THE SAME WAY. Sleep loss costs endurance and afternoon
+   work more than it costs a heavy single (Craven 2022: acute sleep loss is about -7.6% on
+   exercise overall, consistently in the PM and in endurance, small for maximal strength), and
+   a lift lives or dies on the muscles it uses where a run leans on the legs and the engine.
+   So each kind starts from its own tilt of the same priors, renormalised to the same total
+   so the two scores sit on one scale, and then learns its own weights from its own sessions
+   (learnWeights). Which one today is read with follows today's plan. */
+const SR_KIND_TILT = {
+  lift: { sleep: 0.75, sleepDebt: 1.1, localFatigue: 1.4, activity: 0.8 },
+  run:  { sleep: 1.3, sleepDebt: 1.1, localFatigue: 0.8, activity: 1.3, circadian: 0.8 }
+};
+function kindPriors(kind){
+  const tilt = SR_KIND_TILT[kind];
+  if(!tilt) return { ...SR_WEIGHTS };
+  const out = {};
+  Object.keys(SR_WEIGHTS).forEach(k=>{ out[k] = SR_WEIGHTS[k] * (tilt[k] || 1); });
+  const total = Object.values(SR_WEIGHTS).reduce((a,b)=>a+b, 0);
+  const now = Object.values(out).reduce((a,b)=>a+b, 0);
+  Object.keys(out).forEach(k=>{ out[k] = out[k] * total / now; });
+  return out;
+}
 
 
 const SR_HRV_ACUTE_DAMP = 0.5;
@@ -17551,6 +17824,10 @@ function srComponentsAt(win, i, debtZ){
     fitFatigue: at(win.channels.fitFatigue, 'zAcuteSeries'),
     activity: at(win.channels.activity, 'zAcuteSeries'),
     circadian: circadianZ(win, last),
+    nadir:    at(win.channels.nadir, 'zAcuteSeries'),
+    bedtime:  at(win.channels.bedtime, 'zAcuteSeries'),
+    localFatigue: at(win.channels.localFatigue, 'zAcuteSeries'),
+    jetLag:   at(win.channels.jetLag, 'zAcuteSeries'),
     /* The SMOOTHED series here, unlike load. Form is a level rather than an event — the
        question is where your training has been sitting, not what happened in one session, and
        the underlying index is already a mean of five. */
@@ -17679,7 +17956,15 @@ async function computeSystemicReadiness(asOfDate){
   // Learned weights where they exist, priors otherwise.
   let learned = null;
   try{ learned = await learnWeights(asOfDate || todayStr); } catch(e){}
-  const W = learned ? learned.weights : null;
+  /* Read for what today asks of you: a lifting day with the lifting weights, a running day
+     with the running ones, each learned from its own sessions once there are enough, and the
+     kind's tilted priors before that. A rest day, or no plan, uses the combined set. The
+     whole window is scored with the same set so today's rank is like against like. */
+  const kind = win.planKind;
+  const W = (learned && kind && learned.byKind && learned.byKind[kind]) ? learned.byKind[kind]
+          : (learned && !kind) ? learned.weights
+          : kind ? (learned && learned.byKind && learned.byKind[kind]) || kindPriors(kind)
+          : null;
 
   /* Every day's components once, because the budget has to be read off the whole window
      before any day can be scored against it — and the series below needs the same objects, so
@@ -17838,8 +18123,52 @@ async function computeSystemicReadiness(asOfDate){
     shown: score,
     shownSeries,
     ciLow: shownLow, ciHigh: shownHigh,
-    parts: partsToday, debt: debtZ, win
+    parts: partsToday, debt: debtZ, win,
+    kind, calib: learned && learned.calib && kind ? learned.calib[kind] || null : null
   };
+}
+
+/* THE NUMBER IN KILOS OR SECONDS. From learnWeights' calibration: how much better or worse
+   than your normal your sessions of today's kind have gone per ten points of score. Turned
+   into the units of today's session where the plan names a lift you have measured (its
+   recent estimated max) or a run (your recent pace for it). Null until there is a
+   calibration worth stating: twelve sessions of the kind, and a track record (r) above 0.15. */
+async function scoreMeaning(sr){
+  if(!sr || !sr.available || !sr.calib || sr.shown == null) return null;
+  const c = sr.calib;
+  if(!(c.r > 0.15) || !c.per10) return null;
+  const pct = c.per10 * (sr.shown - 50) / 10;           // fraction vs your normal
+  const pctTxt = `${pct >= 0 ? '+' : '\u2212'}${Math.abs(pct * 100).toFixed(1)}%`;
+  const track = `Tracked ${c.n} of your ${sr.kind === 'run' ? 'runs' : 'lifting sessions'} at r = ${c.r.toFixed(2)}.`;
+  let sessions = [];
+  try{ sessions = await getAllTrainingSessions(); } catch(e){}
+  const win = sr.win || {};
+  if(sr.kind === 'lift' && win.planLift){
+    const name = win.planLift.trim().toLowerCase();
+    const maxes = [];
+    sessions.filter(sn=> sn && sn.type === 'strength').sort((a,b)=> a.date < b.date ? -1 : 1).forEach(sn=>{
+      (sn.exercises || []).forEach(ex=>{
+        if(!ex || ex.repsPrefilled || (ex.name || '').trim().toLowerCase() !== name) return;
+        const v = e1RM(+ex.weight, Math.max(...(Array.isArray(ex.repsPerSet) && ex.repsPerSet.length ? ex.repsPerSet : [ex.reps]).map(Number)));
+        if(v) maxes.push(v);
+      });
+    });
+    if(maxes.length >= 3){
+      const est = medianOf(maxes.slice(-5));
+      const kg = est * pct;
+      return `A ${sr.shown} has meant about ${pctTxt} on your top sets \u2014 roughly ${kg >= 0 ? '+' : '\u2212'}${Math.abs(kg).toFixed(1)} kg on your ${win.planLift} (est. max ${Math.round(est)} kg). ${track}`;
+    }
+  }
+  if(sr.kind === 'run'){
+    const paces = sessions.filter(sn=> sn && sn.type === 'run' && sn.distanceKm > 0 && sn.durationMin > 0
+      && (!win.planRunType || sn.runType === win.planRunType)).sort((a,b)=> a.date < b.date ? -1 : 1).map(sn=> sn.durationMin * 60 / sn.distanceKm);
+    if(paces.length >= 3){
+      const secPerKm = medianOf(paces.slice(-5));
+      const delta = secPerKm / (1 + pct) - secPerKm;      // faster when the score is above 50
+      return `A ${sr.shown} has meant about ${pctTxt} on your runs \u2014 roughly ${Math.abs(Math.round(delta))} s/km ${delta <= 0 ? 'faster' : 'slower'} than your usual ${formatPace(secPerKm / 60)}. ${track}`;
+    }
+  }
+  return `A ${sr.shown} has meant about ${pctTxt} against your normal ${sr.kind === 'run' ? 'runs' : 'top sets'}. ${track}`;
 }
 
 /* ---------- TWO READINGS THE NIGHTLY SERIES ALREADY SUPPORTS ----------
@@ -25424,6 +25753,10 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
        meaning was the good part and it survives, one line down, where it reads as a sentence
        rather than as a quantity to watch move. */
     const shown = srResult.shown;
+    const meaningEl = document.getElementById('scoreMeaning');
+    if(meaningEl){
+      scoreMeaning(srResult).then(t=>{ meaningEl.textContent = t || ''; meaningEl.hidden = !t; }).catch(()=>{ meaningEl.hidden = true; });
+    }
     if(!rollNumber(out, prevNum, shown)) animateNumber(out, isNaN(prevNum) ? 0 : prevNum, shown, 500);
     setEyeScore(shown);
     const rank = srResult.percentile;
@@ -25439,6 +25772,7 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
       : 'Back off today';
     return shown;
   }
+  { const m = document.getElementById('scoreMeaning'); if(m) m.hidden = true; }
   if(capacityResult && capacityResult.available){
     // Passed through as NaN rather than substituted for the target here: the roll wants to
     // know there is no previous value so it can come up from zero, and substituting the

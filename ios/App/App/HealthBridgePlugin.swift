@@ -23,6 +23,7 @@ import HealthKit
    restingHR        bpm, the daily resting heart rate, where something writes one (Apple Watch)
    sleepingHR       bpm, the lowest 30 minutes of heart rate while asleep. Oura and Garmin write
                     plain heart rate, not a resting figure, so this is the one they both give.
+   hrNadirFrac      where in the night that low came: 0 falling asleep, 1 waking
    respiratoryRate  breaths/min, overnight average
    wristTempC       degrees C, Apple's sleeping wrist temperature (absolute, iOS 16+)
    steps            count for the day
@@ -141,7 +142,10 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
                     }
                 }
             }, { bed, wake in
-                self.lowestHeartRate(bed, wake, group) { value in set(key, "sleepingHR", value) }
+                self.lowestHeartRate(bed, wake, group) { value, frac in
+                    set(key, "sleepingHR", value)
+                    set(key, "hrNadirFrac", frac)
+                }
             })
             readRuns(dayStart, dayEnd, group) { list in
                 if !list.isEmpty {
@@ -264,7 +268,7 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
        every few minutes still counts and one stray low reading does not. All sources together:
        a beat per minute is the same beat whichever device heard it. */
     private func lowestHeartRate(_ start: Date, _ end: Date, _ group: DispatchGroup,
-                                 _ done: @escaping (Double?) -> Void) {
+                                 _ done: @escaping (Double?, Double?) -> Void) {
         guard let type = HKQuantityType.quantityType(forIdentifier: .heartRate) else { return }
         group.enter()
         let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
@@ -278,6 +282,7 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
             }
             // Two pointers: [i, j) is every reading within 30 minutes of reading i.
             var lowest: Double? = nil
+            var lowestAt: Date? = nil
             var j = 0
             var total: Double = 0
             for i in 0..<points.count {
@@ -289,11 +294,20 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
                 let n = j - i
                 if n >= 5 {
                     let mean = total / Double(n)
-                    if lowest == nil || mean < lowest! { lowest = mean }
+                    if lowest == nil || mean < lowest! {
+                        lowest = mean
+                        // The middle of the lowest half hour, for WHEN the night bottomed out.
+                        lowestAt = points[i].0.addingTimeInterval(points[j - 1].0.timeIntervalSince(points[i].0) / 2)
+                    }
                 }
                 total -= points[i].1
             }
-            done(lowest.map { v in (v * 10).rounded() / 10 })
+            /* Where in the night the low came, 0 at falling asleep and 1 at waking. A low that
+               arrives late, near waking, is the body still working through something: a drink,
+               a late meal, a hard day, a bug. */
+            let span = end.timeIntervalSince(start)
+            let frac = lowestAt.flatMap { t in span > 0 ? ((t.timeIntervalSince(start) / span) * 100).rounded() / 100 : nil }
+            done(lowest.map { v in (v * 10).rounded() / 10 }, frac)
             group.leave()
         }
         store.execute(query)
