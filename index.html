@@ -13419,7 +13419,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.019';
+const APP_VERSION = '2026.11.15.020';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13815,6 +13815,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.020': 'Lateral raises too, and rear delts on a muscle goal: the same fault as the arms (presses counted for the side delts, so the raises came last and were cut). How much protected small-muscle work a week gets now follows how long you lift in it, so a short week keeps its rows and presses, and the work goes on the day with the most time to spare.',
   '2026.11.15.019': 'Arms get trained. Every generated week now holds direct biceps and triceps work: two exercises each (six sets) on a muscle goal, one each (three sets) otherwise, and a short session drops other accessories before it drops them. Before, your presses and rows counted for so much arm work that curls and extensions were picked last and then cut to fit the time, so many weeks had none. Generate again to get them in this week.',
   '2026.11.15.018': 'Your scale counts now. In the iPhone app your weight and body fat come from Apple Health (a Withings writes them there), morning weigh-in first, and never over a day you saved yourself. Weight is read as a smoothed trend rather than this morning\u2019s water, for your bodyweight lifts and strength level; body fat is the middle of the last two weeks, so one odd reading can no longer start a cut; pull-ups and dips now count toward how the score learns; and waking more than 1% under your trend is read as short on water.',
   '2026.11.15.017': 'In the iPhone app the morning no longer asks how long you slept. It waits for Apple Health to answer instead of asking before the read had finished; if last night is not in Health yet, it says so (the Oura app puts it there when it syncs) and fills itself in when you come back. Not connected yet, it offers the connection. Typing it in is still there, folded away.',
@@ -29978,7 +29979,9 @@ const TAG_TO_AREAS = {
               'quads_knees','hamstrings','hips','glutes','adductors','calves','lower_back','ankles'],
   // Single-area queues for the direct-arm guarantee (see ARM_FLOOR_SETS); never a day's tag.
   biceps_only:  ['biceps'],
-  triceps_only: ['triceps']
+  triceps_only: ['triceps'],
+  side_delts_only: ['side_delts'],
+  rear_delts_only: ['rear_delts']
 };
 // Accessory eligibility is defined by what to EXCLUDE rather than what to include. The
 // previous allow-list of three categories silently starved whole areas: adductors had
@@ -37567,13 +37570,34 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
      days whose tag can carry the area, the day with least direct arm work first, and marked
      armFloor so the trim takes every other accessory before it. Chosen through the same
      selector as everything else, so injury safety, equipment and weekly rotation apply. */
-  // A deload week holds maintenance: one exercise each, whatever the goal.
-  const ARM_FLOOR_SETS = (topGoalType === 'hypertrophy' && effectiveBlockPhase !== 'deload') ? { biceps: 6, triceps: 6 } : { biceps: 3, triceps: 3 };
+  /* The same holds for the delts, measured the same way: lateral raises came out at 0 sets in
+     most generated weeks and 3 at best, because every press credited the side delts half a
+     set; rear delts likewise from rows. Side delts are what most change how shoulders look
+     and nothing compound trains them properly, so they get the arms' floor on every goal.
+     Rear delts get one exercise on a muscle goal; on others the rows already do the job.
+     A deload week holds maintenance: one exercise each, whatever the goal. */
+  /* SCALED TO THE WEEK'S LIFTING TIME. Protected work is paid for by unprotected work, and
+     at full size on a short week the floors took the row, the overhead press and the hip
+     thrust out of a three-day, forty-five-minute week (the row was its only back work). So
+     the floor is the dose the week can afford, by lifting minutes (days x session length):
+       hypertrophy   4h+: arms 6 each, laterals 6, rear delts 3
+                     2h40-4h: arms 3 each, laterals 6, rear delts 3
+                     under 2h40: arms and laterals 3 each
+       other goals   2h40+: arms and laterals 3 each
+                     under: arms 3 each */
+  const growing = topGoalType === 'hypertrophy' && effectiveBlockPhase !== 'deload';
+  const liftMinutes = dayStates.length * (sessionLength || 60);
+  const ARM_FLOOR_SETS = growing
+    ? (liftMinutes >= 240 ? { biceps: 6, triceps: 6, side_delts: 6, rear_delts: 3 }
+      : liftMinutes >= 160 ? { biceps: 3, triceps: 3, side_delts: 6, rear_delts: 3 }
+      : { biceps: 3, triceps: 3, side_delts: 3 })
+    : (liftMinutes >= 160 ? { biceps: 3, triceps: 3, side_delts: 3 } : { biceps: 3, triceps: 3 });
   const directArmSets = area => dayStates.reduce((acc, st)=> acc + st.exercises.reduce((a, ex)=>{
     const g = ex.area ? null : guessTagsFromLibrary(ex.name || '');
     return a + (((ex.area || (g && g.primary)) === area) ? (+ex.sets || 0) : 0);
   }, 0), 0);
-  for(const area of ['biceps', 'triceps']){
+  const SMALL_AREAS = ['biceps', 'triceps', 'side_delts', 'rear_delts'];
+  for(const area of Object.keys(ARM_FLOOR_SETS)){
     /* The arm work the round-robin already picked counts toward the floor, and is protected
        up to it too: left unmarked, it satisfied the check here and was then the first thing
        the trim cut, which is how a strength week still came out with no triceps at all. */
@@ -37584,9 +37608,16 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
     for(let guard = 0; guard < 4 && directArmSets(area) < ARM_FLOOR_SETS[area]; guard++){
       const eligible = dayStates.filter(st=> (TAG_TO_AREAS[st.tag] || []).includes(area));
       if(!eligible.length) break;
-      const armOn = st=> st.exercises.filter(ex=> ex.area === 'biceps' || ex.area === 'triceps').length;
+      const armOn = st=> st.exercises.filter(ex=> SMALL_AREAS.includes(ex.area)).length;
       const hasArea = st=> st.exercises.some(ex=> ex.area === area);
-      eligible.sort((a, b)=> (hasArea(a) - hasArea(b)) || (armOn(a) - armOn(b)) || (a.exercises.length - b.exercises.length));
+      /* The day with the most time to spare, so the protected work fills a gap rather than
+         pushing a row or a press off a full day (which is what happened on a three-day,
+         forty-five-minute week when the floor took the emptiest-looking day). */
+      const slack = st=>{
+        try{ return sessionLength - estimateSessionDuration({ type:'strength', details:{ exercises: st.exercises, plannedFocus: st.plannedFocus } }, null, personalSets, sessionLength); }
+        catch(e){ return -st.exercises.length; }
+      };
+      eligible.sort((a, b)=> (hasArea(a) - hasArea(b)) || (slack(b) - slack(a)) || (armOn(a) - armOn(b)));
       const state = eligible[0];
       const picks = selectVolumeGapAccessories({
         tag: area + '_only', weekSetsByArea: { [area]: 0 }, daysRemaining: 1,
