@@ -1,0 +1,138 @@
+# Signs the iPhone app and sends it to TestFlight, on one of GitHub's Macs: no Mac needed.
+# Run it by hand: Actions → "Send to TestFlight" → Run workflow. About fifteen minutes later the
+# build shows up in the TestFlight app on any phone whose Apple ID is on the team.
+#
+# Once, in GitHub → this repo → Settings → Secrets and variables → Actions → New repository secret
+# (the same three values Rooms uses; secrets are per repository, so they are added here too):
+#   ASC_KEY_ID            App Store Connect → Users and Access → Integrations → the key's Key ID
+#   ASC_ISSUER_ID         the Issuer ID shown above the list of keys on that same page
+#   ASC_KEY_P8            the whole of the AuthKey_XXXX.p8 file, BEGIN and END lines included
+# The Team ID (M6AXSFYX2W) isn't secret and is set in the project; APPLE_TEAM_ID overrides it.
+# The key needs the Admin role: each run registers the app id if needed (with HealthKit) and
+# makes its own distribution certificate and App Store profile (tools/asc-sign.mjs).
+# And once, in App Store Connect → Apps → + → New App: iOS, "Dogfood", bundle ID
+# com.touringgroup.dogfood. The first run registers that bundle ID and stops to say so if the
+# app isn't there yet.
+name: Send to TestFlight
+on:
+  workflow_dispatch:
+concurrency: testflight
+jobs:
+  upload:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the Apple secrets are set
+        env:
+          TEAM: ${{ secrets.APPLE_TEAM_ID || 'M6AXSFYX2W' }}
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER: ${{ secrets.ASC_ISSUER_ID }}
+          P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          miss=""; for v in TEAM:APPLE_TEAM_ID KEY_ID:ASC_KEY_ID ISSUER:ASC_ISSUER_ID P8:ASC_KEY_P8; do
+            n=${v%%:*}; [ -z "${!n}" ] && miss="$miss ${v#*:}"; done
+          if [ -n "$miss" ]; then echo "::error::Missing repo secrets:$miss (see the top of .github/workflows/testflight.yml)"; exit 1; fi
+          grep -q "BEGIN PRIVATE KEY" <<<"$P8" || { echo "::error::ASC_KEY_P8 should be the whole .p8 file, BEGIN and END lines included"; exit 1; }
+      - name: Ask Apple whether it accepts the key
+        env:
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER: ${{ secrets.ASC_ISSUER_ID }}
+          P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          node - <<'JS'
+          const { KEY_ID, ISSUER, P8 } = process.env;
+          const b64u = b => Buffer.from(b).toString("base64url");
+          console.log(`Key ID: ${KEY_ID.trim().length} characters · Issuer ID: ${ISSUER.trim().length} characters (Apple's are 10 and 36)`);
+          (async () => {
+            let key; try { key = require("crypto").createPrivateKey(P8.trim()); }
+            catch { console.log("::error::ASC_KEY_P8 isn't a readable key. Paste the whole .p8 file again, BEGIN and END lines included."); process.exit(1); }
+            const now = Math.floor(Date.now() / 1000);
+            const head = b64u(JSON.stringify({ alg:"ES256", kid:KEY_ID.trim(), typ:"JWT" })), body = b64u(JSON.stringify({ iss:ISSUER.trim(), iat:now, exp:now + 600, aud:"appstoreconnect-v1" }));
+            const sig = require("crypto").sign("sha256", Buffer.from(`${head}.${body}`), { key, dsaEncoding:"ieee-p1363" });
+            const r = await fetch("https://api.appstoreconnect.apple.com/v1/apps?limit=50&fields[apps]=bundleId,name", { headers:{ Authorization:`Bearer ${head}.${body}.${b64u(sig)}` } });
+            const j = await r.json().catch(() => ({}));
+            if (r.status === 401) { console.log("::error::Apple didn't accept the key (401). Check that ASC_KEY_ID, ASC_ISSUER_ID and ASC_KEY_P8 all belong to the same Team Key in App Store Connect → Users and Access → Integrations."); process.exit(1); }
+            if (r.status === 403) { console.log("::error::Apple knows the key but it isn't allowed to do this (403). Use a Team Key with the Admin role."); process.exit(1); }
+            if (!r.ok) { console.log(`::error::App Store Connect answered ${r.status}: ${JSON.stringify(j).slice(0, 300)}`); process.exit(1); }
+            const apps = (j.data || []).map(a => `${a.attributes.name} (${a.attributes.bundleId})`);
+            console.log("The key works. Apps it can see:", apps.join(", ") || "none");
+            if (!(j.data || []).some(a => a.attributes.bundleId === "com.touringgroup.dogfood")) console.log("::warning::No app with the bundle id com.touringgroup.dogfood in App Store Connect yet; the next step registers the id and then asks you to make the app.");
+          })();
+          JS
+      - name: Use the newest Xcode on the runner
+        run: |
+          X=$(ls -d /Applications/Xcode_*.app | grep -v -i beta | sort -V | tail -1)
+          sudo xcode-select -s "$X"; xcodebuild -version
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Build the page into the app
+        run: npm run ios:sync
+      - name: Make this run's signing certificate and profile
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+        run: node tools/asc-sign.mjs make
+      - name: Archive, signed for the App Store
+        env:
+          TEAM: ${{ secrets.APPLE_TEAM_ID || 'M6AXSFYX2W' }}
+        run: |
+          set -o pipefail
+          # the app target signs by hand with this run's profile; set in the project file rather
+          # than on the command line, which would reach the Swift packages too and stop the build
+          python3 - <<'PY'
+          import os
+          p = "ios/App/App.xcodeproj/project.pbxproj"; s = open(p).read()
+          old = "CODE_SIGN_STYLE = Automatic;"
+          new = ('CODE_SIGN_STYLE = Manual;\n\t\t\t\tCODE_SIGN_IDENTITY = "Apple Distribution";\n'
+                 f'\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "{os.environ["ASC_PROFILE_NAME"]}";')
+          assert s.count(old) == 2; open(p, "w").write(s.replace(old, new))
+          PY
+          # every upload needs a build number higher than the last; this workflow's run count is
+          BUILD=$((100 + ${{ github.run_number }}))
+          echo "build $BUILD"
+          xcodebuild archive -project ios/App/App.xcodeproj -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/Dogfood.xcarchive" \
+            DEVELOPMENT_TEAM="$TEAM" CURRENT_PROJECT_VERSION="$BUILD" \
+            OTHER_CODE_SIGN_FLAGS="--keychain $DOGFOOD_KEYCHAIN" | tail -60
+      - name: Upload to App Store Connect
+        env:
+          TEAM: ${{ secrets.APPLE_TEAM_ID || 'M6AXSFYX2W' }}
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER: ${{ secrets.ASC_ISSUER_ID }}
+          P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          set -o pipefail
+          printf '%s\n' "$P8" > "$RUNNER_TEMP/AuthKey.p8"
+          cat > "$RUNNER_TEMP/export.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>$TEAM</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>signingCertificate</key><string>Apple Distribution</string>
+            <key>provisioningProfiles</key><dict><key>com.touringgroup.dogfood</key><string>$ASC_PROFILE_NAME</string></dict>
+            <key>uploadSymbols</key><true/>
+          </dict></plist>
+          PLIST
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/Dogfood.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/export.plist" -exportPath "$RUNNER_TEMP/export" \
+            -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" \
+            -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER" | tail -40
+          echo "::notice::Uploaded. It appears in TestFlight once Apple has processed it, usually 10-20 minutes."
+      - name: Remove the temporary keychain
+        if: always()
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: node tools/asc-sign.mjs cleanup
+      - name: Forget the key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/AuthKey.p8"

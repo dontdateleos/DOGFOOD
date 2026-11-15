@@ -6,23 +6,50 @@ one native addition: **HealthBridge**, a small Swift plugin that reads Apple Hea
 ```
 index.html, sw.js, icons, splash   the web app (unchanged; still works in a browser)
 tools/build-web.mjs                copies those into www/ for the app bundle
-capacitor.config.json              app id app.dogfood.ios, name "Dogfood"
+capacitor.config.json              app id com.touringgroup.dogfood, name "Dogfood"
 ios/App/App.xcodeproj              the Xcode project (Swift Package Manager, no CocoaPods)
 ios/App/App/HealthBridgePlugin.swift   the HealthKit reader
 ios/App/App/MainViewController.swift   registers the plugin with Capacitor
 ios/App/App/App.entitlements           HealthKit capability
 ```
 
-## Build it
+## Build and send to TestFlight without a Mac
 
-You need a Mac with Xcode 16 or newer, and a paid Apple Developer account.
+This works the same way Rooms does: GitHub's Macs build, sign and upload the app.
+
+- **`iPhone app`** (`.github/workflows/ios.yml`) runs on every push to main that touches the app.
+  - It compiles the app for the simulator, launches it and takes a screenshot.
+  - If it goes green, the app builds.
+- **`Send to TestFlight`** (`.github/workflows/testflight.yml`) is run by hand from the Actions tab.
+  - It signs with a certificate and profile it makes itself through the App Store Connect API (`tools/asc-sign.mjs`).
+  - Then it archives and uploads. The build reaches TestFlight about 15 minutes later.
+
+One-time setup:
+1. **Add three repository secrets** in GitHub → this repo → Settings → Secrets and variables → Actions:
+   - `ASC_KEY_ID`, `ASC_ISSUER_ID` and `ASC_KEY_P8`;
+   - the same App Store Connect Team Key (Admin role) that Rooms uses.
+2. **Run "Send to TestFlight" once.** It registers the bundle ID `com.touringgroup.dogfood` with HealthKit
+   switched on. If the app doesn't exist in App Store Connect yet, it stops and tells you so.
+3. **Create the app:** App Store Connect → Apps → + → New App:
+   - iOS, named **Dogfood**;
+   - bundle ID `com.touringgroup.dogfood`;
+   - any SKU, for example `dogfood`.
+4. **Run "Send to TestFlight" again.** Every run after that uploads a new build, numbered 100 + the run number.
+
+Certificates are shared by every app on the team, and Apple allows only two distribution certificates.
+`asc-sign.mjs` never revokes a certificate behind a build that's in App Review for any of the team's
+apps, and revokes nothing while there's still room. (Rooms' own copy only protects Rooms' builds,
+which only matters once a Dogfood build is in App Store review rather than just on TestFlight.)
+
+## Build it on a Mac instead
+
+You need Xcode 16 or newer, and a paid Apple Developer account.
 
 1. `npm install`
 2. `npm run ios:sync` copies the web app into the Xcode project. Run it after every change to `index.html`.
 3. `npm run ios:open` opens Xcode, or open `ios/App/App.xcodeproj` directly.
 4. In Xcode, select the **App** target and open **Signing & Capabilities**:
-   - Choose your **Team**.
-   - If `app.dogfood.ios` is taken, change the **Bundle Identifier** to something of your own, e.g. `com.yourname.dogfood`. Update `appId` in `capacitor.config.json` to match.
+   - The **Team** is already set (M6AXSFYX2W, the Rooms team) and the bundle ID is `com.touringgroup.dogfood`.
    - Check that **HealthKit** is listed. If it isn't, click **+ Capability** and add HealthKit. The entitlements file is already in place.
 5. Pick your iPhone as the run destination and press Run. On the first launch:
    1. Go to Settings → Apple Health → **Connect Apple Health**.

@@ -1,9 +1,10 @@
 {
-  "appId": "app.dogfood.ios",
+  "appId": "com.touringgroup.dogfood",
   "appName": "Dogfood",
   "webDir": "www",
   "ios": {
     "contentInset": "never",
-    "backgroundColor": "#0c0d0b"
+    "backgroundColor": "#0c0d0b",
+    "preferredContentMode": "mobile"
   }
 }
