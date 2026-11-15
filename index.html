@@ -13413,7 +13413,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.010';
+const APP_VERSION = '2026.11.15.011';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13809,6 +13809,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.011': 'In the iPhone app the date in the header shows again; it was measuring itself before the phone had said where the camera cutout ends.',
   '2026.11.15.010': 'In the iPhone app the header stays clear of the clock and camera cutout as it shrinks on scroll, not just at the top of the page.',
   '2026.11.15.009': 'Apple Health is the one connection now; Oura is switched off for now. If you wear a ring, let the Oura app write to Apple Health and it still counts. Apple\u2019s HRV keeps its own baseline, so switching from one device to another starts it fresh rather than mixing the two.',
   '2026.11.15.008': 'In the iPhone app, the header now sits below the clock and the camera cutout instead of under them, and nothing at the bottom hides behind the home bar.',
@@ -42562,6 +42563,16 @@ countLoggedStreak().then(n=>{ loggedStreak = n; });
 requestAnimationFrame(()=>{
   const active = document.querySelector('.tab.active');
 });
+/* THE IPHONE APP'S SAFE AREA ARRIVES LATE. The page opts in to the insets from a script in
+   the head, and WKWebView only reports the top inset after that has been laid out, so the date
+   and the mark, which place themselves by measuring the header once, measured a header with
+   no inset yet and sat behind the status bar. Measured again once the inset is real. */
+if(document.documentElement.classList.contains('native-app')){
+  const remeasure = ()=>{ try{ renderHeaderDate(); }catch(e){} try{ updateEyePerch(); }catch(e){} };
+  window.addEventListener('load', ()=>{ remeasure(); setTimeout(remeasure, 400); setTimeout(remeasure, 1500); });
+  window.addEventListener('resize', remeasure, { passive:true });
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) setTimeout(remeasure, 200); });
+}
 window.addEventListener('resize', ()=>{
   const active = document.querySelector('.tab.active');
   // Both the trace's width and its height off the top of the band come from measuring the
