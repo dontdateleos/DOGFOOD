@@ -18,6 +18,10 @@
      localStorage rather than the app's async storage, because the alternative is the page
      drawing itself black and then flipping to bone on every single launch. The masthead is
      dark on both grounds, which is why theme-color above does not move with it. -->
+<script>/* Inside the iPhone app the web view runs edge to edge, under the clock and the island, so
+   the page opts in to the safe-area insets (viewport-fit=cover) and the header steps down by
+   the top one. In a browser or the home-screen web app nothing here runs. */
+try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()){document.documentElement.classList.add('native-app');var vp=document.querySelector('meta[name=viewport]');if(vp&&vp.content.indexOf('viewport-fit')<0)vp.content+=', viewport-fit=cover';}}catch(e){}</script>
 <script>try{var g=localStorage.getItem('ground')||'bone';if(g==='bone')document.documentElement.dataset.ground='bone';var m=localStorage.getItem('masthead')||'bright';if(m!=='deep')document.documentElement.dataset.masthead=m;}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -594,6 +598,8 @@
     70%{  opacity:0.55; }
     100%{ transform:translate(-16px,-22px) scale(1.25) rotate(-16deg); opacity:0; }
   }
+  html.native-app header{ padding-top:calc(18px + env(safe-area-inset-top, 0px)); }
+  html.native-app .header-brand{ margin-top:calc(-18px - env(safe-area-inset-top, 0px)); padding-top:calc(18px + env(safe-area-inset-top, 0px)); }
   body::before{ content:""; position:fixed; left:0; right:0; top:0; height:env(safe-area-inset-top, 0px);
     background:var(--banner); z-index:60; pointer-events:none; }
   header h1{ min-height:calc(2em * 0.92); }
@@ -13402,7 +13408,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.007';
+const APP_VERSION = '2026.11.15.008';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13798,6 +13804,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.008': 'In the iPhone app, the header now sits below the clock and the camera cutout instead of under them, and nothing at the bottom hides behind the home bar.',
   '2026.11.15.007': 'Getting ready for the iPhone app. Inside it, Dogfood will read Apple Health directly \u2014 HRV, resting heart rate, sleep, breathing rate, wrist temperature, steps and runs \u2014 with no Shortcut to set up, filling in days you have not logged yourself. Nothing changes in the browser.',
   '2026.11.15.006': 'Small fixes to your records. Re-rating an injury keeps the day it started, so its history and \u201cwhat led to this\u201d stay right. Undo now also reverses a plan change from a readiness card. Saving skills keeps the date you last moved up a level. One damaged injury record can no longer hide all the others, and a run with no time logged no longer counts toward a time goal.',
   '2026.11.15.005': 'Running plans that respect you. A hard session no longer lands the day before your long run, and the long run is about 30% of the week you are actually given rather than half of it. Time off counts: three weeks without a run restarts you at an easier level, and saying you are not running at the moment starts you a level lower. Paces read right (6:00, never 5:00 or 5:60), and one mistyped run no longer drags your target pace. Walk-run sessions can be logged with just the time, so beginners without GPS move up the ladder, and Today shows how long they really take.',
