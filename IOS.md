@@ -82,6 +82,7 @@ Health, and Dogfood reads it there. The plugin reads:
 - **wrist temperature** (Apple Watch only)
 - **steps** and **active calories** (Health removes duplicates between devices)
 - **running workouts**: a run recorded by two apps is kept once (the one with a distance)
+  and its average heart rate, so the score can compare speed per heartbeat between runs
 
 **HRV is not used.** Neither Oura nor Garmin shares it with Health, so the readiness score runs on
 resting heart rate, sleep, breathing rate, training load and form. `HRV_ENABLED` in index.html

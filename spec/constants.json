@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.11.15.014",
+ "generatedFrom": "2026.11.15.015",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1507,7 +1507,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.11.15.014",
+  "APP_VERSION": "2026.11.15.015",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1885,6 +1885,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.11.15.015": "The readiness number now answers how well you can perform today, and tunes itself to you by checking each morning against what you then did: your top sets against that lift’s recent normal, your runs’ speed per heartbeat against your recent runs. It also reads fitness minus fatigue from your whole training history (so a hard week turns into a good one instead of just reading as tired), how much you walked yesterday outside training, and how long you will have been awake at the hour you usually train. Last night’s sleep now counts as last night, not as an average of the week around it. 50 is a typical day for you, 100 your best, 0 your worst. All automatic.",
    "2026.11.15.014": "Apple Health is the one source now, and the Oura connection is gone. Your Oura and Garmin apps write to Health and Dogfood reads it there: sleep from the ring (one night, not the ring and the watch added together), resting heart rate from the lowest half hour asleep, time awake from your sleep stages, and a run recorded by both kept once. HRV is out of the score, since neither shares it with Health, and the device boxes in the check-in have gone with it. Trends shows resting heart rate and sleep instead.",
    "2026.11.15.013": "On iPhone you now feel it: a light tap on every button, a tick for each row a wheel passes and each tab you swipe to, a knock when a hold lands, and a buzz when something saves or fails. Settings → Appearance has a switch if you would rather not.",
    "2026.11.15.012": "Tidying from a hands-on pass. Sheets on the Skills tab open properly again with an injury logged (its buttons now wrap instead of pushing the page sideways). The weight wheel shows 22.5 rather than rounding it to 23. Generate tells you when it can’t build a week instead of saying so out of sight. Your weight chart shows from sign-up, before any check-in. Walk-run sessions show their real length, the session toggle says “Full body” and “Easy run”, the finish card lists every session you did today, and the big button reads Edit once today is logged. Checking in on an injury keeps its first rating and its improving arrow.",
@@ -2054,7 +2055,10 @@
    "hrvAcute": "HRV last night",
    "sleepDebt": "Sleep debt",
    "regularity": "Sleep regularity",
-   "illnessCh": "Breathing & temp"
+   "illnessCh": "Breathing & temp",
+   "fitFatigue": "Fitness minus fatigue",
+   "activity": "Activity outside training",
+   "circadian": "Hours since waking"
   },
   "LOAD_TAU_ACUTE": 7,
   "RUN_INTENSITY": {
@@ -2115,7 +2119,7 @@
   "TR_MIN_LOADED_DAYS": 5,
   "SR_WEIGHTS": {
    "form": 0.2,
-   "load": 0.16,
+   "fitFatigue": 0.16,
    "hrvTrend": 0.136,
    "rhrTrend": 0.085,
    "rhrAcute": 0.035,
@@ -2123,7 +2127,9 @@
    "sleep": 0.104,
    "illnessCh": 0.064,
    "hrvAcute": 0.056,
-   "regularity": 0.04
+   "regularity": 0.04,
+   "activity": 0.04,
+   "circadian": 0.05
   },
   "SR_HRV_ACUTE_DAMP": 0.5,
   "FORM_IN_THRESH": 0.75,

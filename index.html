@@ -13416,7 +13416,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.014';
+const APP_VERSION = '2026.11.15.015';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13812,6 +13812,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.015': 'The readiness number now answers how well you can perform today, and tunes itself to you by checking each morning against what you then did: your top sets against that lift\u2019s recent normal, your runs\u2019 speed per heartbeat against your recent runs. It also reads fitness minus fatigue from your whole training history (so a hard week turns into a good one instead of just reading as tired), how much you walked yesterday outside training, and how long you will have been awake at the hour you usually train. Last night\u2019s sleep now counts as last night, not as an average of the week around it. 50 is a typical day for you, 100 your best, 0 your worst. All automatic.',
   '2026.11.15.014': 'Apple Health is the one source now, and the Oura connection is gone. Your Oura and Garmin apps write to Health and Dogfood reads it there: sleep from the ring (one night, not the ring and the watch added together), resting heart rate from the lowest half hour asleep, time awake from your sleep stages, and a run recorded by both kept once. HRV is out of the score, since neither shares it with Health, and the device boxes in the check-in have gone with it. Trends shows resting heart rate and sleep instead.',
   '2026.11.15.013': 'On iPhone you now feel it: a light tap on every button, a tick for each row a wheel passes and each tab you swipe to, a knock when a hold lands, and a buzz when something saves or fails. Settings → Appearance has a switch if you would rather not.',
   '2026.11.15.012': 'Tidying from a hands-on pass. Sheets on the Skills tab open properly again with an injury logged (its buttons now wrap instead of pushing the page sideways). The weight wheel shows 22.5 rather than rounding it to 23. Generate tells you when it can\u2019t build a week instead of saying so out of sight. Your weight chart shows from sign-up, before any check-in. Walk-run sessions show their real length, the session toggle says \u201cFull body\u201d and \u201cEasy run\u201d, the finish card lists every session you did today, and the big button reads Edit once today is logged. Checking in on an injury keeps its first rating and its improving arrow.',
@@ -15688,6 +15689,70 @@ async function buildSignalWindowUncached(asOfDate, days){
     SR_LOAD_DECAY.forEach((k, back)=>{ acute += k * (loadByDate[dates[i - 1 - back]] || 0); });
     return acute;
   });
+  /* FITNESS MINUS FATIGUE — Banister's impulse-response model, the standard account of what a
+     body can produce on a given day from what it has been given.
+
+     Every session adds to two things at once: fitness, which builds slowly and fades over
+     weeks (time constant 42 days), and fatigue, which lands hard and clears in about a week
+     (7 days). What you can do this morning is fitness minus twice the fatigue: so a big week
+     reads as a dip for a few days and then as a gain, which is exactly the taper and
+     supercompensation the 3-day load channel above could never see. It replaces that channel
+     in the score; 42/7/2 are Banister's own textbook constants, not fitted ones, and the
+     learning engine decides how much this term is worth for you.
+
+     Over the whole training history, not the window, because a 42-day constant needs months
+     behind it. Runs Apple Health saw that you did not log in the app count too (a Garmin run is
+     still a run), at the same 90 per km, or 15 a minute when there is no distance. */
+  const BAN_FIT_TAU = 42, BAN_FAT_TAU = 7, BAN_K = 2;
+  const banLoad = { ...loadByDate };
+  const runMinByDate = {};
+  _sessions.forEach(sn=>{ if(sn && sn.type === 'run' && sn.date && sn.durationMin) runMinByDate[sn.date] = (runMinByDate[sn.date] || 0) + (+sn.durationMin || 0); });
+  entries.forEach(e=>{
+    if(!e || !Array.isArray(e.appleRuns) || !e.appleRuns.length) return;
+    const loggedRun = _sessions.some(sn=> sn && sn.type === 'run' && sn.date === e.date);
+    if(loggedRun) return;
+    e.appleRuns.forEach(r=>{
+      const v = r && r.distanceKm ? r.distanceKm * 90 : (r && r.durationMin ? r.durationMin * 15 : 0);
+      if(v > 0) banLoad[e.date] = (banLoad[e.date] || 0) + v;
+      if(r && r.durationMin) runMinByDate[e.date] = (runMinByDate[e.date] || 0) + (+r.durationMin || 0);
+    });
+  });
+  const banDates = Object.keys(banLoad).filter(d=> banLoad[d] > 0).sort();
+  const ffSeries = dates.map(()=> null);
+  if(banDates.length){
+    const dFit = Math.exp(-1 / BAN_FIT_TAU), dFat = Math.exp(-1 / BAN_FAT_TAU);
+    const wanted = {};
+    dates.forEach((d, i)=>{ wanted[d] = i; });
+    let fit = 0, fat = 0, d = banDates[0];
+    const end = dates[dates.length - 1];
+    // Morning of d: everything up to the day before, decayed by a day.
+    for(let guard = 0; d <= end && guard < 4000; guard++){
+      if(wanted[d] != null) ffSeries[wanted[d]] = fit - BAN_K * fat;
+      const L = banLoad[d] || 0;
+      fit = (fit + L) * dFit; fat = (fat + L) * dFat;
+      d = shiftDateStr(d, 1);
+    }
+    // Before the first session there is nothing to model, which is not the same as zero.
+    dates.forEach((dd, i)=>{ if(dd <= banDates[0]) ffSeries[i] = null; });
+  }
+  /* ACTIVITY OUTSIDE TRAINING. A 25,000-step day of walking a city is fatigue the training log
+     never hears about. Yesterday's steps from Apple Health (the ring's and the watch's, which
+     Health has already de-duplicated), less the steps a logged or recorded run accounts for at
+     about 160 a minute, so a long run is not counted twice. Against your own normal: a busy
+     day reads as a little less ready, a quiet one as a little more. */
+  const activitySeries = dates.map((d, i)=>{
+    if(i === 0) return null;
+    const y = entries[i - 1];
+    if(!y || y.steps == null || isNaN(+y.steps)) return null;
+    return Math.max(0, +y.steps - 160 * (runMinByDate[dates[i - 1]] || 0));
+  });
+  /* WHEN YOU TRAIN. The hour you usually start, from sessions that recorded it and from runs
+     Health recorded, so "hours since waking" can be read against it. Five or more starts, or
+     there is no habit to speak of. */
+  const startHours = [];
+  _sessions.forEach(sn=>{ if(sn && sn.startedAt){ const t = new Date(sn.startedAt); if(!isNaN(t)) startHours.push(t.getHours() + t.getMinutes() / 60); } });
+  entries.forEach(e=>{ if(e && Array.isArray(e.appleRuns)) e.appleRuns.forEach(r=>{ const t = r && r.start ? new Date(r.start) : null; if(t && !isNaN(t)) startHours.push(t.getHours() + t.getMinutes() / 60); }); });
+  const trainHour = startHours.length >= 5 ? medianOf(startHours.slice(-30)) : null;
   /* FORM — WHERE YOUR LIFTS HAVE ACTUALLY BEEN LATELY.
 
      Every other channel in this window is a measurement of your body at rest. None of them is
@@ -15768,6 +15833,10 @@ async function buildSignalWindowUncached(asOfDate, days){
     // Inverted: carrying more than your usual load into a morning is a reason to be less
     // ready, and carrying less is a reason to be more.
     load:     normaliseChannel(loadSeries, { invert:true, baselineMask }),
+    // Higher is more ready: more fitness than fatigue.
+    fitFatigue: normaliseChannel(ffSeries, { baselineMask }),
+    // Inverted: more walking yesterday than usual is a little less in the legs today.
+    activity: normaliseChannel(activitySeries, { invert:true, baselineMask }),
     // Not inverted: more form is more readiness, which is the one channel here where the
     // obvious direction is the right one.
     form:     normaliseChannel(formSeries, { baselineMask }),
@@ -15822,7 +15891,7 @@ async function buildSignalWindowUncached(asOfDate, days){
     dates, entries, channels,
     hrvSource: hrvRec.source, hrvSourceSince: hrvRec.since,
     hrvBaseline: hrvBaselineFrom(hrvSeries.filter((v, i)=> !baselineMask[i])),
-    wakeMedianMin: wakeMedian, wakeMinutes: wakeMin, drinkMask, unwellMask, baselineMask,
+    wakeMedianMin: wakeMedian, wakeMinutes: wakeMin, trainHour, drinkMask, unwellMask, baselineMask,
     drankLastNight: !!drinkMask[drinkMask.length - 1],
     rhrBaseline: medianOf(rhrSeries.filter(v=>v != null)),
     observedNights, windowNights: possible,
@@ -15889,20 +15958,95 @@ const LEARN_MAX_SHIFT = 0.6;        // a learned weight can never move more than
    readout says how many. Under a dozen labels the engine declines and the starting weights
    stand, which is the right answer to not having clean data rather than the wrong answer
    to having dirty data. */
-async function recoveryResponse(session, win, idxOf, loadOf){
-  if(!session || !session.date) return null;
-  const i = idxOf[session.date];
-  if(i == null || !win.entries[i]) return null;          // no morning to read readiness from
-  const j = i + 1;
-  if(j >= win.dates.length || !win.entries[j]) return null; // no morning after to read the answer
-  const load = loadOf(session);
-  if(!(load > 0)) return null;
-  const parts = [];
-  const take = ch => { if(ch && ch.available && ch.zAcuteSeries){ const v = ch.zAcuteSeries[j]; if(v != null && !isNaN(v)) parts.push(v); } };
-  take(win.channels.hrv);
-  take(win.channels.rhr);
-  if(!parts.length) return null;
-  return { i, load, response: parts.reduce((a,b)=>a+b, 0) / parts.length, date: session.date };
+
+/* HOW WELL YOU ACTUALLY PERFORMED — the label the score is now tuned against.
+
+   It used to learn from how your body ABSORBED a session (the next morning's resting HR given
+   the load), which tunes an overreaching monitor. The question the number answers is how well
+   you can perform today, so it now learns from what you performed:
+
+   LIFTS. Each lift's best set as an estimated one-rep max (Epley, 1 to 12 reps), against the
+   median of that same lift's last five measured sessions in the four months before. Only sets
+   whose reps you entered yourself count: a set left at its prescribed reps tells you the
+   prescription, not what you had in you, and learning from those would teach the score its
+   own programme back.
+
+   RUNS. Speed per heartbeat when Apple Health has the run's average heart rate (Garmin writes
+   it), which is the closest thing to fitness at a fixed effort this data allows; otherwise
+   pace, against your last five runs of the same kind. A run Health recorded that you did not
+   log in the app counts on speed per heartbeat alone, since without a run type its pace has
+   nothing fair to be compared with.
+
+   Each is a ratio (+0.03 is 3% better than your recent normal), clamped to ±30% so one
+   mis-typed weight cannot steer anything, and standardised within its kind before lifts and
+   runs are pooled. */
+function performanceOutcomes(sessions, win, idxOf){
+  const out = [];
+  const sorted = (sessions || []).filter(sn=> sn && sn.date).slice().sort((a,b)=> a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+  const liftHist = {}, runHist = {}, effHist = [];
+  const clampR = r => Math.max(-0.3, Math.min(0.3, r));
+  const recent = (list, date, days)=> list.filter(h=> h.date < date && h.date >= shiftDateStr(date, -days)).slice(-5).map(h=> h.v);
+  const hrFor = (date, durMin)=>{
+    const i = idxOf[date];
+    const e = i != null ? win.entries[i] : null;
+    const runs = e && Array.isArray(e.appleRuns) ? e.appleRuns : [];
+    const m = runs.find(r=> r && r.avgHR && r.durationMin && (!durMin || Math.abs(r.durationMin - durMin) <= Math.max(5, durMin * 0.2)));
+    return m ? m : null;
+  };
+  const push = (date, kind, r)=>{ const i = idxOf[date]; if(i != null && win.entries[i] && isFinite(r)) out.push({ i, date, kind, r: clampR(r) }); };
+  const loggedRunDates = new Set();
+  for(const sn of sorted){
+    if(sn.type === 'strength'){
+      const rs = [];
+      (sn.exercises || []).forEach(ex=>{
+        if(!ex || ex.repsPrefilled) return;
+        const ws = Array.isArray(ex.weightPerSet) && ex.weightPerSet.length ? ex.weightPerSet : [ex.weight];
+        const reps = Array.isArray(ex.repsPerSet) && ex.repsPerSet.length ? ex.repsPerSet : [ex.reps];
+        let best = null;
+        reps.forEach((rp, k)=>{
+          const w = +(ws[k] != null ? ws[k] : ws[0]), n = +rp;
+          if(!(w > 0) || !(n >= 1 && n <= 12)) return;
+          const v = e1RM(w, n);
+          if(v && (best == null || v > best)) best = v;
+        });
+        if(best == null) return;
+        const name = (ex.name || '').trim().toLowerCase();
+        const hist = liftHist[name] = liftHist[name] || [];
+        const prior = recent(hist, sn.date, 120);
+        if(prior.length >= 3) rs.push(best / medianOf(prior) - 1);
+        hist.push({ date: sn.date, v: best });
+      });
+      if(rs.length) push(sn.date, 'lift', rs.reduce((a,b)=>a+b,0) / rs.length);
+    } else if(sn.type === 'run' && sn.distanceKm > 0 && sn.durationMin > 0){
+      loggedRunDates.add(sn.date);
+      const hr = hrFor(sn.date, sn.durationMin);
+      if(hr){
+        const eff = (sn.distanceKm / sn.durationMin) / hr.avgHR;
+        const prior = recent(effHist, sn.date, 180);
+        if(prior.length >= 3){ push(sn.date, 'run', eff / medianOf(prior) - 1); effHist.push({ date: sn.date, v: eff }); continue; }
+        effHist.push({ date: sn.date, v: eff });
+      }
+      const type = sn.runType || 'run';
+      const hist = runHist[type] = runHist[type] || [];
+      const pace = sn.durationMin / sn.distanceKm;
+      const prior = recent(hist, sn.date, 180);
+      if(prior.length >= 3) push(sn.date, 'run', medianOf(prior) / pace - 1);
+      hist.push({ date: sn.date, v: pace });
+    }
+  }
+  // Runs only Health saw: speed per heartbeat, against the same efficiency history.
+  win.dates.forEach((d, i)=>{
+    const e = win.entries[i];
+    if(!e || loggedRunDates.has(d) || !Array.isArray(e.appleRuns)) return;
+    e.appleRuns.forEach(r=>{
+      if(!r || !(r.distanceKm > 0) || !(r.durationMin > 0) || !(r.avgHR > 0)) return;
+      const eff = (r.distanceKm / r.durationMin) / r.avgHR;
+      const prior = recent(effHist.slice().sort((a,b)=> a.date < b.date ? -1 : 1), d, 180);
+      if(prior.length >= 3) push(d, 'run', eff / medianOf(prior) - 1);
+      effHist.push({ date: d, v: eff });
+    });
+  });
+  return out;
 }
 
 /* Pairs each session outcome with the readiness components as they stood that morning, then
@@ -15925,25 +16069,15 @@ async function learnWeights(asOfDate){
   win.dates.forEach((d, i)=>{ idxOf[d] = i; });
   let bwLine = [];
   try{ bwLine = await bodyweightTimeline(); } catch(e){}
-  const loadOf = sn => sn.type === 'run' ? (sn.distanceKm || 0) * 90
-                                        : sessionLoadOf(sn, bodyweightOn(bwLine, sn.date));
-  const outcomes = [];
-  let dropped = 0;
-  for(const s of sessions){
-    const out = await recoveryResponse(s, win, idxOf, loadOf);
-    if(out) outcomes.push(out); else if(s && s.date && idxOf[s.date] != null) dropped++;
-  }
-  if(outcomes.length < LEARN_MIN_SESSIONS){
-    _learnedCache = { date, at:Date.now(), value:null, dropped, n:outcomes.length };
+  // What you performed, session by session (see performanceOutcomes). A session with no
+  // measured top set or run, or no morning on record before it, teaches nothing and is counted
+  // as dropped so the readout can say so.
+  const raw = performanceOutcomes(sessions, win, idxOf);
+  const dropped = sessions.filter(sn=> sn && sn.date && idxOf[sn.date] != null).length - raw.length;
+  if(raw.length < LEARN_MIN_SESSIONS){
+    _learnedCache = { date, at:Date.now(), value:null, dropped: Math.max(0, dropped), n:raw.length };
     return null;
   }
-
-  // Both halves of the outcome standardised against their own spread, then combined: more of
-  // the plan completed is good. It used to be halved with a session-RPE term — how much
-  // effort it cost — which was a better outcome on paper and a self-report in practice: a
-  // morning rating correlated against an afternoon rating from the same person on the same
-  // day measures the habit as much as the day. The rating is gone and so is the RPE, and
-  // what is left is the one half of it that was ever a measurement.
   const zs = (vals)=>{
     const v = vals.filter(x=>x != null);
     if(v.length < 4) return null;
@@ -15951,23 +16085,19 @@ async function learnWeights(asOfDate){
     const sd = Math.sqrt(v.reduce((a,b)=>a + (b-m)*(b-m), 0) / (v.length - 1));
     return sd ? (x)=> x == null ? null : Math.max(-3, Math.min(3, (x - m) / sd)) : null;
   };
-  /* Recovery better or worse than the load alone predicts. One line through response
-     against load, and the label is the distance from it. A slope is all the sample can
-     support, and it is the right shape: absorption is roughly proportional to relative
-     overload. Standardised load, so the intercept is the typical response and the slope
-     reads in the same units as the residual. */
-  const zLoad = zs(outcomes.map(o=>o.load));
-  const zResp = zs(outcomes.map(o=>o.response));
-  if(!zLoad || !zResp){ _learnedCache = { date, at:Date.now(), value:null, dropped, n:outcomes.length }; return null; }
-  const lx = outcomes.map(o=> zLoad(o.load)), ly = outcomes.map(o=> zResp(o.response));
-  const mx = lx.reduce((a,b)=>a+b,0) / lx.length, my = ly.reduce((a,b)=>a+b,0) / ly.length;
-  let sxy = 0, sxx = 0;
-  lx.forEach((x, k)=>{ sxy += (x - mx) * (ly[k] - my); sxx += (x - mx) * (x - mx); });
-  const slope = sxx ? sxy / sxx : 0;
-  const resid = ly.map((y, k)=> y - (my + slope * (lx[k] - mx)));
-  const zRes = zs(resid);
-  if(!zRes){ _learnedCache = { date, at:Date.now(), value:null, dropped, n:outcomes.length }; return null; }
-  outcomes.forEach((o, k)=>{ o.y = zRes(resid[k]); });
+  // Standardised within each kind, so a lift's 3% and a run's 3% are each read against how
+  // much that kind of outcome normally moves for you, then pooled.
+  const outcomes = [];
+  ['lift', 'run'].forEach(kind=>{
+    const these = raw.filter(o=> o.kind === kind);
+    const z = zs(these.map(o=> o.r));
+    if(z) these.forEach(o=> outcomes.push({ ...o, y: z(o.r) }));
+  });
+  const slope = 0;
+  if(outcomes.length < LEARN_MIN_SESSIONS){
+    _learnedCache = { date, at:Date.now(), value:null, dropped: Math.max(0, dropped), n:outcomes.length };
+    return null;
+  }
 
   // The components as they stood on the session's own morning — the predictor end.
   const keys = Object.keys(SR_WEIGHTS);
@@ -16502,7 +16632,8 @@ const SR_COMPONENT_LABELS = {
   form:'Recent form', hrvTrend:'HRV trend', rhrTrend:'Resting HR level',
   rhrAcute:'Resting HR last night', sleep:'Sleep',
   hrvAcute:'HRV last night', sleepDebt:'Sleep debt', regularity:'Sleep regularity',
-  illnessCh:'Breathing & temp'
+  illnessCh:'Breathing & temp', fitFatigue:'Fitness minus fatigue',
+  activity:'Activity outside training', circadian:'Hours since waking'
 };
 async function renderLearnedWeights(){
   const el = document.getElementById('learnedWeights');
@@ -16512,7 +16643,7 @@ async function renderLearnedWeights(){
   if(!L){
     const c = _learnedCache && _learnedCache.date === todayStr ? _learnedCache : null;
     const have = c && c.n != null ? c.n : 0, skipped = c && c.dropped ? c.dropped : 0;
-    el.innerHTML = `<div class="score-note">Still using the starting weights. They move once a dozen or so sessions have a logged morning after them — resting HR the next day is what the score is checked against. ${have} so far${skipped ? `, and ${skipped} session${skipped === 1 ? '' : 's'} skipped for having no morning logged after ${skipped === 1 ? 'it' : 'them'}` : ''}.</div>`;
+    el.innerHTML = `<div class="score-note">Still using the starting weights. They move once a dozen or so sessions have measured how you actually performed: a top set whose reps you entered yourself, or a run. ${have} so far${skipped ? `, and ${skipped} session${skipped === 1 ? '' : 's'} with nothing measurable in ${skipped === 1 ? 'it' : 'them'}` : ''}.</div>`;
     return;
   }
   // Every bar is drawn against the same ceiling, so their lengths are comparable to each
@@ -16534,7 +16665,7 @@ async function renderLearnedWeights(){
         Math.round(prior * 100)}%, now ${pct}%"><i data-from="${fromPct}" data-to="${toPct}"></i>`
       + `<u style="left:${fromPct}%;"></u></div>`;
   }).join('');
-  el.innerHTML = rows + `<div class="score-note" style="margin-top:8px;">From ${L.n} session${L.n === 1 ? '' : 's'} with a logged morning after ${L.n === 1 ? 'it' : 'them'}${L.dropped ? ` (${L.dropped} skipped for having none)` : ''}. Each morning's readiness is checked against how the body absorbed that day's session — the next morning's HRV and resting HR, against your own baseline, after the load done is accounted for. Correlations are shrunk by their own error bar and by how much independent information the run of days actually carries, so a weight moves slowly and never inverts — a negative on this little data is noise, and letting it flip would have the app rewarding bad sleep.</div>`;
+  el.innerHTML = rows + `<div class="score-note" style="margin-top:8px;">From ${L.n} session${L.n === 1 ? '' : 's'} that measured how you performed${L.dropped ? ` (${L.dropped} with nothing measurable)` : ''}. Each morning's readiness is checked against what you then did: your top sets against that lift's recent normal, your runs' speed per heartbeat or pace against your recent runs. Correlations are shrunk by their own error bar and by how much independent information the run of days actually carries, so a weight moves slowly and never inverts — a negative on this little data is noise, and letting it flip would have the app rewarding bad sleep.</div>`;
   weightsDrift(el);
 }
 
@@ -17316,7 +17447,10 @@ const SR_WEIGHTS = {
   /* What you are carrying into this morning, decayed over the three days behind it, inverted
      so more load reads as less readiness. First now rather than fourth: residual fatigue from
      recent work is the most direct thing standing between you and today's session. */
-  load:        0.160,
+  /* What you are carrying into this morning, as Banister's fitness minus fatigue rather than
+     the old three-day decayed load: same weight, a better instrument, because it knows a hard
+     week turns into a better one. */
+  fitFatigue:  0.160,
   hrvTrend:    0.136,  // the stable autonomic signal — still the largest recovery term
   /* Better sensor validity than HRV (Oura HR r=0.993 vs rMSSD r=0.915), and split in two:
      the sustained level, which is what the monitoring literature says to read, and the single
@@ -17333,7 +17467,9 @@ const SR_WEIGHTS = {
   sleep:       0.104,
   illnessCh:   0.064,  // respiratory rate and skin temperature, negative-only
   hrvAcute:    0.056,  // damped, so one catastrophic night registers without noise driving it
-  regularity:  0.040   // Windred 2023 — predicts independently of duration, near-zero cost
+  regularity:  0.040,  // Windred 2023 — predicts independently of duration, near-zero cost
+  activity:    0.040,  // yesterday's steps outside training, against your normal
+  circadian:   0.050   // hours since waking at the hour you train
 };
 
 
@@ -17372,6 +17508,31 @@ function sleepDebtZ(win, i){
 }
 
 /* One day's composite from the channel set. `i` indexes the window; the last day is today. */
+/* HOURS SINCE WAKING, AT THE HOUR YOU TRAIN.
+
+   Strength and power are not the same at every point of the day: they are lowest soon after
+   waking and peak late in the waking day, and Facer-Childs (2018) found it is hours since
+   waking, more than the clock, that sets it. So this reads today's wake time from Apple Health
+   against the hour you usually start training. Absolute, like regularity, on a stated
+   convention rather than a fitted curve:
+     under 1 hour awake    -1.2
+     1 to 5 hours          rising to 0
+     5 to 13 hours         0, the plateau where nothing is lost
+     13 to 17 hours        falling to -0.6, the long-day end
+   Null without a wake time today or a training habit, and then it leaves the budget. */
+function circadianZ(win, i){
+  if(!win || win.trainHour == null || !win.wakeMinutes) return null;
+  const idx = i == null ? win.wakeMinutes.length - 1 : i;
+  const wm = win.wakeMinutes[idx];
+  if(wm == null) return null;
+  let h = win.trainHour - wm / 60;
+  if(h < -2) h += 24;
+  if(h <= 1) return -1.2;
+  if(h < 5) return -1.2 * (5 - h) / 4;
+  if(h <= 13) return 0;
+  if(h < 17) return -0.6 * (h - 13) / 4;
+  return -0.6;
+}
 function srComponentsAt(win, i, debtZ){
   const last = i == null ? null : i;
   const at = (ch, series)=>{
@@ -17386,6 +17547,10 @@ function srComponentsAt(win, i, debtZ){
        EWMA of it would sit on its own median and never say anything. The decay across three
        days is already the smoothing. */
     load: at(win.channels.load, 'zAcuteSeries'),
+    // Already a slow, decayed quantity, so the day's own value rather than a smoothing of it.
+    fitFatigue: at(win.channels.fitFatigue, 'zAcuteSeries'),
+    activity: at(win.channels.activity, 'zAcuteSeries'),
+    circadian: circadianZ(win, last),
     /* The SMOOTHED series here, unlike load. Form is a level rather than an event — the
        question is where your training has been sitting, not what happened in one session, and
        the underlying index is already a mean of five. */
@@ -17414,9 +17579,15 @@ function srComponentsAt(win, i, debtZ){
        changes HOW resting HR is read, not how much it is believed. */
     rhrTrend:   at(win.channels.rhr, 'zSeries'),
     rhrAcute:   at(win.channels.rhr, 'zAcuteSeries'),
+    /* LAST NIGHT, MEANING LAST NIGHT. This read the smoothed series, an average of the last
+       several nights, so one short night was blurred into the week around it and the term
+       said less about this morning than its name claims. Accumulation already has its own
+       term (sleepDebt), so this one is the night itself. Found by simulating an athlete whose
+       performance follows their sleep: the learning engine credited this term with fourteen
+       independent nights out of a hundred. */
     sleep:      (()=>{
-      const dur = at(win.channels.sleep, 'zSeries');
-      const frag = at(win.channels.wake, 'zSeries');
+      const dur = at(win.channels.sleep, 'zAcuteSeries');
+      const frag = at(win.channels.wake, 'zAcuteSeries');
       if(dur == null) return frag;
       return frag == null ? dur : (dur * 0.7 + frag * 0.3);
     })(),
@@ -23754,6 +23925,8 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
       if(startedAt){
         const mins = Math.round((Date.now() - startedAt) / 60000);
         if(mins >= SESSION_MIN_MINUTES && mins <= SESSION_MAX_MINUTES) session.durationMin = mins;
+        // When you started, so the score can learn the hour you usually train (circadianZ).
+        session.startedAt = startedAt;
       }
       const wasEdit = !!blockEditLoggedKey;
       try{

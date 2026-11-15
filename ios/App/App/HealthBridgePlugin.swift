@@ -31,7 +31,7 @@ import HealthKit
    deepMin, remMin, coreMin, awakeMin   sleep stages, minutes, where that source writes them
    bedStart, wakeAt ISO timestamps of the first and last asleep moments
    sleepSource      the app that wrote that night, e.g. "Oura"
-   runs             [{ start, distanceKm, durationMin, source }] running workouts that day, with
+   runs             [{ start, distanceKm, durationMin, avgHR, source }] running workouts that day, with
                     the same run recorded by two apps kept once
 */
 @objc(HealthBridgePlugin)
@@ -148,6 +148,7 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
                     set(key, "runs", list.map { run -> [String: Any] in
                         var out: [String: Any] = ["start": iso.string(from: run.start), "durationMin": run.durationMin, "source": run.source]
                         if let km = run.distanceKm { out["distanceKm"] = km }
+                        if let hr = run.avgHR { out["avgHR"] = hr }
                         return out
                     })
                 }
@@ -298,7 +299,7 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         store.execute(query)
     }
 
-    private struct Run { let start: Date; let end: Date; let durationMin: Double; let distanceKm: Double?; let source: String }
+    private struct Run { let start: Date; let end: Date; let durationMin: Double; let distanceKm: Double?; let source: String; let avgHR: Double? }
 
     /* A run recorded by the watch and noticed by the ring arrives twice. Two runs that share
        more than half of the shorter one are the same run, and the one kept is the one with a
@@ -321,11 +322,21 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
                     km = w.totalDistance?.doubleValue(for: HKUnit.meterUnit(with: .kilo))
                 }
                 let roundedKm = km.flatMap { v in v > 0 ? (v * 100).rounded() / 100 : nil }
+                // The run's average heart rate, which Garmin writes with the workout: speed per
+                // heartbeat is the app's measure of how fit you ran.
+                var hr: Double? = nil
+                if #available(iOS 16.0, *) {
+                    if let t = HKQuantityType.quantityType(forIdentifier: .heartRate),
+                       let q = w.statistics(for: t)?.averageQuantity() {
+                        hr = (q.doubleValue(for: HKUnit.count().unitDivided(by: HKUnit.minute())) * 10).rounded() / 10
+                    }
+                }
                 all.append(Run(start: w.startDate, end: w.endDate, durationMin: (w.duration / 60 * 10).rounded() / 10,
-                               distanceKm: roundedKm, source: w.sourceRevision.source.name))
+                               distanceKm: roundedKm, source: w.sourceRevision.source.name, avgHR: hr))
             }
             let better = { (a: Run, b: Run) -> Bool in
                 if (a.distanceKm != nil) != (b.distanceKm != nil) { return a.distanceKm != nil }
+                if (a.avgHR != nil) != (b.avgHR != nil) { return a.avgHR != nil }
                 return a.durationMin > b.durationMin
             }
             var kept: [Run] = []
