@@ -79,14 +79,16 @@ The plugin reads the following (see the comment at the top of `HealthBridgePlugi
 - active calories
 - running workouts
 
-The app fills in days you haven't logged yourself and never overwrites what you typed. With an Oura ring
-connected, Apple's HRV is stored separately from Oura's (`hrvApple`), because the two measure different things.
+The app fills in days you haven't logged yourself and never overwrites what you typed. Apple's HRV is stored in
+its own field (`hrvApple`), because it measures a different statistic from Garmin's and Oura's. Switching devices
+restarts the HRV baseline from the day the new one's readings begin.
 Runs that Health records are kept on the day (`appleRuns`) but not logged as sessions yet.
 
 ## Not done yet
 
-- **Connecting Oura inside the app.** The Oura sign-in returns to the web address, so inside the app it will
-  need a custom URL scheme. Use Apple Health in the meantime: the Oura app can write to it.
+- **Oura is switched off** (`OURA_ENABLED = false` in index.html); Apple Health is the one source. The Oura app
+  can write to Apple Health, so a ring still counts. Turning Oura back on inside the app would also need a custom
+  URL scheme for its sign-in.
 - **Storage.** Data still lives in the web view's local storage. iOS rarely clears it for an installed app, but
   moving to native storage (Capacitor Preferences or SQLite) would make it permanent.
 - **Updates.** Web changes reach the app when you run `npm run ios:sync` and upload a new build.

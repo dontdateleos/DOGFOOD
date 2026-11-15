@@ -13408,7 +13408,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.008';
+const APP_VERSION = '2026.11.15.009';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13804,6 +13804,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.009': 'Apple Health is the one connection now; Oura is switched off for now. If you wear a ring, let the Oura app write to Apple Health and it still counts. Apple\u2019s HRV keeps its own baseline, so switching from one device to another starts it fresh rather than mixing the two.',
   '2026.11.15.008': 'In the iPhone app, the header now sits below the clock and the camera cutout instead of under them, and nothing at the bottom hides behind the home bar.',
   '2026.11.15.007': 'Getting ready for the iPhone app. Inside it, Dogfood will read Apple Health directly \u2014 HRV, resting heart rate, sleep, breathing rate, wrist temperature, steps and runs \u2014 with no Shortcut to set up, filling in days you have not logged yourself. Nothing changes in the browser.',
   '2026.11.15.006': 'Small fixes to your records. Re-rating an injury keeps the day it started, so its history and \u201cwhat led to this\u201d stay right. Undo now also reverses a plan change from a readiness card. Saving skills keeps the date you last moved up a level. One damaged injury record can no longer hide all the others, and a run with no time logged no longer counts toward a time goal.',
@@ -14138,6 +14139,16 @@ document.querySelectorAll('.group-head.collapsible').forEach(head=>{
 
 const OURA_CLIENT_ID = '62367975-4a6e-445d-a195-1936ce98c7af';
 const OURA_TOKEN_WORKER_URL = 'https://dogfoodoura.jordandf1.workers.dev';
+/* OURA IS SWITCHED OFF FOR NOW; Apple Health is the one source. The connection, sync and
+   OAuth code below is kept whole and unreachable rather than deleted, so turning this back on
+   is one line. Oura's own app can write to Apple Health, so a ring still reaches the score
+   that way. The worker URL above is still used by the Apple Health Shortcut pull. */
+const OURA_ENABLED = false;
+/* Anything connected that fills the morning in by itself. */
+function healthSourceConnected(){
+  try{ if(typeof NativeHealth !== 'undefined' && NativeHealth && nativeHealthOn()) return true; } catch(e){}
+  try{ return appleHealthSyncOn(); } catch(e){ return false; }
+}
 /* ONE REDIRECT URI PER ORIGIN, WHICHEVER DOOR YOU CAME IN BY.
    This was origin + pathname, taken raw, and pathname is not one value: the home-screen
    install opens at the manifest's start_url and sends /Factors/index.html, while typing the
@@ -14268,8 +14279,6 @@ async function syncPendingAppleHealthData(){
        scales, and the Shortcut sends Apple's under the hrvOura name, so with a ring connected
        it was mixed straight into the Oura baseline. With Oura connected it is kept apart as
        hrvApple; without one it is the only HRV there is and stays where the score reads it. */
-    let ouraOn = false;
-    try{ ouraOn = !!JSON.parse((await window.storage.get('oura:tokens')).value); } catch(e){}
     for(const date of Object.keys(byDate)){
       let existing = {};
       try{ const r = await window.storage.get(keyFor(date)); existing = JSON.parse(r.value); } catch(e){}
@@ -14280,7 +14289,7 @@ async function syncPendingAppleHealthData(){
       Object.entries(mappedRaw).forEach(([k, v]) => {
         const n = typeof v === 'string' && k !== 'wakeTimeOura' ? Number(v) : v;
         if(typeof n === 'number' && !isFinite(n)) return;
-        mapped[k === 'hrvOura' && ouraOn ? 'hrvApple' : k] = n;
+        mapped[k === 'hrvOura' ? 'hrvApple' : k] = n;
       });
       const updated = { ...existing, date, ...mapped };
       if(unmatched.length) updated.appleHealthUnmatched = [...(existing.appleHealthUnmatched||[]), ...unmatched];
@@ -14309,6 +14318,7 @@ async function syncPendingAppleHealthData(){
 // against CSRF, exchanges the code via the worker, stores the resulting
 // tokens, then cleans the URL so a refresh doesn't try to re-process it.
 async function handleOuraOAuthCallback(){
+  if(!OURA_ENABLED) return;
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
   const state = params.get('state');
@@ -14644,6 +14654,25 @@ async function renderDeviceConnectRow(){
   let ouraConnected = false;
   try{ const r = await window.storage.get('oura:tokens'); ouraConnected = !!JSON.parse(r.value); } catch(e){}
 
+  if(!OURA_ENABLED){
+    const native = typeof NativeHealth !== 'undefined' && NativeHealth;
+    const on = healthSourceConnected();
+    row.innerHTML = `
+    <button id="appleQuickBtn" aria-label="${on ? 'Apple Health connected' : 'Connect Apple Health'}" style="flex:none; width:52px; height:52px; padding:0; position:relative; background:none; border:none; box-shadow:none; color:inherit;">
+      <svg width="30" height="30" viewBox="3.2 2.65 13 16" fill="currentColor" aria-hidden="true"><path d="M12.15 7.5c-1.1-.08-2.03.6-2.56.6-.53 0-1.35-.58-2.22-.56-1.14.02-2.2.66-2.78 1.68-1.2 2.08-.31 5.15.85 6.84.57.82 1.24 1.74 2.12 1.71.85-.03 1.17-.55 2.2-.55 1.02 0 1.32.55 2.21.53.92-.02 1.5-.83 2.06-1.66.65-.95.92-1.88.93-1.93-.02-.01-1.79-.69-1.81-2.73-.02-1.71 1.39-2.52 1.46-2.56-.8-1.18-2.04-1.31-2.47-1.37zM11.43 6.4c.47-.57.78-1.35.7-2.14-.67.03-1.49.45-1.97 1.02-.43.5-.81 1.3-.71 2.07.75.06 1.51-.38 1.98-.95z"/></svg>
+      ${on ? '<span aria-hidden="true" style="position:absolute; top:6px; right:6px; width:8px; height:8px; border-radius:50%; background:#3ecf6a; border:1.5px solid currentColor;"></span>' : ''}
+    </button>`;
+    document.getElementById('appleQuickBtn').addEventListener('click', async ()=>{
+      const statusEl = document.getElementById('deviceConnectStatus');
+      statusEl.textContent = 'Checking Apple Health...';
+      const result = native ? (nativeHealthOn() ? await syncNativeHealth(14) : await connectNativeHealth()) : await syncPendingAppleHealthData();
+      if(result.error) statusEl.textContent = `Apple Health check failed: ${result.error}`;
+      else if(!result.synced) statusEl.textContent = 'Apple Health — nothing new to fill.';
+      else statusEl.textContent = `Apple Health — filled ${result.synced} ${native ? 'day' : 'update'}${result.synced === 1 ? '' : 's'}.`;
+      if(native) renderNativeHealthStatus();
+    });
+    return;
+  }
   row.innerHTML = `
     <button id="ouraQuickBtn" aria-label="${ouraConnected ? 'Oura connected' : 'Connect Oura'}" style="flex:none; width:52px; height:52px; padding:0; position:relative; background:none; border:none; box-shadow:none; color:inherit;">
       <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg>
@@ -14674,6 +14703,7 @@ async function renderDeviceConnectRow(){
 }
 
 async function renderOuraConnectionStatus(){
+  if(!OURA_ENABLED){ const el = document.getElementById('ouraConnectionStatus'); if(el) el.innerHTML = ''; return; }
   const el = document.getElementById('ouraConnectionStatus');
   let tokens = null;
   try{ const r = await window.storage.get('oura:tokens'); tokens = JSON.parse(r.value); } catch(e){}
@@ -14749,8 +14779,6 @@ async function syncNativeHealth(days){
     const res = await NativeHealth.readDays({ days: days || 14 });
     const list = ((res && res.days) || []).filter(d => d && /^\d{4}-\d{2}-\d{2}$/.test(d.date) && d.date <= todayStr);
     if(!list.length) return { synced: 0, dates: [] };
-    let ouraOn = false;
-    try{ ouraOn = !!JSON.parse((await window.storage.get('oura:tokens')).value); } catch(e){}
     const num = (v, dp) => (typeof v === 'number' && isFinite(v)) ? Math.round(v * Math.pow(10, dp)) / Math.pow(10, dp) : null;
     const hhmm = iso => { if(!iso) return null; const d = new Date(iso); if(isNaN(d)) return null;
       return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; };
@@ -14770,7 +14798,7 @@ async function syncNativeHealth(days){
       const fill = {};
       const gap = (k, v) => { if(v != null && existing[k] == null) fill[k] = v; };
       const own = (k, v) => { if(v != null && JSON.stringify(existing[k]) !== JSON.stringify(v)) fill[k] = v; };
-      if(ouraOn) own('hrvApple', num(d.hrvSDNN, 1)); else gap('hrvOura', num(d.hrvSDNN, 1));
+      own('hrvApple', num(d.hrvSDNN, 1));
       gap('restingHR', num(d.restingHR, 0));
       gap('respiratoryRate', num(d.respiratoryRate, 1));
       gap('steps', num(d.steps, 0));
@@ -15842,16 +15870,23 @@ const HRV_SOURCE_KEY = 'settings:hrvSource';
    channel sat at one reading, unavailable, for good. And a real switch now restarts from the
    day the new device's readings began, not the day it was noticed, so no readings are lost. */
 const HRV_SOURCE_RECENT = 14;
+/* Each device's HRV in its own field, never mixed: Garmin and Oura report RMSSD on their own
+   scales, Apple reports SDNN. hrvApple joined the list when Apple Health became the source. */
+const HRV_SOURCES = ['hrvApple', 'hrvGarmin', 'hrvOura'];
+// One reading for display, from whichever device logged that day.
+function hrvOf(e){ return e ? (e.hrvGarmin ?? e.hrvOura ?? e.hrvApple ?? null) : null; }
 async function resolveHrvSource(entries){
-  const withHrv = entries.filter(e => e && (e.hrvGarmin != null || e.hrvOura != null))
+  const withHrv = entries.filter(e => e && HRV_SOURCES.some(k => e[k] != null))
     .slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
   let rec = null;
   try{ rec = JSON.parse((await window.storage.get(HRV_SOURCE_KEY)).value); } catch(e){}
   if(!withHrv.length) return rec || { source:null, since:null };
   const recent = withHrv.slice(-HRV_SOURCE_RECENT);
-  const g = recent.filter(e => e.hrvGarmin != null).length, o = recent.filter(e => e.hrvOura != null).length;
+  const counts = HRV_SOURCES.map(k => [k, recent.filter(e => e[k] != null).length]);
+  const top = Math.max(...counts.map(c => c[1]));
+  const leaders = counts.filter(c => c[1] === top).map(c => c[0]);
   // A tie keeps whatever was already in use.
-  const best = o > g ? 'hrvOura' : g > o ? 'hrvGarmin' : ((rec && rec.source) || 'hrvGarmin');
+  const best = (rec && leaders.includes(rec.source)) ? rec.source : leaders[0];
   if(!rec){
     // First time we have ever had HRV. Nothing switched, so the whole history counts.
     rec = { source: best, since: null };
@@ -15866,8 +15901,7 @@ async function resolveHrvSource(entries){
   } else if(rec.since){
     // Repairs a restart dated later than it should be (the old code moved it to "today" on
     // every flip): back to the first reading from this device after the other one's last.
-    const other = rec.source === 'hrvOura' ? 'hrvGarmin' : 'hrvOura';
-    const lastOther = withHrv.filter(e => e[other] != null).map(e => e.date).pop() || '';
+    const lastOther = withHrv.filter(e => HRV_SOURCES.some(k => k !== rec.source && e[k] != null)).map(e => e.date).pop() || '';
     const first = withHrv.find(e => e.date > lastOther && e[rec.source] != null);
     if(first && first.date < rec.since){
       rec = { ...rec, since: first.date };
@@ -18265,7 +18299,7 @@ async function getPairedData(){
     try{
       const r = await window.storage.get(keyFor(d));
       const e = JSON.parse(r.value);
-      const hrvEffective = e.hrvGarmin ?? e.hrvOura;
+      const hrvEffective = hrvOf(e);
       const hrvRatio = (hrvEffective!=null && e.hrvBaseline) ? hrvEffective/e.hrvBaseline : null;
       pairs.push({
         date: d,
@@ -18367,7 +18401,7 @@ async function getTrailingAverages(beforeDate){
       const r = await window.storage.get(keyFor(d));
       const e = JSON.parse(r.value);
       if(e.durationHrs!=null){ durSum+=e.durationHrs; durN++; }
-      const hrvEff = e.hrvGarmin ?? e.hrvOura;
+      const hrvEff = hrvOf(e);
       if(hrvEff!=null){ hrvSum+=hrvEff; hrvN++; }
       const wakeTimeEff = e.wakeTimeOura ?? e.wakeTimeGarmin;
       if(wakeTimeEff!=null){ wakeTimeSum+=wakeTimeEff; wakeTimeN++; }
@@ -19408,9 +19442,7 @@ async function renderSettingsSummaries(){
   try{ renderAppearanceSummary(); } catch(e){}
   // Whether anything is actually connected, rather than how many things could be.
   try{
-    let connected = false;
-    try{ connected = !!JSON.parse((await window.storage.get('oura:tokens')).value); } catch(e){}
-    put('devicesSummary', connected ? 'Oura connected' : 'none connected');
+    put('devicesSummary', healthSourceConnected() ? 'Apple Health connected' : 'none connected');
   } catch(e){ put('devicesSummary', 'none connected'); }
 }
 
@@ -24801,7 +24833,7 @@ async function refreshInjuries(){
 const REC_THRESH = { injurySeverityFlag: 3, injurySevereBlock: 5 }; // score/load thresholds now come from currentGoalThresholds()
 
 function scoresForEntry(entry, trailing){
-  const duration = entry.durationHrs, wakeTime = entry.wakeTimeOura ?? entry.wakeTimeGarmin, hrv = entry.hrvGarmin ?? entry.hrvOura, hrvBaseline = entry.hrvBaseline;
+  const duration = entry.durationHrs, wakeTime = entry.wakeTimeOura ?? entry.wakeTimeGarmin, hrv = hrvOf(entry), hrvBaseline = entry.hrvBaseline;
   const tParts = [];
   if(duration!=null) tParts.push(clamp(duration/8*100,0,100));
   if(wakeTime!=null) tParts.push(clamp(100-wakeTime*WAKE_TIME_PENALTY,0,100));
@@ -24828,7 +24860,7 @@ function scoresForEntry(entry, trailing){
 
 async function getCapacityForEntry(entry){
   const pairs = await getPairedData();
-  const hrvEffective = entry.hrvGarmin ?? entry.hrvOura;
+  const hrvEffective = hrvOf(entry);
   const hrvRatio = (hrvEffective!=null && entry.hrvBaseline) ? hrvEffective/entry.hrvBaseline : null;
   const todayVals = { duration: entry.durationHrs, hrvRatio, wakeTime: entry.wakeTimeOura ?? entry.wakeTimeGarmin, rhr: entry.restingHR };
   return computeCapacityFromValues(pairs, todayVals);
@@ -24845,7 +24877,7 @@ async function capacityLabelForEntry(entry){
       weights[key] = { r: pearson(valid.map(p=>p[key]), valid.map(p=>p.capacity)), mean: mean(valid.map(p=>p[key])), sd: stdev(valid.map(p=>p[key]))||1 };
     }
   });
-  const hrvEffectiveLabel = entry.hrvGarmin ?? entry.hrvOura;
+  const hrvEffectiveLabel = hrvOf(entry);
   const hrvRatio = (hrvEffectiveLabel!=null && entry.hrvBaseline) ? hrvEffectiveLabel/entry.hrvBaseline : null;
   const vals = { duration: entry.durationHrs, hrvRatio, wakeTime: entry.wakeTimeOura ?? entry.wakeTimeGarmin, rhr: entry.restingHR };
   let sum=0, tot=0;
@@ -25577,7 +25609,7 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
     const e = entry || {};
     const hasDuration = e.durationHrs != null;
     const hasWake = (e.wakeTimeOura ?? e.wakeTimeGarmin) != null;
-    const hasHrv = (e.hrvGarmin ?? e.hrvOura) != null;
+    const hasHrv = hrvOf(e) != null;
     if(!hasDuration && !hasWake && !hasHrv) label.textContent = 'No sleep data for today yet';
     else if(hasHrv && !hasDuration && !hasWake) label.textContent = 'HRV needs a baseline to score';
     else label.textContent = 'Not enough to score yet';
@@ -25615,7 +25647,7 @@ function readingDepth(entry){
   if((entry.wakeTimeOura ?? entry.wakeTimeGarmin) != null) n++;
   // No longer requires a hand-typed baseline: the baseline is computed now, so an HRV
   // reading counts as an HRV reading.
-  if((entry.hrvGarmin ?? entry.hrvOura) != null) n++;
+  if(hrvOf(entry) != null) n++;
   if(entry.restingHR != null) n++;
   return n;
 }
@@ -26209,7 +26241,7 @@ async function checkHRVDecline3Day(){
     try{
       const r = await window.storage.get(keyFor(dateStr));
       const e = JSON.parse(r.value);
-      const hrvEffective = e.hrvGarmin ?? e.hrvOura;
+      const hrvEffective = hrvOf(e);
       if(hrvEffective!=null && e.hrvBaseline){
         ratios.push(hrvEffective/e.hrvBaseline);
       } else {
@@ -32924,9 +32956,7 @@ function syncRecoveryMore(){
 })();
 // Chips naming which watch a reading came from, on a phone with no watch attached.
 async function markDeviceChips(){
-  let connected = false;
-  try{ connected = !!JSON.parse((await window.storage.get('oura:tokens')).value); } catch(e){}
-  document.body.classList.toggle('no-devices', !connected);
+  document.body.classList.toggle('no-devices', !healthSourceConnected());
 }
 markDeviceChips();
 
@@ -39320,8 +39350,9 @@ async function generateRecommendations(){
     // that opens "three answers and it builds your week" would cost a tap for everyone,
     // including the people with nothing to connect; offered at the point of the chore it
     // costs a tap only to the people it helps. It stops appearing once a ring is connected.
-    let ouraOn = false;
-    try{ ouraOn = !!JSON.parse((await window.storage.get('oura:tokens')).value); } catch(e){}
+    // The offer is Apple Health now, and only in the iPhone app, where connecting is one tap.
+    // In a browser there is nothing one tap away to offer, so there is no offer.
+    const ouraOn = healthSourceConnected() || !(typeof NativeHealth !== 'undefined' && NativeHealth);
     // THE REMINDER IS THE SCORE BUBBLE NOW, NOT A STRIP ON THE PAGE.
     // A full-width lime cta-strip was a lot of page for "type one number" — the same reminder
     // now lives as a sunrise face on #headerScoreBtn, beside the mark in the header (see
@@ -39329,7 +39360,7 @@ async function generateRecommendations(){
     // reminder to log one. See the success branch below, which turns it back off.
     setHeaderLogBadge(true);
     container.innerHTML = ouraOn ? '' : '<div class="cta-aside" id="insightsRingOffer" role="button" tabindex="0">'
-      + 'Wear an Oura ring? Connect it and this fills itself in.</div>';
+      + 'Connect Apple Health and this fills itself in.</div>';
     // THE SCORE SLOT SAYS WHAT IT IS WAITING FOR.
     // #overallScoreOut ships with an eight-pointed star in it as a placeholder, and nothing
     // overwrites it on the day's first render — so someone six weeks in opens the app in the
@@ -39815,7 +39846,7 @@ async function renderTrendChart(){
 
   let dataPoints = [];
   if(selectedTrendMetric === 'hrv'){
-    dataPoints = entries.filter(e=>(e.hrvGarmin ?? e.hrvOura)!=null).map(e=>({x:e.date, y:e.hrvGarmin ?? e.hrvOura}));
+    dataPoints = entries.filter(e=>hrvOf(e)!=null).map(e=>({x:e.date, y:hrvOf(e)}));
   } else if(selectedTrendMetric === 'sleepScore'){
     dataPoints = entries.filter(e=>(e.sleepScoreOura ?? e.sleepScoreGarmin)!=null).map(e=>({x:e.date, y:e.sleepScoreOura ?? e.sleepScoreGarmin}));
   } else if(selectedTrendMetric === 'loadRatio'){
