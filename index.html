@@ -5396,6 +5396,8 @@
   body.sky-dark .header-brand .tab-label, body.sky-dark .header-brand .tab-label *{ color:#fff7ec !important; }
   body.sky-dark .header-brand .tabs{ --lit:#fff7ec !important; }
   body.sky-dark .header-brand .header-mark .eye-zzz i{ color:#fff7ec !important; }
+  body.sky-dim .header-date .hd-dow, body.sky-dim .header-date .hd-mon{ color:rgba(var(--ink-rgb),0.88) !important; }
+  body.sky-dark .header-date .hd-dow, body.sky-dark .header-date .hd-mon{ color:#fff7ec !important; }
   html[data-masthead="bright"] body.tab-insights .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
   html[data-masthead="bright"] body.tab-plan .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
   html[data-masthead="bright"] body.tab-injuries .header-brand{ --bg:#0c0d0b; --ink-rgb:12,13,11; --label:#322919; }
@@ -10429,11 +10431,11 @@ async function countLoggedStreak(){
     const res = await window.storage.list('entry:');
     const days = new Set((res && res.keys ? res.keys : []).map(k=>k.slice('entry:'.length)));
     let n = 0;
-    const d = new Date(todayStr);
+    const d = localDateFrom(todayStr);
     // Today not being logged yet does not break a streak — it is not over until tomorrow.
     if(!days.has(todayStr)) d.setDate(d.getDate() - 1);
     for(;;){
-      const key = d.toISOString().slice(0,10);
+      const key = localDateStr(d);
       if(!days.has(key)) break;
       n++; d.setDate(d.getDate() - 1);
       if(n > 400) break;
@@ -12019,12 +12021,18 @@ function applySky(){
   const b = document.body, brand = document.querySelector('.header-brand');
   b.style.removeProperty('--banner');
   const off = !(EYE_ANIM.skyShade && EYE_ANIM.skyShade.on) || b.classList.contains('morning-pending');
-  if(off){ b.classList.remove('sky-dark'); if(brand) brand.style.backgroundImage = ''; return; }
+  if(off){ b.classList.remove('sky-dark', 'sky-dim'); if(brand) brand.style.backgroundImage = ''; return; }
   const base = skyParse(getComputedStyle(b).getPropertyValue('--banner')); if(!base) return;
   let hr = mcState.sunHour; if(hr == null){ const d = new Date(); hr = d.getHours() + d.getMinutes()/60; }
-  const c = skyBandAt(base, hr);
+  let c = skyBandAt(base, hr);
+  /* NO MUDDY MIDDLE. Between about 0.13 and 0.26 luminance neither the dark ink nor the cream
+     reads at 4.5:1, so a twilight band that lands there is taken on down into the cream range
+     rather than leaving the date and labels unreadable for that half hour. */
+  for(let i = 0; i < 12 && skyLum(c) >= 0.13 && skyLum(c) < 0.26; i++) c = c.map(v => v * 0.92);
   b.style.setProperty('--banner', '#' + c.map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join(''));
   b.classList.toggle('sky-dark', skyLum(c) < 0.2);
+  // A deeper-than-usual band still on the dark-ink side: the 60% date and labels firm up.
+  b.classList.toggle('sky-dim', skyLum(c) >= 0.2 && skyLum(c) < 0.45);
   if(brand){
     const L = mcSunDir(), up = Math.max(0, -L[1]), a = 0.16 * up * Math.abs(L[0]);
     brand.style.backgroundImage = a > 0.004
@@ -13394,7 +13402,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.001';
+const APP_VERSION = '2026.11.15.002';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13790,6 +13798,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.002': 'Fixes that protect your data and your joints. Saving your morning check-in no longer wipes what your ring synced that day, and a second run or mobility session on the same day no longer overwrites the first. Saving a planned run keeps its walk-run or interval instructions. An injury flagged on squatting now also keeps lunges, split squats and step-ups out, and nothing slips through in rehab work, run-day accessories, finishers or metcons. Generating several weeks on a Sunday now builds the weeks ahead instead of nothing. Dates hold steady across clock changes and time zones, so today\u2019s check-in always counts and deload weeks land where they should. Your HRV baseline no longer resets itself.',
   '2026.11.15.001': 'Mobility works the way it says it does now. A skill only moves up once you have done the work at its new level, not on the strength of the last one. Sessions stay inside their time and inside the 10 minutes a week each area can use, and two goals on the same muscle share its time instead of doubling it. Pancake, Front Splits and Bridge now prepare every area they actually need. Your most restricted areas come first, unrated ones still get work, shoulder work counts for your shoulders, and foam rolling no longer counts as stretching. Post-run sessions vary, include calves, and skip Nordics after a hard run. Bodyweight-only weeks no longer slip in rings, bars or weights.',
   '2026.11.12.001': 'The little red dot after Dogfood is just a dot now, no eyes, and it sits a touch closer to the D.',
   '2026.11.10.002': 'He is lit by the sun now: from the left in the morning, from above at midday, from the right in the evening. The header follows the day too, warm at sunrise and sunset and deep at night, when its type turns cream.',
@@ -15663,22 +15672,44 @@ function bandedChannel(values, band, scale, mask, centre){
    One source wins, chosen by which one you actually have more of, and a change of source is
    a baseline reset rather than a data point. */
 const HRV_SOURCE_KEY = 'settings:hrvSource';
+/* WHICH DEVICE YOU WEAR NOW, decided from your latest readings rather than from whichever
+   device has more readings in the window being built. The score builds a 60-day window and
+   the learning engine a 365-day one, so after a switch the two disagreed, and each call
+   recorded a "switch" dated today: the baseline restarted on every render and the HRV
+   channel sat at one reading, unavailable, for good. And a real switch now restarts from the
+   day the new device's readings began, not the day it was noticed, so no readings are lost. */
+const HRV_SOURCE_RECENT = 14;
 async function resolveHrvSource(entries){
-  const count = k => entries.filter(e=>e[k] != null).length;
-  const g = count('hrvGarmin'), o = count('hrvOura');
-  const best = (g === 0 && o === 0) ? null : (o > g ? 'hrvOura' : 'hrvGarmin');
+  const withHrv = entries.filter(e => e && (e.hrvGarmin != null || e.hrvOura != null))
+    .slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
   let rec = null;
   try{ rec = JSON.parse((await window.storage.get(HRV_SOURCE_KEY)).value); } catch(e){}
-  if(!best) return rec || { source:null, since:null };
+  if(!withHrv.length) return rec || { source:null, since:null };
+  const recent = withHrv.slice(-HRV_SOURCE_RECENT);
+  const g = recent.filter(e => e.hrvGarmin != null).length, o = recent.filter(e => e.hrvOura != null).length;
+  // A tie keeps whatever was already in use.
+  const best = o > g ? 'hrvOura' : g > o ? 'hrvGarmin' : ((rec && rec.source) || 'hrvGarmin');
   if(!rec){
     // First time we have ever had HRV. Nothing switched, so the whole history counts.
     rec = { source: best, since: null };
     try{ await window.storage.set(HRV_SOURCE_KEY, JSON.stringify(rec)); } catch(e){}
   } else if(rec.source !== best){
     // A genuine switch of device. Absolute values are not comparable across sources, so the
-    // baseline restarts here rather than absorbing the step change as physiology.
-    rec = { source: best, since: todayStr };
+    // baseline restarts where the new device's readings begin, after the old one's last.
+    const lastOld = withHrv.filter(e => rec.source && e[rec.source] != null).map(e => e.date).pop() || '';
+    const firstNew = withHrv.find(e => e.date > lastOld && e[best] != null);
+    rec = { source: best, since: firstNew ? firstNew.date : todayStr };
     try{ await window.storage.set(HRV_SOURCE_KEY, JSON.stringify(rec)); } catch(e){}
+  } else if(rec.since){
+    // Repairs a restart dated later than it should be (the old code moved it to "today" on
+    // every flip): back to the first reading from this device after the other one's last.
+    const other = rec.source === 'hrvOura' ? 'hrvGarmin' : 'hrvOura';
+    const lastOther = withHrv.filter(e => e[other] != null).map(e => e.date).pop() || '';
+    const first = withHrv.find(e => e.date > lastOther && e[rec.source] != null);
+    if(first && first.date < rec.since){
+      rec = { ...rec, since: first.date };
+      try{ await window.storage.set(HRV_SOURCE_KEY, JSON.stringify(rec)); } catch(e){}
+    }
   }
   return rec;
 }
@@ -15727,8 +15758,11 @@ async function buildSignalWindow(asOfDate, days){
 async function buildSignalWindowUncached(asOfDate, days){
   const span = days || SIG_BASE_DAYS;
   const dates = [];
+  // localDateFrom, not new Date(): that reads the key as UTC midnight, which west of UTC is
+  // the evening before, so every window ended yesterday and this morning's check-in, HRV and
+  // today's session never reached the score.
   for(let d = span - 1; d >= 0; d--){
-    const dt = new Date(asOfDate); dt.setDate(dt.getDate() - d);
+    const dt = localDateFrom(asOfDate); dt.setDate(dt.getDate() - d);
     dates.push(localDateStr(dt));
   }
   const entries = [];
@@ -16848,7 +16882,7 @@ function loadSeriesFor(sessions, asOfDate, days, bwTimeline){
   const span = days || 365;
   const byDate = {};
   for(let d = span - 1; d >= 0; d--){
-    const dt = new Date(asOfDate); dt.setDate(dt.getDate() - d);
+    const dt = localDateFrom(asOfDate); dt.setDate(dt.getDate() - d);
     byDate[localDateStr(dt)] = { mechanical:0, cardio:0, hardSets:{} };
   }
   sessions.forEach(s=>{
@@ -17254,7 +17288,7 @@ async function computeTissueReadiness(asOfDate){
   // powerlifter's, which is the mistake the whole app is built to avoid.
   const daily = {};
   for(let d = TR_WINDOW_DAYS - 1; d >= 0; d--){
-    const dt = new Date(date); dt.setDate(dt.getDate() - d);
+    const dt = localDateFrom(date); dt.setDate(dt.getDate() - d);
     const ds = localDateStr(dt);
     const day = tissueDamage(sessions, ds).damage;
     Object.keys(day).forEach(a=>{ (daily[a] = daily[a] || []).push(day[a]); });
@@ -18236,7 +18270,16 @@ async function saveRecoveryEntry(){
   entry.algoVersion = SCORE_ALGO_VERSION;
   const status = document.getElementById('loadStatus');
   try{
-    const result = await window.storage.set(keyFor(entry.date), JSON.stringify(entry));
+    /* ON TOP OF WHAT IS THERE, not instead of it. The form only knows its own fields, and
+       the day's record also holds what a sync wrote that the form never shows: breathing
+       rate, temperature deviation, sleep stages, steps, rest mode. Saving the form used to
+       write the form alone, so adding a drink after an Oura sync erased the two illness
+       channels for that day. Every form field is still written (a cleared one as null), so
+       anything you change or empty in the form wins. */
+    let existing = {};
+    try{ existing = JSON.parse((await window.storage.get(keyFor(entry.date))).value) || {}; } catch(e){}
+    const merged = { ...existing, ...entry };
+    const result = await window.storage.set(keyFor(entry.date), JSON.stringify(merged));
     if(!result) throw new Error('save failed');
     status.textContent='saved ✓';
     showToast('Recovery entry saved');
@@ -20082,12 +20125,11 @@ function getWeekDates(){
 // Generalizes getWeekDates() for future weeks — used only by multi-week generation.
 // getWeekDates() itself is left untouched since many other functions (renderWeekGrid,
 // checkDeloadDue, computeTrainingTolerance, etc.) depend on it always meaning "this week."
+// Local-calendar arithmetic. Parsing the key as UTC midnight and adding days locally put
+// every week after the spring clock change one day early in the UK and Europe, so future
+// weeks ran Sunday to Saturday and deload flags landed on Sunday keys nobody reads.
 function getWeekDatesForOffset(weeksAhead){
-  return getWeekDates().map(d=>{
-    const dt = new Date(d);
-    dt.setDate(dt.getDate() + 7*weeksAhead);
-    return dt.toISOString().slice(0,10);
-  });
+  return getWeekDates().map(d => shiftDateStr(d, 7*weeksAhead));
 }
 // The longest a single Generate run can reach — matches #programWeeksSelect's own top option
 // (8 weeks). "Clear all" and the goal-rebuild-on-save logic both need "every day the plan
@@ -20215,13 +20257,15 @@ function blockIconKey(block){
 // treatment as every other constant in this app.
 const DELOAD_CUT = 0.5;
 
+/* The Monday of a date's week, on the local calendar, as getWeekDates draws it. This parsed
+   the key as UTC midnight and read the weekday locally, which west of UTC returned the
+   Tuesday: the deload checkbox wrote a Monday key and isDeloadWeek read a Tuesday one, so
+   a ticked deload never applied there, and block position flipped between Monday and the
+   rest of the week. Unchanged for anyone at or east of UTC. */
 function getWeekStartFor(date){
-  const d = new Date(date);
-  const dow = d.getDay();
-  const diffToMonday = (dow===0) ? -6 : 1-dow;
-  const monday = new Date(d);
-  monday.setDate(d.getDate()+diffToMonday);
-  return monday.toISOString().slice(0,10);
+  const d = localDateFrom(date);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return localDateStr(d);
 }
 
 async function isDeloadWeek(date){
@@ -21864,6 +21908,16 @@ async function findLoggedSession(date, slot, type){
       // know before it offers to edit rather than to log.
       if(!slot || sn.slot === slot) return { key:k, session:sn };
       if(!sn.slot && !fallback) fallback = { key:k, session:sn };
+    }
+    /* A record with no slot is from before runs and mobility saved one. It belongs to this
+       slot only if this is the one slot of its type that day: with an AM and a PM run
+       planned, the old slotless record is the morning's, and handing it to the evening run
+       is how saving the evening run overwrote the morning one. */
+    if(fallback && slot && slot !== 'am'){
+      try{
+        const other = JSON.parse((await window.storage.get(`weekplan:${date}:am`)).value);
+        if(other && other.type === type) return null;
+      } catch(e){}
     }
     return fallback;
   } catch(e){ return null; }
@@ -23573,10 +23627,17 @@ async function openBlockEditor(date, slot, block){
       if(opts && opts.deferSwaps) deferred = swapsToNote;
       else for(const [from, to] of swapsToNote) await noteExerciseSwap(from, to);
     } else if(block.type==='run'){
+      /* The plan underneath kept, as strength keeps its own. This used to write just these
+         three fields, which threw away a walk-run's intervals, an interval session's reps,
+         the target pace, the duration and the warm-up the first time you pressed Save. A
+         generated note is not put in the box (it shows blank), so a blank box keeps it. */
+      const prev = block.details || {};
+      const typed = document.getElementById('weekRunNotes').value;
       details = {
+        ...prev,
         runType: document.getElementById('weekRunType').value,
         distanceKm: parseFloat(document.getElementById('weekRunDistance').value) || null,
-        notes: document.getElementById('weekRunNotes').value
+        notes: (!typed && isGeneratedRunNote(prev.notes)) ? prev.notes : typed
       };
     } else if(block.type==='mobility'){
       const stretches = [];
@@ -23799,7 +23860,9 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         /* The timestamp reused, like strength's, not stamped afresh. The key already
            survives a second save (see below) but the field inside it did not, so an edited
            run's record disagreed with the key holding it. */
-        date, type:'run', timestamp: blockEditLoggedTs || Date.now(),
+        // The slot, as strength already records. Without it a second run that day had no way
+        // to tell itself from the first, and opening the evening run edited the morning's.
+        date, slot, type:'run', timestamp: blockEditLoggedTs || Date.now(),
         runType: runType || 'easy', distanceKm, durationMin,
         /* THE NOTE GOES INTO THE RECORD. It was written to the plan and never to the
            session, so "legs heavy, humid" lived on a weekplan entry that regenerating the
@@ -23871,7 +23934,7 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         closeBlockEditor();
         return;
       }
-      const session = { date, type:'mobility', timestamp: Date.now(), stretches, totalHoldSeconds };
+      const session = { date, slot, type:'mobility', timestamp: blockEditLoggedTs || Date.now(), stretches, totalHoldSeconds };
       // Same as the run above: without the key, every save is another session.
       const wasEdit = !!blockEditLoggedKey;
       try{
@@ -23901,9 +23964,7 @@ async function getWeekVolumeTotals(dates){
 
 function shiftWeek(dates, weeksBack){
   return dates.map(d=>{
-    const dt = new Date(d);
-    dt.setDate(dt.getDate() - 7*weeksBack);
-    return dt.toISOString().slice(0,10);
+    return shiftDateStr(d, -7*weeksBack);
   });
 }
 
@@ -25438,9 +25499,7 @@ async function renderScoreTrace(todayScore){
     if(sr && sr.available) srSeries = sr.shownSeries || {};
   } catch(e){}
   for(let d = 6; d >= 1; d--){
-    const dt = new Date(todayStr);
-    dt.setDate(dt.getDate() - d);
-    const date = localDateStr(dt);
+    const date = shiftDateStr(todayStr, -d);
     let score = null, depth = 0;
     try{
       const entry = JSON.parse((await window.storage.get(keyFor(date))).value);
@@ -25813,9 +25872,7 @@ function showScoreDay(idx){
    there is just only ever one day to put there now. */
 
 async function isRestDayComing(daysAhead){
-  const d = new Date(todayStr);
-  d.setDate(d.getDate() + daysAhead);
-  const dateStr = d.toISOString().slice(0,10);
+  const dateStr = shiftDateStr(todayStr, daysAhead);
   let hasBlock = false;
   for(const slot of ['am','pm']){
     try{ await window.storage.get(`weekplan:${dateStr}:${slot}`); hasBlock = true; } catch(e){}
@@ -25897,8 +25954,7 @@ async function checkHRVDecline3Day(){
   // day pattern of being below your own rolling baseline, not a single morning reading.
   const ratios = [];
   for(let i=0;i<3;i++){
-    const d = new Date(todayStr); d.setDate(d.getDate()-i);
-    const dateStr = d.toISOString().slice(0,10);
+    const dateStr = shiftDateStr(todayStr, -i);
     try{
       const r = await window.storage.get(keyFor(dateStr));
       const e = JSON.parse(r.value);
@@ -25958,8 +26014,7 @@ async function checkHardSessionReadiness(entry){
   // Cross-modal signal: resistance training itself measurably suppresses HRV/parasympathetic
   // markers (Marasingha-Arachchige et al. 2022), so a heavy lower-body session yesterday is a
   // plausible real contributor to today's readiness — not just prior running load.
-  const yesterday = new Date(todayStr); yesterday.setDate(yesterday.getDate()-1);
-  const yesterdayStr = yesterday.toISOString().slice(0,10);
+  const yesterdayStr = shiftDateStr(todayStr, -1);
   const sessions = await getAllTrainingSessions();
   const hadHeavyLowerBodyYesterday = sessions.some(s=> s.date===yesterdayStr && isLowerBodyHeavySession(s));
   if(hadHeavyLowerBodyYesterday){
@@ -27303,9 +27358,8 @@ async function benchmarkAndSuggestTarget(goalType){
     const exerciseName = liftKey==='squat'?'Back Squat':liftKey==='bench'?'Bench Press':liftKey==='deadlift'?'Deadlift':'Overhead Press';
     const expectation = STRENGTH_PROGRESS_EXPECTATIONS[data.tier] || STRENGTH_PROGRESS_EXPECTATIONS.intermediate;
     const targetWeight = Math.round(data.e1RM * (1 + expectation.pct) * 2) / 2; // round to nearest 0.5kg
-    const targetDate = new Date(todayStr); targetDate.setDate(targetDate.getDate() + expectation.weeks*7);
     return { phase:'suggested', exerciseName, currentValue: data.e1RM, tier: data.tier, targetWeight,
-      targetDate: targetDate.toISOString().slice(0,10),
+      targetDate: shiftDateStr(todayStr, expectation.weeks*7),
       reason: `Estimated from your current ${exerciseName} (${data.e1RM}kg e1RM, ${data.tier} tier) — a ${Math.round(expectation.pct*100)}% increase over ${expectation.weeks} weeks is a reasonable, evidence-informed starting expectation for that tier, not a guarantee.` };
   }
   if(goalType==='running'){
@@ -27314,9 +27368,8 @@ async function benchmarkAndSuggestTarget(goalType){
     const best5k = profile.results['5K'];
     if(!best5k) return { phase:'benchmarking', reason:'No run close enough to 5K distance to project from yet — a run at least half that distance is needed.' };
     const targetTime = Math.round(best5k.time * (1 - RUNNING_PROGRESS_EXPECTATION.pct) * 10) / 10;
-    const targetDate = new Date(todayStr); targetDate.setDate(targetDate.getDate() + RUNNING_PROGRESS_EXPECTATION.weeks*7);
     return { phase:'suggested', targetDistance:5, currentValue: Math.round(best5k.time*10)/10, targetTime,
-      targetDate: targetDate.toISOString().slice(0,10),
+      targetDate: shiftDateStr(todayStr, RUNNING_PROGRESS_EXPECTATION.weeks*7),
       reason: `Projected from your best recent hard effort (${best5k.method==='direct'?'run at':'Riegel-projected from'} ${best5k.fromDistance}km on ${best5k.fromDate}) — a ${Math.round(RUNNING_PROGRESS_EXPECTATION.pct*100)}% improvement over ${RUNNING_PROGRESS_EXPECTATION.weeks} weeks is a reasonable general starting expectation, not tier-specific (no age-graded running-tier system exists here) or a guarantee.` };
   }
   return null;
@@ -27501,12 +27554,11 @@ function goalTargetValue(p){
 // Deliberately simple linear interpolation between current baseline and target —
 // "structured and easy to follow" checkpoints, not a fabricated periodization curve.
 function buildGoalTimeline(startValue, startDate, endValue, endDate){
-  const start = new Date(startDate), end = new Date(endDate);
-  const totalDays = (end-start)/(1000*60*60*24);
+  // Whole local days, so a timeline crossing a clock change still ends on the target date.
+  const totalDays = Math.round((localDateFrom(endDate) - localDateFrom(startDate))/(1000*60*60*24));
   if(totalDays <= 0) return [];
   return [0.25,0.5,0.75,1.0].map(frac=>{
-    const d = new Date(start); d.setDate(d.getDate() + Math.round(totalDays*frac));
-    return { date: d.toISOString().slice(0,10), expectedValue: Math.round((startValue + (endValue-startValue)*frac)*10)/10 };
+    return { date: shiftDateStr(startDate, Math.round(totalDays*frac)), expectedValue: Math.round((startValue + (endValue-startValue)*frac)*10)/10 };
   });
 }
 
@@ -32158,6 +32210,12 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
      A sport day on a day you also train on is that day spent. */
   const daysLeft = Math.max(0, (await availableDaysRemaining(weekDatesOverride))
     - (await trainableDatesIn(roundDates)).length);
+  /* A WEEK THAT HAS ALREADY GONE IS EMPTY, NOT A FAULT. With no training days left this
+     week the plan came back null and was reported as "no strength, running or mobility
+     goal", and the multi-week loop stops at the first error, so on a Sunday "Generate 4
+     weeks" placed nothing at all. Passing the week over lets the loop go on to the weeks
+     that can still be planned; a single-week generate already says "this week is over". */
+  if(daysLeft === 0) return { weekPassed: true, goalsUsed: goals.list.map(g=>g.type) };
   let plan = determineHybridPlan(goals.list, daysLeft, setup.sessionLength);
   const liftCap = blockType && BLOCK_TYPES[blockType] && BLOCK_TYPES[blockType].maxLiftDays;
   if(plan && liftCap && plan.strengthSessions > liftCap) plan = { ...plan, strengthSessions: liftCap };
@@ -32341,9 +32399,10 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
     const free = (await getAvailableEmptyDates(weekDatesOverride)).filter(d => !eve.has(d));
     const weekIdx = Math.floor(localDateFrom((weekDatesOverride || getWeekDates())[0]).getTime() / (7*24*60*60*1000));
     const prefs = await getEquipmentPrefs();
+    const metconFlags = await getInjuryMovementFlags();
     for(let k=0; k<metconDays && free.length; k++){
       const date = free.pop();
-      const block = buildMetconBlock(weekIdx + k, prefs.bodyweightAll, blockType);
+      const block = buildMetconBlock(weekIdx + k, prefs.bodyweightAll, blockType, metconFlags);
       await window.storage.set(`weekplan:${date}:am`, JSON.stringify(block));
       await window.storage.set(`planned_session:${date}`, JSON.stringify({ date, exercises: block.details.exercises, workoutTag: 'metcon' }));
       result.metconPlaced = (result.metconPlaced || 0) + 1;
@@ -33436,16 +33495,8 @@ async function getMobilitySkillProgress(skill, levelIndex, since){
     weeklySeconds: Math.round(totalSeconds / mobilityWeeksSpanned(Object.keys(byDate)))
   };
 }
-/* A Monday-to-Sunday week key built from the local calendar. getWeekStartFor parses the key
-   as UTC midnight and reads the weekday locally, which west of UTC puts every date on the
-   day before and makes the "week" run Tuesday to Monday; this counts the same weeks
-   getWeekDates shows. Kept separate rather than changing getWeekStartFor, whose output is
-   already stored as keys (weekmeta:, block anchors). */
-function mobilityWeekKey(date){
-  const d = localDateFrom(date);
-  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-  return localDateStr(d);
-}
+// The local Monday-to-Sunday week, as getWeekDates shows it (see getWeekStartFor).
+function mobilityWeekKey(date){ return getWeekStartFor(date); }
 function mobilityWeeksSpanned(dates){
   const maxW = MOBILITY_ADVANCE_WINDOW_DAYS/7;
   if(!dates.length) return maxW;
@@ -34187,7 +34238,9 @@ async function getBlockConfig(){
     const r = await window.storage.get('settings:blockConfig');
     const cfg = JSON.parse(r.value);
     if(cfg.length) length = Math.min(BLOCK_LENGTH_MAX, Math.max(BLOCK_LENGTH_MIN, parseInt(cfg.length,10) || BLOCK_LENGTH_DEFAULT));
-    if(cfg.anchor) anchor = cfg.anchor;
+    // Snapped to its Monday. West of UTC the old week-start helper stored a Tuesday, and a
+    // Tuesday anchor read against Monday week starts counts every week one short.
+    if(cfg.anchor) anchor = getWeekStartFor(cfg.anchor);
     if(cfg.blockIndex) blockIndex = cfg.blockIndex;
     /* Automatic unless you chose a number. A record written before this existed has no flag,
        and its length was the old default written on its own the first time anything asked —
@@ -35344,12 +35397,14 @@ const FINISHERS_BY_TAG = {
   pull:  ['bike_intervals', 'swing_emom', 'mixed_amrap'],
   full_body: ['bike_intervals', 'carries', 'mixed_amrap']
 };
-function pickFinisher(tag, idx, bodyweightOnly){
+function pickFinisher(tag, idx, bodyweightOnly, movementFlags){
   const keys = FINISHERS_BY_TAG[tag] || FINISHERS_BY_TAG.full_body;
   for(let k=0; k<keys.length; k++){
     const key = keys[(idx + k) % keys.length];
     const f = FINISHERS[key];
-    const moves = bodyweightOnly ? f.bw : f.moves;
+    // Through the injury filter like every other pick; finishers used to skip it, so a
+    // flagged knee still got goblet squats and swings at the end of the session.
+    const moves = injurySafeMoves(bodyweightOnly ? f.bw : f.moves, movementFlags);
     if(!moves) continue;
     return { key, format: f.format, minutes: f.minutes, title: f.title, moves: moves.map(m=>({ ...m })), note: FINISHER_NOTE };
   }
@@ -35369,9 +35424,15 @@ const METCONS = [
     bw:[{ name:'Mountain climbers', dose:'40s' }, { name:'Bodyweight squat', dose:'20' },
         { name:'Reverse lunge', dose:'8 each leg' }, { name:'Push-up', dose:'10', id:'push_up' }] }
 ];
-function buildMetconBlock(idx, bodyweightOnly, blockType){
+function buildMetconBlock(idx, bodyweightOnly, blockType, movementFlags){
   const m = METCONS[idx % METCONS.length];
-  const moves = bodyweightOnly ? m.bw : m.moves;
+  const raw = bodyweightOnly ? m.bw : m.moves;
+  // A flagged move comes out and the conditioning piece takes its place, so the round
+  // still has four stations and nothing in it loads the injury.
+  const safe = injurySafeMoves(raw, movementFlags) || raw.filter(mv => !mv.id && !movementOfName(mv.name));
+  const moves = safe.length < raw.length
+    ? safe.concat(Array(raw.length - safe.length).fill(null).map(()=>({ name: bodyweightOnly ? 'Mountain climbers' : 'Rower or bike', dose: '40s' })))
+    : safe;
   const exercises = moves.map(mv=>{
     const lib = mv.id ? EXERCISE_LIBRARY[mv.id] : null;
     return { name: mv.name, area: lib ? lib.area : '', secondaryArea: lib ? lib.secondaryArea : '',
@@ -35835,7 +35896,8 @@ document.getElementById('generateProgramFromGoalsBtn').addEventListener('click',
   const beforeFilled = await filledWeekDays();
   try{
     const weekResults = await generateMultiWeekProgram(numWeeks, splitOverride, options);
-    const first = weekResults[0];
+    // The first week that was actually planned: a week already over is passed, not built.
+    const first = weekResults.find(w => !w.result.weekPassed) || weekResults[0];
 
     if(first.result.error){
       const desc = describeWeekResult(first.result, 1, false);
@@ -36085,9 +36147,46 @@ async function getInjuryMovementFlags(){
 // is the back/spine itself* (a shoulder flag on 'push' still removes them — the exemption
 // is about tissue, not pattern), and they carry a clear label so the swap is never silent.
 function isSpinePart(part){ return /back|spine|lumbar|thoracic|sacro|si joint/i.test(part||''); }
+/* MOVEMENTS THAT LOAD THE SAME JOINT THE SAME WAY. A knee flagged on squatting was being
+   protected from squats only: split squats, step-ups and lunges are tagged 'lunge', so they
+   walked through a high-irritability flag and a 90-minute week put ATG split squats on both
+   upper days. Squat and lunge are both knee-dominant loaded flexion, so a flag on either
+   covers both, and the stricter of the two flags decides. */
+const INJURY_MOVEMENT_FAMILY = { squat:['squat','lunge'], lunge:['lunge','squat'] };
+function injuryFlagFor(movement, movementFlags){
+  if(!movement || !movementFlags) return null;
+  const rank = { low:1, moderate:2, high:3 };
+  return (INJURY_MOVEMENT_FAMILY[movement] || [movement])
+    .map(m => movementFlags[m]).filter(Boolean)
+    .sort((a, b) => (rank[b.irritability]||1) - (rank[a.irritability]||1))[0] || null;
+}
+/* A movement for a row that only has a name, as finishers, metcons and the bulletproofing
+   table do. The library first, then the name itself for the common unlisted ones. */
+function movementOfName(name){
+  const tags = guessTagsFromLibrary(name || '');
+  if(tags && tags.movement) return tags.movement;
+  const n = String(name || '').toLowerCase();
+  if(/lunge|split squat|step-up|step up/.test(n)) return 'lunge';
+  if(/squat|wall sit|pistol/.test(n)) return 'squat';
+  if(/swing|deadlift|rdl|hinge|good morning|hip thrust/.test(n)) return 'hinge';
+  if(/push-up|push up|press|dip/.test(n)) return 'push';
+  if(/pull-up|pull up|row\b|chin-up/.test(n)) return 'pull';
+  return '';
+}
+/* Every move of a finisher or metcon through the same filter: a move flagged high is
+   dropped, a moderate one is kept and labelled. Returns null when too little is left to be
+   the thing it was (fewer than half the moves), so the caller can pick another one. */
+function injurySafeMoves(moves, movementFlags){
+  if(!moves || !movementFlags || !Object.keys(movementFlags).length) return moves;
+  const kept = moves.map(m => {
+    const safe = applyInjurySafety({ ...m, movement: m.movement || movementOfName(m.name) }, movementFlags);
+    return safe ? { ...m, name: safe.name, injuryFlagged: safe.injuryFlagged || undefined } : null;
+  }).filter(Boolean);
+  return kept.length && kept.length * 2 >= moves.length ? kept : null;
+}
 function applyInjurySafety(exercise, movementFlags){
   if(!exercise || !exercise.movement || !movementFlags) return exercise;
-  const flag = movementFlags[exercise.movement];
+  const flag = injuryFlagFor(exercise.movement, movementFlags);
   if(!flag) return exercise;
   if(flag.irritability === 'high'){
     if(exercise.spineLoad === 'low' && isSpinePart(flag.part)){
@@ -36591,10 +36690,15 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
           .map(ex => ({ ex, score: Math.max(ex.runningRelevance.durability, ex.runningRelevance.tendonCapacity, ex.runningRelevance.singleLegStrength) }))
           .filter(c => c.score >= 2)
           .sort((a,b) => b.score - a.score);
-        if(runningCandidates.length){
-          accessoryPicks = runningCandidates.slice(0, bulletproofingCap).map(c => {
+        // Injury and kit filters first, as every other pick has them: this path skipped both.
+        const safeRunning = runningCandidates.filter(c =>
+          (!equipmentPrefs.bodyweightAll || isBodyweightExercise(c.ex))
+          && applyInjurySafety({ name: c.ex.name, movement: c.ex.movement }, injuryMovementFlags));
+        if(safeRunning.length){
+          accessoryPicks = safeRunning.slice(0, bulletproofingCap).map(c => {
             const tags = guessTagsFromLibrary(c.ex.name);
-            return { name: c.ex.name, area: tags?tags.primary:'', secondaryArea: tags?tags.secondary:'', movement: tags?tags.movement:'', exerciseId: tags?tags.exerciseId:null };
+            // Through the filter once more for its label: a moderate flag keeps the move but says so.
+            return applyInjurySafety({ name: c.ex.name, area: tags?tags.primary:'', secondaryArea: tags?tags.secondary:'', movement: tags?tags.movement:'', exerciseId: tags?tags.exerciseId:null }, injuryMovementFlags);
           });
         }
       }
@@ -36618,7 +36722,12 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
         let kept = 0;
         ranked.forEach(r=>{
           if(!r.isInjury && kept >= bulletproofingCap) return;
-          exercises.push(r.entry);
+          /* "Rehab" for an injured area is still loaded work through the injured movement.
+             It was ranked first and exempt from the cap without ever passing the filter, so
+             a knee flagged high on squatting was given Sissy Squats as its remedy. */
+          const safe = applyInjurySafety(r.entry, injuryMovementFlags);
+          if(!safe) return;
+          exercises.push(safe);
           kept++;
         });
       }
@@ -36733,7 +36842,7 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
     const finisherFits = finishersWanted && sessionLength >= FINISHER_MIN_SESSION
       && blockPhase !== 'deload' && !powerLeadIsPrimary && !exercises.some(e=>e.isPowerLead)
       && !comboDates.has(date) && !roundEve;
-    const finisher = finisherFits ? pickFinisher(tag, finisherIdx++, equipmentPrefs.bodyweightAll) : null;
+    const finisher = finisherFits ? pickFinisher(tag, finisherIdx++, equipmentPrefs.bodyweightAll, injuryMovementFlags) : null;
     const liftBudget = sessionLength - (finisher ? finisher.minutes : 0);
     let supersetPairs = 0, dropSetCount = 0;
     let preEstimate = estimateSessionDuration({ type:'strength', details:{ exercises, plannedFocus } }, null, personalSets, sessionLength);
@@ -38151,8 +38260,7 @@ async function weekPositionLine(){
      stopped being news and started being a different problem. */
   let run = 0;
   for(let k = 1; k <= 14; k++){
-    const d = new Date(todayStr); d.setDate(d.getDate() - k);
-    if(!loggedOn.has(localDateStr(d))) break;
+    if(!loggedOn.has(shiftDateStr(todayStr, -k))) break;
     run++;
   }
   if(run >= 2) parts.push(`${run} days since a rest`);
@@ -41320,7 +41428,7 @@ async function clearTestData(){
 async function seedTestScenario(scenarioKey){
   await clearTestData();
   const seededKeys = [];
-  const dateOffset = daysAgo => { const d = new Date(todayStr); d.setDate(d.getDate()-daysAgo); return d.toISOString().slice(0,10); };
+  const dateOffset = daysAgo => shiftDateStr(todayStr, -daysAgo);
 
   async function seedEntry(daysAgo, fields){
     const date = dateOffset(daysAgo);
@@ -41445,8 +41553,8 @@ async function wipeAllStorageForScenario(){
   const res = await window.storage.list('');
   if(res && res.keys) for(const k of res.keys) await window.storage.delete(k);
 }
-function scenarioDaysAgo(n){ const d = new Date(todayStr); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); }
-function scenarioDaysFromNow(n){ const d = new Date(todayStr); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+function scenarioDaysAgo(n){ return shiftDateStr(todayStr, -n); }
+function scenarioDaysFromNow(n){ return shiftDateStr(todayStr, n); }
 async function scenarioLogStrength(daysAgo, exerciseName, area, secondaryArea, movement, weight, sets, reps){
   const date = scenarioDaysAgo(daysAgo);
   const vol = weight*sets*reps;
