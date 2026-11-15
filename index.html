@@ -13402,7 +13402,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.005';
+const APP_VERSION = '2026.11.15.006';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13798,6 +13798,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.006': 'Small fixes to your records. Re-rating an injury keeps the day it started, so its history and \u201cwhat led to this\u201d stay right. Undo now also reverses a plan change from a readiness card. Saving skills keeps the date you last moved up a level. One damaged injury record can no longer hide all the others, and a run with no time logged no longer counts toward a time goal.',
   '2026.11.15.005': 'Running plans that respect you. A hard session no longer lands the day before your long run, and the long run is about 30% of the week you are actually given rather than half of it. Time off counts: three weeks without a run restarts you at an easier level, and saying you are not running at the moment starts you a level lower. Paces read right (6:00, never 5:00 or 5:60), and one mistyped run no longer drags your target pace. Walk-run sessions can be logged with just the time, so beginners without GPS move up the ladder, and Today shows how long they really take.',
   '2026.11.15.004': 'A fairer readiness score. If you log without a wearable, your score is no longer shrunk for sensors you do not have, and logging just your sleep is enough to get one. New lifters no longer see a false \u201cload climbing\u201d warning for their first month. Last night means last night: an old drink or an old night\u2019s sleep no longer stands in for today\u2019s. The sleep debt you see is the same one the score uses. Apple Health numbers come in as numbers, and with a ring connected Apple\u2019s HRV is kept separate from Oura\u2019s. The learning engine judges each past session by its own night, and a very steady resting heart rate no longer hides an illness warning.',
   '2026.11.15.003': 'Progression you can trust. \u201cLast time\u201d is the session you last trained, even when you log an older one late. Upper-body steps are a true +1.25 kg. Bodyweight lifts like pull-ups now progress by reps. Saving a session exactly as it was filled in no longer counts as a stall. Deload weeks hold the weight instead of suggesting more, a week off counts as rest, old deload weeks are cleared when you change your block length, the week back from a deload is cut once rather than session after session, and planning ahead from a deload week no longer shrinks the weeks after it. Runners who lift now earn their volume steps too.',
@@ -19423,7 +19424,10 @@ function seedSkillPicker(category, skillGoals){
       // null, not 0: an untouched ladder has nothing ticked. Defaulting to 0 would draw the
       // first rung filled on every skill in the list, a claim about you the app cannot make.
       levelIndex: sg.levelIndex == null ? null : Math.max(0, sg.levelIndex),
-      seq: sg.isMaintenance ? 0 : st.seq++
+      seq: sg.isMaintenance ? 0 : st.seq++,
+      // Everything else the saved goal carried (advancedOn, notes the engine keeps), so a
+      // save from the picker hands it back rather than dropping it.
+      saved: sg
     };
   });
   st.index = 0;   // the order below puts the actives first, so this opens on one of them
@@ -19866,7 +19870,13 @@ function skillPickerGoals(category){
     // Saved when ticked active, or when you have told the app where you are on it — an
     // untouched ladder is not a goal and should not become one.
     if(!d || (!d.active && d.levelIndex == null)) return;
-    out.push({ category, skill, levelIndex: d.levelIndex == null ? 0 : d.levelIndex, isMaintenance: !d.active });
+    const levelIndex = d.levelIndex == null ? 0 : d.levelIndex;
+    const prev = d.saved || {};
+    // The saved goal's other fields come along; a level changed here is a new level, so its
+    // advancedOn is only kept while the level is the one it was recorded for.
+    const keep = { ...prev };
+    if(prev.levelIndex !== levelIndex) delete keep.advancedOn;
+    out.push({ ...keep, category, skill, levelIndex, isMaintenance: !d.active });
   });
   return out;
 }
@@ -24409,6 +24419,10 @@ async function renderSystemConfidence(){
 // next to the words "initial 7". The seven-day trace inherited the same sign error and
 // dropped its most recent bar, which — with three bars needed before it draws at all — kept
 // the trace blank a day longer than it should have been.
+/* Where the decay counts from: the last time you re-rated it, or the onset if you never have.
+   Re-rating used to overwrite the onset date itself, so a knee hurt on 1 Nov and checked on
+   15 Nov said "onset 15 Nov", and "what led to this" looked at the wrong week. */
+function injDecayDate(inj){ return (inj && (inj.decayFrom || inj.date)) || todayStr; }
 function severityNow(initial, onsetDate, halfLife){
   /* Days floored at zero, the guard severityAtDaysAgo has always had and this one did not.
      The decay is 0.5^(days/halfLife), so a negative elapsed time is not decay at all — it
@@ -24502,8 +24516,8 @@ async function refreshInjuries(){
     list.innerHTML='';
     const injuries = [];
     for(const k of res.keys){
-      const r = await window.storage.get(k);
-      injuries.push(JSON.parse(r.value));
+      // Skipped when unreadable, rather than taking the whole list down to "No injuries".
+      try{ const inj = JSON.parse((await window.storage.get(k)).value); if(inj && inj.id) injuries.push(inj); } catch(e){}
     }
     injuries.sort((a,b)=> new Date(b.date)-new Date(a.date));
     /* The live ones, named, with the resolved ones counted behind them. A part that is still
@@ -24516,14 +24530,14 @@ async function refreshInjuries(){
       ? live.map(x=>(x.part || 'unnamed').toLowerCase()).join(', ') + tail
       : (tail.replace(/^ \u00b7 /, '') || 'nothing logged \u2014 the plan runs as written'));
     for(const inj of injuries){
-      const sev = inj.resolved ? 0 : severityNow(inj.initialSeverity, inj.date, inj.halfLife);
+      const sev = inj.resolved ? 0 : severityNow(inj.initialSeverity, injDecayDate(inj), inj.halfLife);
       const sevClass = sev < 3 ? 'low' : sev < 6 ? 'mid' : 'high';
       const sevColor = sevClass==='low' ? 'var(--good)' : sevClass==='mid' ? 'var(--warn)' : 'var(--bad)';
       const CIRC = 100.5; // 2*pi*16
       const offset = inj.resolved ? CIRC : CIRC * (1 - Math.min(sev,10)/10);
       let trendArrow = '';
       if(!inj.resolved){
-        const sevYesterday = severityAtDaysAgo(inj.initialSeverity, inj.date, inj.halfLife, 1);
+        const sevYesterday = severityAtDaysAgo(inj.initialSeverity, injDecayDate(inj), inj.halfLife, 1);
         if(sevYesterday != null && Math.abs(sevYesterday - sev) > 0.05){
           trendArrow = sev < sevYesterday
             ? '<span class="trend-arrow down">▼ improving</span>'
@@ -24536,7 +24550,7 @@ async function refreshInjuries(){
       let decay = '';
       if(!inj.resolved){
         const week = [];
-        for(let d = 6; d >= 0; d--) week.push(severityAtDaysAgo(inj.initialSeverity, inj.date, inj.halfLife, d));
+        for(let d = 6; d >= 0; d--) week.push(severityAtDaysAgo(inj.initialSeverity, injDecayDate(inj), inj.halfLife, d));
         if(week.filter(v=>v != null).length >= 3){
           const peak = Math.max(...week.filter(v=>v != null), 0.1);
           decay = `<div class="sev-trace" role="img" aria-label="Severity over the last 7 days: ${
@@ -24606,7 +24620,7 @@ async function refreshInjuries(){
         try{
           const inj = JSON.parse((await window.storage.get(`injury:${id}`)).value);
           inj.initialSeverity = n;
-          inj.date = todayStr;
+          inj.decayFrom = todayStr;
           inj.confirmedOn = todayStr;
           await window.storage.set(`injury:${id}`, JSON.stringify(inj));
           showToast(n <= 2 ? 'Noted — nearly gone' : 'Updated from today');
@@ -24704,10 +24718,13 @@ async function getActiveInjuries(){
   if(!res||!res.keys) return [];
   const list = [];
   for(const k of res.keys){
-    const r = await window.storage.get(k);
-    const inj = JSON.parse(r.value);
+    // One unreadable record is skipped, not allowed to throw: that took every generator that
+    // reads injuries down with it, and the injury list said "No injuries logged".
+    let inj = null;
+    try{ inj = JSON.parse((await window.storage.get(k)).value); } catch(e){ continue; }
+    if(!inj) continue;
     if(!inj.resolved){
-      const sev = severityNow(inj.initialSeverity, inj.date, inj.halfLife);
+      const sev = severityNow(inj.initialSeverity, injDecayDate(inj), inj.halfLife);
       if(sev >= REC_THRESH.injurySeverityFlag) list.push({...inj, currentSeverity: sev});
     }
   }
@@ -25176,7 +25193,9 @@ document.getElementById('undoDecisionBtn').addEventListener('click', async ()=>{
     await window.storage.delete(lastDecisionKey);
     // Adjustment storage overwrites rather than accumulates, so undo just clears it
     // outright rather than computing a reverse delta.
-    if(lastDecisionOutcome==='accepted' && (lastDecisionType==='reduce' || lastDecisionType==='add')){
+    // Every type that set an adjustment, the readiness engine's prescription cards included:
+    // undoing one of those restored the card and left today's plan cut.
+    if(lastDecisionOutcome==='accepted' && ['reduce','add','prescription_reduce','prescription_add'].includes(lastDecisionType)){
       await clearTodayAdjustment();
       renderTodayWorkoutSummary();
     }
@@ -28769,6 +28788,10 @@ async function getGoalMetricHistory(goal, daysBack){
       if(s.type!=='run' || !s.distanceKm) return;
       const daysAgo = (now-new Date(s.date))/(1000*60*60*24);
       if(daysAgo<0 || daysAgo>daysBack) return;
+      // A time goal reads times only. A run with no duration used to fall through to the
+      // distance branch and put "5" (km) into a series of minutes, which read as a 5-minute
+      // time and "improving fast".
+      if(goal.targetTime && !s.durationMin) return;
       if(goal.targetTime && s.durationMin){
         const withinRange = Math.abs(s.distanceKm - goal.targetDistance) / goal.targetDistance <= 0.15;
         if(withinRange){
@@ -38902,7 +38925,7 @@ async function openInjuryCheckSheet(){
         const v = +sc.querySelector('.ic-dot.on').dataset.v;
         try{
           const inj = JSON.parse((await window.storage.get(`injury:${sc.dataset.id}`)).value);
-          inj.initialSeverity = v; inj.date = todayStr; inj.confirmedOn = todayStr;
+          inj.initialSeverity = v; inj.decayFrom = todayStr; inj.confirmedOn = todayStr;
           await window.storage.set(`injury:${sc.dataset.id}`, JSON.stringify(inj));
         }catch(err){ console.error(err); }
       }
@@ -38926,7 +38949,7 @@ async function buildInjuryCheckCard(){
       const since = inj.confirmedOn || inj.date;
       const days = Math.floor((localDateFrom(todayStr) - localDateFrom(since)) / 86400000);
       if(days < INJURY_CHECK_MIN_DAYS) continue;
-      const modelled = severityNow(inj.initialSeverity, inj.date, inj.halfLife);
+      const modelled = severityNow(inj.initialSeverity, injDecayDate(inj), inj.halfLife);
       const drift = inj.initialSeverity - modelled;
       if(drift < INJURY_CHECK_MIN_DRIFT) continue;
       stale.push({ id: inj.id, part: inj.part, days, said: inj.initialSeverity, now: Math.round(modelled * 10) / 10 });
@@ -38977,8 +39000,8 @@ async function buildMobilityRetestCard(){
     for(const k of (res && res.keys) || []){
       let inj; try{ inj = JSON.parse((await window.storage.get(k)).value); } catch(e){ continue; }
       if(!inj || inj.resolved || !inj.date) continue;
-      const now = severityNow(inj.initialSeverity, inj.date, inj.halfLife);
-      const yday = severityAtDaysAgo(inj.initialSeverity, inj.date, inj.halfLife, 1);
+      const now = severityNow(inj.initialSeverity, injDecayDate(inj), inj.halfLife);
+      const yday = severityAtDaysAgo(inj.initialSeverity, injDecayDate(inj), inj.halfLife, 1);
       // Crossed the line since yesterday, rather than merely being below it — otherwise
       // every long-healed injury in storage would re-trigger this on any qualifying day.
       if(yday != null && yday >= REC_THRESH.injurySeverityFlag && now < REC_THRESH.injurySeverityFlag){
@@ -41632,9 +41655,12 @@ async function seedTestScenario(scenarioKey){
   const seededKeys = [];
   const dateOffset = daysAgo => shiftDateStr(todayStr, -daysAgo);
 
+  // Never over a real check-in. The seeder wrote straight over entry:DATE and the clear
+  // step then deleted it, so testing on a phone with real data erased a week of mornings.
   async function seedEntry(daysAgo, fields){
     const date = dateOffset(daysAgo);
     const key = `entry:${date}`;
+    try{ if((await window.storage.get(key)).value) return; } catch(e){}
     await window.storage.set(key, JSON.stringify({ date, ...fields }));
     seededKeys.push(key);
   }
