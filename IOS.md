@@ -43,6 +43,22 @@ Certificates are shared by every app on the team, and Apple allows only two dist
 apps, and revokes nothing while there's still room. (Rooms' own copy only protects Rooms' builds,
 which only matters once a Dogfood build is in App Store review rather than just on TestFlight.)
 
+## The lock-screen widget
+
+`ios/App/DogfoodWidget` is a WidgetKit extension showing Charge, where it went today, and the next
+session, on the lock screen (circular, rectangular and inline) and the home screen (small). The app
+hands it the numbers through an App Group (`WidgetBridgePlugin.swift`), whenever it works them out.
+
+Apple's API can't create an App Group, so it's set up by hand once, at developer.apple.com →
+Certificates, IDs & Profiles:
+1. **Identifiers → + → App Groups**: description "Dogfood", identifier `group.com.touringgroup.dogfood`.
+2. **Identifiers → com.touringgroup.dogfood → App Groups → Configure**: tick the group, then Save.
+3. The same for **com.touringgroup.dogfood.widget**, which "Send to TestFlight" registers on its
+   next run.
+
+Until both ids carry the group, "Send to TestFlight" builds the app without the widget, exactly as
+before, and says so in its log. Once they do, the next run includes it.
+
 ## Build it on a Mac instead
 
 You need Xcode 16 or newer, and a paid Apple Developer account.

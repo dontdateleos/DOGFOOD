@@ -19,7 +19,34 @@
 		D0F00D000000000000000A01 /* HealthBridgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B01 /* HealthBridgePlugin.swift */; };
 		D0F00D000000000000000A03 /* HapticsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B04 /* HapticsPlugin.swift */; };
 		D0F00D000000000000000A02 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B02 /* MainViewController.swift */; };
+		D0F00D000000000000000A04 /* WidgetBridgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B05 /* WidgetBridgePlugin.swift */; };
+		D0F00D000000000000000A10 /* DogfoodWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B10 /* DogfoodWidget.swift */; };
+		D0F00D000000000000000A14 /* DogfoodWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B14 /* DogfoodWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D0F00D000000000000000C07 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D0F00D000000000000000C01;
+			remoteInfo = DogfoodWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D0F00D000000000000000C05 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D0F00D000000000000000A14 /* DogfoodWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
@@ -36,6 +63,12 @@
 		D0F00D000000000000000B04 /* HapticsPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticsPlugin.swift; sourceTree = "<group>"; };
 		D0F00D000000000000000B02 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		D0F00D000000000000000B03 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		D0F00D000000000000000B05 /* WidgetBridgePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetBridgePlugin.swift; sourceTree = "<group>"; };
+		D0F00D000000000000000B13 /* AppWithWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppWithWidget.entitlements; sourceTree = "<group>"; };
+		D0F00D000000000000000B10 /* DogfoodWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DogfoodWidget.swift; sourceTree = "<group>"; };
+		D0F00D000000000000000B11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D0F00D000000000000000B12 /* DogfoodWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DogfoodWidget.entitlements; sourceTree = "<group>"; };
+		D0F00D000000000000000B14 /* DogfoodWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DogfoodWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -48,6 +81,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D0F00D000000000000000C03 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -56,6 +96,7 @@
 			children = (
 				958DCC722DB07C7200EA8C5F /* debug.xcconfig */,
 				504EC3061FED79650016851F /* App */,
+				D0F00D000000000000000E01 /* DogfoodWidget */,
 				504EC3051FED79650016851F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -64,6 +105,7 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* App.app */,
+				D0F00D000000000000000B14 /* DogfoodWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -75,7 +117,9 @@
 				D0F00D000000000000000B02 /* MainViewController.swift */,
 				D0F00D000000000000000B01 /* HealthBridgePlugin.swift */,
 				D0F00D000000000000000B04 /* HapticsPlugin.swift */,
+				D0F00D000000000000000B05 /* WidgetBridgePlugin.swift */,
 				D0F00D000000000000000B03 /* App.entitlements */,
+				D0F00D000000000000000B13 /* AppWithWidget.entitlements */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
@@ -88,6 +132,16 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		D0F00D000000000000000E01 /* DogfoodWidget */ = {
+			isa = PBXGroup;
+			children = (
+				D0F00D000000000000000B10 /* DogfoodWidget.swift */,
+				D0F00D000000000000000B11 /* Info.plist */,
+				D0F00D000000000000000B12 /* DogfoodWidget.entitlements */,
+			);
+			path = DogfoodWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -98,10 +152,12 @@
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
+				D0F00D000000000000000C05 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				D0F00D000000000000000C06 /* PBXTargetDependency */,
 			);
 			name = App;
 			packageProductDependencies = (
@@ -110,6 +166,23 @@
 			productName = App;
 			productReference = 504EC3041FED79650016851F /* App.app */;
 			productType = "com.apple.product-type.application";
+		};
+		D0F00D000000000000000C01 /* DogfoodWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D0F00D000000000000000C08 /* Build configuration list for PBXNativeTarget "DogfoodWidget" */;
+			buildPhases = (
+				D0F00D000000000000000C02 /* Sources */,
+				D0F00D000000000000000C03 /* Frameworks */,
+				D0F00D000000000000000C04 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DogfoodWidget;
+			productName = DogfoodWidget;
+			productReference = D0F00D000000000000000B14 /* DogfoodWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -144,6 +217,7 @@
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
+				D0F00D000000000000000C01 /* DogfoodWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -162,6 +236,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D0F00D000000000000000C04 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -174,10 +255,27 @@
 				D0F00D000000000000000A01 /* HealthBridgePlugin.swift in Sources */,
 				D0F00D000000000000000A03 /* HapticsPlugin.swift in Sources */,
 				D0F00D000000000000000A02 /* MainViewController.swift in Sources */,
+				D0F00D000000000000000A04 /* WidgetBridgePlugin.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D0F00D000000000000000C02 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D0F00D000000000000000A10 /* DogfoodWidget.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D0F00D000000000000000C06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D0F00D000000000000000C01 /* DogfoodWidget */;
+			targetProxy = D0F00D000000000000000C07 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		504EC30B1FED79650016851F /* Main.storyboard */ = {
@@ -315,7 +413,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
+				CODE_SIGN_ENTITLEMENTS = App/AppWithWidget.entitlements;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -339,7 +437,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
+				CODE_SIGN_ENTITLEMENTS = App/AppWithWidget.entitlements;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -350,6 +448,57 @@
 				DEVELOPMENT_TEAM = M6AXSFYX2W;
 				PRODUCT_BUNDLE_IDENTIFIER = com.touringgroup.dogfood;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		D0F00D000000000000000C09 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 958DCC722DB07C7200EA8C5F /* debug.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = DogfoodWidget/DogfoodWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M6AXSFYX2W;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DogfoodWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.touringgroup.dogfood.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		D0F00D000000000000000C10 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = DogfoodWidget/DogfoodWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M6AXSFYX2W;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DogfoodWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.touringgroup.dogfood.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -373,6 +522,15 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D0F00D000000000000000C08 /* Build configuration list for PBXNativeTarget "DogfoodWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D0F00D000000000000000C09 /* Debug */,
+				D0F00D000000000000000C10 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

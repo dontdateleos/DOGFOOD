@@ -84,13 +84,29 @@ jobs:
           set -o pipefail
           # the app target signs by hand with this run's profile; set in the project file rather
           # than on the command line, which would reach the Swift packages too and stop the build
+          # The widget goes in only when asc-sign found the App Group on both ids (DOGFOOD_WIDGET=1);
+          # otherwise the app builds alone, as it did before the widget, without the group entitlement.
           python3 - <<'PY'
-          import os
+          import os, re
           p = "ios/App/App.xcodeproj/project.pbxproj"; s = open(p).read()
-          old = "CODE_SIGN_STYLE = Automatic;"
-          new = ('CODE_SIGN_STYLE = Manual;\n\t\t\t\tCODE_SIGN_IDENTITY = "Apple Distribution";\n'
-                 f'\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "{os.environ["ASC_PROFILE_NAME"]}";')
-          assert s.count(old) == 2; open(p, "w").write(s.replace(old, new))
+          def manual(cid, profile):
+              global s
+              m = re.search(re.escape(cid) + r" /\* (Debug|Release) \*/ = \{.*?\n\t\t\};", s, re.S)
+              blk = m.group(0); assert "CODE_SIGN_STYLE = Automatic;" in blk, cid
+              s = s.replace(blk, blk.replace("CODE_SIGN_STYLE = Automatic;",
+                  'CODE_SIGN_STYLE = Manual;\n\t\t\t\tCODE_SIGN_IDENTITY = "Apple Distribution";\n'
+                  f'\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "{profile}";'))
+          for cid in ["504EC3171FED79650016851F", "504EC3181FED79650016851F"]: manual(cid, os.environ["ASC_PROFILE_NAME"])
+          if os.environ.get("DOGFOOD_WIDGET") == "1":
+              for cid in ["D0F00D000000000000000C09", "D0F00D000000000000000C10"]: manual(cid, os.environ["ASC_WIDGET_PROFILE_NAME"])
+              print("building with the widget")
+          else:
+              for line in ["\t\t\t\tD0F00D000000000000000C06 /* PBXTargetDependency */,\n",
+                           "\t\t\t\tD0F00D000000000000000C05 /* Embed Foundation Extensions */,\n"]:
+                  assert s.count(line) == 1, line; s = s.replace(line, "")
+              s = s.replace("CODE_SIGN_ENTITLEMENTS = App/AppWithWidget.entitlements;", "CODE_SIGN_ENTITLEMENTS = App/App.entitlements;")
+              print("building without the widget (App Group not set up yet)")
+          open(p, "w").write(s)
           PY
           # every upload needs a build number higher than the last; this workflow's run count is
           BUILD=$((100 + ${{ github.run_number }}))
@@ -108,6 +124,8 @@ jobs:
         run: |
           set -o pipefail
           printf '%s\n' "$P8" > "$RUNNER_TEMP/AuthKey.p8"
+          WIDGET_PROFILE=""
+          if [ "$DOGFOOD_WIDGET" = "1" ]; then WIDGET_PROFILE="<key>com.touringgroup.dogfood.widget</key><string>$ASC_WIDGET_PROFILE_NAME</string>"; fi
           cat > "$RUNNER_TEMP/export.plist" <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -117,7 +135,7 @@ jobs:
             <key>teamID</key><string>$TEAM</string>
             <key>signingStyle</key><string>manual</string>
             <key>signingCertificate</key><string>Apple Distribution</string>
-            <key>provisioningProfiles</key><dict><key>com.touringgroup.dogfood</key><string>$ASC_PROFILE_NAME</string></dict>
+            <key>provisioningProfiles</key><dict><key>com.touringgroup.dogfood</key><string>$ASC_PROFILE_NAME</string>$WIDGET_PROFILE</dict>
             <key>uploadSymbols</key><true/>
           </dict></plist>
           PLIST

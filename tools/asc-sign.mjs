@@ -24,6 +24,12 @@ import { join } from "node:path";
 
 const { ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8, BUNDLE_ID = "com.touringgroup.dogfood", GITHUB_ENV, GITHUB_RUN_NUMBER = "local" } = process.env;
 const APP_NAME = "Dogfood";
+/* THE WIDGET. A second bundle inside the app (ios/App/DogfoodWidget), signed with its own
+   profile, sharing data with the app through an App Group. Apple's API can switch the App Groups
+   capability on for an id but cannot create a group or attach one to an id, so that is done once
+   by hand (the message below says how). Until both ids carry the group, the run builds without
+   the widget, exactly as before, and says so. */
+const WIDGET_ID = `${BUNDLE_ID}.widget`, APP_GROUP = `group.${BUNDLE_ID}`;
 const CERT_LIMIT = 2;
 const b64u = b => Buffer.from(b).toString("base64url");
 function token() {
@@ -48,22 +54,35 @@ async function apiOnce(method, path, body) {
 const env = (k, v) => { if (GITHUB_ENV) appendFileSync(GITHUB_ENV, `${k}=${v}\n`); console.log(`${k}=${v}`); };
 const sh = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio:["ignore", "pipe", "inherit"], ...opts }).toString();
 
-/* The app id, registered if missing, with HealthKit switched on. */
-async function ensureBundleId() {
-  const ids = await api("GET", `/v1/bundleIds?filter[identifier]=${encodeURIComponent(BUNDLE_ID)}&limit=5`);
-  let bundle = (ids.data || []).find(b => b.attributes.identifier === BUNDLE_ID);
+/* An id, registered if missing, with the capabilities it needs switched on. */
+async function ensureBundleId(identifier = BUNDLE_ID, name = APP_NAME, wanted = ["HEALTHKIT", "APP_GROUPS"]) {
+  const ids = await api("GET", `/v1/bundleIds?filter[identifier]=${encodeURIComponent(identifier)}&limit=5`);
+  let bundle = (ids.data || []).find(b => b.attributes.identifier === identifier);
   if (!bundle) {
-    bundle = (await api("POST", "/v1/bundleIds", { data:{ type:"bundleIds", attributes:{ identifier:BUNDLE_ID, name:APP_NAME, platform:"IOS" } } })).data;
-    console.log(`registered the app id ${BUNDLE_ID}`); }
+    bundle = (await api("POST", "/v1/bundleIds", { data:{ type:"bundleIds", attributes:{ identifier, name, platform:"IOS" } } })).data;
+    console.log(`registered the id ${identifier}`); }
   const caps = await api("GET", `/v1/bundleIds/${bundle.id}/bundleIdCapabilities`);
-  if (!(caps.data || []).some(c => c.attributes.capabilityType === "HEALTHKIT")) {
-    await api("POST", "/v1/bundleIdCapabilities", { data:{ type:"bundleIdCapabilities", attributes:{ capabilityType:"HEALTHKIT" },
-      relationships:{ bundleId:{ data:{ type:"bundleIds", id:bundle.id } } } } });
-    console.log("switched on HealthKit for the app id"); }
+  for (const cap of wanted) {
+    if ((caps.data || []).some(c => c.attributes.capabilityType === cap)) continue;
+    try {
+      await api("POST", "/v1/bundleIdCapabilities", { data:{ type:"bundleIdCapabilities", attributes:{ capabilityType:cap },
+        relationships:{ bundleId:{ data:{ type:"bundleIds", id:bundle.id } } } } });
+      console.log(`switched on ${cap} for ${identifier}`);
+    } catch (e) { if (cap === "HEALTHKIT") throw e; console.log(`::warning::couldn't switch on ${cap} for ${identifier} (${e.message.slice(0, 120)})`); } }
   return bundle; }
+/* A profile for one id, signed by this run's certificate, installed where Xcode looks. */
+async function makeProfile(bundle, name, certId) {
+  const prof = await api("POST", "/v1/profiles", { data:{ type:"profiles", attributes:{ name, profileType:"IOS_APP_STORE" },
+    relationships:{ bundleId:{ data:{ type:"bundleIds", id:bundle.id } }, certificates:{ data:[{ type:"certificates", id:certId }] } } } });
+  const uuid = prof.data.attributes.uuid, content = Buffer.from(prof.data.attributes.profileContent, "base64");
+  for (const d of [join(homedir(), "Library/MobileDevice/Provisioning Profiles"), join(homedir(), "Library/Developer/Xcode/UserData/Provisioning Profiles")]) {
+    mkdirSync(d, { recursive:true }); writeFileSync(join(d, `${uuid}.mobileprovision`), content); }
+  // The entitlements are plain text inside the signed profile.
+  return { id: prof.data.id, uuid, hasGroup: content.toString("latin1").includes(APP_GROUP) }; }
 
 async function make() {
   const bundle = await ensureBundleId();
+  const widget = await ensureBundleId(WIDGET_ID, `${APP_NAME} Widget`, ["APP_GROUPS"]);
   /* The upload needs the app to exist in App Store Connect, and that one step can't be done
      through the API. The id is registered above, so it is there to pick when you make it. */
   const app = (await api("GET", `/v1/apps?filter[bundleId]=${encodeURIComponent(BUNDLE_ID)}`)).data?.[0];
@@ -90,12 +109,15 @@ async function make() {
   /* an App Store profile for the app, signed by that certificate; made after the capability,
      so it carries the HealthKit entitlement */
   const name = `Dogfood TestFlight ${GITHUB_RUN_NUMBER}`;
-  const prof = await api("POST", "/v1/profiles", { data:{ type:"profiles", attributes:{ name, profileType:"IOS_APP_STORE" },
-    relationships:{ bundleId:{ data:{ type:"bundleIds", id:bundle.id } }, certificates:{ data:[{ type:"certificates", id:cert.data.id }] } } } });
-  const uuid = prof.data.attributes.uuid, content = Buffer.from(prof.data.attributes.profileContent, "base64");
-  for (const d of [join(homedir(), "Library/MobileDevice/Provisioning Profiles"), join(homedir(), "Library/Developer/Xcode/UserData/Provisioning Profiles")]) {
-    mkdirSync(d, { recursive:true }); writeFileSync(join(d, `${uuid}.mobileprovision`), content); }
-  env("ASC_PROFILE_ID", prof.data.id); env("ASC_PROFILE_NAME", name); env("ASC_PROFILE_UUID", uuid); }
+  const appProf = await makeProfile(bundle, name, cert.data.id);
+  env("ASC_PROFILE_ID", appProf.id); env("ASC_PROFILE_NAME", name); env("ASC_PROFILE_UUID", appProf.uuid);
+  const wname = `Dogfood Widget TestFlight ${GITHUB_RUN_NUMBER}`;
+  const wid = await makeProfile(widget, wname, cert.data.id);
+  env("ASC_WIDGET_PROFILE_NAME", wname);
+  const on = appProf.hasGroup && wid.hasGroup;
+  env("DOGFOOD_WIDGET", on ? "1" : "0");
+  if (!on) console.log(`::warning::Building without the lock-screen widget: the App Group isn't set up yet. Once, at developer.apple.com → Certificates, IDs & Profiles: (1) Identifiers → + → App Groups → description "Dogfood", identifier ${APP_GROUP}. (2) Identifiers → ${BUNDLE_ID} → App Groups → Configure → tick ${APP_GROUP} → Save. (3) The same for ${WIDGET_ID}. Then run this workflow again and the widget is included.`);
+  else console.log("App Group found on both ids: the widget is included"); }
 
 /* Room for this run's certificate, without touching any certificate a build in review needs.
    A build's signer is the newest certificate made before it was uploaded (certificates last a
@@ -129,7 +151,7 @@ async function makeRoom() {
     if (over > 0) throw new Error("Every distribution certificate on the team signed a build that's in App Review, so there's no room for this run's. Run it again once one of those reviews is finished."); }
   /* this app's profiles from earlier runs whose certificate has gone are no use to anyone */
   const profs = (await api("GET", "/v1/profiles?filter[profileType]=IOS_APP_STORE&limit=100")).data || [];
-  for (const p of profs.filter(p => /^Dogfood TestFlight /.test(p.attributes.name) && p.attributes.profileState !== "ACTIVE"))
+  for (const p of profs.filter(p => /^Dogfood (Widget )?TestFlight /.test(p.attributes.name) && p.attributes.profileState !== "ACTIVE"))
     await api("DELETE", `/v1/profiles/${p.id}`).then(() => console.log(`deleted the old profile "${p.attributes.name}"`), () => {}); }
 
 async function cleanup() {
