@@ -71,26 +71,29 @@ You need Xcode 16 or newer, and a paid Apple Developer account.
 
 ## What it reads
 
-The plugin reads the following (see the comment at the top of `HealthBridgePlugin.swift`):
-- HRV (SDNN)
-- resting heart rate
-- sleep (asleep time, stages, wake time)
-- breathing rate
-- wrist temperature
-- steps
-- active calories
-- running workouts
+Apple Health is the one source. Oura and Garmin aren't connected directly: their own apps write to
+Health, and Dogfood reads it there. The plugin reads:
+- **sleep**: one source per night, the one with sleep stages (the ring), so a ring and a watch worn
+  to bed aren't added together. Wake time and minutes awake come from it.
+- **heart rate**: resting heart rate is taken as the lowest 30 minutes asleep, because Oura and Garmin
+  write plain heart rate rather than a resting figure. An Apple Watch's own resting figure is the
+  fallback.
+- **breathing rate** (Oura writes a nightly average)
+- **wrist temperature** (Apple Watch only)
+- **steps** and **active calories** (Health removes duplicates between devices)
+- **running workouts**: a run recorded by two apps is kept once (the one with a distance)
 
-The app fills in days you haven't logged yourself and never overwrites what you typed. Apple's HRV is stored in
-its own field (`hrvApple`), because it measures a different statistic from Garmin's and Oura's. Switching devices
-restarts the HRV baseline from the day the new one's readings begin.
-Runs that Health records are kept on the day (`appleRuns`) but not logged as sessions yet.
+**HRV is not used.** Neither Oura nor Garmin shares it with Health, so the readiness score runs on
+resting heart rate, sleep, breathing rate, training load and form. `HRV_ENABLED` in index.html
+turns it back on, for example if an Apple Watch ever writes it.
+
+The app fills in days you haven't logged yourself and never overwrites what you typed. Runs that Health
+records are kept on the day (`appleRuns`) but not logged as sessions yet.
 
 ## Not done yet
 
-- **Oura is switched off** (`OURA_ENABLED = false` in index.html); Apple Health is the one source. The Oura app
-  can write to Apple Health, so a ring still counts. Turning Oura back on inside the app would also need a custom
-  URL scheme for its sign-in.
+- **Oura's direct connection has been removed.** Only the Shortcut relay used by the browser
+  version is left.
 - **Storage.** Data still lives in the web view's local storage. iOS rarely clears it for an installed app, but
   moving to native storage (Capacitor Preferences or SQLite) would make it permanent.
 - **Updates.** Web changes reach the app when you run `npm run ios:sync` and upload a new build.

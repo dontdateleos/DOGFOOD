@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.11.15.013",
+ "generatedFrom": "2026.11.15.014",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1507,7 +1507,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.11.15.013",
+  "APP_VERSION": "2026.11.15.014",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1885,6 +1885,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.11.15.014": "Apple Health is the one source now, and the Oura connection is gone. Your Oura and Garmin apps write to Health and Dogfood reads it there: sleep from the ring (one night, not the ring and the watch added together), resting heart rate from the lowest half hour asleep, time awake from your sleep stages, and a run recorded by both kept once. HRV is out of the score, since neither shares it with Health, and the device boxes in the check-in have gone with it. Trends shows resting heart rate and sleep instead.",
    "2026.11.15.013": "On iPhone you now feel it: a light tap on every button, a tick for each row a wheel passes and each tab you swipe to, a knock when a hold lands, and a buzz when something saves or fails. Settings → Appearance has a switch if you would rather not.",
    "2026.11.15.012": "Tidying from a hands-on pass. Sheets on the Skills tab open properly again with an injury logged (its buttons now wrap instead of pushing the page sideways). The weight wheel shows 22.5 rather than rounding it to 23. Generate tells you when it can’t build a week instead of saying so out of sight. Your weight chart shows from sign-up, before any check-in. Walk-run sessions show their real length, the session toggle says “Full body” and “Easy run”, the finish card lists every session you did today, and the big button reads Edit once today is logged. Checking in on an injury keeps its first rating and its improving arrow.",
    "2026.11.15.011": "In the iPhone app the date in the header shows again; it was measuring itself before the phone had said where the camera cutout ends.",
@@ -1981,11 +1982,7 @@
    "reportproblem",
    "datagoes"
   ],
-  "OURA_CLIENT_ID": "62367975-4a6e-445d-a195-1936ce98c7af",
-  "OURA_TOKEN_WORKER_URL": "https://dogfoodoura.jordandf1.workers.dev",
-  "OURA_ENABLED": false,
-  "OURA_REDIRECT_URI": "http://127.0.0.1:8899/index.html",
-  "OURA_SCOPES": "personal daily heartrate",
+  "SHORTCUT_RELAY_URL": "https://dogfoodoura.jordandf1.workers.dev",
   "APPLE_HEALTH_KNOWN_FIELDS": [
    "hrvOura",
    "restingHR",
@@ -2003,6 +2000,8 @@
   "HAPTIC_TAP_SEL": "button, [role=\"button\"], [role=\"menuitem\"], [role=\"option\"], a[href], summary, label, .wheel-field",
   "NATIVE_HEALTH_KEY": "settings:nativeHealth",
   "NATIVE_HEALTH_LAST_KEY": "settings:nativeHealthLastSync",
+  "NATIVE_HEALTH_AUTH_KEY": "settings:nativeHealthAuth",
+  "NATIVE_HEALTH_AUTH_V": "2",
   "GOAL_PROFILES": {
    "perform": {
     "scoreLow": 35,
@@ -2039,6 +2038,7 @@
    "hrvGarmin",
    "hrvOura"
   ],
+  "HRV_ENABLED": false,
   "SIG_CACHE_MS": 2000,
   "LEARN_MIN_SESSIONS": 12,
   "LEARN_FULL_AT": 60,
@@ -6162,6 +6162,8 @@
    "low": "Return to sport: plyometric and energy-storage loading (hopping, bounding) reintroduced progressively, criteria-based on pain ≤3/10 next-day — not purely time-based."
   },
   "METRIC_LABELS": {
+   "restingHR": "Resting HR",
+   "sleepHrs": "Sleep",
    "hrv": "HRV",
    "sleepScore": "Sleep score",
    "loadRatio": "Load ratio",

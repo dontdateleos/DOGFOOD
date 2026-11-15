@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.11.15.013",
+ "generatedFrom": "2026.11.15.014",
  "generatedBy": "tools/spec-dump.mjs",
  "scoresForEntry": [
   {
@@ -85,8 +85,8 @@
    },
    "trailing": null,
    "out": {
-    "targetScore": 100,
-    "adaptiveScore": 100
+    "targetScore": null,
+    "adaptiveScore": null
    }
   },
   {
@@ -97,8 +97,8 @@
    },
    "trailing": null,
    "out": {
-    "targetScore": 67,
-    "adaptiveScore": 67
+    "targetScore": null,
+    "adaptiveScore": null
    }
   },
   {
@@ -109,8 +109,8 @@
    },
    "trailing": null,
    "out": {
-    "targetScore": 100,
-    "adaptiveScore": 100
+    "targetScore": null,
+    "adaptiveScore": null
    }
   },
   {
@@ -122,8 +122,8 @@
    },
    "trailing": null,
    "out": {
-    "targetScore": 100,
-    "adaptiveScore": 100
+    "targetScore": null,
+    "adaptiveScore": null
    }
   },
   {
@@ -148,8 +148,8 @@
    },
    "trailing": null,
    "out": {
-    "targetScore": 85,
-    "adaptiveScore": 85
+    "targetScore": 82,
+    "adaptiveScore": 82
    }
   },
   {
@@ -169,8 +169,8 @@
     "avgHRV": 60
    },
    "out": {
-    "targetScore": 85,
-    "adaptiveScore": 85
+    "targetScore": 82,
+    "adaptiveScore": 82
    }
   },
   {
@@ -190,7 +190,7 @@
     "avgHRV": 60
    },
    "out": {
-    "targetScore": 85,
+    "targetScore": 82,
     "adaptiveScore": 93
    }
   },
@@ -211,7 +211,7 @@
     "avgHRV": 50
    },
    "out": {
-    "targetScore": 85,
+    "targetScore": 82,
     "adaptiveScore": 100
    }
   },

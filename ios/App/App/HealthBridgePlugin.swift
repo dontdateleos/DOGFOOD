@@ -7,8 +7,9 @@ import HealthKit
 
  One job: read what Apple Health already holds for the last few days and hand it to the web
  app as one record per local calendar day, in plain numbers. Everything the app does with the
- numbers (baselines, the score, which device's HRV to trust) stays in index.html, where it
- already lives; this file only fetches.
+ numbers (baselines, the score) stays in index.html, where it already lives; this file only
+ fetches. It is written for whatever writes to Health: an Oura ring, a Garmin watch, an Apple
+ Watch, or several at once. HRV is not read: neither Oura nor Garmin shares it with Health.
 
  Read-only. The app never writes to Health, so it asks for no write permission at all.
 
@@ -19,16 +20,19 @@ import HealthKit
    await HB.readDays({ days: 14 })   -> { days: [ { date: 'YYYY-MM-DD', ... } ] }
 
  Per day (each field only present when Health had something for it):
-   hrvSDNN          ms, average of the overnight readings (Apple's HRV is SDNN, not RMSSD)
-   restingHR        bpm, Apple's daily resting heart rate
+   restingHR        bpm, the daily resting heart rate, where something writes one (Apple Watch)
+   sleepingHR       bpm, the lowest 30 minutes of heart rate while asleep. Oura and Garmin write
+                    plain heart rate, not a resting figure, so this is the one they both give.
    respiratoryRate  breaths/min, overnight average
    wristTempC       degrees C, Apple's sleeping wrist temperature (absolute, iOS 16+)
    steps            count for the day
    activeCalories   kcal for the day
-   sleepHours       time asleep in the night ending that morning, overlaps between sources merged
-   deepMin, remMin, coreMin, awakeMin   sleep stages, minutes (iOS 16+ watches)
+   sleepHours       time asleep in the night ending that morning, from ONE source (see readSleep)
+   deepMin, remMin, coreMin, awakeMin   sleep stages, minutes, where that source writes them
    bedStart, wakeAt ISO timestamps of the first and last asleep moments
-   runs             [{ start, distanceKm, durationMin }] running workouts that day
+   sleepSource      the app that wrote that night, e.g. "Oura"
+   runs             [{ start, distanceKm, durationMin, source }] running workouts that day, with
+                    the same run recorded by two apps kept once
 */
 @objc(HealthBridgePlugin)
 public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
@@ -46,7 +50,7 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
     private var readTypes: Set<HKObjectType> {
         var types = Set<HKObjectType>()
         let ids: [HKQuantityTypeIdentifier] = [
-            .heartRateVariabilitySDNN, .restingHeartRate, .respiratoryRate, .stepCount, .activeEnergyBurned
+            .heartRate, .restingHeartRate, .respiratoryRate, .stepCount, .activeEnergyBurned
         ]
         for id in ids {
             if let t = HKObjectType.quantityType(forIdentifier: id) { types.insert(t) }
@@ -117,7 +121,6 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
             set(key, "date", key)
 
             let perMinute = HKUnit.count().unitDivided(by: HKUnit.minute())
-            average(.heartRateVariabilitySDNN, HKUnit.secondUnit(with: .milli), nightStart, nightEnd, group) { value in set(key, "hrvSDNN", value) }
             average(.restingHeartRate, perMinute, dayStart, dayEnd, group) { value in set(key, "restingHR", value) }
             average(.respiratoryRate, perMinute, nightStart, nightEnd, group) { value in set(key, "respiratoryRate", value) }
             if #available(iOS 16.0, *) {
@@ -129,7 +132,7 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
             sum(.activeEnergyBurned, HKUnit.kilocalorie(), dayStart, dayEnd, group) { total in
                 if let total = total { set(key, "activeCalories", Int(total.rounded())) }
             }
-            readSleep(nightStart, nightEnd, group) { fields in
+            readSleep(nightStart, nightEnd, group, { fields in
                 for (field, value) in fields {
                     if field == "bedStart" || field == "wakeAt", let d = value as? Date {
                         set(key, field, iso.string(from: d))
@@ -137,11 +140,13 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
                         set(key, field, value)
                     }
                 }
-            }
+            }, { bed, wake in
+                self.lowestHeartRate(bed, wake, group) { value in set(key, "sleepingHR", value) }
+            })
             readRuns(dayStart, dayEnd, group) { list in
                 if !list.isEmpty {
                     set(key, "runs", list.map { run -> [String: Any] in
-                        var out: [String: Any] = ["start": iso.string(from: run.start), "durationMin": run.durationMin]
+                        var out: [String: Any] = ["start": iso.string(from: run.start), "durationMin": run.durationMin, "source": run.source]
                         if let km = run.distanceKm { out["distanceKm"] = km }
                         return out
                     })
@@ -184,59 +189,127 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         store.execute(query)
     }
 
-    /* Sleep from every source at once (Watch, iPhone, a ring writing to Health), so the same
-       hour can arrive two or three times. Each stage is the UNION of its intervals, never the
-       sum, or one night with two sources reads as fourteen hours. Raw values, not the enum
-       cases, so this compiles the same against the pre-iOS 16 names:
-       0 inBed, 1 asleep (unspecified), 2 awake, 3 core, 4 deep, 5 REM. */
+    /* ONE SOURCE PER NIGHT. A ring and a watch worn to bed both write the night, a few minutes
+       apart at each end, and merging them makes the night longer than either device saw. So the
+       samples are grouped by the app that wrote them and one source is kept: the one that
+       wrote sleep stages (a ring's staging is the better instrument), then the one with more
+       time asleep. Within that source each stage is still the UNION of its intervals, because
+       one app can write the same span twice. Raw values, not the enum cases, so this compiles
+       the same against the pre-iOS 16 names:
+       0 inBed, 1 asleep (unspecified), 2 awake, 3 core, 4 deep, 5 REM.
+       `window` hands the asleep span on, for the overnight heart-rate read. */
     private func readSleep(_ start: Date, _ end: Date, _ group: DispatchGroup,
-                       _ done: @escaping ([String: Any]) -> Void) {
+                           _ done: @escaping ([String: Any]) -> Void,
+                           _ window: @escaping (Date, Date) -> Void) {
         guard let type = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) else { return }
         group.enter()
         let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
         let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
         let query = HKSampleQuery(sampleType: type, predicate: predicate, limit: HKObjectQueryNoLimit,
                                   sortDescriptors: [sort]) { _, samples, _ in
-            var asleep: [(Date, Date)] = [], deep: [(Date, Date)] = [], rem: [(Date, Date)] = [],
-                core: [(Date, Date)] = [], awake: [(Date, Date)] = []
+            var bySource: [String: [HKCategorySample]] = [:]
+            var names: [String: String] = [:]
             for case let s as HKCategorySample in samples ?? [] {
-                let span = (max(s.startDate, start), min(s.endDate, end))
-                if span.0 >= span.1 { continue }
-                switch s.value {
-                case 1: asleep.append(span)
-                case 2: awake.append(span)
-                case 3: asleep.append(span); core.append(span)
-                case 4: asleep.append(span); deep.append(span)
-                case 5: asleep.append(span); rem.append(span)
-                default: break
+                let id = s.sourceRevision.source.bundleIdentifier
+                bySource[id, default: []].append(s)
+                names[id] = s.sourceRevision.source.name
+            }
+            var best: (id: String, staged: Bool, secs: Double, parts: [Int: [(Date, Date)]])? = nil
+            for (id, list) in bySource {
+                var parts: [Int: [(Date, Date)]] = [:]
+                for s in list {
+                    let span = (max(s.startDate, start), min(s.endDate, end))
+                    if span.0 >= span.1 { continue }
+                    parts[s.value, default: []].append(span)
+                }
+                let asleep = [1, 3, 4, 5].flatMap { v in parts[v] ?? [] }
+                let secs = HealthBridgePlugin.unionSeconds(asleep)
+                if secs <= 0 { continue }
+                let staged = !(parts[3] ?? []).isEmpty || !(parts[4] ?? []).isEmpty || !(parts[5] ?? []).isEmpty
+                if let b = best {
+                    if (staged && !b.staged) || (staged == b.staged && secs > b.secs) { best = (id, staged, secs, parts) }
+                } else {
+                    best = (id, staged, secs, parts)
                 }
             }
             var out: [String: Any] = [:]
-            let asleepSec = HealthBridgePlugin.unionSeconds(asleep)
-            if asleepSec > 0 {
-                out["sleepHours"] = (asleepSec / 3600 * 100).rounded() / 100
-                if let first = asleep.map({ span in span.0 }).min() { out["bedStart"] = first }
-                if let last = asleep.map({ span in span.1 }).max() { out["wakeAt"] = last }
+            if let b = best {
+                let asleep = [1, 3, 4, 5].flatMap { v in b.parts[v] ?? [] }
+                out["sleepHours"] = (b.secs / 3600 * 100).rounded() / 100
+                out["sleepSource"] = names[b.id] ?? b.id
+                let first = asleep.map({ span in span.0 }).min()
+                let last = asleep.map({ span in span.1 }).max()
+                if let first = first { out["bedStart"] = first }
+                if let last = last { out["wakeAt"] = last }
+                let mins = { (v: Int) -> Int? in
+                    guard let spans = b.parts[v], !spans.isEmpty else { return nil }
+                    return Int((HealthBridgePlugin.unionSeconds(spans) / 60).rounded())
+                }
+                if let m = mins(4) { out["deepMin"] = m }
+                if let m = mins(5) { out["remMin"] = m }
+                if let m = mins(3) { out["coreMin"] = m }
+                if let m = mins(2) { out["awakeMin"] = m }
+                if let first = first, let last = last { window(first, last) }
             }
-            if !deep.isEmpty { out["deepMin"] = Int((HealthBridgePlugin.unionSeconds(deep) / 60).rounded()) }
-            if !rem.isEmpty { out["remMin"] = Int((HealthBridgePlugin.unionSeconds(rem) / 60).rounded()) }
-            if !core.isEmpty { out["coreMin"] = Int((HealthBridgePlugin.unionSeconds(core) / 60).rounded()) }
-            if !awake.isEmpty { out["awakeMin"] = Int((HealthBridgePlugin.unionSeconds(awake) / 60).rounded()) }
             done(out)
             group.leave()
         }
         store.execute(query)
     }
 
-    private struct Run { let start: Date; let durationMin: Double; let distanceKm: Double? }
+    /* THE LOWEST HALF HOUR ASLEEP. Every app writes heart rate, few write a resting figure, so
+       this is worked out the way the rings work theirs: the lowest mean over any 30 minutes
+       between falling asleep and waking. A window needs five readings, so a watch that samples
+       every few minutes still counts and one stray low reading does not. All sources together:
+       a beat per minute is the same beat whichever device heard it. */
+    private func lowestHeartRate(_ start: Date, _ end: Date, _ group: DispatchGroup,
+                                 _ done: @escaping (Double?) -> Void) {
+        guard let type = HKQuantityType.quantityType(forIdentifier: .heartRate) else { return }
+        group.enter()
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
+        let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+        let unit = HKUnit.count().unitDivided(by: HKUnit.minute())
+        let query = HKSampleQuery(sampleType: type, predicate: predicate, limit: HKObjectQueryNoLimit,
+                                  sortDescriptors: [sort]) { _, samples, _ in
+            let points: [(Date, Double)] = (samples ?? []).compactMap { s in
+                guard let q = s as? HKQuantitySample else { return nil }
+                return (q.startDate, q.quantity.doubleValue(for: unit))
+            }
+            // Two pointers: [i, j) is every reading within 30 minutes of reading i.
+            var lowest: Double? = nil
+            var j = 0
+            var total: Double = 0
+            for i in 0..<points.count {
+                if j < i { j = i; total = 0 }
+                while j < points.count && points[j].0.timeIntervalSince(points[i].0) < 1800 {
+                    total += points[j].1
+                    j += 1
+                }
+                let n = j - i
+                if n >= 5 {
+                    let mean = total / Double(n)
+                    if lowest == nil || mean < lowest! { lowest = mean }
+                }
+                total -= points[i].1
+            }
+            done(lowest.map { v in (v * 10).rounded() / 10 })
+            group.leave()
+        }
+        store.execute(query)
+    }
 
+    private struct Run { let start: Date; let end: Date; let durationMin: Double; let distanceKm: Double?; let source: String }
+
+    /* A run recorded by the watch and noticed by the ring arrives twice. Two runs that share
+       more than half of the shorter one are the same run, and the one kept is the one with a
+       distance, then the longer one: the watch's, which has the GPS. */
     private func readRuns(_ start: Date, _ end: Date, _ group: DispatchGroup, _ done: @escaping ([Run]) -> Void) {
         group.enter()
         let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
         let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
         let query = HKSampleQuery(sampleType: HKObjectType.workoutType(), predicate: predicate,
                                   limit: HKObjectQueryNoLimit, sortDescriptors: [sort]) { _, samples, _ in
-            var out: [Run] = []
+            var all: [Run] = []
             for case let w as HKWorkout in samples ?? [] where w.workoutActivityType == .running {
                 var km: Double? = nil
                 if #available(iOS 16.0, *) {
@@ -247,10 +320,27 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
                 } else {
                     km = w.totalDistance?.doubleValue(for: HKUnit.meterUnit(with: .kilo))
                 }
-                let roundedKm = km.map { v in (v * 100).rounded() / 100 }
-                out.append(Run(start: w.startDate, durationMin: (w.duration / 60 * 10).rounded() / 10, distanceKm: roundedKm))
+                let roundedKm = km.flatMap { v in v > 0 ? (v * 100).rounded() / 100 : nil }
+                all.append(Run(start: w.startDate, end: w.endDate, durationMin: (w.duration / 60 * 10).rounded() / 10,
+                               distanceKm: roundedKm, source: w.sourceRevision.source.name))
             }
-            done(out)
+            let better = { (a: Run, b: Run) -> Bool in
+                if (a.distanceKm != nil) != (b.distanceKm != nil) { return a.distanceKm != nil }
+                return a.durationMin > b.durationMin
+            }
+            var kept: [Run] = []
+            for run in all {
+                if let i = kept.firstIndex(where: { k in
+                    let overlap = min(k.end, run.end).timeIntervalSince(max(k.start, run.start))
+                    let shorter = min(k.end.timeIntervalSince(k.start), run.end.timeIntervalSince(run.start))
+                    return shorter > 0 && overlap > shorter / 2
+                }) {
+                    if better(run, kept[i]) { kept[i] = run }
+                } else {
+                    kept.append(run)
+                }
+            }
+            done(kept)
             group.leave()
         }
         store.execute(query)

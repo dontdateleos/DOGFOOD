@@ -6167,7 +6167,7 @@ if(!window.__pnHold)window.__curtain();
     </div>
 
     <div class="group form-panel">
-      <div class="group-head"><div class="group-title">Last night</div><div class="group-sub">the sensor half &mdash; three numbers is plenty</div></div>
+      <div class="group-head"><div class="group-title">Last night</div><div class="group-sub">Apple Health fills these in; type over anything it got wrong</div></div>
       <div class="fields">
         <div class="field-row"><span class="field-label">Sleep (hrs)</span><input type="number" step="0.1" id="durationHrs" placeholder="e.g. 7.5"></div>
         <!-- One field, two things nothing else could give us. Windred (2023, n=60,977) found
@@ -6177,7 +6177,9 @@ if(!window.__pnHold)window.__curtain();
              force tracks hours-since-wake rather than clock time, so habitual wake time alone
              predicts the daily performance window, with no chronotype questionnaire. -->
         <div class="field-row"><span class="field-label">Woke at</span><input type="time" id="wakeClock"></div>
-        <div>
+        <div class="field-row"><span class="field-label">Time awake</span><input type="number" id="wakeTimeGarmin" placeholder="minutes"></div>
+        <!-- HRV is off (HRV_ENABLED): kept so a day saved with it still loads and saves whole. -->
+        <div style="display:none;">
           <div class="field-row"><span class="field-label">HRV (ms)</span><span class="src-tag garmin">GARMIN</span><input type="number" id="hrvGarmin" placeholder="ms" step="any" inputmode="decimal"></div>
           <div class="field-row" style="display:none;"><span class="field-label"></span><span class="src-tag secondary">OURA</span><input type="number" id="hrvOura" placeholder="ms" step="any" inputmode="decimal"></div>
           <div class="disagree-note" id="hrvFlag">&#9888; delta exceeds &plusmn;10ms &mdash; logged for review</div>
@@ -6186,7 +6188,11 @@ if(!window.__pnHold)window.__curtain();
       </div>
     </div>
 
-    <div class="more-toggle" id="recoveryMoreToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="recoveryMore">
+    <!-- RETIRED: the device-reading boxes (sleep scores, HRV baseline and status, load ratio,
+         training status, readiness, Body Battery). Each was a number copied off an Oura or
+         Garmin screen; Apple Health is the source now, and none of them reach it. Hidden rather
+         than deleted so old days still load and save with their values intact. -->
+    <div class="more-toggle" id="recoveryMoreToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="recoveryMore" style="display:none;">
       <span>Everything else</span>
       <span class="more-toggle-sub" id="recoveryMoreSummary">device readings and load</span>
       <span class="more-toggle-chev">&#9662;</span>
@@ -6207,7 +6213,6 @@ if(!window.__pnHold)window.__curtain();
                a field that holds minutes spent awake during the night. It takes a number, so
                7:15 or 715 would both have gone in and been read as a duration. -->
           <div class="field-row" style="display:none;"><span class="field-label">Time awake</span><span class="src-tag oura">OURA</span><input type="number" id="wakeTimeOura" placeholder="minutes"></div>
-          <div class="field-row"><span class="field-label">Time awake</span><span class="src-tag secondary">GARMIN</span><input type="number" id="wakeTimeGarmin" placeholder="minutes"></div>
           <div class="disagree-note" id="wakeTimeFlag">⚠ delta exceeds ±10min — logged for review</div>
         </div>
         <div class="field-row"><span class="field-label">HRV baseline</span><input type="number" id="hrvBaseline" placeholder="your rolling normal" step="any" inputmode="decimal"></div>
@@ -6836,9 +6841,8 @@ if(!window.__pnHold)window.__curtain();
       <div class="group-head"><div class="group-title">Over time</div><div class="group-sub">the whole history, not a trailing window</div></div>
     </div>
     <div class="session-type" id="trendMetricPills">
-      <div class="type-btn active" data-metric="hrv">HRV<i class="btn-legend">ms</i></div>
-      <div class="type-btn" data-metric="sleepScore">Sleep<i class="btn-legend">score</i></div>
-      <div class="type-btn" data-metric="loadRatio">Load<i class="btn-legend">ratio</i></div>
+      <div class="type-btn active" data-metric="restingHR">Resting HR<i class="btn-legend">bpm</i></div>
+      <div class="type-btn" data-metric="sleepHrs">Sleep<i class="btn-legend">hrs</i></div>
       <div class="type-btn" data-metric="sleepDebt">Debt<i class="btn-legend">hrs</i></div>
       <div class="type-btn" data-metric="weight">Weight<i class="btn-legend">kg</i></div>
       <div class="type-btn" data-metric="bodyFat">Body Fat<i class="btn-legend">%</i></div>
@@ -6935,14 +6939,11 @@ if(!window.__pnHold)window.__curtain();
       <div class="fields collapsible-body" data-collapse="devices" style="display:none;">
         <div id="deviceConnectRow" style="display:flex; gap:10px;"></div>
         <div id="deviceConnectStatus" class="score-note note-live"></div>
-        <!-- Disconnect, Test connection and the last-attempt debug line all live in
-             ouraConnectionStatus, which was display:none — so a connection that stopped
-             working had no reachable way to reconnect it and nothing on screen said why.
-             Kept behind a disclosure so the row of icons stays the normal view. -->
+        <!-- What Apple Health last read, and the button to read it again, kept behind a
+             disclosure so the icon row stays the normal view. -->
         <details id="deviceDetails">
           <summary style="font-family:var(--sans); font-size:var(--fs-sm); cursor:pointer;">Connection details &amp; troubleshooting</summary>
           <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
-            <div id="ouraConnectionStatus"></div>
             <div id="appleHealthStatus"></div>
           </div>
         </details>
@@ -7148,7 +7149,7 @@ if(!window.__pnHold)window.__curtain();
       <div class="fields collapsible-body" data-collapse="datagoes" style="display:none;">
         <div class="score-note" style="color:var(--bg);">Everything you log stays in this browser, on this device. There is no account, there is no copy on a server, and nobody else — including whoever gave you this app — can see your entries.</div>
         <div class="score-note">Two things do leave the device, and only if you set them up:</div>
-        <div class="score-note"><b>Oura.</b> Connecting it sends your Oura login through a small server the app's author runs, to Oura and back, so the app can read your own readings. The readings are stored here, not there.</div>
+        <div class="score-note"><b>Apple Health.</b> In the iPhone app, Dogfood reads Apple Health on the phone itself. Nothing goes through a server, and it never writes anything back.</div>
         <div class="score-note"><b>Apple Health.</b> If you switch it on, a Shortcut you set up sends the numbers you chose to that same server, and the app collects them from it. It is off until you turn it on.</div>
         <div class="score-note">Nothing is analytics. Nothing is advertising. Nothing is sold. Clearing this browser's site data deletes the lot with no way back, so export a backup now and again.</div>
       </div>
@@ -7260,14 +7261,13 @@ if(!window.__pnHold)window.__curtain();
 <ul style="margin:4px 0; padding-left:18px;">
 <li>Account information (email, [name if collected])</li>
 <li>Training data: logged exercises, sets, reps, weight, running distance/pace</li>
-<li>Recovery data: sleep duration/score, HRV, resting heart rate, subjective soreness/mood ratings</li>
+<li>Recovery data: sleep duration and stages, wake time, resting and overnight heart rate, breathing rate, subjective soreness/mood ratings</li>
 <li>Injury data: body part, severity, irritability, movement restrictions, notes</li>
 <li>Goals and preferences: training days, session length, target exercises/weights, mobility self-assessments</li>
 </ul>
 <p style="margin:6px 0;"><strong>Data from third-party integrations (if you connect one):</strong></p>
 <ul style="margin:4px 0; padding-left:18px;">
-<li>Oura: sleep, readiness, HRV, and related biometric data, as authorized by the specific permission scopes you grant during connection</li>
-<li>Garmin: heart rate, sleep, steps, and activity data, as authorized during connection</li>
+<li>Apple Health (iPhone app only): sleep, heart rate, resting heart rate, breathing rate, wrist temperature, steps, active calories and running workouts, including what your Oura, Garmin or other apps have written there. Read on the device, only the types you allow, never written back.</li>
 <li>*We only receive what these providers' own consent screens disclose to you at the time you connect — we do not have access to anything beyond the scopes you explicitly authorize.*</li>
 </ul>
 <p style="margin:6px 0;"><strong>Data collected automatically:</strong></p>
@@ -13407,19 +13407,6 @@ function computeFlags(){
 }
 recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('input', ()=>{ computeFlags(); computeScores(); computeSleepDebt(); }); });
 
-/* ---------- OURA INTEGRATION ----------
-   OAuth flow: the app builds the authorization URL and redirects the user to
-   Oura's consent screen. Oura redirects back to this same app (since it's a
-   static, single-file, GitHub-Pages-hosted app with no server to route a
-   separate callback URL to) with a `code` in the query string. The app can't
-   safely trade that code for real tokens itself — that exchange requires the
-   Client Secret, which can never live in browser-readable code — so it sends
-   the code to a small serverless function (see oura-token-worker.js) that
-   holds the secret privately and does the exchange, returning just the
-   tokens. Those get stored the same way everything else in this app is
-   stored, via window.storage (real Claude-artifact storage, or the
-   localStorage fallback when self-hosted).
-*/
 /* ---------- APP VERSION / UPDATE CHECK ----------
    A home-screen install had no way to report which build it was running, so a stale
    copy was indistinguishable from an up-to-date one. Bump APP_VERSION on every deploy —
@@ -13429,7 +13416,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.013';
+const APP_VERSION = '2026.11.15.014';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13825,6 +13812,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.014': 'Apple Health is the one source now, and the Oura connection is gone. Your Oura and Garmin apps write to Health and Dogfood reads it there: sleep from the ring (one night, not the ring and the watch added together), resting heart rate from the lowest half hour asleep, time awake from your sleep stages, and a run recorded by both kept once. HRV is out of the score, since neither shares it with Health, and the device boxes in the check-in have gone with it. Trends shows resting heart rate and sleep instead.',
   '2026.11.15.013': 'On iPhone you now feel it: a light tap on every button, a tick for each row a wheel passes and each tab you swipe to, a knock when a hold lands, and a buzz when something saves or fails. Settings → Appearance has a switch if you would rather not.',
   '2026.11.15.012': 'Tidying from a hands-on pass. Sheets on the Skills tab open properly again with an injury logged (its buttons now wrap instead of pushing the page sideways). The weight wheel shows 22.5 rather than rounding it to 23. Generate tells you when it can\u2019t build a week instead of saying so out of sight. Your weight chart shows from sign-up, before any check-in. Walk-run sessions show their real length, the session toggle says \u201cFull body\u201d and \u201cEasy run\u201d, the finish card lists every session you did today, and the big button reads Edit once today is logged. Checking in on an injury keeps its first rating and its improving arrow.',
   '2026.11.15.011': 'In the iPhone app the date in the header shows again; it was measuring itself before the phone had said where the camera cutout ends.',
@@ -14162,57 +14150,15 @@ document.querySelectorAll('.group-head.collapsible').forEach(head=>{
   });
 });
 
-const OURA_CLIENT_ID = '62367975-4a6e-445d-a195-1936ce98c7af';
-const OURA_TOKEN_WORKER_URL = 'https://dogfoodoura.jordandf1.workers.dev';
-/* OURA IS SWITCHED OFF FOR NOW; Apple Health is the one source. The connection, sync and
-   OAuth code below is kept whole and unreachable rather than deleted, so turning this back on
-   is one line. Oura's own app can write to Apple Health, so a ring still reaches the score
-   that way. The worker URL above is still used by the Apple Health Shortcut pull. */
-const OURA_ENABLED = false;
+/* The small relay the Apple Health Shortcut posts to and the browser version reads from. It
+   began life as the Oura sign-in server; Oura's own connection is gone (the Oura app writes to
+   Apple Health, which the iPhone app reads directly), and this is all that is left of it. */
+const SHORTCUT_RELAY_URL = 'https://dogfoodoura.jordandf1.workers.dev';
 /* Anything connected that fills the morning in by itself. */
 function healthSourceConnected(){
   try{ if(typeof NativeHealth !== 'undefined' && NativeHealth && nativeHealthOn()) return true; } catch(e){}
   try{ return appleHealthSyncOn(); } catch(e){ return false; }
 }
-/* ONE REDIRECT URI PER ORIGIN, WHICHEVER DOOR YOU CAME IN BY.
-   This was origin + pathname, taken raw, and pathname is not one value: the home-screen
-   install opens at the manifest's start_url and sends /Factors/index.html, while typing the
-   address in a browser lands on /Factors/ and sends that. Oura matches the redirect_uri as an
-   EXACT string against what is registered, so whichever of the two was not registered came
-   back "400 invalid_request" from cloud.ouraring.com before the consent screen was ever
-   drawn — the app looked broken in one place and fine in the other, from one line.
-
-   Normalised to the .html form rather than the directory form, because that is what
-   start_url already produces and so what an install that works today is registered under.
-   A path with no .html is treated as a directory and given index.html, which also covers
-   /Factors with no trailing slash.
-
-   It stays derived rather than hard-coded: localhost and the hosted copy are different
-   origins and need their own registrations either way, and a constant would break the one
-   that is not written down here. What it can no longer do is differ WITHIN an origin.
-
-   The exchange below posts this same constant, and it has to: the token call is checked
-   against the redirect_uri the authorize call used, so both ends move together or neither. */
-const OURA_REDIRECT_URI = (()=>{
-  let path = window.location.pathname;
-  if(!/\.html?$/i.test(path)) path = path.replace(/\/*$/, '/') + 'index.html';
-  return window.location.origin + path;
-})();
-const OURA_SCOPES = 'personal daily heartrate';
-
-function connectOura(){
-  const state = crypto.randomUUID();
-  sessionStorage.setItem('oura_oauth_state', state);
-  const authUrl = `https://cloud.ouraring.com/oauth/authorize?response_type=code&client_id=${encodeURIComponent(OURA_CLIENT_ID)}&redirect_uri=${encodeURIComponent(OURA_REDIRECT_URI)}&scope=${encodeURIComponent(OURA_SCOPES)}&state=${encodeURIComponent(state)}`;
-  window.location.href = authUrl;
-}
-
-async function disconnectOura(){
-  await window.storage.set('oura:tokens', JSON.stringify(null));
-  showToast('Oura disconnected');
-  renderOuraConnectionStatus();
-}
-
 // Best-guess mapping from Health Auto Export's metric names to this app's
 // schema — not fully confirmed against a real payload yet, so anything that
 // doesn't match a known name is preserved rather than dropped (see below).
@@ -14260,7 +14206,7 @@ function appleHealthSyncOn(){
 }
 async function syncPendingAppleHealthData(){
   try{
-    const res = await fetch(OURA_TOKEN_WORKER_URL, {
+    const res = await fetch(SHORTCUT_RELAY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'pull_apple_health', install: installKey() }),
@@ -14342,424 +14288,25 @@ async function syncPendingAppleHealthData(){
 // this is that round-trip completing. Verifies the state value to guard
 // against CSRF, exchanges the code via the worker, stores the resulting
 // tokens, then cleans the URL so a refresh doesn't try to re-process it.
-async function handleOuraOAuthCallback(){
-  if(!OURA_ENABLED) return;
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('code');
-  const state = params.get('state');
-  const oauthError = params.get('error'); // Oura itself can redirect back with ?error=... if the user denied access, etc.
-  if(!code && !oauthError) return;
-
-  const expectedState = sessionStorage.getItem('oura_oauth_state');
-  sessionStorage.removeItem('oura_oauth_state');
-  history.replaceState(null, '', window.location.pathname); // strip query params regardless of outcome
-
-  if(oauthError){
-    await logOuraDebug(`Oura itself returned an error: ${oauthError} — ${params.get('error_description')||''}`);
-    showToast('Oura connection failed — see Settings for details', true);
-    return;
-  }
-
-  if(!state || state !== expectedState){
-    await logOuraDebug(`State mismatch — expected "${expectedState}", got "${state}". This usually means sessionStorage didn't survive the redirect (private browsing / cross-tab).`);
-    showToast('Oura connection failed — see Settings for details', true);
-    return;
-  }
-
-  try{
-    const res = await fetch(OURA_TOKEN_WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'exchange', code, redirect_uri: OURA_REDIRECT_URI }),
-    });
-    let data;
-    try{ data = await res.json(); }
-    catch(parseErr){ throw new Error(`Worker returned a non-JSON response (HTTP ${res.status}) — likely a CORS block or the worker crashed before responding.`); }
-
-    if(!res.ok) throw new Error(`Worker/Oura rejected the exchange (HTTP ${res.status}): ${JSON.stringify(data)}`);
-
-    await window.storage.set('oura:tokens', JSON.stringify({
-      access_token: data.access_token,
-      refresh_token: data.refresh_token,
-      expires_at: Date.now() + (data.expires_in * 1000),
-    }));
-    await logOuraDebug('Connected successfully.');
-    showToast('Oura connected');
-    syncOuraSelectedDate(); // pull today's data immediately rather than making the user do a separate step
-  } catch(e){
-    console.error('Oura token exchange failed:', e);
-    await logOuraDebug(`Exchange failed: ${e.message}`);
-    showToast('Oura connection failed — see Settings for details', true);
-  }
-  renderOuraConnectionStatus();
-}
-
-// Returns a currently-valid access token, transparently refreshing first if
-// the stored one has expired (or is close to it). Returns null if there's no
-// connection at all. This is the function anything fetching real Oura data
-// later should call, rather than reading the stored token directly.
-async function getValidOuraAccessToken(){
-  let tokens;
-  try{
-    const r = await window.storage.get('oura:tokens');
-    tokens = JSON.parse(r.value);
-  } catch(e){ return null; }
-  if(!tokens) return null;
-
-  const expiringSoon = Date.now() > (tokens.expires_at - 60000); // refresh a minute early
-  if(!expiringSoon) return tokens.access_token;
-
-  try{
-    const res = await fetch(OURA_TOKEN_WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'refresh', refresh_token: tokens.refresh_token }),
-    });
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error || 'refresh failed');
-    await window.storage.set('oura:tokens', JSON.stringify({
-      access_token: data.access_token,
-      refresh_token: data.refresh_token,
-      expires_at: Date.now() + (data.expires_in * 1000),
-    }));
-    return data.access_token;
-  } catch(e){
-    // A refresh failure is the single most likely reason a working connection stops
-    // working: refresh tokens rotate and a stale one can't be recovered from. It was
-    // logged to the console and swallowed, so the app still showed "Oura connected" and
-    // the only message the user ever saw was "Not connected to Oura" from a later step —
-    // which is both wrong-looking and doesn't say what to do about it.
-    console.error('Oura token refresh failed:', e);
-    await logOuraDebug(`Your Oura login has expired and couldn't be renewed (${e.message}). Tap Disconnect, then Connect Oura to sign in again.`);
-    return null; // stale/invalid refresh token — user will need to reconnect
-  }
-}
-
-async function logOuraDebug(message){
-  await window.storage.set('oura:lastDebug', JSON.stringify({ message, at: new Date().toISOString() }));
-}
-
-// Maps Oura's actual API response shape onto the app's existing recovery-entry
-// fields (recoveryFieldIds) so downstream scoring treats synced data identically
-// to manually-entered data. Two unit conversions matter here and are easy to get
-// silently wrong: Oura's awake_time is in SECONDS, but wakeTimeOura expects
-// MINUTES (confirmed from its penalty-scoring formula elsewhere in the app);
-// total_sleep_duration is also in seconds, converted to hours for durationHrs.
-async function fetchOuraEndpoint(endpoint, token, date, startDateOverride, endDateOverride){
-  const res = await fetch(OURA_TOKEN_WORKER_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'fetch_data', access_token: token, endpoint, start_date: startDateOverride || date, end_date: endDateOverride || date }),
-  });
-  const data = await res.json();
-  if(!res.ok) throw new Error(`${endpoint}: ${data.error || 'request failed'} (HTTP ${res.status})`);
-  return data;
-}
-
-async function syncOuraDataForDate(date){
-  const token = await getValidOuraAccessToken();
-  // Distinguish "never connected" from "connected, but the login expired" — the same
-  // null came back for both, and the second is the one that needs reconnecting.
-  if(!token){
-    let hadTokens = false;
-    try{ hadTokens = !!JSON.parse((await window.storage.get('oura:tokens')).value); } catch(e){}
-    throw new Error(hadTokens
-      ? 'Oura login expired — tap Disconnect, then Connect Oura to sign in again'
-      : 'Not connected to Oura');
-  }
-
-  const [dy, dm, dd] = date.split('-').map(Number);
-  const shiftDay = n => { const d = new Date(dy, dm-1, dd); d.setDate(d.getDate() + n); return localDateStr(d); };
-  const rangeStart = shiftDay(-60);
-
-  // Promise.all rejects on the FIRST failure, so a single endpoint the account can't
-  // read — daily_resilience answers 401 for tokens whose grant doesn't cover it —
-  // discarded the entire sync, including the sleep, HRV and readiness that had all
-  // returned perfectly well. Each endpoint now stands or falls on its own; only losing
-  // every core endpoint is a real failure worth reporting as one.
-  const OURA_ENDPOINTS = [
-    // Asked for a single day, this endpoint came back empty while daily_sleep and
-    // daily_readiness returned fine for the same date — so their scores landed and sleep
-    // duration and HRV, which only exist here, showed as "—". A window either side of the
-    // target day is robust both to an exclusive end date and to a sleep session that
-    // straddles midnight in the ring's timezone rather than the browser's; the period
-    // belonging to the target day is then selected below.
-    { key:'sleep',      name:'sleep',           core:true, start: shiftDay(-1), end: shiftDay(1) },
-    { key:'dailySleep', name:'daily_sleep',     core:true },
-    { key:'readiness',  name:'daily_readiness', core:true },
-    { key:'activity',   name:'daily_activity' },
-    { key:'stress',     name:'daily_stress' },
-    { key:'resilience', name:'daily_resilience' },
-    { key:'restMode',   name:'rest_mode_period', start: rangeStart }, // period-based, needs a wider window
-  ];
-  const settled = await Promise.allSettled(
-    OURA_ENDPOINTS.map(e => fetchOuraEndpoint(e.name, token, date, e.start, e.end)));
-  const got = {}, failures = [];
-  settled.forEach((r, i) => {
-    const e = OURA_ENDPOINTS[i];
-    if(r.status === 'fulfilled'){ got[e.key] = r.value; return; }
-    got[e.key] = { data: [] };
-    failures.push({ name: e.name, core: !!e.core, message: (r.reason && r.reason.message) || 'failed' });
-  });
-  // An endpoint that answers 200 with zero rows is invisible otherwise — the sync just
-  // reports "—" for whatever it fed, with no way to tell a missing night from a request
-  // that asked the wrong question.
-  const emptyEndpoints = OURA_ENDPOINTS
-    .filter(e => !failures.some(f => f.name === e.name) && !((got[e.key] && got[e.key].data || []).length))
-    .map(e => e.name);
-  const coreEndpoints = OURA_ENDPOINTS.filter(e => e.core).length;
-  if(failures.filter(f => f.core).length === coreEndpoints){
-    // Everything that matters failed — that's an authorization problem, not a gap.
-    throw new Error(failures.some(f => /HTTP 401/.test(f.message))
-      ? 'Oura rejected the request (401) — tap Disconnect, then Connect Oura to re-authorize'
-      : `Oura sync failed — ${failures[0].message}`);
-  }
-  const sleepData = got.sleep, dailySleepData = got.dailySleep, readinessData = got.readiness,
-        activityData = got.activity, stressData = got.stress, resilienceData = got.resilience,
-        restModeData = got.restMode;
-
-  // Each endpoint's `data` array can have 0+ entries for the date (0 if no data
-  // synced yet that day, 2+ if there was a long sleep plus a nap) — take the
-  // longest sleep period, since that's what "last night's sleep" means here.
-  const allSleep = sleepData.data || [];
-  // The widened window can return neighbouring nights, so pick the periods that belong to
-  // the target day. If none of them carry a day at all, take what came back rather than
-  // discarding it — an older response shape shouldn't lose the night's sleep.
-  const dayOf = sp => sp.day || (sp.bedtime_end || '').slice(0,10) || null;
-  const matching = allSleep.filter(sp => dayOf(sp) === date);
-  const sleepPeriods = matching.length ? matching
-    : (allSleep.length && allSleep.every(sp => !dayOf(sp)) ? allSleep : []);
-  const mainSleep = sleepPeriods.reduce((longest, s) =>
-    (!longest || (s.total_sleep_duration||0) > (longest.total_sleep_duration||0)) ? s : longest, null);
-  const dailySleep = (dailySleepData.data || [])[0];
-  const readiness = (readinessData.data || [])[0];
-  const activity = (activityData.data || [])[0];
-  const stress = (stressData.data || [])[0];
-  const resilience = (resilienceData.data || [])[0];
-  // rest_mode_period is period-based (start_day/end_day), not one-record-per-day —
-  // check whether the target date falls within any returned period.
-  const restModePeriods = restModeData.data || [];
-  const activeRestMode = restModePeriods.find(p => {
-    const start = p.start_day || p.start_date;
-    const end = p.end_day || p.end_date || date; // an ongoing period may have no end yet
-    return start && date >= start && date <= end;
-  });
-
-  // Load whatever's already stored for this date so Garmin-side fields (or
-  // anything manually entered) aren't wiped out by an Oura-only sync.
-  let existing = {};
-  try{ const r = await window.storage.get(keyFor(date)); existing = JSON.parse(r.value); } catch(e){}
-
-  const updated = { ...existing, date };
-  if(mainSleep){
-    updated.durationHrs = mainSleep.total_sleep_duration!=null ? Math.round((mainSleep.total_sleep_duration/3600)*100)/100 : existing.durationHrs;
-    updated.hrvOura = mainSleep.average_hrv ?? existing.hrvOura;
-    updated.restingHR = mainSleep.lowest_heart_rate ?? existing.restingHR;
-    updated.wakeTimeOura = mainSleep.awake_time!=null ? Math.round(mainSleep.awake_time/60) : existing.wakeTimeOura; // seconds -> minutes
-    // What time you actually got up, which the sleep regularity and circadian terms both
-    // need. bedtime_end was already being read here to decide which day a sleep belongs to;
-    // it was one slice away from removing a field people had to type every morning.
-    if(mainSleep.bedtime_end){
-      const m = String(mainSleep.bedtime_end).match(/T(\d{2}:\d{2})/);
-      if(m) updated.wakeClock = m[1];
-    }
-    // Sleep stages and quality metrics — not part of the manual-entry form
-    // (recoveryFieldIds), stored as extra properties for display/future use.
-    updated.deepSleepMin = mainSleep.deep_sleep_duration!=null ? Math.round(mainSleep.deep_sleep_duration/60) : existing.deepSleepMin;
-    updated.remSleepMin = mainSleep.rem_sleep_duration!=null ? Math.round(mainSleep.rem_sleep_duration/60) : existing.remSleepMin;
-    updated.lightSleepMin = mainSleep.light_sleep_duration!=null ? Math.round(mainSleep.light_sleep_duration/60) : existing.lightSleepMin;
-    updated.sleepEfficiency = mainSleep.efficiency ?? existing.sleepEfficiency; // already a percentage, e.g. 84
-    updated.sleepLatencyMin = mainSleep.latency!=null ? Math.round(mainSleep.latency/60) : existing.sleepLatencyMin;
-    updated.respiratoryRate = mainSleep.average_breath ?? existing.respiratoryRate; // breaths/min
-  }
-  if(dailySleep) updated.sleepScoreOura = dailySleep.score ?? existing.sleepScoreOura;
-  if(readiness){
-    updated.readinessOura = readiness.score ?? existing.readinessOura;
-    // Degrees C deviation from personal baseline — a standalone illness/overtraining
-    // signal, distinct from (and more specific than) the blended readiness score.
-    updated.temperatureDeviation = readiness.temperature_deviation ?? existing.temperatureDeviation;
-  }
-  if(activity){
-    updated.steps = activity.steps ?? existing.steps;
-    updated.activeCalories = activity.active_calories ?? existing.activeCalories;
-    updated.sedentaryHours = activity.sedentary_time!=null ? Math.round((activity.sedentary_time/3600)*10)/10 : existing.sedentaryHours;
-  }
-  if(stress){
-    // Best-guess field name based on available documentation — also storing the
-    // full raw object as a safety net in case the exact field name is off, so
-    // nothing is silently lost if this needs correcting once real data confirms it.
-    updated.stressSummary = stress.day_summary ?? stress.stress_summary ?? existing.stressSummary;
-    updated.stressRaw = stress;
-  }
-  if(resilience){
-    updated.resilienceLevel = resilience.level ?? existing.resilienceLevel;
-  }
-  // Whether the user has Oura's Rest Mode active for this date — an explicit,
-  // user-confirmed signal of illness/injury/heightened-stress recovery, direct
-  // context for this app's own injury tracking.
-  updated.ouraRestModeActive = !!activeRestMode;
-
-  const noDataAtAll = !mainSleep && !dailySleep && !readiness && !activity && !stress && !resilience;
-  // hrvBaseline deliberately untouched — Oura only exposes a derived 0-100
-  // "hrv_balance" contributor score, not the underlying ms value this field
-  // expects, and the app already computes its own trailing baseline internally.
-
-  await window.storage.set(keyFor(date), JSON.stringify(updated));
-  invalidateSignalWindows();   // see the note on the Apple Health import above
-  return { ...updated, _noDataAtAll: noDataAtAll, _skipped: failures, _empty: emptyEndpoints };
-}
-
-async function syncOuraSelectedDate(){
-  const targetDate = dateInput.value || todayStr;
-  const dateLabel = targetDate === todayStr ? 'today' : targetDate;
-  await logOuraDebug(`Syncing ${dateLabel}'s data from Oura...`);
-  renderOuraConnectionStatus();
-  try{
-    const entry = await syncOuraDataForDate(targetDate);
-    if(entry._noDataAtAll){
-      await logOuraDebug(`Connected to Oura, but no data available for ${dateLabel} — this is normal if the ring hadn't synced to the Oura app yet, or didn't record a sleep session that night.`);
-      showToast(`No Oura data available for ${dateLabel}`);
-    } else {
-      // Name what was skipped rather than hiding it: the data still landed, but a
-      // permanently unreadable endpoint is worth knowing about.
-      const skipped = (entry._skipped || []).length
-        ? ` (skipped ${entry._skipped.map(f=>f.name).join(', ')} — ${entry._skipped[0].message})`
-        : '';
-      const empty = (entry._empty || []).length ? ` (no rows: ${entry._empty.join(', ')})` : '';
-      await logOuraDebug(`Synced ${dateLabel} — sleep ${entry.durationHrs ?? '—'}hrs, sleep score ${entry.sleepScoreOura ?? '—'}, readiness ${entry.readinessOura ?? '—'}, HRV ${entry.hrvOura ?? '—'}${empty}${skipped}`);
-      if(dateInput.value === targetDate){ fillRecoveryForm(entry); }
-      showToast(`Oura data synced for ${dateLabel}`);
-    }
-  } catch(e){
-    console.error('Oura sync failed:', e);
-    await logOuraDebug(`Sync failed: ${e.message}`);
-    showToast('Oura sync failed — see Settings for details', true);
-  }
-  renderOuraConnectionStatus();
-}
-
-async function testOuraWorkerConnection(){
-  await logOuraDebug('Testing worker connection...');
-  renderOuraConnectionStatus();
-
-  let getResult;
-  try{
-    // A plain GET with no custom headers is a "simple request" — the browser sends it
-    // directly with no CORS preflight. If even this fails, the issue isn't CORS at all;
-    // it's the worker not actually being reachable (wrong URL, not deployed, DNS, etc.).
-    const res = await fetch(OURA_TOKEN_WORKER_URL, { method: 'GET' });
-    const text = await res.text();
-    getResult = `GET: reachable, HTTP ${res.status}, "${text.slice(0,100)}"`;
-  } catch(e){
-    getResult = `GET: NOT reachable at all (${e.message}) — this points to the worker itself, not CORS: check the URL is exactly right and the worker shows as deployed in Cloudflare.`;
-  }
-
-  let postResult;
-  try{
-    // The real request the OAuth flow actually uses — a JSON POST, which DOES trigger a
-    // preflight. If GET succeeds but this fails, it's specifically a CORS/preflight issue.
-    const res = await fetch(OURA_TOKEN_WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'exchange', code: 'test', redirect_uri: OURA_REDIRECT_URI }),
-    });
-    const text = await res.text();
-    postResult = `POST: reachable, HTTP ${res.status}, "${text.slice(0,100)}"`;
-  } catch(e){
-    postResult = `POST: NOT reachable (${e.message}) — if GET above worked, this specifically means the CORS preflight is being rejected.`;
-  }
-
-  await logOuraDebug(`Origin: ${window.location.origin} | ${getResult} | ${postResult}`);
-  renderOuraConnectionStatus();
-}
-
 async function renderDeviceConnectRow(){
   const row = document.getElementById('deviceConnectRow');
   if(!row) return;
-  let ouraConnected = false;
-  try{ const r = await window.storage.get('oura:tokens'); ouraConnected = !!JSON.parse(r.value); } catch(e){}
-
-  if(!OURA_ENABLED){
-    const native = typeof NativeHealth !== 'undefined' && NativeHealth;
-    const on = healthSourceConnected();
-    row.innerHTML = `
-    <button id="appleQuickBtn" aria-label="${on ? 'Apple Health connected' : 'Connect Apple Health'}" style="flex:none; width:52px; height:52px; padding:0; position:relative; background:none; border:none; box-shadow:none; color:inherit;">
-      <svg width="30" height="30" viewBox="3.2 2.65 13 16" fill="currentColor" aria-hidden="true"><path d="M12.15 7.5c-1.1-.08-2.03.6-2.56.6-.53 0-1.35-.58-2.22-.56-1.14.02-2.2.66-2.78 1.68-1.2 2.08-.31 5.15.85 6.84.57.82 1.24 1.74 2.12 1.71.85-.03 1.17-.55 2.2-.55 1.02 0 1.32.55 2.21.53.92-.02 1.5-.83 2.06-1.66.65-.95.92-1.88.93-1.93-.02-.01-1.79-.69-1.81-2.73-.02-1.71 1.39-2.52 1.46-2.56-.8-1.18-2.04-1.31-2.47-1.37zM11.43 6.4c.47-.57.78-1.35.7-2.14-.67.03-1.49.45-1.97 1.02-.43.5-.81 1.3-.71 2.07.75.06 1.51-.38 1.98-.95z"/></svg>
-      ${on ? '<span aria-hidden="true" style="position:absolute; top:6px; right:6px; width:8px; height:8px; border-radius:50%; background:#3ecf6a; border:1.5px solid currentColor;"></span>' : ''}
-    </button>`;
-    document.getElementById('appleQuickBtn').addEventListener('click', async ()=>{
-      const statusEl = document.getElementById('deviceConnectStatus');
-      statusEl.textContent = 'Checking Apple Health...';
-      const result = native ? (nativeHealthOn() ? await syncNativeHealth(14) : await connectNativeHealth()) : await syncPendingAppleHealthData();
-      if(result.error) statusEl.textContent = `Apple Health check failed: ${result.error}`;
-      else if(!result.synced) statusEl.textContent = 'Apple Health — nothing new to fill.';
-      else statusEl.textContent = `Apple Health — filled ${result.synced} ${native ? 'day' : 'update'}${result.synced === 1 ? '' : 's'}.`;
-      if(native) renderNativeHealthStatus();
-    });
-    return;
-  }
+  const native = typeof NativeHealth !== 'undefined' && NativeHealth;
+  const on = healthSourceConnected();
   row.innerHTML = `
-    <button id="ouraQuickBtn" aria-label="${ouraConnected ? 'Oura connected' : 'Connect Oura'}" style="flex:none; width:52px; height:52px; padding:0; position:relative; background:none; border:none; box-shadow:none; color:inherit;">
-      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg>
-      ${ouraConnected ? '<span aria-hidden="true" style="position:absolute; top:6px; right:6px; width:8px; height:8px; border-radius:50%; background:#3ecf6a; border:1.5px solid currentColor;"></span>' : ''}
-    </button>
-    <button id="appleQuickBtn" aria-label="Connect Apple Health" style="flex:none; width:52px; height:52px; padding:0; background:none; border:none; box-shadow:none; color:inherit;">
-      <svg width="30" height="30" viewBox="3.2 2.65 13 16" fill="currentColor" aria-hidden="true"><path d="M12.15 7.5c-1.1-.08-2.03.6-2.56.6-.53 0-1.35-.58-2.22-.56-1.14.02-2.2.66-2.78 1.68-1.2 2.08-.31 5.16.86 6.85.57.83 1.25 1.76 2.15 1.72.86-.03 1.19-.55 2.23-.55 1.04 0 1.34.55 2.24.53.93-.02 1.51-.85 2.08-1.68.65-.94.92-1.86.93-1.9-.02-.01-1.79-.69-1.81-2.73-.02-1.7 1.39-2.52 1.45-2.56-.8-1.17-2.03-1.3-2.47-1.33-1.02-.09-1.9.6-2.4.6"/><path d="M14.7 5.6c.47-.57.79-1.36.7-2.15-.68.03-1.5.45-1.99 1.02-.44.5-.82 1.31-.72 2.08.75.06 1.53-.38 2.01-.95z"/></svg>
-    </button>`;
-
-  document.getElementById('ouraQuickBtn').addEventListener('click', async ()=>{
-    const statusEl = document.getElementById('deviceConnectStatus');
-    if(ouraConnected){
-      statusEl.textContent = 'Syncing Oura...';
-      await syncOuraSelectedDate();
-      statusEl.textContent = 'Oura synced.';
-    } else {
-      connectOura();
-    }
-  });
+  <button id="appleQuickBtn" aria-label="${on ? 'Apple Health connected' : 'Connect Apple Health'}" style="flex:none; width:52px; height:52px; padding:0; position:relative; background:none; border:none; box-shadow:none; color:inherit;">
+    <svg width="30" height="30" viewBox="3.2 2.65 13 16" fill="currentColor" aria-hidden="true"><path d="M12.15 7.5c-1.1-.08-2.03.6-2.56.6-.53 0-1.35-.58-2.22-.56-1.14.02-2.2.66-2.78 1.68-1.2 2.08-.31 5.15.85 6.84.57.82 1.24 1.74 2.12 1.71.85-.03 1.17-.55 2.2-.55 1.02 0 1.32.55 2.21.53.92-.02 1.5-.83 2.06-1.66.65-.95.92-1.88.93-1.93-.02-.01-1.79-.69-1.81-2.73-.02-1.71 1.39-2.52 1.46-2.56-.8-1.18-2.04-1.31-2.47-1.37zM11.43 6.4c.47-.57.78-1.35.7-2.14-.67.03-1.49.45-1.97 1.02-.43.5-.81 1.3-.71 2.07.75.06 1.51-.38 1.98-.95z"/></svg>
+    ${on ? '<span aria-hidden="true" style="position:absolute; top:6px; right:6px; width:8px; height:8px; border-radius:50%; background:#3ecf6a; border:1.5px solid currentColor;"></span>' : ''}
+  </button>`;
   document.getElementById('appleQuickBtn').addEventListener('click', async ()=>{
     const statusEl = document.getElementById('deviceConnectStatus');
     statusEl.textContent = 'Checking Apple Health...';
-    const result = await syncPendingAppleHealthData();
+    const result = native ? (nativeHealthOn() ? await syncNativeHealth(14) : await connectNativeHealth()) : await syncPendingAppleHealthData();
     if(result.error) statusEl.textContent = `Apple Health check failed: ${result.error}`;
-    else if(result.synced === 0) statusEl.textContent = 'Apple Health — no new data waiting.';
-    else statusEl.textContent = `Apple Health — synced ${result.synced} update(s).`;
+    else if(!result.synced) statusEl.textContent = 'Apple Health — nothing new to fill.';
+    else statusEl.textContent = `Apple Health — filled ${result.synced} ${native ? 'day' : 'update'}${result.synced === 1 ? '' : 's'}.`;
+    if(native) renderNativeHealthStatus();
   });
-}
-
-async function renderOuraConnectionStatus(){
-  if(!OURA_ENABLED){ const el = document.getElementById('ouraConnectionStatus'); if(el) el.innerHTML = ''; return; }
-  const el = document.getElementById('ouraConnectionStatus');
-  let tokens = null;
-  try{ const r = await window.storage.get('oura:tokens'); tokens = JSON.parse(r.value); } catch(e){}
-
-  let debugHtml = '';
-  try{
-    const r = await window.storage.get('oura:lastDebug');
-    const d = JSON.parse(r.value);
-    debugHtml = `<div class="score-note" style="margin-top:8px; font-family:var(--mono); font-size:var(--fs-tag); word-break:break-word;">Last attempt (${d.at}): ${d.message}</div>`;
-  } catch(e){}
-
-  if(tokens){
-    el.innerHTML = `
-      <div class="score-note">✓ Oura connected</div>
-      <button id="ouraSyncBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px;"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg>Sync now</button>
-      <button id="ouraDisconnectBtn" class="small outline">Disconnect</button>
-      <button id="ouraTestBtn" class="small outline">Test connection</button>
-      ${debugHtml}`;
-    document.getElementById('ouraSyncBtn').addEventListener('click', syncOuraSelectedDate);
-    document.getElementById('ouraDisconnectBtn').addEventListener('click', disconnectOura);
-    document.getElementById('ouraTestBtn').addEventListener('click', testOuraWorkerConnection);
-  } else {
-    el.innerHTML = `
-      <div class="score-note">Syncs sleep, HRV and readiness automatically.</div>
-      <button id="ouraConnectBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px;"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg>Connect Oura</button>
-      <button id="ouraTestBtn" class="small outline">Test connection</button>
-      ${debugHtml}`;
-    document.getElementById('ouraConnectBtn').addEventListener('click', connectOura);
-    document.getElementById('ouraTestBtn').addEventListener('click', testOuraWorkerConnection);
-  }
-  renderDeviceConnectRow();
 }
 
 /* ---------- APPLE HEALTH, READ DIRECTLY (the iPhone app) ----------
@@ -14839,6 +14386,8 @@ document.addEventListener('change', e=>{
 }, true);
 const NATIVE_HEALTH_KEY = 'settings:nativeHealth';
 const NATIVE_HEALTH_LAST_KEY = 'settings:nativeHealthLastSync';
+const NATIVE_HEALTH_AUTH_KEY = 'settings:nativeHealthAuth';
+const NATIVE_HEALTH_AUTH_V = '2';   // bump when HealthBridge reads a new type
 function nativeHealthOn(){ try{ return localStorage.getItem(NATIVE_HEALTH_KEY) === 'on'; } catch(e){ return false; } }
 async function connectNativeHealth(){
   if(!NativeHealth) return { error: 'not-native' };
@@ -14846,7 +14395,7 @@ async function connectNativeHealth(){
     const avail = await NativeHealth.isAvailable();
     if(!avail || !avail.available) return { error: 'Apple Health is not available on this device' };
     await NativeHealth.requestAuthorization();
-    try{ localStorage.setItem(NATIVE_HEALTH_KEY, 'on'); } catch(e){}
+    try{ localStorage.setItem(NATIVE_HEALTH_KEY, 'on'); localStorage.setItem(NATIVE_HEALTH_AUTH_KEY, NATIVE_HEALTH_AUTH_V); } catch(e){}
     return await syncNativeHealth(30);
   } catch(e){ return { error: (e && e.message) || 'could not connect' }; }
 }
@@ -14855,6 +14404,12 @@ async function syncNativeHealth(days){
   if(!NativeHealth || !nativeHealthOn() || _nativeHealthBusy) return { synced: 0, dates: [] };
   _nativeHealthBusy = true;
   try{
+    /* Heart rate joined the types read (for the overnight resting HR). iOS asks only about
+       types it has not asked about before, so a phone connected before that sees one short
+       sheet, once. */
+    if(localStorage.getItem(NATIVE_HEALTH_AUTH_KEY) !== NATIVE_HEALTH_AUTH_V){
+      try{ await NativeHealth.requestAuthorization(); localStorage.setItem(NATIVE_HEALTH_AUTH_KEY, NATIVE_HEALTH_AUTH_V); } catch(e){}
+    }
     const res = await NativeHealth.readDays({ days: days || 14 });
     const list = ((res && res.days) || []).filter(d => d && /^\d{4}-\d{2}-\d{2}$/.test(d.date) && d.date <= todayStr);
     if(!list.length) return { synced: 0, dates: [] };
@@ -14877,13 +14432,18 @@ async function syncNativeHealth(days){
       const fill = {};
       const gap = (k, v) => { if(v != null && existing[k] == null) fill[k] = v; };
       const own = (k, v) => { if(v != null && JSON.stringify(existing[k]) !== JSON.stringify(v)) fill[k] = v; };
-      own('hrvApple', num(d.hrvSDNN, 1));
-      gap('restingHR', num(d.restingHR, 0));
+      /* Resting HR: the lowest half hour asleep, which Oura's and Garmin's heart rate both
+         give, ahead of a resting figure only an Apple Watch writes. One measure, so the
+         baseline is not two devices' numbers taking turns. */
+      gap('restingHR', num(d.sleepingHR ?? d.restingHR, 0));
+      own('sleepingHR', num(d.sleepingHR, 1));
       gap('respiratoryRate', num(d.respiratoryRate, 1));
       gap('steps', num(d.steps, 0));
       gap('activeCalories', num(d.activeCalories, 0));
       gap('durationHrs', num(d.sleepHours, 2));
       gap('wakeClock', hhmm(d.wakeAt));
+      if(awakeOf(existing) == null) gap('awakeMin', num(d.awakeMin, 0));
+      own('sleepSource', typeof d.sleepSource === 'string' ? d.sleepSource : null);
       if(typeof d.wristTempC === 'number'){
         own('wristTempC', num(d.wristTempC, 2));
         const prior = Object.keys(temps).filter(k => k < d.date && k >= shiftDateStr(d.date, -30)).map(k => temps[k]);
@@ -14924,12 +14484,34 @@ function renderNativeHealthStatus(message){
     ? `<div class="score-note">Apple Health \u00b7 connected${lastTxt ? ` \u00b7 last read ${lastTxt}` : ''}</div>
        <div class="score-note">Read every time you open the app. To change what Dogfood can see, go to the Health app \u2192 your profile \u2192 Apps \u2192 Dogfood.</div>
        ${message ? `<div class="score-note" style="font-family:var(--mono); font-size:var(--fs-tag);">${message}</div>` : ''}
+       <div class="score-note" id="nativeHealthSources"></div>
        <button id="nativeHealthSyncBtn" class="small">Read Apple Health now</button>`
     : `<div class="score-note">Apple Health</div>
-       <div class="score-note">Let Dogfood read your HRV, resting heart rate, sleep, breathing rate, wrist temperature, steps and runs. It only reads, and it fills days you have not logged yourself.</div>
+       <div class="score-note">Let Dogfood read your sleep, heart rate, breathing rate, steps and runs from Apple Health, including what your Oura and Garmin apps put there. It only reads, and it fills days you have not logged yourself.</div>
        ${message ? `<div class="score-note" style="font-family:var(--mono); font-size:var(--fs-tag);">${message}</div>` : ''}
        <button id="nativeHealthConnectBtn" class="small">Connect Apple Health</button>`;
   const say = r => r.error ? `Failed: ${r.error}` : r.synced ? `Filled ${r.synced} day${r.synced === 1 ? '' : 's'}` : 'Nothing new to fill';
+  /* Where the numbers came from, so a gap reads as a gap: which app wrote the last night that
+     had one, and the apps behind the last week's runs. */
+  (async ()=>{
+    const out = document.getElementById('nativeHealthSources');
+    if(!out) return;
+    let sleepFrom = null, sleepDate = null, hr = null;
+    const runFrom = new Set();
+    for(let i = 0; i < 7; i++){
+      const d = shiftDateStr(todayStr, -i);
+      let e = null;
+      try{ e = JSON.parse((await window.storage.get(keyFor(d))).value); } catch(err){}
+      if(!e) continue;
+      if(!sleepFrom && e.sleepSource){ sleepFrom = e.sleepSource; sleepDate = d; hr = e.sleepingHR; }
+      (Array.isArray(e.appleRuns) ? e.appleRuns : []).forEach(r=>{ if(r && r.source) runFrom.add(r.source); });
+    }
+    const bits = [];
+    if(sleepFrom) bits.push(`Sleep from ${sleepFrom}${sleepDate === todayStr ? ' last night' : ''}${hr != null ? `, lowest heart rate asleep ${Math.round(hr)}` : ''}`);
+    if(runFrom.size) bits.push(`runs from ${[...runFrom].join(' and ')}`);
+    // textContent: the names are whatever the apps call themselves in Health.
+    out.textContent = bits.length ? bits.join(' \u00b7 ') + '.' : 'Nothing read from a sleep tracker in the last week yet.';
+  })().catch(()=>{});
   const conn = document.getElementById('nativeHealthConnectBtn');
   if(conn) conn.addEventListener('click', async ()=>{ renderNativeHealthStatus('Asking Apple Health...'); renderNativeHealthStatus(say(await connectNativeHealth())); });
   const sync = document.getElementById('nativeHealthSyncBtn');
@@ -14965,8 +14547,6 @@ async function renderAppleHealthStatus(message){
   renderDeviceConnectRow();
 }
 
-renderOuraConnectionStatus(); // immediate paint of current state
-handleOuraOAuthCallback(); // if this load is an OAuth redirect-back, re-renders once the exchange finishes
 renderAppleHealthStatus();
 /* Off until asked for. This used to run on every load for every install — which is what
    made the missing identifier a live problem rather than a latent one. Data accumulates
@@ -15954,8 +15534,17 @@ const HRV_SOURCE_RECENT = 14;
 /* Each device's HRV in its own field, never mixed: Garmin and Oura report RMSSD on their own
    scales, Apple reports SDNN. hrvApple joined the list when Apple Health became the source. */
 const HRV_SOURCES = ['hrvApple', 'hrvGarmin', 'hrvOura'];
+/* HRV IS OFF. The devices in use (an Oura ring and a Garmin watch) do not share HRV with Apple
+   Health, which is now the one source, so it would only ever be typed in. The score runs on
+   resting heart rate, sleep, breathing rate, load and form instead; the engine already drops a
+   channel nobody measures from the budget, so nothing is docked for its absence. Old HRV in
+   saved days stays where it is and is simply not read. Turning it back on (an Apple Watch,
+   say, which does write HRV) is this line plus the check-in row. */
+const HRV_ENABLED = false;
 // One reading for display, from whichever device logged that day.
-function hrvOf(e){ return e ? (e.hrvGarmin ?? e.hrvOura ?? e.hrvApple ?? null) : null; }
+function hrvOf(e){ return e && HRV_ENABLED ? (e.hrvGarmin ?? e.hrvOura ?? e.hrvApple ?? null) : null; }
+/* Minutes awake in the night: what you typed, else what Apple Health's sleep stages said. */
+function awakeOf(e){ return e ? (e.wakeTimeOura ?? e.wakeTimeGarmin ?? e.awakeMin ?? null) : null; }
 async function resolveHrvSource(entries){
   const withHrv = entries.filter(e => e && HRV_SOURCES.some(k => e[k] != null))
     .slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
@@ -16051,7 +15640,7 @@ async function buildSignalWindowUncached(asOfDate, days){
     entries.push(e ? { ...e, date } : null);
   }
   const present = entries.filter(Boolean);
-  const hrvRec = await resolveHrvSource(present);
+  const hrvRec = HRV_ENABLED ? await resolveHrvSource(present) : { source:null, since:null };
   const pick = (fn)=> entries.map(e=> e ? fn(e) : null);
   // Only readings from the canonical source, and only since the source last changed.
   const hrvSeries = entries.map(e=>{
@@ -16184,7 +15773,7 @@ async function buildSignalWindowUncached(asOfDate, days){
     form:     normaliseChannel(formSeries, { baselineMask }),
     sleep:    normaliseChannel(pick(e=>e.durationHrs), { baselineMask }),
     // Minutes awake in the night: more is worse, so the sign flips.
-    wake:     normaliseChannel(pick(e=>e.wakeTimeOura ?? e.wakeTimeGarmin), { invert:true }),
+    wake:     normaliseChannel(pick(e=>awakeOf(e)), { invert:true }),
     /* Respiratory rate and skin temperature. Both have been synced from Oura since before
        any of this — average_breath and temperature_deviation — and neither was ever read.
        They are the illness channels, so they follow Oura's own one documented one-sided
@@ -16923,13 +16512,13 @@ async function renderLearnedWeights(){
   if(!L){
     const c = _learnedCache && _learnedCache.date === todayStr ? _learnedCache : null;
     const have = c && c.n != null ? c.n : 0, skipped = c && c.dropped ? c.dropped : 0;
-    el.innerHTML = `<div class="score-note">Still using the starting weights. They move once a dozen or so sessions have a logged morning after them — HRV or resting HR the next day is what the score is checked against. ${have} so far${skipped ? `, and ${skipped} session${skipped === 1 ? '' : 's'} skipped for having no morning logged after ${skipped === 1 ? 'it' : 'them'}` : ''}.</div>`;
+    el.innerHTML = `<div class="score-note">Still using the starting weights. They move once a dozen or so sessions have a logged morning after them — resting HR the next day is what the score is checked against. ${have} so far${skipped ? `, and ${skipped} session${skipped === 1 ? '' : 's'} skipped for having no morning logged after ${skipped === 1 ? 'it' : 'them'}` : ''}.</div>`;
     return;
   }
   // Every bar is drawn against the same ceiling, so their lengths are comparable to each
   // other rather than each being a proportion of itself.
-  const ceiling = Math.max(...Object.keys(SR_WEIGHTS).map(k=>Math.max(L.weights[k], SR_WEIGHTS[k]))) || 1;
-  const rows = Object.keys(SR_WEIGHTS).map(k=>{
+  const ceiling = Math.max(...Object.keys(SR_WEIGHTS).filter(k=> HRV_ENABLED || !/^hrv/.test(k)).map(k=>Math.max(L.weights[k], SR_WEIGHTS[k]))) || 1;
+  const rows = Object.keys(SR_WEIGHTS).filter(k=> HRV_ENABLED || !/^hrv/.test(k)).map(k=>{
     const now = L.weights[k], prior = SR_WEIGHTS[k];
     const d = L.detail[k];
     const pct = Math.round(now * 100);
@@ -18387,7 +17976,7 @@ async function getPairedData(){
         capacity: capacityByDate[d],
         duration: e.durationHrs,
         hrvRatio,
-        wakeTime: e.wakeTimeOura ?? e.wakeTimeGarmin,
+        wakeTime: awakeOf(e),
         rhr: e.restingHR
       });
     } catch(e){}
@@ -18484,7 +18073,7 @@ async function getTrailingAverages(beforeDate){
       if(e.durationHrs!=null){ durSum+=e.durationHrs; durN++; }
       const hrvEff = hrvOf(e);
       if(hrvEff!=null){ hrvSum+=hrvEff; hrvN++; }
-      const wakeTimeEff = e.wakeTimeOura ?? e.wakeTimeGarmin;
+      const wakeTimeEff = awakeOf(e);
       if(wakeTimeEff!=null){ wakeTimeSum+=wakeTimeEff; wakeTimeN++; }
     }
     return {
@@ -24931,7 +24520,7 @@ async function refreshInjuries(){
 const REC_THRESH = { injurySeverityFlag: 3, injurySevereBlock: 5 }; // score/load thresholds now come from currentGoalThresholds()
 
 function scoresForEntry(entry, trailing){
-  const duration = entry.durationHrs, wakeTime = entry.wakeTimeOura ?? entry.wakeTimeGarmin, hrv = hrvOf(entry), hrvBaseline = entry.hrvBaseline;
+  const duration = entry.durationHrs, wakeTime = awakeOf(entry), hrv = hrvOf(entry), hrvBaseline = entry.hrvBaseline;
   const tParts = [];
   if(duration!=null) tParts.push(clamp(duration/8*100,0,100));
   if(wakeTime!=null) tParts.push(clamp(100-wakeTime*WAKE_TIME_PENALTY,0,100));
@@ -24960,7 +24549,7 @@ async function getCapacityForEntry(entry){
   const pairs = await getPairedData();
   const hrvEffective = hrvOf(entry);
   const hrvRatio = (hrvEffective!=null && entry.hrvBaseline) ? hrvEffective/entry.hrvBaseline : null;
-  const todayVals = { duration: entry.durationHrs, hrvRatio, wakeTime: entry.wakeTimeOura ?? entry.wakeTimeGarmin, rhr: entry.restingHR };
+  const todayVals = { duration: entry.durationHrs, hrvRatio, wakeTime: awakeOf(entry), rhr: entry.restingHR };
   return computeCapacityFromValues(pairs, todayVals);
 }
 
@@ -24977,7 +24566,7 @@ async function capacityLabelForEntry(entry){
   });
   const hrvEffectiveLabel = hrvOf(entry);
   const hrvRatio = (hrvEffectiveLabel!=null && entry.hrvBaseline) ? hrvEffectiveLabel/entry.hrvBaseline : null;
-  const vals = { duration: entry.durationHrs, hrvRatio, wakeTime: entry.wakeTimeOura ?? entry.wakeTimeGarmin, rhr: entry.restingHR };
+  const vals = { duration: entry.durationHrs, hrvRatio, wakeTime: awakeOf(entry), rhr: entry.restingHR };
   let sum=0, tot=0;
   predictorKeys.forEach(key=>{
     const w = weights[key], v = vals[key];
@@ -25706,7 +25295,7 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
     // against a baseline; name whichever of those is actually missing.
     const e = entry || {};
     const hasDuration = e.durationHrs != null;
-    const hasWake = (e.wakeTimeOura ?? e.wakeTimeGarmin) != null;
+    const hasWake = awakeOf(e) != null;
     const hasHrv = hrvOf(e) != null;
     if(!hasDuration && !hasWake && !hasHrv) label.textContent = 'No sleep data for today yet';
     else if(hasHrv && !hasDuration && !hasWake) label.textContent = 'HRV needs a baseline to score';
@@ -25742,7 +25331,7 @@ function readingDepth(entry){
   if(!entry) return 0;
   let n = 0;
   if(entry.durationHrs != null) n++;
-  if((entry.wakeTimeOura ?? entry.wakeTimeGarmin) != null) n++;
+  if(awakeOf(entry) != null) n++;
   // No longer requires a hand-typed baseline: the baseline is computed now, so an HRV
   // reading counts as an HRV reading.
   if(hrvOf(entry) != null) n++;
@@ -39890,7 +39479,7 @@ async function refreshRecHistory(){
   } catch(e){ list.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg><span>No history yet</span></div>'; }
 }
 /* ---------- TRENDS ---------- */
-let selectedTrendMetric = 'hrv';
+let selectedTrendMetric = 'restingHR';
 document.querySelectorAll('#trendMetricPills .type-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('#trendMetricPills .type-btn').forEach(b=>b.classList.remove('active'));
@@ -39930,7 +39519,7 @@ function aggregatePoints(points, period){
   return Object.keys(buckets).sort().map(k=>({ x:k, y: Math.round((buckets[k].reduce((a,b)=>a+b,0)/buckets[k].length)*100)/100 }));
 }
 
-const METRIC_LABELS = { hrv:'HRV', sleepScore:'Sleep score', loadRatio:'Load ratio', sleepDebt:'Sleep debt', weight:'Weight', bodyFat:'Body fat %' };
+const METRIC_LABELS = { restingHR:'Resting HR', sleepHrs:'Sleep', hrv:'HRV', sleepScore:'Sleep score', loadRatio:'Load ratio', sleepDebt:'Sleep debt', weight:'Weight', bodyFat:'Body fat %' };
 // Uncertainty band for body fat % — sourced from a study comparing tetrapolar BIA scales
 // (covers most hand-to-foot consumer models) against DEXA as ground truth. Not calibrated
 // to your specific unit or body — provisional until checked against a real DEXA reading.
@@ -39953,9 +39542,9 @@ function renderTrendFlags(points){
     return;
   }
   const dir = pctChange > 0 ? 'up' : 'down';
-  const goodDirection = (selectedTrendMetric==='sleepDebt') ? (dir==='down') : (dir==='up');
+  const goodDirection = (selectedTrendMetric==='sleepDebt' || selectedTrendMetric==='restingHR') ? (dir==='down') : (dir==='up');
   el.innerHTML = `<div class="trend-flag ${goodDirection?'up':'down'}">${label} trending ${dir} ${Math.abs(pctChange).toFixed(0)}% (recent vs earlier in this view). ${
-    selectedTrendMetric==='hrv' && dir==='down' ? 'Worth watching — sustained HRV decline can signal accumulating fatigue.' :
+    selectedTrendMetric==='restingHR' && dir==='up' ? 'Worth watching — a resting heart rate that climbs for days can mean fatigue or illness building.' :
     selectedTrendMetric==='sleepDebt' && dir==='up' ? 'Deficit is building — consider prioritizing sleep duration.' : ''
   }</div>`;
 }
@@ -39976,7 +39565,11 @@ async function renderTrendChart(){
   }
 
   let dataPoints = [];
-  if(selectedTrendMetric === 'hrv'){
+  if(selectedTrendMetric === 'restingHR'){
+    dataPoints = entries.filter(e=>e.restingHR!=null).map(e=>({x:e.date, y:+e.restingHR}));
+  } else if(selectedTrendMetric === 'sleepHrs'){
+    dataPoints = entries.filter(e=>e.durationHrs!=null).map(e=>({x:e.date, y:+e.durationHrs}));
+  } else if(selectedTrendMetric === 'hrv'){
     dataPoints = entries.filter(e=>hrvOf(e)!=null).map(e=>({x:e.date, y:hrvOf(e)}));
   } else if(selectedTrendMetric === 'sleepScore'){
     dataPoints = entries.filter(e=>(e.sleepScoreOura ?? e.sleepScoreGarmin)!=null).map(e=>({x:e.date, y:e.sleepScoreOura ?? e.sleepScoreGarmin}));
@@ -40004,6 +39597,8 @@ async function renderTrendChart(){
   renderTrendFlags(aggregated);
 
   const METRIC_COLORS = {
+    restingHR: { line:'#4ec9e8', fill:'rgba(78,201,232,0.15)' },
+    sleepHrs: { line:'var(--block-lime)', fill:'color-mix(in srgb, var(--block-lime) 15%, transparent)' },
     hrv: { line:'#4ec9e8', fill:'rgba(78,201,232,0.15)' },
     // Every other series here is its own colour on purpose. This one was an exact copy of
     // the accent, so it silently kept the old lime when the palette moved — it follows the
