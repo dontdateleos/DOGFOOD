@@ -2819,7 +2819,11 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .injury-part{ font-weight:var(--fw-bold); font-size:var(--fs-md); letter-spacing:-0.02em; -webkit-text-stroke:0.3px currentColor; }
   .injury-meta{ font-family:var(--sans); font-size:var(--fs-tag); color:var(--dim); letter-spacing:-0.005em; -webkit-text-stroke:0.15px currentColor; }
   .injury-note{ font-size:var(--fs-sm); margin-top:6px; color:var(--dim); }
-  .injury-actions{ display:flex; gap:8px; margin-top:10px; }
+  /* Wraps. Six controls in one unbreakable row came to about 596px inside a 310px card, which
+     widened the whole page to 636px: every bottom sheet on the tab then opened below the
+     visible screen, and Mark resolved and Delete were cut off at the right edge. */
+  .injury-actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; min-width:0; }
+  .injury-actions > *{ flex:0 1 auto; min-width:0; }
 
 
   /* THE WEEK BOARD, AS A WEEK. Seven stacked rows read as a list you scan top to bottom; a
@@ -6440,7 +6444,7 @@ if(!window.__pnHold)window.__curtain();
                the mobility test made when its rungs stayed inline. -->
           <div class="goal-pane" id="goalListPane">
             <div class="score-note">Up to 3. One of them leads &mdash; the week is built around that one.</div>
-            <div class="score-note">Leave a target blank and we'll set one from what you've actually been lifting.</div>
+            <div class="score-note">A strength goal's target is set from what you've actually been lifting.</div>
             <div id="goalListRows"></div>
             <div class="add-row" id="addGoalRow">+ add goal</div>
           </div>
@@ -11844,9 +11848,13 @@ async function goToLogSession(date, slot){
    with its chevrons takes about 90, so what fits is a question about PIXELS. A cap of n
    characters answered a different question and the two disagreed — "Lower body accessories"
    came out as "Lower body ac..." with the ellipsis itself then clipped. One mechanism. */
+// The session's own name (Full body, Easy run, Mobility), not the stored tag: the toggle read
+// "full_body · PM" and "run".
 function logSlotLabel(block, slot){
-  const name = block && ((block.details && block.details.workoutTag) || block.type);
-  return name ? String(name).trim() : slot.toUpperCase();
+  if(!block) return slot.toUpperCase();
+  try{ const t = sessionTitle(block); if(t) return String(t).trim(); } catch(e){}
+  const name = (block.details && block.details.workoutTag) || block.type;
+  return name ? String(name).replace(/_/g, ' ').trim() : slot.toUpperCase();
 }
 async function renderLogSlotNames(date){
   const row = document.getElementById('logDateRow');
@@ -11915,6 +11923,10 @@ async function refreshHeaderLogBtn(){
   try{ started = !!(await loggingStartedAt(todayStr)); } catch(e){}
   btn.setAttribute('aria-label', logged ? 'Edit today' + '\u2019' + 's session'
                                 : started ? 'Resume workout' : 'Start workout');
+  // The word says it too: a logged day kept reading "Start", which only the screen reader
+  // knew was wrong.
+  const word = btn.querySelector('.fab-word');
+  if(word) word.textContent = logged ? 'Edit' : started ? 'Resume' : 'Start';
   let armed = false;
   try{
     const found = !logged && !started ? await todaysBlockAnySlot() : null;
@@ -13413,7 +13425,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.011';
+const APP_VERSION = '2026.11.15.012';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13809,6 +13821,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.012': 'Tidying from a hands-on pass. Sheets on the Skills tab open properly again with an injury logged (its buttons now wrap instead of pushing the page sideways). The weight wheel shows 22.5 rather than rounding it to 23. Generate tells you when it can\u2019t build a week instead of saying so out of sight. Your weight chart shows from sign-up, before any check-in. Walk-run sessions show their real length, the session toggle says \u201cFull body\u201d and \u201cEasy run\u201d, the finish card lists every session you did today, and the big button reads Edit once today is logged. Checking in on an injury keeps its first rating and its improving arrow.',
   '2026.11.15.011': 'In the iPhone app the date in the header shows again; it was measuring itself before the phone had said where the camera cutout ends.',
   '2026.11.15.010': 'In the iPhone app the header stays clear of the clock and camera cutout as it shrinks on scroll, not just at the top of the page.',
   '2026.11.15.009': 'Apple Health is the one connection now; Oura is switched off for now. If you wear a ring, let the Oura app write to Apple Health and it still counts. Apple\u2019s HRV keeps its own baseline, so switching from one device to another starts it fresh rather than mixing the two.',
@@ -21741,11 +21754,19 @@ async function renderSessionComplete(){
   let session = null;
   try{ session = JSON.parse((await window.storage.get(`sessionSummary:${todayStr}`)).value); }catch(e){}
   if(!session){ host.innerHTML = ''; return; }
-  const detail = session.type === 'strength'
-    ? `${(session.exercises || []).reduce((n,e)=>n + (e.sets || 0), 0)} sets · ${Math.round(session.totalVolume || 0).toLocaleString()} kg moved`
-    : session.type === 'run' ? `${session.distanceKm || '—'} km · ${session.durationMin || '—'} min`
-    : `${(session.stretches || []).length} movements · ${Math.round((session.totalHoldSeconds || 0) / 60)} min held`;
-  host.innerHTML = `<div class="session-complete"><b>Workout complete</b>${detail}${session.durationMin ? ` · ${session.durationMin} min total` : ''}</div>`;
+  /* Every session done today, not just the latest: after a morning lift and an evening run the
+     card showed only the run. A run's duration is part of its line already, so it is not
+     repeated as "30 min · 30 min total". */
+  let today = [];
+  try{ today = (await getAllTrainingSessions()).filter(x => x.date === todayStr); } catch(e){}
+  if(!today.length) today = [session];
+  today.sort((a, b) => ((a.slot === 'pm') - (b.slot === 'pm')) || ((a.timestamp || 0) - (b.timestamp || 0)));
+  const line = x => x.type === 'strength'
+    ? `${(x.exercises || []).reduce((n,e)=>n + (e.sets || 0), 0)} sets · ${Math.round(x.totalVolume || 0).toLocaleString()} kg moved${x.durationMin ? ` · ${x.durationMin} min` : ''}`
+    : x.type === 'run' ? `${x.distanceKm || '—'} km · ${x.durationMin || '—'} min`
+    : `${(x.stretches || []).length} movements · ${Math.round((x.totalHoldSeconds || 0) / 60)} min held`;
+  const detail = today.map(line).join('<br>');
+  host.innerHTML = `<div class="session-complete"><b>${today.length > 1 ? 'Workouts complete' : 'Workout complete'}</b>${detail}</div>`;
 }
 async function renderWeekGrid(){
   // Surface block position where the week is actually planned. Previously the whole
@@ -23404,7 +23425,7 @@ async function openBlockEditor(date, slot, block){
            the lot — same comma-joined lists underneath either way, sets just a count of them.
            Said once, since it's the one thing about these boxes that isn't self-evident from
            using them. -->
-      <div class="log-hint">Tick a set to log it as shown, and the rest timer starts. Tap a number if it was different.</div>
+      <div class="log-hint">Tick a set to log it as shown, and the rest timer starts. If it was different, tap its numbers instead: changing them logs the set for you.</div>
       <div class="score-note">For weight, choose a load you can control for every planned rep; leave it blank if you are still finding it out.</div>
       <div id="weekExerciseRows"></div><div class="add-row" id="addWeekExerciseRow">Add a lift</div>
       <!-- The run block has always had one. A strength session did not, so "gym was rammed,
@@ -24722,7 +24743,11 @@ async function refreshInjuries(){
       const offset = inj.resolved ? CIRC : CIRC * (1 - Math.min(sev,10)/10);
       let trendArrow = '';
       if(!inj.resolved){
-        const sevYesterday = severityAtDaysAgo(inj.initialSeverity, injDecayDate(inj), inj.halfLife, 1);
+        // Re-rated today: yesterday is what the model said just before the new rating, which
+        // the decay alone cannot know (it starts today), so the direction comes from that.
+        const sevYesterday = (inj.decayFrom === todayStr && inj.prevSeverity != null)
+          ? inj.prevSeverity
+          : severityAtDaysAgo(inj.initialSeverity, injDecayDate(inj), inj.halfLife, 1);
         if(sevYesterday != null && Math.abs(sevYesterday - sev) > 0.05){
           trendArrow = sev < sevYesterday
             ? '<span class="trend-arrow down">▼ improving</span>'
@@ -24757,7 +24782,7 @@ async function refreshInjuries(){
             <div class="mini-gauge-num" style="color:${sevColor};">${inj.resolved ? '✓' : sev.toFixed(1)}</div>
           </div>
           <div style="flex:1;">
-            <div class="injury-meta">onset ${stamp(inj.date)} · half-life ${inj.halfLife}d · initial ${inj.initialSeverity}${inj.type && inj.type!=='general' ? ' · '+inj.type.replace('_',' ') : ''} ${trendArrow}</div>
+            <div class="injury-meta">onset ${stamp(inj.date)} · half-life ${inj.halfLife}d · initial ${inj.onsetSeverity ?? inj.initialSeverity}${inj.type && inj.type!=='general' ? ' · '+inj.type.replace('_',' ') : ''} ${trendArrow}</div>
             ${inj.notes ? `<div class="injury-note">${inj.notes}</div>` : ''}
             ${decay}
           </div>
@@ -24804,6 +24829,10 @@ async function refreshInjuries(){
         if(!(n >= 1 && n <= 10)){ showToast('Rate it 1 to 10 first', true); return; }
         try{
           const inj = JSON.parse((await window.storage.get(`injury:${id}`)).value);
+          // The onset rating is kept for the card's "initial", and where the model stood a moment
+          // ago for its improving/worsening arrow; the new rating restarts the decay.
+          if(inj.onsetSeverity == null) inj.onsetSeverity = inj.initialSeverity;
+          inj.prevSeverity = severityNow(inj.initialSeverity, injDecayDate(inj), inj.halfLife);
           inj.initialSeverity = n;
           inj.decayFrom = todayStr;
           inj.confirmedOn = todayStr;
@@ -26466,7 +26495,9 @@ function warmupAllowanceMin(sessionLength){
 function bracketAllowanceMin(block, sessionLength){
   if(!block) return 0;
   if(block.type === 'strength') return warmupAllowanceMin(sessionLength);
-  if(block.type === 'run') return WORKOUT_TIME_ESTIMATE.running.warmupCooldownMin;
+  // A run prescribed by time (a walk-run) is estimated at that time with no buffer inside it,
+  // so there is nothing to take back out: subtracting 20 turned its 26 minutes into "~6".
+  if(block.type === 'run') return (block.details && block.details.durationMin && !block.details.distanceKm) ? 0 : WORKOUT_TIME_ESTIMATE.running.warmupCooldownMin;
   return 0;
 }
 function estimateSessionDuration(block, personalPace, personalSets, sessionLength){
@@ -27928,7 +27959,7 @@ async function saveGoalsFromForm(resultElId){
     if(!res) throw new Error('save failed');
     const autoSetCount = list.filter(g=>g.autoBenchmarked).length;
     result.textContent = autoSetCount > 0
-      ? `Goals saved. ${autoSetCount} target${autoSetCount>1?'s':''} auto-set from your recent training — check the goal below for details.`
+      ? `Goals saved. ${autoSetCount} target${autoSetCount>1?'s':''} set from your recent training.`
       : 'Goals saved.';
     result.style.color = '';
     showToast('Goals saved');
@@ -28277,7 +28308,10 @@ function openSetWheelPicker({ title, reps, weight, repsValues, weightValues, set
   const repsLabel = v=> wheelRowLabel(v, 0);
   const weightLabel = v=> wheelRowLabel(v, weight.decimals != null ? weight.decimals : 2);
   const weightStep = ()=> isDecimal ? (weight.decimalStep || weight.step || 1) : (weight.step || 1);
-  const weightDecimals = ()=> isDecimal ? (weight.decimals != null ? weight.decimals : 2) : 0;
+  // A step of 2.5 needs one decimal to say so: with none, 22.5 was labelled "23" while the
+  // wheel recorded 22.5. The places come from the step itself (1.25 needs two).
+  const stepPlaces = st => { const t = String(st); return t.includes('.') ? t.split('.')[1].length : 0; };
+  const weightDecimals = ()=> isDecimal ? (weight.decimals != null ? weight.decimals : 2) : stepPlaces(weightStep());
 
   const renderBank = ()=>{
     if(!bankEl) return;
@@ -36330,6 +36364,13 @@ document.getElementById('generateProgramFromGoalsBtn').addEventListener('click',
     result.style.color = '';
   } finally {
     eyesDone();
+    /* Said where you are. The result line lives in a group that is usually folded behind the
+       plan sheet, so "This week is over · plan the next one" was written where nobody could
+       read it and Generate looked like it did nothing. A refusal is toasted when it is hidden. */
+    if(!result.getClientRects().length && result.querySelector('.fault-code')){
+      const note = result.querySelector('.fault-note');
+      showToast((note ? note.textContent : result.textContent).trim(), true);
+    }
   }
 });
 
@@ -39108,6 +39149,8 @@ async function openInjuryCheckSheet(){
         const v = +sc.querySelector('.ic-dot.on').dataset.v;
         try{
           const inj = JSON.parse((await window.storage.get(`injury:${sc.dataset.id}`)).value);
+          if(inj.onsetSeverity == null) inj.onsetSeverity = inj.initialSeverity;
+          inj.prevSeverity = severityNow(inj.initialSeverity, injDecayDate(inj), inj.halfLife);
           inj.initialSeverity = v; inj.decayFrom = todayStr; inj.confirmedOn = todayStr;
           await window.storage.set(`injury:${sc.dataset.id}`, JSON.stringify(inj));
         }catch(err){ console.error(err); }
@@ -39845,8 +39888,11 @@ function renderTrendFlags(points){
 // comparison, not a statistical model — deliberately readable, not overfit to noisy data.
 async function renderTrendChart(){
   const res = await window.storage.list('entry:');
-  if(!res||!res.keys||res.keys.length===0) return;
-  const dates = res.keys.map(k=>k.replace('entry:','')).sort();
+  // Weight and body fat come from bodymetrics:, not from morning entries, so having no
+  // check-in yet is no reason to draw nothing: the weight entered at sign-up never showed.
+  const bodyMetric = selectedTrendMetric === 'weight' || selectedTrendMetric === 'bodyFat';
+  if(!bodyMetric && (!res||!res.keys||res.keys.length===0)) return;
+  const dates = ((res && res.keys) || []).map(k=>k.replace('entry:','')).sort();
   const entries = [];
   for(const d of dates){
     try{ const r = await window.storage.get(keyFor(d)); entries.push(JSON.parse(r.value)); } catch(e){}
