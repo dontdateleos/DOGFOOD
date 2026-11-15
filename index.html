@@ -13402,7 +13402,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.003';
+const APP_VERSION = '2026.11.15.004';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13798,6 +13798,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.004': 'A fairer readiness score. If you log without a wearable, your score is no longer shrunk for sensors you do not have, and logging just your sleep is enough to get one. New lifters no longer see a false \u201cload climbing\u201d warning for their first month. Last night means last night: an old drink or an old night\u2019s sleep no longer stands in for today\u2019s. The sleep debt you see is the same one the score uses. Apple Health numbers come in as numbers, and with a ring connected Apple\u2019s HRV is kept separate from Oura\u2019s. The learning engine judges each past session by its own night, and a very steady resting heart rate no longer hides an illness warning.',
   '2026.11.15.003': 'Progression you can trust. \u201cLast time\u201d is the session you last trained, even when you log an older one late. Upper-body steps are a true +1.25 kg. Bodyweight lifts like pull-ups now progress by reps. Saving a session exactly as it was filled in no longer counts as a stall. Deload weeks hold the weight instead of suggesting more, a week off counts as rest, old deload weeks are cleared when you change your block length, the week back from a deload is cut once rather than session after session, and planning ahead from a deload week no longer shrinks the weeks after it. Runners who lift now earn their volume steps too.',
   '2026.11.15.002': 'Fixes that protect your data and your joints. Saving your morning check-in no longer wipes what your ring synced that day, and a second run or mobility session on the same day no longer overwrites the first. Saving a planned run keeps its walk-run or interval instructions. An injury flagged on squatting now also keeps lunges, split squats and step-ups out, and nothing slips through in rehab work, run-day accessories, finishers or metcons. Generating several weeks on a Sunday now builds the weeks ahead instead of nothing. Dates hold steady across clock changes and time zones, so today\u2019s check-in always counts and deload weeks land where they should. Your HRV baseline no longer resets itself.',
   '2026.11.15.001': 'Mobility works the way it says it does now. A skill only moves up once you have done the work at its new level, not on the strength of the last one. Sessions stay inside their time and inside the 10 minutes a week each area can use, and two goals on the same muscle share its time instead of doubling it. Pancake, Front Splits and Bridge now prepare every area they actually need. Your most restricted areas come first, unrated ones still get work, shoulder work counts for your shoulders, and foam rolling no longer counts as stretching. Post-run sessions vary, include calves, and skip Nordics after a hard run. Bodyweight-only weeks no longer slip in rings, bars or weights.',
@@ -14253,10 +14254,24 @@ async function syncPendingAppleHealthData(){
       }
     }
 
+    /* Apple's HRV is SDNN; Oura's is RMSSD. They are different statistics on different
+       scales, and the Shortcut sends Apple's under the hrvOura name, so with a ring connected
+       it was mixed straight into the Oura baseline. With Oura connected it is kept apart as
+       hrvApple; without one it is the only HRV there is and stays where the score reads it. */
+    let ouraOn = false;
+    try{ ouraOn = !!JSON.parse((await window.storage.get('oura:tokens')).value); } catch(e){}
     for(const date of Object.keys(byDate)){
       let existing = {};
       try{ const r = await window.storage.get(keyFor(date)); existing = JSON.parse(r.value); } catch(e){}
-      const { unmatched, ...mapped } = byDate[date];
+      const { unmatched, ...mappedRaw } = byDate[date];
+      // Numbers as numbers: a Shortcut can send "58" as text, and a string in the series
+      // turned the resting-HR mean into 2979.5 and the z-score into NaN.
+      const mapped = {};
+      Object.entries(mappedRaw).forEach(([k, v]) => {
+        const n = typeof v === 'string' && k !== 'wakeTimeOura' ? Number(v) : v;
+        if(typeof n === 'number' && !isFinite(n)) return;
+        mapped[k === 'hrvOura' && ouraOn ? 'hrvApple' : k] = n;
+      });
       const updated = { ...existing, date, ...mapped };
       if(unmatched.length) updated.appleHealthUnmatched = [...(existing.appleHealthUnmatched||[]), ...unmatched];
       await window.storage.set(keyFor(date), JSON.stringify(updated));
@@ -15746,7 +15761,8 @@ async function readEntryRaw(date){
   _entryRaw.set(date, raw);
   return raw;
 }
-function invalidateSignalWindows(){ _sigWindowCache.clear(); _entryRaw.clear(); }
+// The learned weights read the same entries, so their minute-long cache goes with them.
+function invalidateSignalWindows(){ _sigWindowCache.clear(); _entryRaw.clear(); try{ _learnedCache = null; }catch(e){} }
 async function buildSignalWindow(asOfDate, days){
   const span = days || SIG_BASE_DAYS;
   const cacheKey = `${asOfDate}|${span}`;
@@ -16104,7 +16120,9 @@ async function learnWeights(asOfDate){
 
   // The components as they stood on the session's own morning — the predictor end.
   const keys = Object.keys(SR_WEIGHTS);
-  const paired = outcomes.map(o=>({ y:o.y, parts: srComponentsAt(win, o.i, debtZ) }));
+  // Each session against its own day's sleep debt. Today's debt for every past session made
+  // the input constant, its correlation zero, and the weight shrink however good the evidence.
+  const paired = outcomes.map(o=>({ y:o.y, parts: srComponentsAt(win, o.i, sleepDebtZ(win, o.i)) }));
   if(paired.length < LEARN_MIN_SESSIONS){
     _learnedCache = { date, at:Date.now(), value:null };
     return null;
@@ -16949,7 +16967,12 @@ async function computeLoad(asOfDate){
     const chronic = ewmaSeries(vals, LOAD_TAU_CHRONIC);
     const delta = acute.map((v, i)=> v - chronic[i]);
     // Flagged against your own year of deltas, not a universal threshold.
-    const hist = delta.slice(0, delta.length - 1).filter(v=>isFinite(v));
+    /* Only the days since you started. The year is padded with zeros from before your first
+       session, so the history always held 364 days and the "60 days" guard never held: the
+       cut-off came out at 0 and steady training was flagged as climbing load for about the
+       first month, and again on the way back from a long break. */
+    const firstActive = vals.findIndex(v => v > 0);
+    const hist = delta.slice(Math.max(0, firstActive), delta.length - 1).filter(v=>isFinite(v));
     const sorted = [...hist].sort((a,b)=>a-b);
     const cut = sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(LOAD_FLAG_PCTL * sorted.length))] : null;
     const now = delta[delta.length - 1];
@@ -17089,30 +17112,36 @@ function cusumAlarms(series, mu, sigma){
   });
   return out;
 }
+/* A spread of at least this much in each channel's own units. A very steady resting HR can
+   have a MAD of zero, and a zero spread made the CUSUM silently never alarm on that channel. */
+const ILLNESS_SIGMA_FLOOR = { rhr: 1, hrv: 0.03, resp: 0.3, temp: 0.05 };
+const radarSigma = (obs, floor) => Math.max(madSigma(obs) || 0, floor);
 function illnessRadar(win){
   const ch = [];
   // Resting HR rising is the strongest single channel: +7 bpm median, detected 3-4 days
   // before symptoms in the published cohorts.
   const rhr = win.entries.map(e=> e && e.restingHR != null ? e.restingHR : null);
   const rhrObs = rhr.filter((v,i)=> v != null && !win.baselineMask[i]);
-  if(rhrObs.length >= 10) ch.push({ name:'resting HR', alarms: cusumAlarms(rhr, medianOf(rhrObs), madSigma(rhrObs)) });
+  if(rhrObs.length >= 10) ch.push({ name:'resting HR', alarms: cusumAlarms(rhr, medianOf(rhrObs), radarSigma(rhrObs, ILLNESS_SIGMA_FLOOR.rhr)) });
   // HRV falling, so the sign is flipped to make a fall an excursion upward.
   const hrvRaw = win.entries.map((e, i)=>{
     if(!e || !win.hrvSource) return null;
+    // Only since this device's readings began, as the score reads them.
+    if(win.hrvSourceSince && win.dates[i] < win.hrvSourceSince) return null;
     const v = e[win.hrvSource];
     return v == null ? null : -Math.log(v);
   });
   const hrvObs = hrvRaw.filter((v,i)=> v != null && !win.baselineMask[i]);
-  if(hrvObs.length >= 10) ch.push({ name:'HRV', alarms: cusumAlarms(hrvRaw, medianOf(hrvObs), madSigma(hrvObs)) });
+  if(hrvObs.length >= 10) ch.push({ name:'HRV', alarms: cusumAlarms(hrvRaw, medianOf(hrvObs), radarSigma(hrvObs, ILLNESS_SIGMA_FLOOR.hrv)) });
   // Respiratory rate and skin temperature, both rising. These are what the published work
   // actually used — NightSignal and TemPredict are built on temperature and heart rate — so
   // with all four this is the design they validated rather than a two-channel approximation
   // of it. Both come from the Oura sync and needed no new input.
-  [['respiratory rate', e=>e.respiratoryRate], ['skin temperature', e=>e.temperatureDeviation]]
-    .forEach(([name, get])=>{
+  [['respiratory rate', e=>e.respiratoryRate, ILLNESS_SIGMA_FLOOR.resp], ['skin temperature', e=>e.temperatureDeviation, ILLNESS_SIGMA_FLOOR.temp]]
+    .forEach(([name, get, floor])=>{
       const raw = win.entries.map(e=> e ? (get(e) ?? null) : null);
       const obs = raw.filter((v,i)=> v != null && !win.baselineMask[i]);
-      if(obs.length >= 10) ch.push({ name, alarms: cusumAlarms(raw, medianOf(obs), madSigma(obs)) });
+      if(obs.length >= 10) ch.push({ name, alarms: cusumAlarms(raw, medianOf(obs), radarSigma(obs, floor)) });
     });
   if(ch.length < ILLNESS_MIN_CHANNELS) return { available:false, firing:false };
 
@@ -17161,7 +17190,9 @@ function chronotypeIndex(wakeMedianMin){
 function circadianTerm(win, now){
   const idx = chronotypeIndex(win.wakeMedianMin);
   if(idx == null) return { z:null, available:false };
-  const todayWake = [...win.wakeMinutes].reverse().find(v=>v != null);
+  // Today's wake time only. The latest one in the window could be days old, and timing
+  // "your strongest window" from Monday's wake-up on Thursday is a guess dressed as a reading.
+  const todayWake = win.wakeMinutes[win.wakeMinutes.length - 1];
   if(todayWake == null) return { z:null, available:false };
   const nowMin = now.getHours() * 60 + now.getMinutes();
   let sinceWake = (nowMin - todayWake) / 60;
@@ -17182,7 +17213,10 @@ async function computeCognitiveReadiness(asOfDate, now){
   const circ  = circadianTerm(win, now || new Date());
   const parts = {
     sleepDebt:      debtZ.available ? debtZ.z : null,
-    sleepLastNight: win.channels.sleep.available ? win.channels.sleep.zAcute : null,
+    // Last night means last night: today's reading, or nothing. zAcute is the latest reading
+    // in the window however old, so a night logged on Monday stood in for Thursday's.
+    sleepLastNight: win.channels.sleep.available && win.channels.sleep.zAcuteSeries
+      ? (win.channels.sleep.zAcuteSeries[win.channels.sleep.zAcuteSeries.length - 1] ?? null) : null,
     regularity:     win.channels.regularity.available ? win.channels.regularity.z : null,
     circadian:      circ.available ? circ.z : null
   };
@@ -17193,7 +17227,9 @@ async function computeCognitiveReadiness(asOfDate, now){
     present += CR_WEIGHTS[k];
   });
   if(!present) return { available:false, parts, circadian:circ };
-  const lastEntry = [...win.entries].reverse().find(Boolean);
+  // Today's entry, the one that says what last night was. A drink logged on Monday, with
+  // nothing since, went on costing the score on Thursday and saying "last night's drink".
+  const lastEntry = win.entries[win.entries.length - 1];
   const drink = lastEntry && lastEntry.alcohol != null ? +lastEntry.alcohol : 0;
   const alcoholPenalty = CR_ALCOHOL_PENALTY[drink] || 0;
   sum -= alcoholPenalty;
@@ -17287,12 +17323,18 @@ async function computeTissueReadiness(asOfDate){
   // Personal capacity per group: the 90th percentile of what that group has actually carried
   // over the window. A fixed constant would mean the same number for a beginner's chest and a
   // powerlifter's, which is the mistake the whole app is built to avoid.
-  const daily = {};
+  const daily = {}, loadedDays = {};
   for(let d = TR_WINDOW_DAYS - 1; d >= 0; d--){
     const dt = localDateFrom(date); dt.setDate(dt.getDate() - d);
     const ds = localDateStr(dt);
     const day = tissueDamage(sessions, ds).damage;
-    Object.keys(day).forEach(a=>{ (daily[a] = daily[a] || []).push(day[a]); });
+    Object.keys(day).forEach(a=>{
+      const arr = (daily[a] = daily[a] || []);
+      // A day the group was trained is a day its damage went UP. Counting every day with
+      // damage left over let one session five days ago pass the check below by itself.
+      if(day[a] > (arr.length ? arr[arr.length - 1] : 0) + 1e-9) loadedDays[a] = (loadedDays[a] || 0) + 1;
+      arr.push(day[a]);
+    });
   }
   const pctl = (arr, q)=>{
     if(!arr.length) return null;
@@ -17312,7 +17354,7 @@ async function computeTissueReadiness(asOfDate){
     // did, so the ratio self-normalises and every group reads the same middling number
     // however hard the work was. Below this there is no distribution to place today in, and
     // saying nothing is better than saying 37 to everyone.
-    if(hist.length < TR_MIN_LOADED_DAYS) return;
+    if((loadedDays[a] || 0) < TR_MIN_LOADED_DAYS) return;
     const cap = pctl(hist, TR_CAPACITY_PCTL);
     if(!cap || cap <= 0) return;
     const tr = 100 * Math.exp(-damage[a] / cap);
@@ -17461,10 +17503,13 @@ const SR_MIN_MATURITY     = 0.30;
 /* Van Dongen: 14 nights at 6h is roughly equivalent to one to two nights of total
    deprivation, and there is no adaptation. Debt accrues faster than it repays, so a surplus
    night pays back at half rate. Returned as a z-like number so it can join the others. */
-function sleepDebtZ(win){
+// `i` reads the debt as it stood on that day of the window (the last day when omitted), so
+// the learning engine pairs each past session with its own night's debt, not today's.
+function sleepDebtZ(win, i){
   const TARGET = 8, REPAY = 0.5;
   let debt = 0, n = 0;
-  win.entries.slice(-14).forEach(e=>{
+  const end = i == null ? win.entries.length : i + 1;
+  win.entries.slice(Math.max(0, end - 14), end).forEach(e=>{
     if(!e || e.durationHrs == null) return;
     n++;
     const d = TARGET - e.durationHrs;
@@ -17484,7 +17529,7 @@ function srComponentsAt(win, i, debtZ){
     const arr = ch[series];
     return arr ? arr[last] : null;
   };
-  const saturated = hrvSaturated(win);
+  const saturated = hrvSaturated(win, last);
   return {
     /* Acute, not the smoothed series: this is a question about the last few days, and an
        EWMA of it would sit on its own median and never say anything. The decay across three
@@ -17605,12 +17650,9 @@ async function computeSystemicReadiness(asOfDate){
      quietly gave that sensor double the say in this average; splitting rhr the same way in
      .523 would have done it again. Deduped, so each channel counts once however many ways the
      weights read it. */
-  const chans = [...new Set(Object.keys(SR_WEIGHTS)
-    .map(k=> k === 'hrvTrend' || k === 'hrvAcute' ? win.channels.hrv
+  const chanFor = k => k === 'hrvTrend' || k === 'hrvAcute' ? win.channels.hrv
            : k === 'rhrTrend' || k === 'rhrAcute' ? win.channels.rhr
-           : k === 'sleepDebt' ? null : win.channels[k])
-    .filter(Boolean))];
-  const maturity = chans.length ? chans.reduce((a,c)=>a + (c.M||0), 0) / chans.length : 0;
+           : k === 'sleepDebt' ? null : win.channels[k];
 
   // Learned weights where they exist, priors otherwise.
   let learned = null;
@@ -17620,16 +17662,23 @@ async function computeSystemicReadiness(asOfDate){
   /* Every day's components once, because the budget has to be read off the whole window
      before any day can be scored against it — and the series below needs the same objects, so
      computing them twice would be two chances to disagree about what this user measures. */
-  const partsSeries = win.dates.map((d, i)=> win.entries[i] ? srComponentsAt(win, i, debtZ) : null);
+  const partsSeries = win.dates.map((d, i)=> win.entries[i] ? srComponentsAt(win, i, i === win.dates.length - 1 ? debtZ : sleepDebtZ(win, i)) : null);
   const partsToday = partsSeries[partsSeries.length - 1] || srComponentsAt(win, win.dates.length - 1, debtZ);
   /* This user's instrument set, derived from what the window actually produced rather than
      from a hand-written map of channel to sensor — the same srComponentsAt the score reads,
      so the two cannot drift. A channel that never once returned a number in the window is one
      this user does not have; it leaves the budget instead of docking the score forever. */
   let srBudget = 0;
+  const measured = [];
   Object.keys(SR_WEIGHTS).forEach(k=>{
-    if(partsSeries.some(p=> p && p[k] != null && !isNaN(p[k]))) srBudget += SR_WEIGHTS[k];
+    if(partsSeries.some(p=> p && p[k] != null && !isNaN(p[k]))){ srBudget += SR_WEIGHTS[k]; measured.push(k); }
   });
+  /* Over the instruments this user HAS, the same set the budget uses. It averaged over every
+     channel including HRV and resting HR read as 0 for someone without a wearable, so a
+     phone-only score was shrunk by a third for good, and logging only sleep sat under the
+     0.30 gate and never produced a score. */
+  const chans = [...new Set(measured.map(chanFor).filter(Boolean))];
+  const maturity = chans.length ? chans.reduce((a,c)=>a + (c.M||0), 0) / chans.length : 0;
   const today = srRawFrom(partsToday, maturity, W, srBudget);
   // Walk back while the form level has stayed above the bar. Breaks on the first day it did
   // not, or on the first day there was not enough training history to say.
@@ -17843,15 +17892,20 @@ function baselineShift(win){
    Le Meur showed overreached endurance athletes with INCREASED vagal indices and decreased
    performance. So high HRV on its own is not evidence of freshness. Require rMSSD and
    resting HR to agree in direction before a high reading is allowed to count as good. */
-function hrvSaturated(win){
+// As of day `i` of the window (today when omitted). Read for today only, every historical
+// day in the learning engine inherited today's verdict, and a saturated today zeroed the HRV
+// input on every past session it learned from.
+function hrvSaturated(win, i){
   const h = win.channels.hrv, r = win.channels.rhr;
   if(!h.available || !r.available) return false;
   if(win.rhrBaseline == null || win.rhrBaseline >= 45) return false;
+  const end = i == null ? win.entries.length : i + 1;
   // rhr's z is already two-sided and negative-going, so read the raw direction instead.
-  const lastRhr = [...win.entries].reverse().find(e=>e && e.restingHR != null);
+  const lastRhr = win.entries.slice(0, end).reverse().find(e=>e && e.restingHR != null);
   if(!lastRhr) return false;
   const rhrLow = lastRhr.restingHR <= win.rhrBaseline;
-  return h.z >= 1 && !rhrLow;
+  const hz = i == null ? h.z : (h.zSeries ? h.zSeries[i] : null);
+  return hz != null && hz >= 1 && !rhrLow;
 }
 
 /* ---------- POWER IS NOT TONNAGE ----------
@@ -18127,24 +18181,31 @@ function computeCapacityFromValues(pairs, todayVals){
 /* Hours owed against an 8h target across the last fourteen logged nights. Split out of
    computeSleepDebt because the mark now reads it too, and two copies of a number this
    visible would eventually disagree — the readout saying one thing and the eyes another. */
+/* THE SAME DEBT THE SCORE USES. This read the last fourteen LOGGED nights with no credit for
+   a long one, while the score (sleepDebtZ) reads the last fourteen calendar days and pays a
+   surplus night back at half rate, so the number on screen and the number in the score could
+   disagree by hours. Now it is the score's own figure, never shown below zero. */
 async function sleepDebtHours(asOf){
   try{
-    const res = await window.storage.list('entry:');
-    if(!res || !res.keys) return null;
-    const dates = res.keys.map(k=>k.replace('entry:','')).filter(d=>d <= asOf).sort().reverse().slice(0,14);
+    const TARGET = 8, REPAY = 0.5;
     let debt = 0, n = 0;
-    for(const d of dates){
-      const e = JSON.parse((await window.storage.get(keyFor(d))).value);
-      if(e.durationHrs != null){ debt += Math.max(0, 8 - e.durationHrs); n++; }
+    for(let i = 13; i >= 0; i--){
+      const d = shiftDateStr(asOf, -i);
+      let e = null;
+      try{ e = JSON.parse((await window.storage.get(keyFor(d))).value); } catch(err){}
+      if(!e || e.durationHrs == null) continue;
+      n++;
+      const short = TARGET - e.durationHrs;
+      debt += short > 0 ? short : short * REPAY;
     }
-    return n ? { debt, nights:n } : null;
+    return n ? { debt: Math.max(0, debt), nights:n } : null;
   } catch(e){ return null; }
 }
 async function computeSleepDebt(){
   const out = document.getElementById('sleepDebtOut');
   const r = await sleepDebtHours(dateInput.value);
   out.innerHTML = r
-    ? `Sleep debt: <b>${r.debt.toFixed(1)}h</b> over trailing ${r.nights} logged nights (vs 8hr/night target)`
+    ? `Sleep debt: <b>${r.debt.toFixed(1)}h</b> over the last 14 days, ${r.nights} night${r.nights===1?'':'s'} logged (vs 8hr/night target)`
     : 'Sleep debt: —';
 }
 
