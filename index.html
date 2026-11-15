@@ -13402,7 +13402,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.002';
+const APP_VERSION = '2026.11.15.003';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13798,6 +13798,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.003': 'Progression you can trust. \u201cLast time\u201d is the session you last trained, even when you log an older one late. Upper-body steps are a true +1.25 kg. Bodyweight lifts like pull-ups now progress by reps. Saving a session exactly as it was filled in no longer counts as a stall. Deload weeks hold the weight instead of suggesting more, a week off counts as rest, old deload weeks are cleared when you change your block length, the week back from a deload is cut once rather than session after session, and planning ahead from a deload week no longer shrinks the weeks after it. Runners who lift now earn their volume steps too.',
   '2026.11.15.002': 'Fixes that protect your data and your joints. Saving your morning check-in no longer wipes what your ring synced that day, and a second run or mobility session on the same day no longer overwrites the first. Saving a planned run keeps its walk-run or interval instructions. An injury flagged on squatting now also keeps lunges, split squats and step-ups out, and nothing slips through in rehab work, run-day accessories, finishers or metcons. Generating several weeks on a Sunday now builds the weeks ahead instead of nothing. Dates hold steady across clock changes and time zones, so today\u2019s check-in always counts and deload weeks land where they should. Your HRV baseline no longer resets itself.',
   '2026.11.15.001': 'Mobility works the way it says it does now. A skill only moves up once you have done the work at its new level, not on the strength of the last one. Sessions stay inside their time and inside the 10 minutes a week each area can use, and two goals on the same muscle share its time instead of doubling it. Pancake, Front Splits and Bridge now prepare every area they actually need. Your most restricted areas come first, unrated ones still get work, shoulder work counts for your shoulders, and foam rolling no longer counts as stretching. Post-run sessions vary, include calves, and skip Nordics after a hard run. Bodyweight-only weeks no longer slip in rings, bars or weights.',
   '2026.11.12.001': 'The little red dot after Dogfood is just a dot now, no eyes, and it sits a touch closer to the D.',
@@ -20620,6 +20621,7 @@ async function extractBlockLines(block){
       try{
         const progression = await suggestProgression(ex, focusInfo);
         if(progression.weight != null) weightLabel = `${progression.weight}kg`;
+        else if(progression.bodyweight) weightLabel = 'BW';
       } catch(e){}
       out.push({ name: ex.name, dose: `${sets}×${repsLabel} @ ${weightLabel}`, lift: exIdx });
     }
@@ -21692,7 +21694,7 @@ async function dealPlanThroughWeek(newDates){
 document.getElementById('deloadWeekCheckbox').addEventListener('change', async (e)=>{
   const weekStart = getWeekDates()[0];
   try{
-    await window.storage.set(`weekmeta:${weekStart}`, JSON.stringify({ deload: e.target.checked }));
+    await window.storage.set(`weekmeta:${weekStart}`, JSON.stringify({ deload: e.target.checked, manual: true }));
     // From week 3 on, a deload ends the block (see endBlockAtThisWeek).
     let ended = false;
     try{ ended = await endBlockAtThisWeek(e.target.checked); } catch(err){}
@@ -22672,7 +22674,12 @@ async function loadExerciseHistory(beforeDate){
   try{ sessions = await getAllTrainingSessions(); } catch(e){ return; }
   sessions
     .filter(sn => sn.type === 'strength' && sn.date < beforeDate)
-    .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))   // later writes overwrite earlier
+    // Training order, so later sessions overwrite earlier. By write time it was the session
+    // you logged last, not the one you trained last: back-logging Monday on Thursday made
+    // Monday's 100 kg "last time" over Wednesday's 110.
+    .sort((a, b) => String(a.date).localeCompare(String(b.date))
+      || ((a.slot === 'pm') - (b.slot === 'pm'))
+      || ((a.timestamp || 0) - (b.timestamp || 0)))
     .forEach(sn => (sn.exercises || []).forEach(ex => {
       const k = exHistKey(ex.name);
       if(!k) return;
@@ -23725,6 +23732,10 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
           movement = movement || guess.movement || '';
         }
         const repsRaw = row.querySelector('.week-ex-reps').value;
+        // Saved exactly as the sheet filled it in. The prefill is the bottom of the rep range,
+        // so three untouched saves read as three sessions short of the top and tripped a stall
+        // reset; progression reads this and does not count such a session as a miss.
+        const repsPrefilled = !!row.querySelector('.week-ex-reps').dataset.planned;
         const { reps, repsPerSet } = parseRepsInput(repsRaw);
         const setsRaw = row.querySelector('.week-ex-sets').value;
         const weightRaw = row.querySelector('.week-ex-weight').value;
@@ -23770,7 +23781,7 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         // from the AMRAP result instead of treating it as a normal set (which would read
         // as a large rep surplus and double-increment the load).
         const toFailure = !!row.querySelector('.week-ex-fail')?.classList.contains('on');
-        exercises.push({ name, sets, reps, repsPerSet, effort, weight, weightPerSet, area, secondaryArea, movement, volume, primaryVolume, secondaryVolume, exerciseId, toFailure, wasReintroSet: _isReintroWeekLog, ...(resultUnit ? { result, resultUnit } : {}) });
+        exercises.push({ ...(repsPrefilled ? { repsPrefilled: true } : {}), name, sets, reps, repsPerSet, effort, weight, weightPerSet, area, secondaryArea, movement, volume, primaryVolume, secondaryVolume, exerciseId, toFailure, wasReintroSet: _isReintroWeekLog, ...(resultUnit ? { result, resultUnit } : {}) });
         totalVolume += volume;
       });
       if(!anyPerformanceEntered){
@@ -25051,7 +25062,7 @@ async function logRecDecision(type, meta, decision, card, title){
     }
     if(type==='deload_suggest' && decision==='accepted'){
       const weekDates = getWeekDates();
-      await window.storage.set(`weekmeta:${weekDates[0]}`, JSON.stringify({ deload: true }));
+      await window.storage.set(`weekmeta:${weekDates[0]}`, JSON.stringify({ deload: true, manual: true }));
       const checkbox = document.getElementById('deloadWeekCheckbox');
       if(checkbox) checkbox.checked = true;
       try{ if(await endBlockAtThisWeek(true)) renderWeekGrid(); } catch(e){}
@@ -32180,7 +32191,7 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
       volumeWaveNote = getVolumeWaveNote(_pos.weekInBlock, _isDeload, _pos.length);
     }
     if(_isDeload){
-      try{ await window.storage.set(`weekmeta:${_dates[0]}`, JSON.stringify({ deload: true })); } catch(e){}
+      try{ await window.storage.set(`weekmeta:${_dates[0]}`, JSON.stringify({ deload: true, auto: true })); } catch(e){}
     }
   }
   const includeStrength = options.includeStrength !== false;
@@ -34193,10 +34204,10 @@ async function getBlockProgressionFactor(blocksCompleted, blockLengthWeeks){
   try{
     const sessions = await getAllTrainingSessions();
     // Window = the block just finished.
-    const end = new Date(getWeekStartFor(todayStr));
+    const end = localDateFrom(getWeekStartFor(todayStr));
     const start = new Date(end); start.setDate(start.getDate() - blockLengthWeeks*7);
     const inBlock = sessions.filter(s=>{
-      const d = new Date(s.date);
+      const d = localDateFrom(s.date);
       return d >= start && d < end && s.type === 'strength';
     });
     // Not enough logged data to judge — hold rather than guess in either direction.
@@ -34217,10 +34228,22 @@ async function getBlockProgressionFactor(blocksCompleted, blockLengthWeeks){
     });
     const grindRate = scored ? nearFailure / scored : 0;
 
+    /* Against the LIFTING that was planned, not every day you can train. A hybrid week of
+       three lifts and two runs, all done, scored 3/5 = 0.6 here, so a runner who also lifts
+       never earned a volume step however consistent they were. The block's own plan is
+       counted where it still exists; available days are the fallback when it does not. */
+    let plannedStrength = 0;
+    const startStr = localDateStr(start);
+    for(let i = 0; i < blockLengthWeeks*7; i++){
+      const d = shiftDateStr(startStr, i);
+      for(const slot of ['am','pm']){
+        try{ if(JSON.parse((await window.storage.get(`weekplan:${d}:${slot}`)).value).type === 'strength') plannedStrength++; } catch(e){}
+      }
+    }
     let setup = null;
     try{ setup = JSON.parse((await window.storage.get('settings:trainingSetup')).value); } catch(e){}
     const plannedPerWeek = (setup && setup.availableDays) ? setup.availableDays.length : 4;
-    const adherence = inBlock.length / Math.max(1, plannedPerWeek * blockLengthWeeks);
+    const adherence = inBlock.length / Math.max(1, plannedStrength || plannedPerWeek * blockLengthWeeks);
 
     // Missed a lot of the block — the limiter is consistency, not volume. Hold.
     if(adherence < 0.6) return 1;
@@ -34491,7 +34514,7 @@ async function pullDeloadForward(pos, newLength, why){
     undo.push({ key, value: await readRaw(key) });
   }
   await saveBlockConfig({ early: { ...(cfg.early || {}), [pos.start]: newLength } });
-  await window.storage.set(`weekmeta:${newDeload}`, JSON.stringify({ deload: true }));
+  await window.storage.set(`weekmeta:${newDeload}`, JSON.stringify({ deload: true, pulled: true }));
   try{
     const m = JSON.parse(await readRaw(`weekmeta:${oldDeload}`));
     if(m && m.deload) await window.storage.set(`weekmeta:${oldDeload}`, JSON.stringify({ ...m, deload: false }));
@@ -34596,7 +34619,7 @@ async function endBlockAtThisWeek(on){
   delete log[pos.start];
   await window.storage.set(EARLY_DELOAD_KEY, JSON.stringify(log));
   const back = await getBlockPosition(todayStr);
-  await window.storage.set(`weekmeta:${shiftDateStr(back.start, (back.length - 1) * 7)}`, JSON.stringify({ deload: true }));
+  await window.storage.set(`weekmeta:${shiftDateStr(back.start, (back.length - 1) * 7)}`, JSON.stringify({ deload: true, auto: true }));
   // Next week on had been rebuilt as a new block; rebuilt again as the rest of this one.
   await rebuildPlannedWeeksFrom(1);
   return true;
@@ -35739,7 +35762,21 @@ async function generateMultiWeekProgram(numWeeks, splitOverride, options){
     const isDeload = isDeloadPosition(weekNum, pos.length);
 
     if(isDeload){
-      try{ await window.storage.set(`weekmeta:${weekDates[0]}`, JSON.stringify({ deload: true })); } catch(e){}
+      try{ await window.storage.set(`weekmeta:${weekDates[0]}`, JSON.stringify({ deload: true, auto: true })); } catch(e){}
+    } else {
+      /* A WEEK THAT IS NOT A DELOAD NOW SAYS SO. Only `deload:true` was ever written, so
+         changing the block length and regenerating left the old flags behind: 8 weeks of
+         4-week blocks regenerated as 6-week blocks kept deloads at weeks 4 and 8 as well as
+         the new one, three in eight weeks. A flag this generator wrote (auto) is cleared, and
+         so is an unmarked one on a week still ahead; a deload you ticked or accepted for a
+         week (manual, or pulled forward) is yours and stays. */
+      try{
+        const m = JSON.parse((await window.storage.get(`weekmeta:${weekDates[0]}`)).value);
+        const ahead = weekDates[0] > getWeekStartFor(todayStr);
+        if(m && m.deload && !m.manual && !m.pulled && (m.auto || ahead)){
+          await window.storage.set(`weekmeta:${weekDates[0]}`, JSON.stringify({ ...m, deload: false }));
+        }
+      } catch(e){}
     }
 
     const volumeWaveNote = getVolumeWaveNote(weekNum, isDeload, pos.length);
@@ -36351,7 +36388,9 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
   // getBlockPhase returns null on a deload week rather than a phase name, so resolve it
   // here — a deload should hold every area at maintenance, not silently fall through to
   // the accumulation default.
-  const isDeloadThisWeek = await isDeloadWeek(todayStr);
+  // The week being generated, not this one: generating ahead during a deload week gave every
+  // future week maintenance volume (next week's six sessions fell from 116 sets to 98).
+  const isDeloadThisWeek = blockPhase === 'deload' || await isDeloadWeek((forcedDates && forcedDates[0]) || todayStr);
   const effectiveBlockPhase = isDeloadThisWeek ? 'deload' : (blockPhase || 'accumulation');
   function creditSets(ex, sets){
     if(ex.skippedForInjury) return;
@@ -37421,8 +37460,11 @@ async function checkDeloadDue(){
   if(activeWeeks.length < 5) return null; // not enough history to judge
 
   let deloadFound = false;
+  // A week with no lifting after a week with some is the deepest deload there is; it used
+  // to be skipped (both weeks had to be above zero), so "consider a deload" could appear the
+  // week after a week off.
   for(let i=1; i<=6; i++){
-    if(weeklyTotals[i] > 0 && weeklyTotals[i+1] > 0){
+    if(weeklyTotals[i+1] > 0){
       const drop = (weeklyTotals[i+1]-weeklyTotals[i])/weeklyTotals[i+1];
       if(drop >= 0.3){ deloadFound = true; break; }
     }
@@ -37482,7 +37524,10 @@ async function getTodaysBlockForType(type){
 async function getLoggedHistoryForExercise(exerciseId, name, limit){
   const sessions = await getAllTrainingSessions();
   const out = [];
-  sessions.filter(s=>s.type==='strength').sort((a,b)=>(b.timestamp||0)-(a.timestamp||0)).forEach(s=>{
+  // Most recently TRAINED first, by date, then evening before morning, then write time. By
+  // write time alone a session back-logged today became "last time" over a later one.
+  sessions.filter(s=>s.type==='strength').sort((a,b)=> String(b.date).localeCompare(String(a.date))
+      || ((b.slot === 'pm') - (a.slot === 'pm')) || ((b.timestamp||0)-(a.timestamp||0))).forEach(s=>{
     if(out.length >= (limit||3)) return;
     const match = (s.exercises||[]).find(e => (exerciseId && e.exerciseId===exerciseId) || (!exerciseId && e.name===name));
     if(match) out.push({ ...match, date: s.date, timestamp: s.timestamp });
@@ -37501,6 +37546,9 @@ async function getLoggedHistoryForExercise(exerciseId, name, limit){
 // count alone conflates — notably "missed the target because it was genuinely heavy"
 // (hold and repeat) from "missed the target with reps still in reserve" (push harder at
 // the same load before adding any).
+// Adds one increment exactly. Rounding to the nearest 0.5 turned the upper-body 1.25 kg step
+// into 1.5 (20 -> 21.5 -> 23) while the note still said +1.25.
+function addLoad(weight, delta){ return Math.round((weight + delta) * 100) / 100; }
 const PROGRESSION_STALL_LIMIT = 2;
 const STALL_RESET_CUT = 0.10;   // the usual 10% reset after a stall
 function progressionIncrementFor(area, focusInfo){
@@ -37519,7 +37567,12 @@ async function suggestProgression(ex, focusInfo){
     if(isBlockReintroWeek(_pos.weekInBlock, _pos.blocksCompleted) && last && last.weight){
       const repHigh = ex.repHigh != null ? ex.repHigh : (focusInfo ? focusInfo.repHigh : 12);
       const inc = progressionIncrementFor(ex.area, focusInfo);
-      const reduced = Math.round((last.weight * (1 - REINTRO_LOAD_CUT)) / inc) * inc;
+      /* From the last session BEFORE this week. Every session of the re-entry week took 10%
+         off the one before it, so a lift trained three times went 100 -> 90 -> 80 -> 72.5. */
+      const weekStart = getWeekStartFor(todayStr);
+      const before = (await getLoggedHistoryForExercise(ex.exerciseId, ex.name, 8)).find(h => h.date < weekStart && h.weight);
+      const base = before ? before.weight : last.weight;
+      const reduced = Math.round((base * (1 - REINTRO_LOAD_CUT)) / inc) * inc;
       return { action:'reintroduce', weight: reduced, isReintro:true,
                note: `First week back — ${reduced}kg, ~${repHigh} reps, ${REINTRO_TARGET_RIR} short of failure` };
     }
@@ -37529,6 +37582,22 @@ async function suggestProgression(ex, focusInfo){
      never be reached — including the case that matters most, a jump logged with reps but no
      height, where the right answer is to ask for the height rather than to say "add weight". */
   const exResultUnit = powerResultUnit(ex);
+  /* A DELOAD WEEK HOLDS THE LOAD. The week's sets are halved on Today, and progression went
+     on saying "+2.5kg" on top of them, which is the one week not to add. */
+  if(last && last.weight > 0){
+    try{ if(await isDeloadWeek(todayStr)) return { action:'hold', weight: last.weight, noteCaps:true, note:'Deload week — same weight, fewer sets' }; } catch(e){}
+  }
+  /* BODYWEIGHT WORK PROGRESSES BY REPS. A pull-up logged 3x12 with no weight came back as
+     "baseline" forever, so for anyone training without kit the whole progression system
+     said nothing. Reps toward the top of the range, then a harder version or added load. */
+  if(last && !(last.weight > 0) && last.result == null && !exResultUnit && (last.reps || (last.repsPerSet || []).length)){
+    const repHighBw = ex.repHigh != null ? ex.repHigh : (focusInfo ? focusInfo.repHigh : 12);
+    const perSetBw = Array.isArray(last.repsPerSet) && last.repsPerSet.length ? last.repsPerSet : null;
+    const minBw = perSetBw ? Math.min(...perSetBw) : last.reps;
+    if(minBw >= repHighBw) return { action:'progress_variation', weight:null, bodyweight:true, noteCaps:true,
+      note:`Hit ${repHighBw} on every set — add load or a harder version` };
+    return { action:'add_reps', weight:null, bodyweight:true, noteCaps:true, note:`Add reps toward ${repHighBw}` };
+  }
   if(!last || (!last.weight && last.result == null && !exResultUnit)){
     // No note: "add weight" in the load slot already says it's new, and this line was
     // repeating verbatim under every untrained exercise — six identical sentences in one
@@ -37549,7 +37618,7 @@ async function suggestProgression(ex, focusInfo){
       if(rec){
         const inc = progressionIncrementFor(ex.area, focusInfo);
         const rounded = Math.round((last.weight * rec.mult) / inc) * inc;
-        return { action: rec.action, weight: rounded, note: rec.note };
+        return { action: rec.action, weight: rounded, fromWeight: last.weight, note: rec.note };
       }
     }
   } catch(e){}
@@ -37560,7 +37629,8 @@ async function suggestProgression(ex, focusInfo){
   const effort = last.effort || null;
 
   // Stall: same weight for consecutive sessions without reaching the top of the range.
-  const sameWeightRun = history.filter(h=>h.weight === last.weight).length;
+  // Sessions saved exactly as prefilled are not evidence of a miss, so they don't count.
+  const sameWeightRun = history.filter(h=>h.weight === last.weight && !h.repsPrefilled).length;
   const stalled = !hitTopOnEverySet && sameWeightRun >= PROGRESSION_STALL_LIMIT + 1;
 
   /* ---------- POWER DOES NOT PROGRESS BY ADDING REPS ----------
@@ -37615,7 +37685,7 @@ async function suggestProgression(ex, focusInfo){
                note: `${lastResult}${unit} last time — best is ${best}${unit}` };
     }
     if(effort && effort.level === 'near_failure'){
-      const down = Math.max(increment, Math.round((last.weight - increment) * 2) / 2);
+      const down = Math.max(increment, addLoad(last.weight, -increment));
       return { action:'reduce', weight: down, fromWeight: last.weight, noteCaps:true,
                note: `-${increment}kg — reps fell away, too heavy to stay fast` };
     }
@@ -37627,13 +37697,13 @@ async function suggestProgression(ex, focusInfo){
       return { action:'hold', weight: last.weight, noteCaps:true,
                note: `Repeat — ${repLow} clean reps a set before adding` };
     }
-    const up = Math.round((last.weight + increment) * 2) / 2;
+    const up = addLoad(last.weight, increment);
     return { action:'add_weight', weight: up, fromWeight: last.weight, noteCaps:true,
              note: `+${increment}kg — every rep stayed fast` };
   }
 
   if(hitTopOnEverySet){
-    const next = Math.round((last.weight + increment) * 2) / 2;
+    const next = addLoad(last.weight, increment);
     // fromWeight is what to fall back to if something downstream decides the increase should
     // not happen today — holding means last session's load, not the new one.
     return { action:'add_weight', weight: next, fromWeight: last.weight, noteCaps:true,
@@ -37715,7 +37785,9 @@ function injurySafeAltFor(ex, movementFlags){
    the progression engine will offer the same increase again tomorrow. */
 const TISSUE_HOLD_LOAD = 55;   // above the flag thresholds: hold sooner than you cut sets
 function holdLoadIfFatigued(ex, progression, tissue){
-  if(!progression || progression.action !== 'add_weight') return progression;
+  // 'increase' too: the week-two step after a re-entry can be the biggest jump in a block
+  // (up to ~14%), and it went straight past a tissue reading that held a 2.5 kg add.
+  if(!progression || (progression.action !== 'add_weight' && progression.action !== 'increase')) return progression;
   if(!ex || !ex.area || !tissue || !tissue.available) return progression;
   const a = tissue.areas[ex.area];
   if(!a || a.tr >= TISSUE_HOLD_LOAD) return progression;
@@ -37897,7 +37969,7 @@ async function blockSummaryHtml(block){
       // lift with no recorded load, in a column that is otherwise pure notation. The question
       // mark IS the question the row is asking, and it reads in the same breath as the kg
       // that will replace it.
-      let weightLabel = progression.weight != null ? `${progression.weight}kg` : '?kg';
+      let weightLabel = progression.weight != null ? `${progression.weight}kg` : (progression.bodyweight ? 'BW' : '?kg');
       if(progression.weight != null && adjustment.lever==='weight'){
         weightLabel = `${Math.round(progression.weight * (1 + adjustment.delta/100) * 2) / 2}kg`;
       }
