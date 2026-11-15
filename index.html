@@ -13419,7 +13419,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.016';
+const APP_VERSION = '2026.11.15.017';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13815,6 +13815,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.017': 'In the iPhone app the morning no longer asks how long you slept. It waits for Apple Health to answer instead of asking before the read had finished; if last night is not in Health yet, it says so (the Oura app puts it there when it syncs) and fills itself in when you come back. Not connected yet, it offers the connection. Typing it in is still there, folded away.',
   '2026.11.15.016': 'The score reads today for what today asks. A lifting day and a running day are weighed differently and each learns from its own sessions; it counts what is still spent in the muscles today\u2019s session uses (heavy squats yesterday matter to today\u2019s deadlift, not your bench); and it notices a late bedtime, a heart rate that bottomed out late in the night, and jet lag after a time-zone change. Once it has enough sessions, a line under the number says what it has meant for you in kilos or seconds per km, and how well it has tracked you. Progress no longer reads as readiness: each session is judged against your trend through it. And the illness check stands down properly: it compares each night with a moving normal and clears within days, where a slow drift in resting heart rate could hold the score down for weeks.',
   '2026.11.15.015': 'The readiness number now answers how well you can perform today, and tunes itself to you by checking each morning against what you then did: your top sets against that lift\u2019s recent normal, your runs\u2019 speed per heartbeat against your recent runs. It also reads fitness minus fatigue from your whole training history (so a hard week turns into a good one instead of just reading as tired), how much you walked yesterday outside training, and how long you will have been awake at the hour you usually train. Last night\u2019s sleep now counts as last night, not as an average of the week around it. 50 is a typical day for you, 100 your best, 0 your worst. All automatic.',
   '2026.11.15.014': 'Apple Health is the one source now, and the Oura connection is gone. Your Oura and Garmin apps write to Health and Dogfood reads it there: sleep from the ring (one night, not the ring and the watch added together), resting heart rate from the lowest half hour asleep, time awake from your sleep stages, and a run recorded by both kept once. HRV is out of the score, since neither shares it with Health, and the device boxes in the check-in have gone with it. Trends shows resting heart rate and sleep instead.',
@@ -14419,10 +14420,18 @@ async function connectNativeHealth(){
     return await syncNativeHealth(30);
   } catch(e){ return { error: (e && e.message) || 'could not connect' }; }
 }
-let _nativeHealthBusy = false;
-async function syncNativeHealth(days){
-  if(!NativeHealth || !nativeHealthOn() || _nativeHealthBusy) return { synced: 0, dates: [] };
-  _nativeHealthBusy = true;
+/* One read at a time, and a second caller waits for the one in flight instead of being told
+   "nothing synced": the morning sheet asks on open, at the same moment the open-time read
+   starts, and was concluding there was no sleep while the read that would have found it was
+   still running. */
+let _nativeHealthRun = null;
+function syncNativeHealth(days){
+  if(!NativeHealth || !nativeHealthOn()) return Promise.resolve({ synced: 0, dates: [] });
+  if(_nativeHealthRun) return _nativeHealthRun;
+  _nativeHealthRun = syncNativeHealthOnce(days).finally(()=>{ _nativeHealthRun = null; });
+  return _nativeHealthRun;
+}
+async function syncNativeHealthOnce(days){
   try{
     /* Heart rate joined the types read (for the overnight resting HR). iOS asks only about
        types it has not asked about before, so a phone connected before that sees one short
@@ -14491,10 +14500,15 @@ async function syncNativeHealth(days){
         }
       } catch(e){}
     }
+    // Last night arriving is today's score changing: redo it now, not on the next visit.
+    if(changed.includes(todayStr)){
+      try{ await generateRecommendations(); } catch(e){}
+      try{ morningSheetHealthArrived(); } catch(e){}
+    }
     return { synced: changed.length, dates: changed };
   } catch(e){
     return { error: (e && e.message) || 'read failed', synced: 0, dates: [] };
-  } finally { _nativeHealthBusy = false; }
+  }
 }
 function renderNativeHealthStatus(message){
   const el = document.getElementById('appleHealthStatus');
@@ -14579,9 +14593,15 @@ renderAppleHealthStatus();
 if(NativeHealth && nativeHealthOn()){
   syncNativeHealth(14).then(r => { if(r && r.synced) renderNativeHealthStatus(); });
   let _nhLastFront = Date.now();
-  document.addEventListener('visibilitychange', ()=>{
+  /* Back to the front after half an hour, or after two minutes while last night is still
+     missing: the usual reason it is missing is that the Oura app had not synced yet, and the
+     usual next move is to open Oura and come straight back. */
+  document.addEventListener('visibilitychange', async ()=>{
     if(document.hidden) return;
-    if(Date.now() - _nhLastFront < 30*60*1000) return;
+    let needNight = false;
+    try{ const e = JSON.parse((await window.storage.get(keyFor(todayStr))).value); needNight = !e || e.durationHrs == null || e.durationHrs === ''; } catch(err){ needNight = true; }
+    const gap = Date.now() - _nhLastFront;
+    if(gap < (needNight ? 2*60*1000 : 30*60*1000)) return;
     _nhLastFront = Date.now();
     syncNativeHealth(3).then(r => { if(r && r.synced){ renderNativeHealthStatus(); try{ refreshHeaderLogBadge(); }catch(e){} } });
   });
@@ -16626,6 +16646,25 @@ async function usualNight(){
   }catch(e){}
   return out;
 }
+/* Last night landed from Apple Health while the morning sheet is open: replace the
+   "isn't in yet" and the folded fields with what arrived. Returns whether it did. */
+function morningSheetHealthArrived(){
+  const sheet = document.querySelector('.morning-sheet');
+  if(!sheet) return false;
+  const box = sheet.querySelector('.morning-health');
+  if(!box) return false;
+  let e = null;
+  try{ e = JSON.parse(localStorage.getItem(keyFor(todayStr)) || 'null'); } catch(err){}
+  // window.storage is async; the localStorage mirror is what it writes through to.
+  if(!e || e.durationHrs == null || e.durationHrs === '') return false;
+  const bits = [`${(+e.durationHrs).toFixed(1)} h asleep`];
+  if(e.wakeClock) bits.push(`woke ${e.wakeClock}`);
+  if(e.restingHR != null) bits.push(`resting HR ${e.restingHR}`);
+  box.innerHTML = `<div class="score-note">From Apple Health${e.sleepSource ? ` (${e.sleepSource})` : ''}: ${bits.join(', ')}.</div>`;
+  const m = sheet.querySelector('.morning-manual'); if(m) m.remove();
+  const t = sheet.querySelector('.morning-type'); if(t) t.remove();
+  return true;
+}
 async function maybeAskMorning(force){
   if(document.querySelector('.morning-sheet')) return;
   if(!force){
@@ -16639,6 +16678,16 @@ async function maybeAskMorning(force){
       const logged = (await getAllTrainingSessions()).some(sn => sn.date === todayStr);
       if(logged) return;
     } catch(e){}
+  }
+  /* IN THE IPHONE APP, APPLE HEALTH ANSWERS THIS, NOT YOU. If last night is not in yet, wait
+     for the read (up to eight seconds) before deciding there is nothing, then look again. */
+  const nativeApp = typeof NativeHealth !== 'undefined' && !!NativeHealth;
+  const healthOn = nativeApp && nativeHealthOn();
+  const noNight = e => !e || e.durationHrs == null || e.durationHrs === '';
+  if(healthOn && noNight(entry)){
+    try{ await Promise.race([syncNativeHealth(3), new Promise(r=> setTimeout(r, 8000))]); } catch(e){}
+    try{ entry = JSON.parse((await window.storage.get(keyFor(todayStr))).value); } catch(e){}
+    if(document.querySelector('.morning-sheet')) return;
   }
   const usual = await usualNight();
 
@@ -16664,8 +16713,18 @@ async function maybeAskMorning(force){
      Shown only when today's record has no sleep in it, so a synced ring never sees it and a
      ring that failed to sync still gets asked. */
   const askNight = !entry || entry.durationHrs == null || entry.durationHrs === '';
+  /* In the iPhone app the typing is the fallback, folded away: Apple Health is the answer.
+     Not connected yet, it offers the connection; connected but empty, it says why (the Oura
+     app has not put last night in Health yet) and fills itself in when you come back. */
+  const healthNote = !nativeApp ? '' : !healthOn
+    ? `<div class="morning-health"><div class="score-note">Let Apple Health fill this in: your sleep, wake time and resting heart rate from your Oura and Garmin.</div>
+        <button type="button" class="small morning-connect">Connect Apple Health</button></div>`
+    : `<div class="morning-health"><div class="score-note">Last night isn\u2019t in Apple Health yet. The Oura app puts it there when it syncs: open Oura, then come back and this fills itself in.</div></div>`;
   const nightRow = askNight ? `
       <div class="morning-q">Last night</div>
+      ${healthNote}
+      ${nativeApp ? '<button type="button" class="small outline morning-type">Type it in instead</button>' : ''}
+      <div class="morning-manual"${nativeApp ? ' hidden' : ''}>
       <div class="morning-night">
         <label class="mn-field"><input type="text" inputmode="decimal" id="morningSleepHrs"
           data-field="durationHrs" placeholder="7.5" aria-label="Hours slept"${usual.hrs != null ? ` value="${usual.hrs}" data-planned="1"` : ''}><span class="mn-unit">hours</span></label>
@@ -16683,14 +16742,15 @@ async function maybeAskMorning(force){
            for as long as you skip it, and nothing on screen ever said so. A ring fills it
            from bedtime_end, so this is aimed at the people who type. -->
       <div class="morning-why"${usual.wake ? ' hidden' : ''}>The time you woke is what regularity is measured from — the one
-        of these three the score cannot get any other way.</div>` : '';
+        of these three the score cannot get any other way.</div>
+      </div>` : '';
 
   const sheet = document.createElement('div');
   sheet.className = 'morning-sheet';
   sheet.innerHTML = `<div class="morning-panel" role="dialog" aria-modal="true" aria-label="This morning">
       <div class="lift-sheet-head"><span>This morning</span>
         <button type="button" class="lift-sheet-x" aria-label="Not now">\u00d7</button></div>
-      ${(askNight && (usual.hrs != null || usual.wake)) ? '<div class="morning-usual">Filled in with your usual night. Change anything that was different, then Done.</div>' : ''}
+      ${(askNight && !nativeApp && (usual.hrs != null || usual.wake)) ? '<div class="morning-usual">Filled in with your usual night. Change anything that was different, then Done.</div>' : ''}
       ${nightRow}
       <div class="morning-q">Alcohol last night</div>
       ${dots('morningAlcohol', [[0,'None'],[1,'A drink or two'],[2,'More']])}
@@ -16699,7 +16759,7 @@ async function maybeAskMorning(force){
       <div class="score-note" style="margin-top:var(--sp-3); color:rgba(var(--ink-rgb),0.6);">
         A drink or a bug is attributed rather than read as fatigue \u2014 the day still scores
         honestly, it just stops setting what normal looks like for you.</div>
-      <button type="button" class="primary morning-done">${askNight && (usual.hrs != null || usual.wake) ? 'Done, usual night' : 'Done'}</button>
+      <button type="button" class="primary morning-done">${askNight && !nativeApp && (usual.hrs != null || usual.wake) ? 'Done, usual night' : 'Done'}</button>
     </div>`;
 
   // Dialed, not typed — see the note on wireWheelField. Only when nightRow actually rendered
@@ -16752,7 +16812,10 @@ async function maybeAskMorning(force){
   sheet.addEventListener('click', async e=>{
     if(e.target.closest('.morning-done')){
       // Done takes what is on screen, defaults and all: the usual night and the picked dots.
+      // Folded-away fields stay unsaid: a usual night pre-filled behind "Type it in instead"
+      // is not an answer, and saving it would block Apple Health from filling the real one.
       for(const el of sheet.querySelectorAll('input[data-field][data-planned]')){
+        if(el.closest('.morning-manual[hidden]')) continue;
         if(el.value.trim()){ await setMorningContext(el.dataset.field, el.value.trim()); nightChanged = true; }
       }
       for(const [id, f] of [['morningAlcohol', 'alcohol'], ['morningUnwell', 'unwell']]){
@@ -16763,6 +16826,24 @@ async function maybeAskMorning(force){
       await close(); return;
     }
     if(e.target === sheet || e.target.closest('.lift-sheet-x')){ await close(); return; }
+    if(e.target.closest('.morning-type')){
+      const m = sheet.querySelector('.morning-manual');
+      if(m) m.hidden = false;
+      e.target.closest('.morning-type').remove();
+      return;
+    }
+    if(e.target.closest('.morning-connect')){
+      const btn = e.target.closest('.morning-connect');
+      btn.disabled = true; btn.textContent = 'Asking Apple Health\u2026';
+      const r = await connectNativeHealth();
+      try{ renderNativeHealthStatus(); } catch(err){}
+      if(r && r.error){ btn.disabled = false; btn.textContent = 'Connect Apple Health'; return; }
+      if(!morningSheetHealthArrived()){
+        const box = sheet.querySelector('.morning-health');
+        if(box) box.innerHTML = '<div class="score-note">Connected. Last night isn\u2019t in Apple Health yet: open the Oura app so it syncs, then come back and this fills itself in.</div>';
+      }
+      return;
+    }
     const dot = e.target.closest('.subj-dot');
     if(dot){
       const box = dot.closest('.subj-scale');
