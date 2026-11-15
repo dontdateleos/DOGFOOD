@@ -1,7 +1,8 @@
 # Dogfood on iPhone (TestFlight)
 
 The iPhone app is the same `index.html` running inside a [Capacitor](https://capacitorjs.com) shell, with
-one native addition: **HealthBridge**, a small Swift plugin that reads Apple Health directly.
+two native additions: **HealthBridge**, a small Swift plugin that reads Apple Health directly, and
+**Haptics**, which plays the Taptic Engine for the web app's taps, swipes and wheels.
 
 ```
 index.html, sw.js, icons, splash   the web app (unchanged; still works in a browser)
@@ -9,6 +10,7 @@ tools/build-web.mjs                copies those into www/ for the app bundle
 capacitor.config.json              app id com.touringgroup.dogfood, name "Dogfood"
 ios/App/App.xcodeproj              the Xcode project (Swift Package Manager, no CocoaPods)
 ios/App/App/HealthBridgePlugin.swift   the HealthKit reader
+ios/App/App/HapticsPlugin.swift        the Taptic Engine, for taps, wheel ticks and saves
 ios/App/App/MainViewController.swift   registers the plugin with Capacitor
 ios/App/App/App.entitlements           HealthKit capability
 ```

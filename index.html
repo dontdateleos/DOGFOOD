@@ -603,6 +603,7 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
      there too: a stylesheet padding loses to an inline one. */
   :root{ --native-safe-top:0px; }
   html.native-app{ --native-safe-top:env(safe-area-inset-top, 0px); }
+  html:not(.native-app) .native-only{ display:none; }
   html.native-app header{ padding-top:calc(18px + var(--native-safe-top)); }
   html.native-app .header-brand{ margin-top:calc(-18px - var(--native-safe-top)); padding-top:calc(18px + var(--native-safe-top)); }
   body::before{ content:""; position:fixed; left:0; right:0; top:0; height:env(safe-area-inset-top, 0px);
@@ -7120,6 +7121,7 @@ if(!window.__pnHold)window.__curtain();
         </label>
         <div class="field-row"><span class="field-label">Text size</span><select id="textScaleSelect"><option value="1">Standard</option><option value="1.12">Large</option><option value="1.25">Extra large</option></select></div>
         <label class="week-deload" for="highContrastToggle"><input type="checkbox" id="highContrastToggle"><span>High contrast</span></label>
+        <label class="week-deload native-only" for="hapticsToggle"><input type="checkbox" id="hapticsToggle"><span>Haptics &mdash; feel taps, swipes and wheel rows</span></label>
         <label class="week-deload" for="workoutRemindersToggle"><input type="checkbox" id="workoutRemindersToggle"><span>Workout reminders — asks your browser before enabling notifications</span></label>
         <div class="score-note">The mark still blinks to say something is loading and still moves to the header when you scroll. What goes is everything that was only ever character.</div>
         <div class="dev-only" id="eyesDevGroup" style="margin-top:14px;">
@@ -11972,7 +11974,7 @@ async function logTodayAsPlanned(){
     btn.classList.add('holding');
     t = setTimeout(()=>{
       t = null; fired = true; btn.classList.remove('holding');
-      try{ navigator.vibrate && navigator.vibrate(18); }catch(e){}
+      haptic('thud');
       logTodayAsPlanned().catch(()=>{});
     }, HOLD_MS);
   });
@@ -12002,6 +12004,7 @@ async function logTodayAsPlanned(){
     if(Math.abs(e.clientY - y0) < PULL_PX) return;
     fired = true;
     strip.classList.remove('pulling');
+    haptic('thud');
     startTodayLogging();
   });
   const done = ()=>{ y0 = null; strip.classList.remove('pulling'); setTimeout(()=>{ fired = false; }, 300); };
@@ -12982,7 +12985,7 @@ tabs.forEach(t=>{
       if(Math.abs(dx) < 56) return;
       const h = SWEEP_TABS.indexOf(document.querySelector('.tab.active').dataset.tab), n = h + (dx < 0 ? 1 : -1);
       const t = n >= 0 && n < SWEEP_TABS.length && document.querySelector(`.tab[data-tab="${SWEEP_TABS[n]}"]`);
-      if(t) activateTabViaUi(t);
+      if(t){ haptic('tick'); activateTabViaUi(t); }
       return;
     }
     if(mode !== 'x'){ mode = 'off'; return; }
@@ -13002,6 +13005,7 @@ tabs.forEach(t=>{
     if(peek) anim.push(peek.animate([{ transform:`translate3d(${from + dir * W}px,0,0)` }, { transform:`translate3d(${to + dir * W}px,0,0)` }], { duration: ms, easing: ease, fill:'forwards' }));
     cur.style.removeProperty('transform'); if(peek) peek.style.removeProperty('transform');
     const name = commit ? SWEEP_TABS[here + dir] : null;
+    if(commit) haptic('tick');
     anim[0].onfinish = ()=>{
       if(commit){
         const t = document.querySelector(`.tab[data-tab="${name}"]`);
@@ -13425,7 +13429,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.012';
+const APP_VERSION = '2026.11.15.013';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13821,6 +13825,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.013': 'On iPhone you now feel it: a light tap on every button, a tick for each row a wheel passes and each tab you swipe to, a knock when a hold lands, and a buzz when something saves or fails. Settings → Appearance has a switch if you would rather not.',
   '2026.11.15.012': 'Tidying from a hands-on pass. Sheets on the Skills tab open properly again with an injury logged (its buttons now wrap instead of pushing the page sideways). The weight wheel shows 22.5 rather than rounding it to 23. Generate tells you when it can\u2019t build a week instead of saying so out of sight. Your weight chart shows from sign-up, before any check-in. Walk-run sessions show their real length, the session toggle says \u201cFull body\u201d and \u201cEasy run\u201d, the finish card lists every session you did today, and the big button reads Edit once today is logged. Checking in on an injury keeps its first rating and its improving arrow.',
   '2026.11.15.011': 'In the iPhone app the date in the header shows again; it was measuring itself before the phone had said where the camera cutout ends.',
   '2026.11.15.010': 'In the iPhone app the header stays clear of the clock and camera cutout as it shrinks on scroll, not just at the top of the page.',
@@ -14778,6 +14783,60 @@ const NativeHealth = (()=>{
     return C.registerPlugin ? C.registerPlugin('HealthBridge') : ((C.Plugins && C.Plugins.HealthBridge) || null);
   } catch(e){ return null; }
 })();
+/* HAPTICS. In the iPhone app every press, swipe and wheel row is felt as well as seen, through
+   the Taptic Engine (HapticsPlugin.swift). Five feels, and which gesture gets which:
+     'tap'      a light press. Buttons, cards, anything you can click.
+     'tick'     the picker detent. Wheel rows passing, toggles, tabs, a drag crossing a target.
+     'thud'     a medium knock. A hold landing, a pull or swipe committing.
+     'success'  a save, as the toast says it saved.
+     'error'    a failure, as the toast says it failed.
+   In a browser it is a short vibrate where that exists (Android) and nothing where it does not
+   (Safari). Two presses within 15ms are one: a tap on a label also clicks its checkbox, in the same instant. iOS's own
+   System Haptics switch silences all of it; Settings here has one too (HAPTICS_KEY). */
+const HAPTICS_KEY = 'settings:haptics';
+let hapticsPlugin, hapticLast = 0;
+function hapticsOn(){ try{ return localStorage.getItem(HAPTICS_KEY) !== 'off'; } catch(e){ return true; } }
+function haptic(kind){
+  if(!hapticsOn()) return;
+  const now = performance.now();
+  const notice = kind === 'success' || kind === 'error' || kind === 'warning';
+  if(!notice && now - hapticLast < 15) return;
+  hapticLast = now;
+  try{
+    if(hapticsPlugin === undefined){
+      const C = window.Capacitor;
+      hapticsPlugin = C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin ? C.registerPlugin('Haptics') : null;
+    }
+    if(hapticsPlugin){
+      const p = kind === 'tick' ? hapticsPlugin.selection()
+        : kind === 'success' || kind === 'error' || kind === 'warning' ? hapticsPlugin.notification({ type: kind })
+        : hapticsPlugin.impact({ style: kind === 'thud' ? 'medium' : 'light' });
+      if(p && p.catch) p.catch(()=>{});
+    } else if(navigator.vibrate){
+      navigator.vibrate(kind === 'tick' ? 4 : kind === 'thud' ? 16 : kind === 'error' ? [12, 60, 12] : kind === 'success' ? 10 : 6);
+    }
+  } catch(e){}
+}
+/* The press itself, for every control at once rather than wired one by one. Click, not
+   pointerdown: a finger that lands on a button and then scrolls the page never clicks, and
+   should not buzz. Anything the cursor rule calls clickable counts, so a card with a handler
+   and no role still answers. Text fields, the wheels' own rows and disabled controls stay quiet. */
+const HAPTIC_TICK_SEL = 'input[type="checkbox"], input[type="radio"], [role="switch"], [role="tab"], select';
+const HAPTIC_TAP_SEL = 'button, [role="button"], [role="menuitem"], [role="option"], a[href], summary, label, .wheel-field';
+document.addEventListener('click', e=>{
+  const t = e.target;
+  if(!t || !t.closest || t.closest('.wheel-row, [disabled], [aria-disabled="true"]')) return;
+  if(t.closest(HAPTIC_TICK_SEL)){ haptic('tick'); return; }
+  if(t.closest(HAPTIC_TAP_SEL)){ haptic('tap'); return; }
+  if(t.matches && t.matches('input, textarea, [contenteditable="true"]')) return;
+  for(let el = t, i = 0; el && el !== document.body && i < 5; el = el.parentElement, i++){
+    if(getComputedStyle(el).cursor === 'pointer'){ haptic('tap'); return; }
+  }
+}, true);
+document.addEventListener('change', e=>{
+  const t = e.target;
+  if(t && t.matches && t.matches('select')) haptic('tick');
+}, true);
 const NATIVE_HEALTH_KEY = 'settings:nativeHealth';
 const NATIVE_HEALTH_LAST_KEY = 'settings:nativeHealthLastSync';
 function nativeHealthOn(){ try{ return localStorage.getItem(NATIVE_HEALTH_KEY) === 'on'; } catch(e){ return false; } }
@@ -15485,6 +15544,7 @@ function showToast(message, isError, ms){
   const from = toastEntryOffset();
   t.style.setProperty('--toast-from', (from == null ? 20 : from) + 'px');
   t.className = isError ? 'error show' : 'show';
+  haptic(isError ? 'error' : 'success');
   // Every save, every failure, comes through here — so this is the one place the mark
   // needs to hear about it.
   if(anim('nodOnSave')){ if(isError) eyeShake(); else eyeNod();
@@ -15574,7 +15634,7 @@ function confirmInPlace(btn, opts){
     const tick = ()=>{
       const f = (performance.now() - holdFrom) / holdMs;
       btn.style.backgroundImage = confirmFill(f);
-      if(f >= 1){ finish(true); return; }
+      if(f >= 1){ haptic('thud'); finish(true); return; }
       raf = requestAnimationFrame(tick);
     };
     const start = ()=>{
@@ -21084,7 +21144,7 @@ function wireWeekHold(board){
     if(over === lane) return;
     if(over) over.classList.remove('drop-target');
     over = lane;
-    if(over) over.classList.add('drop-target');
+    if(over){ over.classList.add('drop-target'); haptic('tick'); }
   };
   const reset = ()=>{
     clearTimeout(timer); timer = null;
@@ -21103,7 +21163,7 @@ function wireWeekHold(board){
     timer = setTimeout(()=>{
       timer = null; held = true; window.__weekHold = true;
       lane.classList.add('lifted'); board.classList.add('holding');
-      try{ if(navigator.vibrate) navigator.vibrate(12); } catch(e){}
+      haptic('thud');
     }, WEEK_HOLD_MS);
   };
   const move = (x, y, e)=>{
@@ -22763,6 +22823,7 @@ function wireBlockEditorGrab(){
     spent = true;
     clearTimeout(held);
     y0 = null;
+    haptic('thud');
     await saveLogDraftNow();
     if(blockEditMinimisable) minimiseBlockEditor();
     else closeBlockEditor({ keepDraft:true });
@@ -28108,6 +28169,14 @@ function openWheelPicker({ title, min, max, step = 1, decimals = 0, unit = '', v
   const scrollToIndex = (idx, smooth)=> scrollHost.scrollTo({ top: idx * WHEEL_ROW_H, behavior: smooth ? 'smooth' : 'auto' });
 
   applyHighlight(current);
+  /* A tick per row passed, but only once a finger (or wheel, or key) has moved it: opening
+     the sheet scrolls the column to its start, and the settle snaps it, both as scroll events. */
+  let touched = false, ticked = current;
+  const tickTo = idx=>{ if(touched && idx !== ticked){ ticked = idx; haptic('tick'); } };
+  const onTouch = ()=>{ touched = true; };
+  scrollHost.addEventListener('pointerdown', onTouch, { passive:true });
+  scrollHost.addEventListener('touchstart', onTouch, { passive:true });
+  scrollHost.addEventListener('wheel', onTouch, { passive:true });
   // After the sheet's own open frame — a scrollTop written before the panel has display:block
   // and real layout is a write to an element with nothing to scroll yet, and gets lost.
   requestAnimationFrame(()=> requestAnimationFrame(()=> scrollToIndex(current, false)));
@@ -28115,6 +28184,7 @@ function openWheelPicker({ title, min, max, step = 1, decimals = 0, unit = '', v
   const onScroll = ()=>{
     const idx = Math.max(0, Math.min(n - 1, Math.round(scrollHost.scrollTop / WHEEL_ROW_H)));
     applyHighlight(idx);
+    tickTo(idx);
     clearTimeout(wheelPickerScrollTimer);
     // Settle-detection by debounce, same as the score band's own relayout: there is no
     // native "scroll finished" event with reliable support yet, and a fixed quiet window
@@ -28131,14 +28201,15 @@ function openWheelPicker({ title, min, max, step = 1, decimals = 0, unit = '', v
     const row = e.target.closest('.wheel-row');
     if(!row) return;
     current = parseInt(row.dataset.i, 10);
+    touched = true; tickTo(current);
     scrollToIndex(current, true);
     applyHighlight(current);
   };
   track.addEventListener('click', onRowTap);
 
   const onKey = e=>{
-    if(e.key === 'ArrowUp'){ e.preventDefault(); current = Math.max(0, current - 1); scrollToIndex(current, true); applyHighlight(current); }
-    else if(e.key === 'ArrowDown'){ e.preventDefault(); current = Math.min(n - 1, current + 1); scrollToIndex(current, true); applyHighlight(current); }
+    if(e.key === 'ArrowUp'){ e.preventDefault(); current = Math.max(0, current - 1); touched = true; tickTo(current); scrollToIndex(current, true); applyHighlight(current); }
+    else if(e.key === 'ArrowDown'){ e.preventDefault(); current = Math.min(n - 1, current + 1); touched = true; tickTo(current); scrollToIndex(current, true); applyHighlight(current); }
   };
   col.addEventListener('keydown', onKey);
   col.setAttribute('aria-valuemin', min);
@@ -28147,6 +28218,9 @@ function openWheelPicker({ title, min, max, step = 1, decimals = 0, unit = '', v
 
   wheelPickerCommit = ()=>{
     scrollHost.removeEventListener('scroll', onScroll);
+    scrollHost.removeEventListener('pointerdown', onTouch);
+    scrollHost.removeEventListener('touchstart', onTouch);
+    scrollHost.removeEventListener('wheel', onTouch);
     track.removeEventListener('click', onRowTap);
     col.removeEventListener('keydown', onKey);
     clearTimeout(wheelPickerScrollTimer);
@@ -28196,11 +28270,12 @@ const setWheelSheetApi = wireSheet('multiWheelPickerSheet', ()=>{ if(setWheelCom
 
 function mkSetWheelColumn(ids, opts){
   const col = document.getElementById(ids.col), scrollHost = document.getElementById(ids.scroll), track = document.getElementById(ids.track);
-  let rows = [], rowN = 0, curIdx = 0, timer = null;
+  let rows = [], rowN = 0, curIdx = 0, timer = null, touched = false;
   const applyHighlight = idx=>{
     rows.forEach((r,i)=>{ r.classList.toggle('wheel-sel', i===idx); r.classList.toggle('wheel-near', Math.abs(i-idx)===1); });
     col.setAttribute('aria-valuenow', rows[idx] ? rows[idx].dataset.v : '');
     const moved = idx !== curIdx;
+    if(moved && touched) haptic('tick');   // a detent per row, once a person is moving it (see onUserInput)
     curIdx = idx;
     if(moved && opts.onChange && rows[idx]) opts.onChange(parseFloat(rows[idx].dataset.v));
   };
@@ -28212,6 +28287,7 @@ function mkSetWheelColumn(ids, opts){
       return `<div class="wheel-row" data-i="${i}" data-v="${v}">${wheelRowLabel(v, decimals)}</div>`;
     }).join('');
     rows = [...track.querySelectorAll('.wheel-row')];
+    touched = false;
     const idx = Math.max(0, Math.min(rowN - 1, Math.round((centerOn - opts.min) / step)));
     applyHighlight(idx);
     requestAnimationFrame(()=> requestAnimationFrame(()=> scrollToIndex(idx, false)));
@@ -28228,7 +28304,7 @@ function mkSetWheelColumn(ids, opts){
      like a finger does. Reading those as interaction meant opening the sheet and closing it
      untouched still "touched" whichever wheel had to scroll to reach its start. Only real
      input says a person moved it. */
-  const onUserInput = ()=>{ if(opts.onInteract) opts.onInteract(); };
+  const onUserInput = ()=>{ touched = true; if(opts.onInteract) opts.onInteract(); };
   scrollHost.addEventListener('pointerdown', onUserInput, { passive:true });
   scrollHost.addEventListener('touchstart', onUserInput, { passive:true });
   scrollHost.addEventListener('wheel', onUserInput, { passive:true });
@@ -28236,14 +28312,15 @@ function mkSetWheelColumn(ids, opts){
     const row = e.target.closest('.wheel-row');
     if(!row) return;
     const idx = parseInt(row.dataset.i, 10);
+    touched = true;
     scrollToIndex(idx, true);
     applyHighlight(idx);
     if(opts.onInteract) opts.onInteract();
   };
   track.addEventListener('click', onRowTap);
   const onKey = e=>{
-    if(e.key === 'ArrowUp'){ e.preventDefault(); const idx = Math.max(0, curIdx - 1); scrollToIndex(idx, true); applyHighlight(idx); if(opts.onInteract) opts.onInteract(); }
-    else if(e.key === 'ArrowDown'){ e.preventDefault(); const idx = Math.min(rowN - 1, curIdx + 1); scrollToIndex(idx, true); applyHighlight(idx); if(opts.onInteract) opts.onInteract(); }
+    if(e.key === 'ArrowUp'){ e.preventDefault(); touched = true; const idx = Math.max(0, curIdx - 1); scrollToIndex(idx, true); applyHighlight(idx); if(opts.onInteract) opts.onInteract(); }
+    else if(e.key === 'ArrowDown'){ e.preventDefault(); touched = true; const idx = Math.min(rowN - 1, curIdx + 1); scrollToIndex(idx, true); applyHighlight(idx); if(opts.onInteract) opts.onInteract(); }
   };
   col.addEventListener('keydown', onKey);
   col.setAttribute('aria-valuemin', opts.min);
@@ -42574,6 +42651,14 @@ if(eyeCalmToggleEl){
 const textScaleSelectEl = document.getElementById('textScaleSelect');
 const highContrastToggleEl = document.getElementById('highContrastToggle');
 const workoutRemindersToggleEl = document.getElementById('workoutRemindersToggle');
+const hapticsToggleEl = document.getElementById('hapticsToggle');
+if(hapticsToggleEl){
+  hapticsToggleEl.checked = hapticsOn();
+  hapticsToggleEl.addEventListener('change', ()=>{
+    try{ localStorage.setItem(HAPTICS_KEY, hapticsToggleEl.checked ? 'on' : 'off'); } catch(e){}
+    if(hapticsToggleEl.checked) haptic('thud');   // the tick on the tap came before it was on
+  });
+}
 if(textScaleSelectEl){
   const saved = localStorage.getItem('appearance:textScale') || '1';
   textScaleSelectEl.value = saved; document.body.style.zoom = saved;

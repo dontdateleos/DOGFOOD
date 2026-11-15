@@ -17,6 +17,7 @@
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
 		D0F00D000000000000000A01 /* HealthBridgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B01 /* HealthBridgePlugin.swift */; };
+		D0F00D000000000000000A03 /* HapticsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B04 /* HapticsPlugin.swift */; };
 		D0F00D000000000000000A02 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B02 /* MainViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -32,6 +33,7 @@
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		9582B6822FE993A50072D4E8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		D0F00D000000000000000B01 /* HealthBridgePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthBridgePlugin.swift; sourceTree = "<group>"; };
+		D0F00D000000000000000B04 /* HapticsPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticsPlugin.swift; sourceTree = "<group>"; };
 		D0F00D000000000000000B02 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		D0F00D000000000000000B03 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
@@ -72,6 +74,7 @@
 				9582B6822FE993A50072D4E8 /* SceneDelegate.swift */,
 				D0F00D000000000000000B02 /* MainViewController.swift */,
 				D0F00D000000000000000B01 /* HealthBridgePlugin.swift */,
+				D0F00D000000000000000B04 /* HapticsPlugin.swift */,
 				D0F00D000000000000000B03 /* App.entitlements */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
@@ -169,6 +172,7 @@
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
 				D0F00D000000000000000A01 /* HealthBridgePlugin.swift in Sources */,
+				D0F00D000000000000000A03 /* HapticsPlugin.swift in Sources */,
 				D0F00D000000000000000A02 /* MainViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
