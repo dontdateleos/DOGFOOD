@@ -1736,6 +1736,8 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .score-stack > .score-num{ position:relative; z-index:1; }
   .score-label{ font-family:var(--sans); font-size:var(--fs-tag); color:var(--dim);  letter-spacing:0.05em; margin-top:4px; -webkit-text-stroke:0.15px currentColor; }
   /* What the number has meant for you, in kilos or seconds: one quiet line under the gauge. */
+  .session-complete .perf-line, .session-complete .perf-note{ font-size:var(--fs-tag); color:var(--dim); }
+  .session-complete .perf-line b{ color:inherit; }
   .score-meaning{ font-family:var(--sans); font-size:var(--fs-tag); color:var(--dim); text-align:center; max-width:34ch; margin:6px auto 0; line-height:1.4; text-wrap:balance; }
   .score-note{ font-size:var(--fs-tag); color:var(--dim); margin-top:8px; line-height:1.4; letter-spacing:0.015em; font-weight:var(--fw-medium); }
   /* ---------- TWO VOICES IN A NOTE ----------
@@ -13434,7 +13436,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.022';
+const APP_VERSION = '2026.11.15.023';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13830,6 +13832,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.023': 'The number is your Charge now: how much you have left to perform with. It starts each morning where your readiness is, drops with every workout (more for a bigger one than your usual), with a busier-than-usual day on your feet and with a very long day, and only refills when you sleep. The line under it says where it went (woke at 78 \u00b7 lift \u221214). A second workout is read against what is left. And each session now gets a Performance score of its own when you finish it: how it went against your trend, beside the charge you had going in.',
   '2026.11.15.022': 'Choose where your extra sets go. Settings \u2192 training setup \u2192 Muscles to prioritise: up to four, or a preset (arms & shoulders, glutes & legs, back & posture, or none). Your picks get direct work every week, scaled to how long you lift, and become the block\u2019s emphasis; your first pick is kept longest when a session is short. With nothing picked, arms and shoulders keep their small minimum. Top up follows your picks too.',
   '2026.11.15.021': 'Keep the week you like and still get the arm and shoulder work: Build \u2192 Top up arms & shoulders adds what your planned weeks are short of into the strength days you already have, at the end of each, only where it still fits the session. Your days, sessions and exercises stay exactly as they are, and Undo puts it back.',
   '2026.11.15.020': 'Lateral raises too, and rear delts on a muscle goal: the same fault as the arms (presses counted for the side delts, so the raises came last and were cut). How much protected small-muscle work a week gets now follows how long you lift in it, so a short week keeps its rows and presses, and the work goes on the day with the most time to spare.',
@@ -16275,8 +16278,9 @@ function performanceOutcomes(sessions, win, idxOf, bwLine){
         if(best == null) return;
         const name = (ex.name || '').trim().toLowerCase();
         (lifts[name] = lifts[name] || []).push({ date: sn.date, v: best });
-        names.push(name);
+        names.push({ name, v: best });
       });
+      // Each session judged on its own sets: two lifting sessions on one day are two outcomes.
       if(names.length) liftSessions.push({ date: sn.date, names });
     } else if(sn.type === 'run' && sn.distanceKm > 0 && sn.durationMin > 0){
       loggedRunDates.add(sn.date);
@@ -16302,9 +16306,7 @@ function performanceOutcomes(sessions, win, idxOf, bwLine){
   });
   liftSessions.forEach(ls=>{
     const rs = [];
-    ls.names.forEach(name=>{
-      const mine = lifts[name].filter(h=> h.date === ls.date);
-      const v = Math.max(...mine.map(h=> h.v));
+    ls.names.forEach(({ name, v })=>{
       const n0 = normalAt(lifts[name], ls.date);
       if(n0) rs.push(v / n0 - 1);
     });
@@ -18311,6 +18313,140 @@ async function computeSystemicReadiness(asOfDate){
   };
 }
 
+/* ================= CHARGE =================
+   What you have left to perform with, now. The morning readiness score is where it starts:
+   that is the night's recharge, read the moment you wake. From there it only goes down until
+   you sleep again:
+
+     a workout         ~13 points for a session the size you usually do, scaled by how big it
+                       was against your own typical one of its kind (tonnage for a lift, 90 a
+                       km or 15 a minute for a run), never under 4 or over 30
+     activity          a point per 2,000 steps beyond what you have usually done by this time
+                       of day (runs taken out), at most 8
+     a long day        a point an hour past twelve hours awake, at most 6
+
+   Tomorrow morning's readiness is the recharge, so a short night shows as not filling back up.
+   The drain figures are starting values in the same spirit as the score's priors: the session
+   performance scores are what will say how much a session really takes out of you for the
+   next one, once there are days with two.
+
+   `before` (a timestamp) asks what the charge was going into a session: everything logged
+   before it counts, nothing after. */
+const CHARGE_SESSION_TYPICAL = 13, CHARGE_SESSION_MIN = 4, CHARGE_SESSION_MAX = 30;
+const CHARGE_STEPS_PER_POINT = 2000, CHARGE_ACTIVITY_MAX = 8;
+const CHARGE_LONG_DAY_H = 12, CHARGE_LONG_DAY_MAX = 6;
+async function computeCharge(sr, opts){
+  const o = opts || {};
+  if(!sr || !sr.available || sr.shown == null) return null;
+  const start = sr.shown;
+  const parts = [];
+  let sessions = [];
+  try{ sessions = await getAllTrainingSessions(); } catch(e){}
+  let bwLine = [];
+  try{ bwLine = await bodyweightTimeline(); } catch(e){}
+  const loadOf = sn => sn.type === 'strength' ? sessionLoadOf(sn, bodyweightOn(bwLine, sn.date))
+    : sn.type === 'run' ? (sn.distanceKm ? sn.distanceKm * 90 : (sn.durationMin || 0) * 15) : 0;
+  const typical = {};
+  ['strength', 'run'].forEach(t=>{
+    const past = sessions.filter(sn=> sn && sn.type === t && sn.date < todayStr && sn.date >= shiftDateStr(todayStr, -60)).map(loadOf).filter(v=> v > 0);
+    typical[t] = past.length >= 3 ? medianOf(past) : null;
+  });
+  const drainFor = (type, load)=>{
+    const t = typical[type];
+    const raw = t ? CHARGE_SESSION_TYPICAL * load / t : CHARGE_SESSION_TYPICAL;
+    return Math.round(Math.max(CHARGE_SESSION_MIN, Math.min(CHARGE_SESSION_MAX, raw)));
+  };
+  const today = sessions.filter(sn=> sn && sn.date === todayStr && (sn.type === 'strength' || sn.type === 'run')
+    && (o.before == null || (sn.timestamp || 0) < o.before))
+    .sort((a, b)=> (a.timestamp || 0) - (b.timestamp || 0));
+  today.forEach(sn=>{
+    const load = loadOf(sn);
+    if(load > 0) parts.push({ label: sn.type === 'run' ? 'run' : 'lift', pts: drainFor(sn.type, load) });
+  });
+  let entry = null;
+  try{ entry = JSON.parse((await window.storage.get(keyFor(todayStr))).value); } catch(e){}
+  // Runs Health saw that were not logged in the app (a Garmin run you never opened Dogfood for).
+  if(o.before == null && entry && Array.isArray(entry.appleRuns) && !today.some(sn=> sn.type === 'run')){
+    entry.appleRuns.forEach(r=>{
+      const load = r.distanceKm ? r.distanceKm * 90 : (r.durationMin || 0) * 15;
+      if(load > 0) parts.push({ label: 'run', pts: drainFor('run', load) });
+    });
+  }
+  if(o.before == null && entry){
+    const now = new Date(o.at || Date.now());
+    const wake = typeof entry.wakeClock === 'string' ? entry.wakeClock.split(':').map(Number) : null;
+    const wakeH = wake && !isNaN(wake[0]) ? wake[0] + (wake[1] || 0) / 60 : 7;
+    const awakeH = Math.max(0, now.getHours() + now.getMinutes() / 60 - wakeH);
+    // Activity: steps so far against your usual by this hour, over a sixteen-hour day.
+    if(entry.steps != null){
+      const usual = [];
+      for(let i = 1; i <= 14; i++){
+        try{ const e = JSON.parse((await window.storage.get(keyFor(shiftDateStr(todayStr, -i)))).value); if(e && e.steps > 0) usual.push(+e.steps); } catch(err){}
+      }
+      if(usual.length >= 5){
+        const runMin = today.filter(sn=> sn.type === 'run').reduce((a, sn)=> a + (+sn.durationMin || 0), 0)
+          + ((entry.appleRuns || []).reduce((a, r)=> a + (+r.durationMin || 0), 0));
+        const soFar = Math.max(0, +entry.steps - 160 * runMin);
+        const expected = medianOf(usual) * Math.min(1, awakeH / 16);
+        const pts = Math.round(Math.min(CHARGE_ACTIVITY_MAX, Math.max(0, (soFar - expected) / CHARGE_STEPS_PER_POINT)));
+        if(pts > 0) parts.push({ label: 'day', pts });
+      }
+    }
+    const longPts = Math.round(Math.min(CHARGE_LONG_DAY_MAX, Math.max(0, awakeH - CHARGE_LONG_DAY_H)));
+    if(longPts > 0) parts.push({ label: 'long day', pts: longPts });
+  }
+  const spent = parts.reduce((a, p)=> a + p.pts, 0);
+  return { charge: Math.max(0, Math.min(100, start - spent)), start, spent, parts };
+}
+
+/* ================= SESSION PERFORMANCE =================
+   How the session itself went, on the same scale as Charge: 50 is a typical session of that
+   kind for you, 100 your best, 0 your worst. The same measurement the score learns from
+   (performanceOutcomes): top sets you entered yourself against each lift's trend, a run's
+   speed per heartbeat (or pace) against your recent runs, as a percentile of your own
+   sessions of the kind. Fewer than eight of them and a 3% spread is assumed, and it says so. */
+function normalCdf(z){
+  const t = 1 / (1 + 0.2316419 * Math.abs(z));
+  const d = 0.3989423 * Math.exp(-z * z / 2);
+  const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+  return z > 0 ? 1 - p : p;
+}
+async function sessionPerformance(date){
+  let sessions = [];
+  try{ sessions = await getAllTrainingSessions(); } catch(e){ return []; }
+  const win = await buildSignalWindow(date, 365);
+  const idxOf = {};
+  win.dates.forEach((d, i)=>{ idxOf[d] = i; });
+  let bwLine = [];
+  try{ bwLine = await bodyweightTimeline(); } catch(e){}
+  const outs = performanceOutcomes(sessions, win, idxOf, bwLine);
+  return outs.filter(o=> o.date === date).map(o=>{
+    const others = outs.filter(x=> x.kind === o.kind && x.date !== date).map(x=> x.r);
+    let mean = 0, sd = 0.03, early = true;
+    if(others.length >= 8){
+      mean = others.reduce((a, b)=> a + b, 0) / others.length;
+      sd = Math.sqrt(others.reduce((a, b)=> a + (b - mean) * (b - mean), 0) / (others.length - 1)) || 0.03;
+      early = false;
+    }
+    const score = Math.max(1, Math.min(99, Math.round(100 * normalCdf((o.r - mean) / sd))));
+    return { kind: o.kind, score, pct: o.r, early };
+  });
+}
+
+/* The day drains while the app is open too: every fifteen minutes, and on coming back to it,
+   the charge is recomputed from the readiness already in hand (no window rebuild). */
+let lastSrResult = null;
+async function refreshCharge(){
+  if(!lastSrResult || !lastSrResult.available || document.hidden) return;
+  try{
+    lastSrResult.charge = await computeCharge(lastSrResult);
+    const shown = updateOverallScore(null, null, null, null, null, lastSrResult);
+    syncHeaderScore(shown);
+  } catch(e){}
+}
+setInterval(refreshCharge, 15 * 60 * 1000);
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) refreshCharge(); });
+
 /* THE NUMBER IN KILOS OR SECONDS. From learnWeights' calibration: how much better or worse
    than your normal your sessions of today's kind have gone per ten points of score. Turned
    into the units of today's session where the plan names a lift you have measured (its
@@ -18320,7 +18456,8 @@ async function scoreMeaning(sr){
   if(!sr || !sr.available || !sr.calib || sr.shown == null) return null;
   const c = sr.calib;
   if(!(c.r > 0.15) || !c.per10) return null;
-  const pct = c.per10 * (sr.shown - 50) / 10;           // fraction vs your normal
+  const now = sr.charge ? sr.charge.charge : sr.shown;   // what is left, not what you woke with
+  const pct = c.per10 * (now - 50) / 10;                 // fraction vs your normal
   const pctTxt = `${pct >= 0 ? '+' : '\u2212'}${Math.abs(pct * 100).toFixed(1)}%`;
   const track = `Tracked ${c.n} of your ${sr.kind === 'run' ? 'runs' : 'lifting sessions'} at r = ${c.r.toFixed(2)}.`;
   let sessions = [];
@@ -18339,7 +18476,7 @@ async function scoreMeaning(sr){
     if(maxes.length >= 3){
       const est = medianOf(maxes.slice(-5));
       const kg = est * pct;
-      return `A ${sr.shown} has meant about ${pctTxt} on your top sets \u2014 roughly ${kg >= 0 ? '+' : '\u2212'}${Math.abs(kg).toFixed(1)} kg on your ${win.planLift} (est. max ${Math.round(est)} kg). ${track}`;
+      return `A ${now} has meant about ${pctTxt} on your top sets \u2014 roughly ${kg >= 0 ? '+' : '\u2212'}${Math.abs(kg).toFixed(1)} kg on your ${win.planLift} (est. max ${Math.round(est)} kg). ${track}`;
     }
   }
   if(sr.kind === 'run'){
@@ -18348,10 +18485,10 @@ async function scoreMeaning(sr){
     if(paces.length >= 3){
       const secPerKm = medianOf(paces.slice(-5));
       const delta = secPerKm / (1 + pct) - secPerKm;      // faster when the score is above 50
-      return `A ${sr.shown} has meant about ${pctTxt} on your runs \u2014 roughly ${Math.abs(Math.round(delta))} s/km ${delta <= 0 ? 'faster' : 'slower'} than your usual ${formatPace(secPerKm / 60)}. ${track}`;
+      return `A ${now} has meant about ${pctTxt} on your runs \u2014 roughly ${Math.abs(Math.round(delta))} s/km ${delta <= 0 ? 'faster' : 'slower'} than your usual ${formatPace(secPerKm / 60)}. ${track}`;
     }
   }
-  return `A ${sr.shown} has meant about ${pctTxt} against your normal ${sr.kind === 'run' ? 'runs' : 'top sets'}. ${track}`;
+  return `A ${now} has meant about ${pctTxt} against your normal ${sr.kind === 'run' ? 'runs' : 'top sets'}. ${track}`;
 }
 
 /* ---------- TWO READINGS THE NIGHTLY SERIES ALREADY SUPPORTS ----------
@@ -22153,7 +22290,29 @@ async function renderSessionComplete(){
     ? `${(x.exercises || []).reduce((n,e)=>n + (e.sets || 0), 0)} sets · ${Math.round(x.totalVolume || 0).toLocaleString()} kg moved${x.durationMin ? ` · ${x.durationMin} min` : ''}`
     : x.type === 'run' ? `${x.distanceKm || '—'} km · ${x.durationMin || '—'} min`
     : `${(x.stretches || []).length} movements · ${Math.round((x.totalHoldSeconds || 0) / 60)} min held`;
-  const detail = today.map(line).join('<br>');
+  /* PERFORMANCE, AND WHAT YOU HAD GOING IN. Each session's own score (sessionPerformance) beside
+     the charge it started on, so a 44 into a 71 reads as a good session on a flat day. */
+  let perf = [], sr = null;
+  try{ perf = await sessionPerformance(todayStr); } catch(e){}
+  try{ sr = await computeSystemicReadiness(todayStr); } catch(e){}
+  const kindOf = x => x.type === 'run' ? 'run' : 'lift';
+  const used = { lift: 0, run: 0 };
+  const perfLine = async x=>{
+    const k = kindOf(x);
+    const mine = perf.filter(p=> p.kind === k);
+    const p = mine[used[k]++];
+    let going = null;
+    try{ const c = sr && sr.available ? await computeCharge(sr, { before: x.timestamp || Date.now() }) : null; going = c ? c.charge : null; } catch(e){}
+    if(!p) return x.type === 'strength'
+      ? `<span class="perf-note">Enter the reps on one top set for a performance score.</span>`
+      : (going != null ? `<span class="perf-note">Charge going in ${going}.</span>` : '');
+    const vs = `${p.pct >= 0 ? '+' : '\u2212'}${Math.abs(p.pct * 100).toFixed(1)}% on your trend`;
+    const call = going == null ? '' : p.score >= going + 10 ? ', better than your charge said' : p.score <= going - 10 ? ', under what your charge said' : ', about what your charge said';
+    return `<span class="perf-line"><b>Performance ${p.score}</b> \u00b7 ${vs}${going != null ? ` \u00b7 charge going in ${going}` : ''}${call}${p.early ? ' (early: few sessions to compare)' : ''}</span>`;
+  };
+  const rows = [];
+  for(const x of today){ rows.push(line(x) + (x.type === 'strength' || x.type === 'run' ? '<br>' + await perfLine(x) : '')); }
+  const detail = rows.join('<br>');
   host.innerHTML = `<div class="session-complete"><b>${today.length > 1 ? 'Workouts complete' : 'Workout complete'}</b>${detail}</div>`;
 }
 async function renderWeekGrid(){
@@ -25993,7 +26152,10 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
        pinned at 98 through most of a day's testing — and that "68" meant something real. The
        meaning was the good part and it survives, one line down, where it reads as a sentence
        rather than as a quantity to watch move. */
-    const shown = srResult.shown;
+    /* CHARGE IS THE NUMBER. What you woke with, less what the day has spent (computeCharge);
+       with nothing spent yet the two are the same and the line under it says how today ranks. */
+    const ch = srResult.charge;
+    const shown = ch ? ch.charge : srResult.shown;
     const meaningEl = document.getElementById('scoreMeaning');
     if(meaningEl){
       scoreMeaning(srResult).then(t=>{ meaningEl.textContent = t || ''; meaningEl.hidden = !t; }).catch(()=>{ meaningEl.hidden = true; });
@@ -26001,6 +26163,16 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
     if(!rollNumber(out, prevNum, shown)) animateNumber(out, isNaN(prevNum) ? 0 : prevNum, shown, 500);
     setEyeScore(shown);
     const rank = srResult.percentile;
+    if(!srResult.gateReason && ch && ch.spent > 0){
+      // Same kinds together ("lifts −31"), so two sessions do not run the line off the screen.
+      const merged = [];
+      ch.parts.forEach(p=>{
+        const m = merged.find(x=> x.label === p.label);
+        if(m){ m.pts += p.pts; m.n++; } else merged.push({ label: p.label, pts: p.pts, n: 1 });
+      });
+      label.textContent = `Woke at ${ch.start} \u00b7 ` + merged.map(p=> `${p.n > 1 ? p.label + 's' : p.label} \u2212${p.pts}`).join(' \u00b7 ');
+      return shown;
+    }
     label.textContent = srResult.gateReason ? 'Not a training read'
       // The ends read badly as percentages — "Below 100% of your days" is a sentence nobody
       // says — so they get words instead of a number.
@@ -40122,6 +40294,8 @@ async function generateRecommendations(){
 
   const goalT = await currentGoalThresholds();
   const srResult = await computeSystemicReadiness(todayStr);
+  try{ if(srResult && srResult.available) srResult.charge = await computeCharge(srResult); } catch(e){}
+  lastSrResult = srResult;
   renderReadinessConfidence(srResult);
   const overallShown = updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, entry, srResult);
   renderScoreTrace(overallShown);
