@@ -1738,6 +1738,8 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   /* What the number has meant for you, in kilos or seconds: one quiet line under the gauge. */
   .session-complete .perf-line, .session-complete .perf-note{ font-size:var(--fs-tag); color:var(--dim); }
   .session-complete .perf-line b{ color:inherit; }
+  .charge-note{ margin-top:var(--sp-2); }
+  .charge-acts{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
   .score-meaning{ font-family:var(--sans); font-size:var(--fs-tag); color:var(--dim); text-align:center; max-width:34ch; margin:6px auto 0; line-height:1.4; text-wrap:balance; }
   .score-note{ font-size:var(--fs-tag); color:var(--dim); margin-top:8px; line-height:1.4; letter-spacing:0.015em; font-weight:var(--fw-medium); }
   /* ---------- TWO VOICES IN A NOTE ----------
@@ -6848,7 +6850,8 @@ if(!window.__pnHold)window.__curtain();
       <div class="group-head"><div class="group-title">Over time</div><div class="group-sub">the whole history, not a trailing window</div></div>
     </div>
     <div class="session-type" id="trendMetricPills">
-      <div class="type-btn active" data-metric="restingHR">Resting HR<i class="btn-legend">bpm</i></div>
+      <div class="type-btn active" data-metric="charge">Charge<i class="btn-legend">0&ndash;100</i></div>
+      <div class="type-btn" data-metric="restingHR">Resting HR<i class="btn-legend">bpm</i></div>
       <div class="type-btn" data-metric="sleepHrs">Sleep<i class="btn-legend">hrs</i></div>
       <div class="type-btn" data-metric="sleepDebt">Debt<i class="btn-legend">hrs</i></div>
       <div class="type-btn" data-metric="weight">Weight<i class="btn-legend">kg</i></div>
@@ -13436,7 +13439,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.023';
+const APP_VERSION = '2026.11.15.024';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13832,6 +13835,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.024': 'Garmin runs log themselves: a run that reaches Apple Health is logged as the run planned that day (or an easy one), with its heart rate, so it counts on your week, your Charge and your Performance. A low Charge before a lifting session now offers to trim it to the main lifts or move it to tomorrow, and a run planned before a lift offers to swap them. Trends shows Charge as it really goes: up overnight, down through each day. And how much a session drains you is learned from your own days with two sessions.',
   '2026.11.15.023': 'The number is your Charge now: how much you have left to perform with. It starts each morning where your readiness is, drops with every workout (more for a bigger one than your usual), with a busier-than-usual day on your feet and with a very long day, and only refills when you sleep. The line under it says where it went (woke at 78 \u00b7 lift \u221214). A second workout is read against what is left. And each session now gets a Performance score of its own when you finish it: how it went against your trend, beside the charge you had going in.',
   '2026.11.15.022': 'Choose where your extra sets go. Settings \u2192 training setup \u2192 Muscles to prioritise: up to four, or a preset (arms & shoulders, glutes & legs, back & posture, or none). Your picks get direct work every week, scaled to how long you lift, and become the block\u2019s emphasis; your first pick is kept longest when a session is short. With nothing picked, arms and shoulders keep their small minimum. Top up follows your picks too.',
   '2026.11.15.021': 'Keep the week you like and still get the arm and shoulder work: Build \u2192 Top up arms & shoulders adds what your planned weeks are short of into the strength days you already have, at the end of each, only where it still fits the session. Your days, sessions and exercises stay exactly as they are, and Undo puts it back.',
@@ -14543,6 +14547,7 @@ async function syncNativeHealthOnce(days){
         }
       } catch(e){}
     }
+    try{ await autoLogHealthRuns(list.map(d=> d.date)); } catch(e){}
     // Last night arriving is today's score changing: redo it now, not on the next visit.
     if(changed.includes(todayStr)){
       try{ await generateRecommendations(); } catch(e){}
@@ -14552,6 +14557,68 @@ async function syncNativeHealthOnce(days){
   } catch(e){
     return { error: (e && e.message) || 'read failed', synced: 0, dates: [] };
   }
+}
+/* RUNS FROM APPLE HEALTH BECOME LOGGED RUNS. A Garmin run reached Health and the day's record
+   (appleRuns) but never the training log, so it missed the week's board, the plan's "done",
+   the run history, the Performance score and Charge's session drain. Now each one is logged
+   the way a run you entered is, matched to the run planned that day (its slot and type) or,
+   unplanned, given the slot its start time falls in and called easy. A run already logged
+   that day of about the same length (within a fifth, or five minutes) is the same run and is
+   left alone, with Health's heart rate added if it had none. Marked source:'Apple Health' so
+   it can be told apart and edited like any other. */
+async function autoLogHealthRuns(dates){
+  let sessions = [];
+  try{ sessions = await getAllTrainingSessions(); } catch(e){ return 0; }
+  let made = 0, fresh = null;
+  for(const date of [...new Set(dates || [])]){
+    let entry = null;
+    try{ entry = JSON.parse((await window.storage.get(keyFor(date))).value); } catch(e){}
+    const runs = entry && Array.isArray(entry.appleRuns) ? entry.appleRuns : [];
+    if(!runs.length) continue;
+    for(const r of runs){
+      if(!r || !(r.durationMin > 0)) continue;
+      const same = sessions.find(sn=> sn && sn.type === 'run' && sn.date === date
+        && (sn.healthStart === r.start || (sn.durationMin && Math.abs(sn.durationMin - r.durationMin) <= Math.max(5, r.durationMin * 0.2))));
+      if(same){
+        if(same.avgHR == null && r.avgHR && !same.healthStart){
+          const keys = ((await window.storage.list(`training:${date}:`)).keys || []);
+          for(const k of keys){
+            try{ const v = JSON.parse((await window.storage.get(k)).value); if(v && v.timestamp === same.timestamp && v.type === 'run'){ v.avgHR = r.avgHR; await window.storage.set(k, JSON.stringify(v)); } } catch(e){}
+          }
+        }
+        continue;
+      }
+      let slot = null, runType = null;
+      for(const sl of ['am', 'pm']){
+        try{ const b = JSON.parse((await window.storage.get(`weekplan:${date}:${sl}`)).value); if(b && b.type === 'run' && !slot){ slot = sl; runType = b.details && b.details.runType; } } catch(e){}
+      }
+      const startMs = Date.parse(r.start);
+      if(!slot) slot = !isNaN(startMs) && new Date(startMs).getHours() >= 12 ? 'pm' : 'am';
+      const ts = !isNaN(startMs) ? startMs + Math.round(r.durationMin * 60000) : Date.now();
+      const session = { date, slot, type:'run', timestamp: ts, runType: runType || 'easy',
+        distanceKm: r.distanceKm || null, durationMin: r.durationMin, avgHR: r.avgHR || null,
+        pace: r.distanceKm ? paceLabel(r.distanceKm, r.durationMin) : '',
+        notes: '', source: 'Apple Health', healthStart: r.start || null, healthSource: r.source || null };
+      try{
+        await window.storage.set(`training:${date}:${ts}`, JSON.stringify(session));
+        sessions.push(session); made++;
+        if(date >= shiftDateStr(todayStr, -1)) fresh = session;
+        if(date === todayStr){
+          let had = null;
+          try{ had = JSON.parse((await window.storage.get(`sessionSummary:${date}`)).value); } catch(e){}
+          if(!had) await window.storage.set(`sessionSummary:${date}`, JSON.stringify(session));
+        }
+      } catch(e){}
+    }
+  }
+  if(made){
+    try{ invalidateTrainingSessions(); } catch(e){}
+    try{ invalidateSignalWindows(); } catch(e){}
+    if(fresh) showToast(`Logged your ${fresh.distanceKm ? fresh.distanceKm.toFixed(1) + ' km ' : ''}run from ${fresh.healthSource || 'Apple Health'}`);
+    try{ renderWeekGrid(); } catch(e){}
+    try{ renderTodayWorkoutSummary(); } catch(e){}
+  }
+  return made;
 }
 function renderNativeHealthStatus(message){
   const el = document.getElementById('appleHealthStatus');
@@ -18335,10 +18402,54 @@ async function computeSystemicReadiness(asOfDate){
 const CHARGE_SESSION_TYPICAL = 13, CHARGE_SESSION_MIN = 4, CHARGE_SESSION_MAX = 30;
 const CHARGE_STEPS_PER_POINT = 2000, CHARGE_ACTIVITY_MAX = 8;
 const CHARGE_LONG_DAY_H = 12, CHARGE_LONG_DAY_MAX = 6;
+/* HOW MUCH A SESSION REALLY TAKES OUT OF YOU, LEARNED FROM DAYS WITH TWO. The second session
+   of a day is the only measurement of the first one's cost: the morning said X, the first
+   session drained D, and the second came out at r against your trend. With the score's own
+   calibration (r per ten points of charge), the charge the second session must have been on
+   is 50 + 10 r / per10, so the first cost (X - that) / D times the starting figure. Averaged
+   over such days and shrunk toward 1 by four days' worth of prior, held between 0.4 and 2.
+   Needs the score's calibration for that kind of session and at least two such days. */
+let _drainCache = null;
+async function learnedDrainFactor(sr){
+  if(_drainCache && _drainCache.date === todayStr) return _drainCache.k;
+  let k = 1;
+  try{
+    const L = sr && sr.learned;
+    const series = sr && sr.shownSeries;
+    if(L && L.calib && series){
+      const sessions = (await getAllTrainingSessions()).filter(sn=> sn && (sn.type === 'strength' || sn.type === 'run'));
+      const byDate = {};
+      sessions.forEach(sn=>{ (byDate[sn.date] = byDate[sn.date] || []).push(sn); });
+      const ratios = [];
+      for(const date of Object.keys(byDate)){
+        if(date >= todayStr || byDate[date].length < 2 || series[date] == null) continue;
+        const day = byDate[date].sort((a, b)=> (a.timestamp || 0) - (b.timestamp || 0));
+        const perf = await sessionPerformance(date);
+        const second = day[1];
+        const kind = second.type === 'run' ? 'run' : 'lift';
+        const c = L.calib[kind];
+        const p = perf.filter(x=> x.kind === kind).slice(-1)[0];
+        if(!c || !(c.per10 > 0) || !p) continue;
+        const before = await computeCharge(sr, { date, before: second.timestamp, raw: true, start: series[date] });
+        if(!before || !(before.spent > 0)) continue;
+        const implied = 50 + 10 * p.pct / c.per10;
+        ratios.push((series[date] - implied) / before.spent);
+      }
+      if(ratios.length >= 2){
+        const mean = ratios.reduce((a, b)=> a + b, 0) / ratios.length;
+        k = Math.max(0.4, Math.min(2, (ratios.length * mean + 4 * 1) / (ratios.length + 4)));
+      }
+    }
+  } catch(e){}
+  _drainCache = { date: todayStr, k };
+  return k;
+}
 async function computeCharge(sr, opts){
   const o = opts || {};
   if(!sr || !sr.available || sr.shown == null) return null;
-  const start = sr.shown;
+  const day = o.date || todayStr;
+  const start = o.start != null ? o.start : sr.shown;
+  const k = o.raw ? 1 : await learnedDrainFactor(sr);
   const parts = [];
   let sessions = [];
   try{ sessions = await getAllTrainingSessions(); } catch(e){}
@@ -18348,15 +18459,15 @@ async function computeCharge(sr, opts){
     : sn.type === 'run' ? (sn.distanceKm ? sn.distanceKm * 90 : (sn.durationMin || 0) * 15) : 0;
   const typical = {};
   ['strength', 'run'].forEach(t=>{
-    const past = sessions.filter(sn=> sn && sn.type === t && sn.date < todayStr && sn.date >= shiftDateStr(todayStr, -60)).map(loadOf).filter(v=> v > 0);
+    const past = sessions.filter(sn=> sn && sn.type === t && sn.date < day && sn.date >= shiftDateStr(day, -60)).map(loadOf).filter(v=> v > 0);
     typical[t] = past.length >= 3 ? medianOf(past) : null;
   });
   const drainFor = (type, load)=>{
     const t = typical[type];
     const raw = t ? CHARGE_SESSION_TYPICAL * load / t : CHARGE_SESSION_TYPICAL;
-    return Math.round(Math.max(CHARGE_SESSION_MIN, Math.min(CHARGE_SESSION_MAX, raw)));
+    return Math.round(Math.max(CHARGE_SESSION_MIN, Math.min(CHARGE_SESSION_MAX, raw * k)));
   };
-  const today = sessions.filter(sn=> sn && sn.date === todayStr && (sn.type === 'strength' || sn.type === 'run')
+  const today = sessions.filter(sn=> sn && sn.date === day && (sn.type === 'strength' || sn.type === 'run')
     && (o.before == null || (sn.timestamp || 0) < o.before))
     .sort((a, b)=> (a.timestamp || 0) - (b.timestamp || 0));
   today.forEach(sn=>{
@@ -18364,7 +18475,7 @@ async function computeCharge(sr, opts){
     if(load > 0) parts.push({ label: sn.type === 'run' ? 'run' : 'lift', pts: drainFor(sn.type, load) });
   });
   let entry = null;
-  try{ entry = JSON.parse((await window.storage.get(keyFor(todayStr))).value); } catch(e){}
+  try{ entry = JSON.parse((await window.storage.get(keyFor(day))).value); } catch(e){}
   // Runs Health saw that were not logged in the app (a Garmin run you never opened Dogfood for).
   if(o.before == null && entry && Array.isArray(entry.appleRuns) && !today.some(sn=> sn.type === 'run')){
     entry.appleRuns.forEach(r=>{
@@ -18373,7 +18484,8 @@ async function computeCharge(sr, opts){
     });
   }
   if(o.before == null && entry){
-    const now = new Date(o.at || Date.now());
+    // A past day is read at its end; today, now.
+    const now = new Date(o.at || (day === todayStr ? Date.now() : localDateFrom(day).getTime() + 22.5 * 3600000));
     const wake = typeof entry.wakeClock === 'string' ? entry.wakeClock.split(':').map(Number) : null;
     const wakeH = wake && !isNaN(wake[0]) ? wake[0] + (wake[1] || 0) / 60 : 7;
     const awakeH = Math.max(0, now.getHours() + now.getMinutes() / 60 - wakeH);
@@ -18381,7 +18493,7 @@ async function computeCharge(sr, opts){
     if(entry.steps != null){
       const usual = [];
       for(let i = 1; i <= 14; i++){
-        try{ const e = JSON.parse((await window.storage.get(keyFor(shiftDateStr(todayStr, -i)))).value); if(e && e.steps > 0) usual.push(+e.steps); } catch(err){}
+        try{ const e = JSON.parse((await window.storage.get(keyFor(shiftDateStr(day, -i)))).value); if(e && e.steps > 0) usual.push(+e.steps); } catch(err){}
       }
       if(usual.length >= 5){
         const runMin = today.filter(sn=> sn.type === 'run').reduce((a, sn)=> a + (+sn.durationMin || 0), 0)
@@ -18396,7 +18508,7 @@ async function computeCharge(sr, opts){
     if(longPts > 0) parts.push({ label: 'long day', pts: longPts });
   }
   const spent = parts.reduce((a, p)=> a + p.pts, 0);
-  return { charge: Math.max(0, Math.min(100, start - spent)), start, spent, parts };
+  return { charge: Math.max(0, Math.min(100, start - spent)), start, spent, parts, drainFactor: k };
 }
 
 /* ================= SESSION PERFORMANCE =================
@@ -39647,6 +39759,48 @@ async function renderTodayWorkoutSummary(){
       }
     }
   } catch(e){}
+  /* CHARGE, ACTING ON THE PLAN. A low charge before a lifting session is a reason to change
+     the session, not only a number to look at, so the card offers the change:
+       under 35   trim to the main lifts, or move the session to tomorrow (if tomorrow has no
+                  lifting of its own); moving swaps the two days, the same as dragging one
+       a run also planned today, before the lift, on a strength-led week:
+                  swap the order, since a run first costs the lift more than the other way round
+     Only for a session not yet logged, and only once there is a charge to read. */
+  let chargeNote = '', chargeActs = null;
+  try{
+    const ch = lastSrResult && lastSrResult.available ? lastSrResult.charge : null;
+    const loggedToday = (await getAllTrainingSessions()).some(sn=> sn && sn.date === todayStr && sn.type === block.type);
+    if(ch && !loggedToday && block.type === 'strength'){
+      const tomorrow = shiftDateStr(todayStr, 1);
+      let tomorrowLifts = false;
+      for(const sl of ['am', 'pm']){ try{ const b = JSON.parse((await window.storage.get(`weekplan:${tomorrow}:${sl}`)).value); if(b && b.type === 'strength') tomorrowLifts = true; } catch(e){} }
+      let runFirst = false;
+      try{
+        const am = JSON.parse((await window.storage.get(`weekplan:${todayStr}:am`)).value);
+        const pm = JSON.parse((await window.storage.get(`weekplan:${todayStr}:pm`)).value);
+        const goals = await getCurrentGoals(todayStr);
+        const top = goals && goals.list && goals.list[0] ? goals.list[0].type : null;
+        // Only while the run is still ahead: a run already done (or already in from Health) has no order left to change.
+        const ranToday = (await getAllTrainingSessions()).some(sn=> sn && sn.date === todayStr && sn.type === 'run');
+        runFirst = !ranToday && am && am.type === 'run' && pm && pm.type === 'strength' && (top === 'strength' || top === 'hypertrophy');
+      } catch(e){}
+      const btns = [];
+      let say = '';
+      if(ch.charge < 35){
+        say = `Charge is ${ch.charge}, low for a lifting session. Keep the main lifts and drop the rest, or move it to a fresher day.`;
+        btns.push('<button type="button" class="small outline" id="chargeTrimBtn">Main lifts only</button>');
+        if(!tomorrowLifts) btns.push('<button type="button" class="small outline" id="chargeMoveBtn">Move to tomorrow</button>');
+      }
+      if(runFirst){
+        say = (say ? say + ' ' : '') + 'Today\u2019s run is planned before the lift. Lifting first costs the run less than running first costs the lift.';
+        btns.push('<button type="button" class="small outline" id="chargeSwapBtn">Lift first</button>');
+      }
+      if(say){
+        chargeNote = `<div class="charge-note"><div class="score-note">${say}</div><div class="charge-acts">${btns.join('')}</div></div>`;
+        chargeActs = { tomorrow };
+      }
+    }
+  } catch(e){}
   container.innerHTML = `
     <div class="group today-session" style="margin-top:0;">
       <div class="group-head"><div class="group-title">${sessionTitle(block)}</div>${planEst}</div>
@@ -39658,8 +39812,39 @@ async function renderTodayWorkoutSummary(){
         ${focusNote}
         ${deloadNote}
         ${adjustmentNote}
+        ${chargeNote}
       </div>
     </div>`;
+  if(chargeActs){
+    document.getElementById('chargeTrimBtn')?.addEventListener('click', async ()=>{
+      const before = await readRaw(`weekplan:${todayStr}:am`), beforePm = await readRaw(`weekplan:${todayStr}:pm`);
+      const ok = await mutateTodayStrengthPlan(list=>{
+        const keep = list.filter(ex=> ex && (ex.isMainLift || ex.goalNamed || ex.isSkillWork));
+        const kept = keep.length ? keep : list.slice(0, 2);
+        list.splice(0, list.length, ...kept);
+        return true;
+      });
+      if(ok){
+        offerWeekUndo([{ key:`weekplan:${todayStr}:am`, value: before, date: todayStr }, { key:`weekplan:${todayStr}:pm`, value: beforePm, date: todayStr }], 'trim');
+        showToast('Trimmed to the main lifts');
+        renderTodayWorkoutSummary();
+      }
+    });
+    document.getElementById('chargeMoveBtn')?.addEventListener('click', async ()=>{
+      if(await moveDayPlan(todayStr, chargeActs.tomorrow)){ showToast('Moved to tomorrow'); renderWeekGrid(); renderTodayWorkoutSummary(); }
+    });
+    document.getElementById('chargeSwapBtn')?.addEventListener('click', async ()=>{
+      const am = await readRaw(`weekplan:${todayStr}:am`), pm = await readRaw(`weekplan:${todayStr}:pm`);
+      try{
+        await window.storage.set(`weekplan:${todayStr}:am`, pm);
+        await window.storage.set(`weekplan:${todayStr}:pm`, am);
+        await syncPlannedSessionMirror(todayStr);
+        offerWeekUndo([{ key:`weekplan:${todayStr}:am`, value: am, date: todayStr }, { key:`weekplan:${todayStr}:pm`, value: pm, date: todayStr }], 'swap');
+        showToast('Lift first, run after');
+        renderWeekGrid(); renderTodayWorkoutSummary();
+      } catch(e){ showToast('Could not swap them', true); }
+    });
+  }
   // Reschedule/Skip decide whether today happens at all, so they're up at #todayTopActions,
   // above the warm-up. Replace/edit decides what the session contains, which only makes
   // sense once you've seen the whole thing — after the cooldown, at #todayPlanActions.
@@ -40646,7 +40831,7 @@ async function refreshRecHistory(){
   } catch(e){ list.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg><span>No history yet</span></div>'; }
 }
 /* ---------- TRENDS ---------- */
-let selectedTrendMetric = 'restingHR';
+let selectedTrendMetric = 'charge';
 document.querySelectorAll('#trendMetricPills .type-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('#trendMetricPills .type-btn').forEach(b=>b.classList.remove('active'));
@@ -40686,7 +40871,7 @@ function aggregatePoints(points, period){
   return Object.keys(buckets).sort().map(k=>({ x:k, y: Math.round((buckets[k].reduce((a,b)=>a+b,0)/buckets[k].length)*100)/100 }));
 }
 
-const METRIC_LABELS = { restingHR:'Resting HR', sleepHrs:'Sleep', hrv:'HRV', sleepScore:'Sleep score', loadRatio:'Load ratio', sleepDebt:'Sleep debt', weight:'Weight', bodyFat:'Body fat %' };
+const METRIC_LABELS = { charge:'Charge', restingHR:'Resting HR', sleepHrs:'Sleep', hrv:'HRV', sleepScore:'Sleep score', loadRatio:'Load ratio', sleepDebt:'Sleep debt', weight:'Weight', bodyFat:'Body fat %' };
 // Uncertainty band for body fat % — sourced from a study comparing tetrapolar BIA scales
 // (covers most hand-to-foot consumer models) against DEXA as ground truth. Not calibrated
 // to your specific unit or body — provisional until checked against a real DEXA reading.
@@ -40732,7 +40917,25 @@ async function renderTrendChart(){
   }
 
   let dataPoints = [];
-  if(selectedTrendMetric === 'restingHR'){
+  if(selectedTrendMetric === 'charge'){
+    /* THE SAWTOOTH. Two points a day: the morning (readiness, what the night refilled) at the
+       time you woke, and the evening (what the day left) at half past ten, so the line climbs
+       overnight and falls through each day. Over weeks or months, the mornings alone. */
+    try{
+      const sr = await computeSystemicReadiness(todayStr);
+      const series = (sr && sr.available && sr.shownSeries) || {};
+      for(const d of Object.keys(series).sort()){
+        const e = entries.find(x=> x && x.date === d);
+        const wake = e && typeof e.wakeClock === 'string' ? e.wakeClock : '07:00';
+        dataPoints.push({ x: `${d}T${wake}`, y: series[d] });
+        if(selectedTrendPeriod === 'daily'){
+          const c = d === todayStr && sr.charge ? sr.charge : await computeCharge(sr, { date: d, start: series[d] });
+          if(c && c.spent > 0) dataPoints.push({ x: d === todayStr ? (()=>{ const n = new Date(); return `${d}T${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; })() : `${d}T22:30`, y: c.charge });
+        }
+      }
+      if(selectedTrendPeriod !== 'daily') dataPoints = dataPoints.map(p=> ({ x: p.x.slice(0, 10), y: p.y }));
+    } catch(e){}
+  } else if(selectedTrendMetric === 'restingHR'){
     dataPoints = entries.filter(e=>e.restingHR!=null).map(e=>({x:e.date, y:+e.restingHR}));
   } else if(selectedTrendMetric === 'sleepHrs'){
     dataPoints = entries.filter(e=>e.durationHrs!=null).map(e=>({x:e.date, y:+e.durationHrs}));
@@ -40764,6 +40967,7 @@ async function renderTrendChart(){
   renderTrendFlags(aggregated);
 
   const METRIC_COLORS = {
+    charge: { line:'var(--block-lime)', fill:'color-mix(in srgb, var(--block-lime) 15%, transparent)' },
     restingHR: { line:'#4ec9e8', fill:'rgba(78,201,232,0.15)' },
     sleepHrs: { line:'var(--block-lime)', fill:'color-mix(in srgb, var(--block-lime) 15%, transparent)' },
     hrv: { line:'#4ec9e8', fill:'rgba(78,201,232,0.15)' },
@@ -40814,8 +41018,9 @@ const TREND_H = 200, TREND_PAD_L = 34, TREND_PAD_R = 8, TREND_PAD_T = 10, TREND_
    'YYYY-MM' and stand for the first of that month. Anything else returns null, which puts the
    chart back on index spacing rather than guessing. */
 function trendTimeOf(x){
-  const m = /^(\d{4})-(\d{2})(?:-(\d{2}))?$/.exec(String(x));
-  return m ? new Date(+m[1], +m[2] - 1, m[3] ? +m[3] : 1).getTime() : null;
+  // A time of day may follow (YYYY-MM-DDTHH:MM), for series with more than one point a day.
+  const m = /^(\d{4})-(\d{2})(?:-(\d{2}))?(?:T(\d{2}):(\d{2}))?$/.exec(String(x));
+  return m ? new Date(+m[1], +m[2] - 1, m[3] ? +m[3] : 1, m[4] ? +m[4] : 0, m[5] ? +m[5] : 0).getTime() : null;
 }
 /* Roughly how much room a date label needs before the next one starts sitting on it. */
 const TREND_LABEL_GAP_PX = 46;
@@ -40921,7 +41126,7 @@ function drawTrendChart(host, points, colours, band, label, emptyNote){
   }
   const xLabels = points.map((p, i)=>{
     if(!labelled.has(i)) return '';
-    const t = String(p.x).slice(5).replace('-', '/');
+    const t = String(p.x).slice(5, 10).replace('-', '/');   // a time of day after the date is not labelled
     const x = X(i);
     /* The outermost labels are anchored to the edge they sit on rather than centred over it.
        The last point is drawn at w - TREND_PAD_R, so half of a centred "09/03" hung past the
