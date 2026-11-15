@@ -26,6 +26,8 @@ import HealthKit
    hrNadirFrac      where in the night that low came: 0 falling asleep, 1 waking
    respiratoryRate  breaths/min, overnight average
    wristTempC       degrees C, Apple's sleeping wrist temperature (absolute, iOS 16+)
+   weightKg         the day's first weigh-in, kg (a smart scale such as Withings writes it)
+   bodyFatPct       the day's first body-fat reading, percent
    steps            count for the day
    activeCalories   kcal for the day
    sleepHours       time asleep in the night ending that morning, from ONE source (see readSleep)
@@ -51,7 +53,8 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
     private var readTypes: Set<HKObjectType> {
         var types = Set<HKObjectType>()
         let ids: [HKQuantityTypeIdentifier] = [
-            .heartRate, .restingHeartRate, .respiratoryRate, .stepCount, .activeEnergyBurned
+            .heartRate, .restingHeartRate, .respiratoryRate, .stepCount, .activeEnergyBurned,
+            .bodyMass, .bodyFatPercentage
         ]
         for id in ids {
             if let t = HKObjectType.quantityType(forIdentifier: id) { types.insert(t) }
@@ -133,6 +136,13 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
             sum(.activeEnergyBurned, HKUnit.kilocalorie(), dayStart, dayEnd, group) { total in
                 if let total = total { set(key, "activeCalories", Int(total.rounded())) }
             }
+            // The day's FIRST weigh-in: the morning one, before food and water move it.
+            firstSample(.bodyMass, HKUnit.gramUnit(with: .kilo), dayStart, dayEnd, group) { v in
+                if let v = v { set(key, "weightKg", (v * 10).rounded() / 10) }
+            }
+            firstSample(.bodyFatPercentage, HKUnit.percent(), dayStart, dayEnd, group) { v in
+                if let v = v { set(key, "bodyFatPct", (v * 1000).rounded() / 10) }
+            }
             readSleep(nightStart, nightEnd, group, { fields in
                 for (field, value) in fields {
                     if field == "bedStart" || field == "wakeAt", let d = value as? Date {
@@ -175,6 +185,23 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         let query = HKStatisticsQuery(quantityType: type, quantitySamplePredicate: predicate,
                                       options: .discreteAverage) { _, stats, _ in
             done(stats?.averageQuantity()?.doubleValue(for: unit))
+            group.leave()
+        }
+        store.execute(query)
+    }
+
+    /* The earliest sample of a type in the span, for things measured once a day on a scale
+       (a Withings writes weight and body fat to Health). The first, not the mean: a second
+       weigh-in after breakfast is a different body from the morning one. */
+    private func firstSample(_ id: HKQuantityTypeIdentifier, _ unit: HKUnit, _ start: Date, _ end: Date,
+                             _ group: DispatchGroup, _ done: @escaping (Double?) -> Void) {
+        guard let type = HKQuantityType.quantityType(forIdentifier: id) else { return }
+        group.enter()
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+        let query = HKSampleQuery(sampleType: type, predicate: predicate, limit: 1, sortDescriptors: [sort]) { _, samples, _ in
+            let q = (samples?.first as? HKQuantitySample)?.quantity.doubleValue(for: unit)
+            done(q)
             group.leave()
         }
         store.execute(query)

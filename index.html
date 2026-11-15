@@ -13419,7 +13419,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.017';
+const APP_VERSION = '2026.11.15.018';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13815,6 +13815,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.018': 'Your scale counts now. In the iPhone app your weight and body fat come from Apple Health (a Withings writes them there), morning weigh-in first, and never over a day you saved yourself. Weight is read as a smoothed trend rather than this morning\u2019s water, for your bodyweight lifts and strength level; body fat is the middle of the last two weeks, so one odd reading can no longer start a cut; pull-ups and dips now count toward how the score learns; and waking more than 1% under your trend is read as short on water.',
   '2026.11.15.017': 'In the iPhone app the morning no longer asks how long you slept. It waits for Apple Health to answer instead of asking before the read had finished; if last night is not in Health yet, it says so (the Oura app puts it there when it syncs) and fills itself in when you come back. Not connected yet, it offers the connection. Typing it in is still there, folded away.',
   '2026.11.15.016': 'The score reads today for what today asks. A lifting day and a running day are weighed differently and each learns from its own sessions; it counts what is still spent in the muscles today\u2019s session uses (heavy squats yesterday matter to today\u2019s deadlift, not your bench); and it notices a late bedtime, a heart rate that bottomed out late in the night, and jet lag after a time-zone change. Once it has enough sessions, a line under the number says what it has meant for you in kilos or seconds per km, and how well it has tracked you. Progress no longer reads as readiness: each session is judged against your trend through it. And the illness check stands down properly: it compares each night with a moving normal and clears within days, where a slow drift in resting heart rate could hold the score down for weeks.',
   '2026.11.15.015': 'The readiness number now answers how well you can perform today, and tunes itself to you by checking each morning against what you then did: your top sets against that lift\u2019s recent normal, your runs\u2019 speed per heartbeat against your recent runs. It also reads fitness minus fatigue from your whole training history (so a hard week turns into a good one instead of just reading as tired), how much you walked yesterday outside training, and how long you will have been awake at the hour you usually train. Last night\u2019s sleep now counts as last night, not as an average of the week around it. 50 is a typical day for you, 100 your best, 0 your worst. All automatic.',
@@ -14408,7 +14409,7 @@ function tzLog(){ try{ return JSON.parse(localStorage.getItem(TZ_LOG_KEY) || '{}
 const NATIVE_HEALTH_KEY = 'settings:nativeHealth';
 const NATIVE_HEALTH_LAST_KEY = 'settings:nativeHealthLastSync';
 const NATIVE_HEALTH_AUTH_KEY = 'settings:nativeHealthAuth';
-const NATIVE_HEALTH_AUTH_V = '2';   // bump when HealthBridge reads a new type
+const NATIVE_HEALTH_AUTH_V = '3';   // bump when HealthBridge reads a new type (3: weight, body fat)
 function nativeHealthOn(){ try{ return localStorage.getItem(NATIVE_HEALTH_KEY) === 'on'; } catch(e){ return false; } }
 async function connectNativeHealth(){
   if(!NativeHealth) return { error: 'not-native' };
@@ -14489,6 +14490,26 @@ async function syncNativeHealthOnce(days){
       if(Object.keys(fill).length){
         await window.storage.set(keyFor(d.date), JSON.stringify({ ...existing, ...fill, date: d.date }));
         changed.push(d.date);
+      }
+      /* THE SCALE. A Withings (or any scale writing to Health) puts the morning weigh-in in
+         bodymetrics: for that day, where every weight reader already looks. A day you saved
+         yourself is left alone; a day Health filled before is refreshed if the scale says
+         otherwise. Height carries over from the last record, since a scale does not know it. */
+      if(typeof d.weightKg === 'number' && d.weightKg > 20){
+        let bm = null;
+        try{ bm = JSON.parse((await window.storage.get(`bodymetrics:${d.date}`)).value); } catch(e){}
+        if(!bm || bm.source === 'Apple Health'){
+          let prev = null;
+          try{ prev = await getLatestBodyMetrics(d.date); } catch(e){}
+          const rec = { date: d.date, height: (bm && bm.height) ?? (prev && prev.height) ?? null,
+            weight: num(d.weightKg, 1), bodyFat: typeof d.bodyFatPct === 'number' ? num(d.bodyFatPct, 1) : ((bm && bm.bodyFat) ?? null),
+            source: 'Apple Health' };
+          if(!bm || bm.weight !== rec.weight || bm.bodyFat !== rec.bodyFat){
+            await window.storage.set(`bodymetrics:${d.date}`, JSON.stringify(rec));
+            invalidateBodyweightTimeline();
+            if(!changed.includes(d.date)) changed.push(d.date);
+          }
+        }
       }
     }
     try{ localStorage.setItem(NATIVE_HEALTH_LAST_KEY, new Date().toISOString()); } catch(e){}
@@ -15804,6 +15825,25 @@ async function buildSignalWindowUncached(asOfDate, days){
   _sessions.forEach(sn=>{ if(sn && sn.startedAt){ const t = new Date(sn.startedAt); if(!isNaN(t)) startHours.push(t.getHours() + t.getMinutes() / 60); } });
   entries.forEach(e=>{ if(e && Array.isArray(e.appleRuns)) e.appleRuns.forEach(r=>{ const t = r && r.start ? new Date(r.start) : null; if(t && !isNaN(t)) startHours.push(t.getHours() + t.getMinutes() / 60); }); });
   const trainHour = startHours.length >= 5 ? medianOf(startHours.slice(-30)) : null;
+  /* LIGHTER THAN YOUR TREND THIS MORNING. Body mass is the field test for hydration: a
+     morning weigh-in more than about 1% under your own trend is the usual sign of going into
+     the day short of water, and a 2% loss is where endurance and repeated-effort performance
+     measurably fall. One-sided with a 1% deadband: day-to-day scale noise reads nothing, a
+     heavy morning (salt, a big dinner) earns nothing, and each further 1% under costs a point.
+     Against the trend up to yesterday, so a cut, which moves the trend, is not read as thirst.
+     Needs a weigh-in that morning, which is what a scale writing to Health supplies. */
+  let _bwHyd = [];
+  try{ _bwHyd = await bodyweightTimeline(); } catch(err){}
+  const hydrationSeries = dates.map(d=>{
+    const today = _bwHyd.find(r=> r.date === d);
+    if(!today) return null;
+    const before = _bwHyd.filter(r=> r.date < d);
+    if(before.length < 5) return null;
+    const trend = bodyweightOn(before, shiftDateStr(d, -1));
+    if(!(trend > 0)) return null;
+    const under = (trend - today.weight) / trend * 100;
+    return under > 1 ? Math.max(-SIG_CLAMP, -(under - 1)) : 0;
+  });
   /* WHEN THE NIGHT BOTTOMED OUT. Heart rate normally reaches its low in the first half of the
      night; a low that comes late, close to waking, is a body still busy with something (a
      drink, a late meal, a hard day, a bug). Stored as 0 at falling asleep to 1 at waking. Read
@@ -15999,6 +16039,7 @@ async function buildSignalWindowUncached(asOfDate, days){
     // Absolute, like regularity: already on the score's own scale.
     localFatigue: absoluteChannel(localSeries),
     jetLag:   absoluteChannel(jetSeries),
+    hydration: absoluteChannel(hydrationSeries),
     // Not inverted: more form is more readiness, which is the one channel here where the
     // obvious direction is the right one.
     form:     normaliseChannel(formSeries, { baselineMask }),
@@ -16143,7 +16184,7 @@ const LEARN_MAX_SHIFT = 0.6;        // a learned weight can never move more than
    Each is a ratio (+0.03 is 3% better than your recent normal), clamped to ±30% so one
    mis-typed weight cannot steer anything, and standardised within its kind before lifts and
    runs are pooled. */
-function performanceOutcomes(sessions, win, idxOf){
+function performanceOutcomes(sessions, win, idxOf, bwLine){
   const out = [];
   const clampR = r => Math.max(-0.3, Math.min(0.3, r));
   /* THE NORMAL A SESSION IS JUDGED AGAINST: your trend through it, not the sessions just
@@ -16200,8 +16241,14 @@ function performanceOutcomes(sessions, win, idxOf){
         const ws = Array.isArray(ex.weightPerSet) && ex.weightPerSet.length ? ex.weightPerSet : [ex.weight];
         const reps = Array.isArray(ex.repsPerSet) && ex.repsPerSet.length ? ex.repsPerSet : [ex.reps];
         let best = null;
+        /* A pull-up or a dip moves your body, so the load is the share of bodyweight the
+           movement carries plus anything added, at your trend weight that day. Without a
+           bodyweight on record such a set has nothing to be measured in and is skipped. */
+        const lf = typeof loadFactorFor === 'function' ? loadFactorFor(ex) : 0;
+        const bw = lf && bwLine && bwLine.length ? bodyweightOn(bwLine, sn.date) : null;
         reps.forEach((rp, k)=>{
-          const w = +(ws[k] != null ? ws[k] : ws[0]), n = +rp;
+          const added = +(ws[k] != null ? ws[k] : ws[0]) || 0, n = +rp;
+          const w = lf ? (bw > 0 ? bw * lf + added : 0) : added;
           if(!(w > 0) || !(n >= 1 && n <= 12)) return;
           const v = e1RM(w, n);
           if(v && (best == null || v > best)) best = v;
@@ -16280,7 +16327,7 @@ async function learnWeights(asOfDate){
   // What you performed, session by session (see performanceOutcomes). A session with no
   // measured top set or run, or no morning on record before it, teaches nothing and is counted
   // as dropped so the readout can say so.
-  const raw = performanceOutcomes(sessions, win, idxOf);
+  const raw = performanceOutcomes(sessions, win, idxOf, bwLine);
   const dropped = sessions.filter(sn=> sn && sn.date && idxOf[sn.date] != null).length - raw.length;
   if(raw.length < LEARN_MIN_SESSIONS){
     _learnedCache = { date, at:Date.now(), value:null, dropped: Math.max(0, dropped), n:raw.length };
@@ -16936,7 +16983,7 @@ const SR_COMPONENT_LABELS = {
   illnessCh:'Breathing & temp', fitFatigue:'Fitness minus fatigue',
   activity:'Activity outside training', circadian:'Hours since waking',
   localFatigue:'Muscles for today', nadir:'Overnight low, timing', bedtime:'Bedtime',
-  jetLag:'Jet lag'
+  jetLag:'Jet lag', hydration:'Morning weight vs trend'
 };
 async function renderLearnedWeights(){
   const el = document.getElementById('learnedWeights');
@@ -17147,11 +17194,44 @@ async function bodyweightTimeline(){
    the more useful half: someone who weighs in for the first time today has a year of
    sessions behind them, and their weight last March was far closer to today's number than
    it was to zero. */
+/* TREND WEIGHT, NOT THE LAST READING. A scale used every morning swings a kilo or more on
+   water, salt and glycogen, and every reader of bodyweight here (the load of a pull-up, your
+   strength relative to bodyweight, the BW button) wants what you weigh, not what this morning's
+   water says. So each weigh-in moves an exponentially smoothed trend by a share set by the
+   days since the last one, with a seven-day time constant: daily weigh-ins move it about an
+   eighth of the way each, a weigh-in after a fortnight moves it most of the way, because by
+   then the old trend is old news. Carried forward from the last weigh-in, and backward from
+   the first, as before. */
+const BW_TREND_TAU_DAYS = 7;
 function bodyweightOn(timeline, date){
   if(!timeline || !timeline.length) return null;
-  let w = null;
-  for(const r of timeline){ if(r.date <= date) w = r.weight; else break; }
-  return w != null ? w : timeline[0].weight;
+  let t = null, last = null;
+  for(const r of timeline){
+    if(r.date > date) break;
+    if(t == null){ t = r.weight; last = r.date; continue; }
+    const gap = Math.max(1, Math.round((localDateFrom(r.date) - localDateFrom(last)) / 86400000));
+    const a = 1 - Math.exp(-gap / BW_TREND_TAU_DAYS);
+    t = t + a * (r.weight - t); last = r.date;
+  }
+  return t != null ? Math.round(t * 10) / 10 : timeline[0].weight;
+}
+/* Body fat as the scale measures it, steadied. Bioimpedance swings several points with
+   hydration, and a single high morning was enough to declare a cut and lock it in for the
+   block (cutDueFor records the decision). The median of the last fourteen days' readings
+   when there are three or more; otherwise the latest record, typed or synced. */
+async function bodyFatNow(asOfDate){
+  const date = asOfDate || todayStr;
+  const vals = [];
+  try{
+    const res = await window.storage.list('bodymetrics:');
+    for(const k of (res && res.keys) || []){
+      const d = String(k).replace('bodymetrics:', '');
+      if(d > date || d < shiftDateStr(date, -14)) continue;
+      try{ const v = JSON.parse((await window.storage.get(k)).value); const b = v && parseFloat(v.bodyFat); if(b > 0) vals.push(b); } catch(e){}
+    }
+  } catch(e){}
+  if(vals.length >= 3) return Math.round(medianOf(vals) * 10) / 10;
+  try{ const m = await getLatestBodyMetrics(date); return m && m.bodyFat != null ? parseFloat(m.bodyFat) : null; } catch(e){ return null; }
 }
 function loadFactorFor(e){
   if(!e) return 0;
@@ -17802,7 +17882,8 @@ const SR_WEIGHTS = {
   localFatigue:0.080,
   nadir:       0.030,  // heart rate bottoming out late in the night
   bedtime:     0.030,  // to bed later than your habit
-  jetLag:      0.040   // time-zone hours not yet caught up
+  jetLag:      0.040,  // time-zone hours not yet caught up
+  hydration:   0.030   // morning weigh-in more than 1% under your trend
 };
 /* LIFTING AND RUNNING ARE NOT READ THE SAME WAY. Sleep loss costs endurance and afternoon
    work more than it costs a heavy single (Craven 2022: acute sleep loss is about -7.6% on
@@ -17813,7 +17894,8 @@ const SR_WEIGHTS = {
    (learnWeights). Which one today is read with follows today's plan. */
 const SR_KIND_TILT = {
   lift: { sleep: 0.75, sleepDebt: 1.1, localFatigue: 1.4, activity: 0.8 },
-  run:  { sleep: 1.3, sleepDebt: 1.1, localFatigue: 0.8, activity: 1.3, circadian: 0.8 }
+  // Dehydration costs endurance more than a heavy single, so runs read it louder.
+  run:  { sleep: 1.3, sleepDebt: 1.1, localFatigue: 0.8, activity: 1.3, circadian: 0.8, hydration: 1.5 }
 };
 function kindPriors(kind){
   const tilt = SR_KIND_TILT[kind];
@@ -17909,6 +17991,7 @@ function srComponentsAt(win, i, debtZ){
     bedtime:  at(win.channels.bedtime, 'zAcuteSeries'),
     localFatigue: at(win.channels.localFatigue, 'zAcuteSeries'),
     jetLag:   at(win.channels.jetLag, 'zAcuteSeries'),
+    hydration: at(win.channels.hydration, 'zAcuteSeries'),
     /* The SMOOTHED series here, unlike load. Form is a level rather than an event — the
        question is where your training has been sitting, not what happened in one session, and
        the underlying index is already a mean of five. */
@@ -23860,7 +23943,9 @@ async function openBlockEditor(date, slot, block){
         const metrics = await getLatestBodyMetrics(todayStr);
         const weightInput = row.querySelector('.week-ex-weight');
         if(metrics && metrics.weight != null){
-          weightInput.value = metrics.weight;
+          let tw = null;
+          try{ tw = bodyweightOn(await bodyweightTimeline(), todayStr); } catch(e){}
+          weightInput.value = tw > 0 ? tw : metrics.weight;
         } else {
           // Sending someone to the wrong tab is worse than not answering: they go, they
           // do not find it, and the app was wrong. Body metrics moved to Settings, so this
@@ -27216,6 +27301,8 @@ function classifyStrengthTier(ratio, lift, sex){
 async function computeStrengthLevel(sex){
   const bodyMetrics = await getLatestBodyMetrics(todayStr);
   if(!bodyMetrics || !bodyMetrics.weight) return { error: 'no-bodyweight' };
+  // Relative strength against what you weigh, not this morning's water: the trend weight.
+  try{ const tw = bodyweightOn(await bodyweightTimeline(), todayStr); if(tw > 0) bodyMetrics.weight = tw; } catch(e){}
 
   const sessions = await getAllTrainingSessions();
   const now = new Date(todayStr);
@@ -36172,7 +36259,7 @@ function rollingWeights(pts){
 async function cutSignal(){
   let sex = 'male', bf = null;
   try{ sex = (await window.storage.get('settings:strengthStandardSex')).value || 'male'; } catch(e){}
-  try{ const m = await getLatestBodyMetrics(todayStr); bf = m && m.bodyFat != null ? parseFloat(m.bodyFat) : null; } catch(e){}
+  try{ bf = await bodyFatNow(todayStr); } catch(e){}
   const limit = CUT_BF[sex] || CUT_BF.male;
   if(bf != null && bf >= limit) return { due:true, known:true, why:`body fat reads ${bf}%, at or over ${limit}%` };
   const pts = (await bodyweightTimeline()).filter(p => p.date >= shiftDateStr(todayStr, -CUT_LOOKBACK_DAYS) && p.date <= todayStr);

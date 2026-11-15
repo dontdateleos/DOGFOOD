@@ -80,6 +80,7 @@ Health, and Dogfood reads it there. The plugin reads:
   fallback.
 - **breathing rate** (Oura writes a nightly average)
 - **wrist temperature** (Apple Watch only)
+- **weight** and **body fat**: the day's first weigh-in from a scale that writes to Health (Withings), into Body metrics, never over a day you saved yourself
 - **steps** and **active calories** (Health removes duplicates between devices)
 - **running workouts**: a run recorded by two apps is kept once (the one with a distance)
   and its average heart rate, so the score can compare speed per heartbeat between runs
