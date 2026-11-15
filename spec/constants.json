@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.11.15.004",
+ "generatedFrom": "2026.11.15.005",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1507,7 +1507,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.11.15.004",
+  "APP_VERSION": "2026.11.15.005",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1885,6 +1885,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.11.15.005": "Running plans that respect you. A hard session no longer lands the day before your long run, and the long run is about 30% of the week you are actually given rather than half of it. Time off counts: three weeks without a run restarts you at an easier level, and saying you are not running at the moment starts you a level lower. Paces read right (6:00, never 5:00 or 5:60), and one mistyped run no longer drags your target pace. Walk-run sessions can be logged with just the time, so beginners without GPS move up the ladder, and Today shows how long they really take.",
    "2026.11.15.004": "A fairer readiness score. If you log without a wearable, your score is no longer shrunk for sensors you do not have, and logging just your sleep is enough to get one. New lifters no longer see a false “load climbing” warning for their first month. Last night means last night: an old drink or an old night’s sleep no longer stands in for today’s. The sleep debt you see is the same one the score uses. Apple Health numbers come in as numbers, and with a ring connected Apple’s HRV is kept separate from Oura’s. The learning engine judges each past session by its own night, and a very steady resting heart rate no longer hides an illness warning.",
    "2026.11.15.003": "Progression you can trust. “Last time” is the session you last trained, even when you log an older one late. Upper-body steps are a true +1.25 kg. Bodyweight lifts like pull-ups now progress by reps. Saving a session exactly as it was filled in no longer counts as a stall. Deload weeks hold the weight instead of suggesting more, a week off counts as rest, old deload weeks are cleared when you change your block length, the week back from a deload is cut once rather than session after session, and planning ahead from a deload week no longer shrinks the weeks after it. Runners who lift now earn their volume steps too.",
    "2026.11.15.002": "Fixes that protect your data and your joints. Saving your morning check-in no longer wipes what your ring synced that day, and a second run or mobility session on the same day no longer overwrites the first. Saving a planned run keeps its walk-run or interval instructions. An injury flagged on squatting now also keeps lunges, split squats and step-ups out, and nothing slips through in rehab work, run-day accessories, finishers or metcons. Generating several weeks on a Sunday now builds the weeks ahead instead of nothing. Dates hold steady across clock changes and time zones, so today’s check-in always counts and deload weeks land where they should. Your HRV baseline no longer resets itself.",
@@ -2852,6 +2853,14 @@
    "hamstrings",
    "quads_knees",
    "calves"
+  ],
+  "HARD_RUN_TYPES": [
+   "tempo",
+   "interval",
+   "fartlek",
+   "hills",
+   "sprint",
+   "race"
   ],
   "WORKOUT_TIME_ESTIMATE": {
    "strength": {

@@ -13402,7 +13402,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.004';
+const APP_VERSION = '2026.11.15.005';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13798,6 +13798,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.005': 'Running plans that respect you. A hard session no longer lands the day before your long run, and the long run is about 30% of the week you are actually given rather than half of it. Time off counts: three weeks without a run restarts you at an easier level, and saying you are not running at the moment starts you a level lower. Paces read right (6:00, never 5:00 or 5:60), and one mistyped run no longer drags your target pace. Walk-run sessions can be logged with just the time, so beginners without GPS move up the ladder, and Today shows how long they really take.',
   '2026.11.15.004': 'A fairer readiness score. If you log without a wearable, your score is no longer shrunk for sensors you do not have, and logging just your sleep is enough to get one. New lifters no longer see a false \u201cload climbing\u201d warning for their first month. Last night means last night: an old drink or an old night\u2019s sleep no longer stands in for today\u2019s. The sleep debt you see is the same one the score uses. Apple Health numbers come in as numbers, and with a ring connected Apple\u2019s HRV is kept separate from Oura\u2019s. The learning engine judges each past session by its own night, and a very steady resting heart rate no longer hides an illness warning.',
   '2026.11.15.003': 'Progression you can trust. \u201cLast time\u201d is the session you last trained, even when you log an older one late. Upper-body steps are a true +1.25 kg. Bodyweight lifts like pull-ups now progress by reps. Saving a session exactly as it was filled in no longer counts as a stall. Deload weeks hold the weight instead of suggesting more, a week off counts as rest, old deload weeks are cleared when you change your block length, the week back from a deload is cut once rather than session after session, and planning ahead from a deload week no longer shrinks the weeks after it. Runners who lift now earn their volume steps too.',
   '2026.11.15.002': 'Fixes that protect your data and your joints. Saving your morning check-in no longer wipes what your ring synced that day, and a second run or mobility session on the same day no longer overwrites the first. Saving a planned run keeps its walk-run or interval instructions. An injury flagged on squatting now also keeps lunges, split squats and step-ups out, and nothing slips through in rehab work, run-day accessories, finishers or metcons. Generating several weeks on a Sunday now builds the weeks ahead instead of nothing. Dates hold steady across clock changes and time zones, so today\u2019s check-in always counts and deload weeks land where they should. Your HRV baseline no longer resets itself.',
@@ -23087,11 +23088,12 @@ document.addEventListener('click', e=>{
   showLiftHistory(line.dataset.ex, nameEl ? nameEl.value : line.dataset.ex);
 });
 
+// Whole seconds first, then minutes and seconds: rounding the seconds on their own turned
+// 5:59.7 into "5:00" (the 60 wrapped to 0 without carrying a minute).
 function paceLabel(km, min){
   if(!(km > 0) || !(min > 0)) return '';
-  const per = min / km;
-  const m = Math.floor(per), sec = Math.round((per - m) * 60);
-  return `${m}:${String(sec === 60 ? 0 : sec).padStart(2, '0')}/km`;
+  const total = Math.round(min / km * 60);
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}/km`;
 }
 async function wireRunLogging(date, block){
   const dist = document.getElementById('weekRunDistance');
@@ -23919,7 +23921,11 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
       const runType = document.getElementById('weekRunType').value;
       const distanceKm = parseFloat(document.getElementById('weekRunDistance').value) || null;
       const durationMin = parseFloat(document.getElementById('weekRunActualDuration').value) || null;
-      if(!distanceKm || !durationMin){
+      /* A walk-run is prescribed by time, and a beginner without GPS has no distance to give,
+         so it logs on duration alone. It used to need both, so it never logged, and the
+         walk-run ladder, which moves on logged sessions, never moved either. */
+      const walkRunPlan = !!(block.details && block.details.walkRun);
+      if(!durationMin || (!distanceKm && !walkRunPlan)){
         // Already in history and now missing a number: the plan is saved either way, but
         // "add them to also log it" would be telling you to do something you have done.
         showToast(blockEditLoggedKey
@@ -23936,11 +23942,14 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
         // to tell itself from the first, and opening the evening run edited the morning's.
         date, slot, type:'run', timestamp: blockEditLoggedTs || Date.now(),
         runType: runType || 'easy', distanceKm, durationMin,
+        ...(block && block.details && block.details.walkRun ? { walkRun: true } : {}),
         /* THE NOTE GOES INTO THE RECORD. It was written to the plan and never to the
            session, so "legs heavy, humid" lived on a weekplan entry that regenerating the
            week deletes, and nothing reading training history could ever see it. */
         notes: (document.getElementById('weekRunNotes') || {}).value || '',
-        pace: durationMin && distanceKm ? `${(durationMin/distanceKm).toFixed(2)} min/km` : ''
+        // Minutes and seconds, as every other pace in the app reads. "5.50 min/km" is 5:30,
+        // and read like 5:50.
+        pace: durationMin && distanceKm ? paceLabel(distanceKm, durationMin) : ''
       };
       /* THE KEY IS THE SESSION'S IDENTITY, AND IT HAS TO SURVIVE A SECOND SAVE.
          This used to be `training:${date}:${Date.now()}` every time, so correcting a run —
@@ -25969,15 +25978,21 @@ function isLowerBodyHeavySession(session){
 // (quads/hamstrings/glutes/calves + connective tissue), so hard-day spacing should span
 // both modalities, not just run-to-run. [heuristic extension of Doma et al. mechanisms,
 // not a directly-tested weekly cadence — flagged in the app the same way]
+// One list of hard run types for every spacing check. The hard-day check counted tempo and
+// interval only, so the fartlek or hill session the generator places as quality could land
+// the day after intervals unremarked.
+const HARD_RUN_TYPES = ['tempo','interval','fartlek','hills','sprint','race'];
 async function checkCrossModalSpacing(){
   const sessions = await getAllTrainingSessions();
   const lowerBodyDays = sessions.filter(isLowerBodyHeavySession)
-    .map(s=>({ date: s.date, kind: 'lower-body strength' }));
-  const qualityRuns = sessions.filter(s=>s.type==='run' && ['tempo','interval','long'].includes(s.runType))
-    .map(s=>({ date: s.date, kind: `${s.runType} run` }));
+    .map(s=>({ date: s.date, kind: 'lower-body strength', modality: 'lift' }));
+  const qualityRuns = sessions.filter(s=>s.type==='run' && [...HARD_RUN_TYPES, 'long'].includes(s.runType))
+    .map(s=>({ date: s.date, kind: `${s.runType} run`, modality: 'run' }));
   const all = [...lowerBodyDays, ...qualityRuns].sort((a,b)=> new Date(a.date)-new Date(b.date));
   for(let i=1;i<all.length;i++){
-    if(all[i].kind === all[i-1].kind) continue; // same-modality pairs handled by checkHardDaySpacing
+    // Same modality is checkHardDaySpacing's question. Compared by label, a tempo run the
+    // day before a long run read as two modalities and raised the lift-and-run card.
+    if(all[i].modality === all[i-1].modality) continue;
     const hoursApart = (new Date(all[i].date) - new Date(all[i-1].date))/(1000*60*60);
     const daysAgo = (new Date(todayStr) - new Date(all[i].date))/(1000*60*60*24);
     if(hoursApart < 48 && daysAgo >= 0 && daysAgo <= 7){
@@ -25989,7 +26004,7 @@ async function checkCrossModalSpacing(){
 
 async function checkHardDaySpacing(){
   const sessions = await getAllTrainingSessions();
-  const hardRuns = sessions.filter(s=>s.type==='run' && ['tempo','interval'].includes(s.runType))
+  const hardRuns = sessions.filter(s=>s.type==='run' && HARD_RUN_TYPES.includes(s.runType))
     .sort((a,b)=> new Date(a.date)-new Date(b.date));
   for(let i=1;i<hardRuns.length;i++){
     const hoursApart = (new Date(hardRuns[i].date) - new Date(hardRuns[i-1].date))/(1000*60*60);
@@ -26177,13 +26192,22 @@ async function getPersonalPaceByType(){
     if(s.type!=='run' || !s.distanceKm || !s.durationMin) return;
     const daysAgo = (now - new Date(s.date))/(1000*60*60*24);
     if(daysAgo<0 || daysAgo>90) return;
+    // A walk-run's pace is mostly walking; it is not the pace to give someone's easy runs.
+    if(s.walkRun) return;
+    const pace = s.durationMin/s.distanceKm;
+    // A typo (1 km in 60 min) is not a pace. Outside 2:30-15:00/km is a mis-entry.
+    if(!(pace >= 2.5 && pace <= 15)) return;
     const type = s.runType || 'easy';
-    (byType[type] = byType[type]||[]).push(s.durationMin/s.distanceKm);
+    (byType[type] = byType[type]||[]).push(pace);
   });
   const result = {};
   Object.keys(byType).forEach(type=>{
+    // Interval and hill sessions log whole-session time, recoveries and all, so their
+    // average reads slower than easy pace and is not a target for the hard reps.
+    if(['interval','hills','fartlek','sprint'].includes(type)) return;
     const paces = byType[type];
-    if(paces.length >= 3) result[type] = paces.reduce((a,b)=>a+b,0)/paces.length;
+    // The median, so one odd run moves it a little rather than a lot.
+    if(paces.length >= 3) result[type] = medianOf(paces);
   });
   return result;
 }
@@ -26293,6 +26317,9 @@ function estimateSessionDuration(block, personalPace, personalSets, sessionLengt
     const d = block.details;
     const runType = d.runType || 'easy';
     const personalPaceForType = personalPace && personalPace[runType];
+    // A session prescribed by time IS its time: a walk-run of 30 minutes takes 30, not the
+    // ~20 the easy-run default printed on Today.
+    if(d.durationMin && !d.distanceKm) return Math.round(d.durationMin);
     if(d.distanceKm){
       const pace = personalPaceForType || R.running.defaultPaceMinPerKm[runType] || R.running.defaultPaceMinPerKm.easy;
       // The recovery buffer belongs to the DEFAULT pace only. The default table is a pure
@@ -28903,8 +28930,10 @@ function runTierFromSelfReport(longestKm, perWeek){
   if(longestKm < 2) return 'beginner';
   if(longestKm < 5) return 'consolidation';
   if(longestKm >= 10 && perWeek >= 5) return 'intermediate';
-  if(longestKm >= 18) return 'intermediate';
-  return 'base';
+  if(longestKm >= 18) return perWeek === 0 ? 'base' : 'intermediate';
+  // Not running at all at the moment: one tier below what the longest run alone would say.
+  // "Around 5 km, not at all" gave base, whose easy runs are longer than that 5 km.
+  return perWeek === 0 ? 'consolidation' : 'base';
 }
 async function getSelfReportedRunRecord(){
   try{
@@ -28935,14 +28964,26 @@ async function suggestRunTier(){
   // No logged running at all means beginner, not base — base assumes 24km/week already.
   // Checked before the calibration shortcut, which previously sent every new user to base.
   if(!runs.length) return 'beginner';
+  /* TIME OFF COUNTS. Someone who ran well until three months ago and has not run since was
+     still read as advanced (six runs, two quality, a 19 km long run): only the gap before
+     the latest run was ever measured, never the gap from it to today. Three weeks without
+     a run is a restart, and a restart starts at consolidation. */
+  const lastRun = runs.map(r => r.date).sort().pop();
+  const sinceLast = (localDateFrom(todayStr) - localDateFrom(lastRun)) / 86400000;
+  if(sinceLast > 21) return applyRunTierCeiling('consolidation', await getRunningCapacityCeiling());
   if(await isCalibrationPhase()) return 'base'; // easy + long only — never quality work in week 1
   const thisWeekDates = getWeekDates();
+  // Empty weeks count as zero. Skipping them let one 45 km week in four read as 45 km weeks;
+  // only weeks from your first run on are counted, so someone new is not averaged down either.
+  const firstRun = runs.map(r => r.date).sort()[0];
   let sum=0, weeks=0;
   for(let w=1; w<=4; w++){
     const dates = shiftWeek(thisWeekDates, w);
+    if(dates[6] < firstRun) continue;
     const totals = await getWeekVolumeTotals(dates);
-    if(totals.runDistance>0){ sum+=totals.runDistance; weeks++; }
+    sum += totals.runDistance || 0; weeks++;
   }
+  if(sum <= 0) weeks = 0;
   const volumeTier = weeks===0 ? null : (
     (sum/weeks) >= RUN_PLAN_TEMPLATES.advanced.minKm ? 'advanced' :
     (sum/weeks) >= RUN_PLAN_TEMPLATES.intermediate.minKm ? 'intermediate' :
@@ -37301,7 +37342,9 @@ async function generateRunPlan(tierKey, maxSessions, forcedDates, runSlotByDate,
 
     toPlace = [];
     const usedDates = new Set();
-    if(tier.longCount > 0 && runDates.length){
+    // A week with one run in it gets an easy run, not a long one: the long run is a share of
+    // a week's running, and a single run is the whole of it.
+    if(tier.longCount > 0 && runDates.length >= 2){
       const longDate = runDates[runDates.length-1];
       toPlace.push({ date: longDate, runType: 'long' });
       usedDates.add(longDate);
@@ -37309,11 +37352,10 @@ async function generateRunPlan(tierKey, maxSessions, forcedDates, runSlotByDate,
     let qualityPlaced = 0;
     for(const d of runDates){
       if(usedDates.has(d) || qualityPlaced >= tier.qualityCount) continue;
-      const lastQualityDate = toPlace.filter(t=>RUN_QUALITY_ROTATION.includes(t.runType)).map(t=>t.date).pop();
-      if(lastQualityDate){
-        const gap = Math.abs(new Date(d) - new Date(lastQualityDate))/(1000*60*60*24);
-        if(gap < 2) continue;
-      }
+      /* 48 hours from every hard day, the long run included. Only the previous quality
+         session was checked, so intervals landed the day before the long run. */
+      const hardDates = toPlace.filter(t=> t.runType === 'long' || RUN_QUALITY_ROTATION.includes(t.runType)).map(t=>t.date);
+      if(hardDates.some(h => Math.abs(localDateFrom(d) - localDateFrom(h))/(1000*60*60*24) < 2)) continue;
       toPlace.push({ date: d, runType: qualityRotation[qualityPlaced % qualityRotation.length] });
       usedDates.add(d);
       qualityPlaced++;
@@ -37458,7 +37500,10 @@ async function generateRunPlan(tierKey, maxSessions, forcedDates, runSlotByDate,
       const R = WORKOUT_TIME_ESTIMATE.running;
       const usingPersonalPace = personalPace[item.runType] != null;
       const pace = personalPace[item.runType] || R.defaultPaceMinPerKm[item.runType] || R.defaultPaceMinPerKm.easy;
-      const bufferMin = R.warmupCooldownMin + (R.intervalRecoveryBufferMin[item.runType]||0);
+      // An easy run is its own warm-up (its warm-up text says so), so only quality sessions
+      // set time aside for one. Taking 20 minutes off every easy run is what left the long
+      // run at 40-66% of the week.
+      const bufferMin = (item.runType === 'easy' ? 0 : R.warmupCooldownMin) + (R.intervalRecoveryBufferMin[item.runType]||0);
       const timeBudgetDistance = Math.max(2, Math.round(((sessionLength - bufferMin) / pace) * 10) / 10);
       // Available time is an upper bound, not a target — someone with a 90min budget and
       // no running history shouldn't get a session sized to fill that whole budget. The
@@ -37506,6 +37551,31 @@ async function generateRunPlan(tierKey, maxSessions, forcedDates, runSlotByDate,
 
     await placeRunCompanionMobility(item);
   }
+  /* THE LONG RUN AS A SHARE OF THE WEEK THAT WAS ACTUALLY BUILT. It is sized from the tier's
+     minimum weekly volume, while the other runs are sized from session length and capped,
+     so the week generated often ran well short of that minimum and the long run came out
+     at 40-66% of it. Brought back to 30% of the real week where it is over. */
+  try{
+    let longKey = null, longBlock = null, others = 0, maxOther = 0;
+    for(const item of toPlace){
+      const slot = (runSlotOverride && runSlotOverride[item.date]) || 'am';
+      let blk = null;
+      try{ blk = JSON.parse((await window.storage.get(`weekplan:${item.date}:${slot}`)).value); } catch(e){}
+      if(!blk || blk.type !== 'run' || !blk.details) continue;
+      if(blk.details.runType === 'long' && blk.details.distanceKm){ longKey = `weekplan:${item.date}:${slot}`; longBlock = blk; }
+      else { others += blk.details.distanceKm || 0; maxOther = Math.max(maxOther, blk.details.distanceKm || 0); }
+    }
+    if(longBlock && others > 0){
+      const cap = Math.round(others * LONG_RUN_WEEKLY_SHARE / (1 - LONG_RUN_WEEKLY_SHARE) * 10) / 10;
+      if(longBlock.details.distanceKm > cap){
+        // Never shorter than the longest other run, or it stops being the long run.
+        longBlock.details.distanceKm = Math.max(cap, maxOther);
+        const combo = String(longBlock.details.notes || '').match(/ Second session today.*$/);
+        longBlock.details.notes = `Auto-generated — ${Math.round(LONG_RUN_WEEKLY_SHARE*100)}% of this week's running, adjust freely` + (combo ? combo[0] : '');
+        await window.storage.set(longKey, JSON.stringify(longBlock));
+      }
+    }
+  } catch(e){}
   return { placed: toPlace.length, tier: tierKey, goalNote };
 }
 
@@ -37822,9 +37892,8 @@ async function suggestProgression(ex, focusInfo){
 // Converts decimal min/km (e.g. 5.5) into readable M:SS/km format (e.g. "5:30/km")
 function formatPace(minPerKm){
   if(minPerKm==null) return null;
-  const mins = Math.floor(minPerKm);
-  const secs = Math.round((minPerKm - mins) * 60);
-  return `${mins}:${String(secs).padStart(2,'0')}/km`;
+  const total = Math.round(minPerKm * 60);   // 5.995 is 6:00, not 5:60
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2,'0')}/km`;
 }
 
 // What an active injury says should change about one planned exercise, day-of. The same
@@ -38300,7 +38369,7 @@ async function renderPrevWorkoutsForDate(){
       const tag = s.workoutTag ? ' — ' + s.workoutTag.replace('_',' ') : '';
       return `<div class="log" style="margin-top:10px;"><div class="log-title">Strength${tag}</div>${exList}<div class="score-note">Total volume: ${Math.round(s.totalVolume||0)}kg</div></div>`;
     } else if(s.type==='run'){
-      return `<div class="log" style="margin-top:10px;"><div class="log-title">Run — ${s.runType||'—'}</div><div class="log-entry"><span>${s.distanceKm ?? '—'}km</span><span>${s.durationMin ?? '—'}min${s.pace?' · '+s.pace:''}</span></div></div>`;
+      return `<div class="log" style="margin-top:10px;"><div class="log-title">Run — ${s.runType||'—'}</div><div class="log-entry"><span>${s.distanceKm ?? '—'}km</span><span>${s.durationMin ?? '—'}min${(paceLabel(s.distanceKm, s.durationMin) || s.pace) ? ' · '+(paceLabel(s.distanceKm, s.durationMin) || s.pace) : ''}</span></div></div>`;
     } else if(s.type==='mobility'){
       const stList = (s.stretches||[]).map(st=>
         `<div class="log-entry"><span>${st.name}</span><span>${st.sets}×${st.holdSeconds}s</span></div>`).join('');
