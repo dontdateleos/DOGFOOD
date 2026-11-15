@@ -1,0 +1,67 @@
+# Dogfood on iPhone (TestFlight)
+
+The iPhone app is the same `index.html` running inside a [Capacitor](https://capacitorjs.com) shell, with
+one native addition: **HealthBridge**, a small Swift plugin that reads Apple Health directly.
+
+```
+index.html, sw.js, icons, splash   the web app (unchanged; still works in a browser)
+tools/build-web.mjs                copies those into www/ for the app bundle
+capacitor.config.json              app id app.dogfood.ios, name "Dogfood"
+ios/App/App.xcodeproj              the Xcode project (Swift Package Manager, no CocoaPods)
+ios/App/App/HealthBridgePlugin.swift   the HealthKit reader
+ios/App/App/MainViewController.swift   registers the plugin with Capacitor
+ios/App/App/App.entitlements           HealthKit capability
+```
+
+## Build it
+
+You need a Mac with Xcode 16 or newer, and a paid Apple Developer account.
+
+1. `npm install`
+2. `npm run ios:sync` copies the web app into the Xcode project. Run it after every change to `index.html`.
+3. `npm run ios:open` opens Xcode, or open `ios/App/App.xcodeproj` directly.
+4. In Xcode, select the **App** target and open **Signing & Capabilities**:
+   - Choose your **Team**.
+   - If `app.dogfood.ios` is taken, change the **Bundle Identifier** to something of your own, e.g. `com.yourname.dogfood`. Update `appId` in `capacitor.config.json` to match.
+   - Check that **HealthKit** is listed. If it isn't, click **+ Capability** and add HealthKit. The entitlements file is already in place.
+5. Pick your iPhone as the run destination and press Run. On the first launch:
+   1. Go to Settings → Apple Health → **Connect Apple Health**.
+   2. Allow the data types.
+   3. It reads the last 30 days.
+
+## TestFlight
+
+1. In App Store Connect, create the app with the same bundle ID.
+2. In Xcode, set the version (1.0) and build number (1, then increase it on every upload).
+3. Choose Product → Archive → Distribute App → App Store Connect → Upload.
+4. When the build finishes processing, invite testers in App Store Connect → TestFlight:
+   - **Internal testers** (up to 100 people on your team) can install straight away.
+   - **External testers** need a short Beta App Review first. Apple will want:
+     - a **privacy policy URL**;
+     - a sentence on how health data is used: it's read only, stays on the device, and is never used for ads or shared.
+
+## What it reads
+
+The plugin reads the following (see the comment at the top of `HealthBridgePlugin.swift`):
+- HRV (SDNN)
+- resting heart rate
+- sleep (asleep time, stages, wake time)
+- breathing rate
+- wrist temperature
+- steps
+- active calories
+- running workouts
+
+The app fills in days you haven't logged yourself and never overwrites what you typed. With an Oura ring
+connected, Apple's HRV is stored separately from Oura's (`hrvApple`), because the two measure different things.
+Runs that Health records are kept on the day (`appleRuns`) but not logged as sessions yet.
+
+## Not done yet
+
+- **Connecting Oura inside the app.** The Oura sign-in returns to the web address, so inside the app it will
+  need a custom URL scheme. Use Apple Health in the meantime: the Oura app can write to it.
+- **Storage.** Data still lives in the web view's local storage. iOS rarely clears it for an installed app, but
+  moving to native storage (Capacitor Preferences or SQLite) would make it permanent.
+- **Updates.** Web changes reach the app when you run `npm run ios:sync` and upload a new build.
+- **Icons.** The app icon is the mark at 1024px, written by `node tools/build-icon.mjs` along with the web icons.
+  The launch screen is plain launch-curtain black, so the app opens straight into the curtain animation.

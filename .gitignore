@@ -10,3 +10,6 @@ node_modules
 # Scratch renders. The capture scripts write comparison sheets next to the app so a local
 # server can reach them; none of it is the app.
 _proof.html
+
+# The web bundle Capacitor copies into the iPhone app; rebuilt by tools/build-web.mjs.
+www

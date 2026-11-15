@@ -1,0 +1,9 @@
+{
+  "appId": "app.dogfood.ios",
+  "appName": "Dogfood",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0c0d0b"
+  }
+}

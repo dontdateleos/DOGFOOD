@@ -13402,7 +13402,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.006';
+const APP_VERSION = '2026.11.15.007';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13798,6 +13798,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.007': 'Getting ready for the iPhone app. Inside it, Dogfood will read Apple Health directly \u2014 HRV, resting heart rate, sleep, breathing rate, wrist temperature, steps and runs \u2014 with no Shortcut to set up, filling in days you have not logged yourself. Nothing changes in the browser.',
   '2026.11.15.006': 'Small fixes to your records. Re-rating an injury keeps the day it started, so its history and \u201cwhat led to this\u201d stay right. Undo now also reverses a plan change from a readiness card. Saving skills keeps the date you last moved up a level. One damaged injury record can no longer hide all the others, and a run with no time logged no longer counts toward a time goal.',
   '2026.11.15.005': 'Running plans that respect you. A hard session no longer lands the day before your long run, and the long run is about 30% of the week you are actually given rather than half of it. Time off counts: three weeks without a run restarts you at an easier level, and saying you are not running at the moment starts you a level lower. Paces read right (6:00, never 5:00 or 5:60), and one mistyped run no longer drags your target pace. Walk-run sessions can be logged with just the time, so beginners without GPS move up the ladder, and Today shows how long they really take.',
   '2026.11.15.004': 'A fairer readiness score. If you log without a wearable, your score is no longer shrunk for sensors you do not have, and logging just your sleep is enough to get one. New lifters no longer see a false \u201cload climbing\u201d warning for their first month. Last night means last night: an old drink or an old night\u2019s sleep no longer stands in for today\u2019s. The sleep debt you see is the same one the score uses. Apple Health numbers come in as numbers, and with a ring connected Apple\u2019s HRV is kept separate from Oura\u2019s. The learning engine judges each past session by its own night, and a very steady resting heart rate no longer hides an illness warning.',
@@ -14699,7 +14700,132 @@ async function renderOuraConnectionStatus(){
   renderDeviceConnectRow();
 }
 
+/* ---------- APPLE HEALTH, READ DIRECTLY (the iPhone app) ----------
+
+   Inside the iPhone app (Capacitor), Apple Health is read straight from HealthKit through the
+   HealthBridge plugin in ios/App/App/HealthBridgePlugin.swift, and the Shortcut is not needed.
+   In a browser there is no HealthKit, NativeHealth is null, and everything below is skipped;
+   the Shortcut path further down is unchanged.
+
+   It FILLS GAPS, it does not overwrite: a field already on the day (typed in the morning
+   sheet, or synced from Oura first) is kept. The exceptions are fields only this source
+   writes (wrist temperature, sleep stages, runs seen in Health), which are refreshed.
+
+   HRV goes where the Shortcut put it, and for the same reason: Apple's HRV is SDNN, Oura's is
+   RMSSD, so with a ring connected Apple's is kept apart as hrvApple; without one it is the
+   only HRV there is and the score reads it. */
+const NativeHealth = (()=>{
+  try{
+    const C = window.Capacitor;
+    if(!C || !(C.isNativePlatform && C.isNativePlatform())) return null;
+    return C.registerPlugin ? C.registerPlugin('HealthBridge') : ((C.Plugins && C.Plugins.HealthBridge) || null);
+  } catch(e){ return null; }
+})();
+const NATIVE_HEALTH_KEY = 'settings:nativeHealth';
+const NATIVE_HEALTH_LAST_KEY = 'settings:nativeHealthLastSync';
+function nativeHealthOn(){ try{ return localStorage.getItem(NATIVE_HEALTH_KEY) === 'on'; } catch(e){ return false; } }
+async function connectNativeHealth(){
+  if(!NativeHealth) return { error: 'not-native' };
+  try{
+    const avail = await NativeHealth.isAvailable();
+    if(!avail || !avail.available) return { error: 'Apple Health is not available on this device' };
+    await NativeHealth.requestAuthorization();
+    try{ localStorage.setItem(NATIVE_HEALTH_KEY, 'on'); } catch(e){}
+    return await syncNativeHealth(30);
+  } catch(e){ return { error: (e && e.message) || 'could not connect' }; }
+}
+let _nativeHealthBusy = false;
+async function syncNativeHealth(days){
+  if(!NativeHealth || !nativeHealthOn() || _nativeHealthBusy) return { synced: 0, dates: [] };
+  _nativeHealthBusy = true;
+  try{
+    const res = await NativeHealth.readDays({ days: days || 14 });
+    const list = ((res && res.days) || []).filter(d => d && /^\d{4}-\d{2}-\d{2}$/.test(d.date) && d.date <= todayStr);
+    if(!list.length) return { synced: 0, dates: [] };
+    let ouraOn = false;
+    try{ ouraOn = !!JSON.parse((await window.storage.get('oura:tokens')).value); } catch(e){}
+    const num = (v, dp) => (typeof v === 'number' && isFinite(v)) ? Math.round(v * Math.pow(10, dp)) / Math.pow(10, dp) : null;
+    const hhmm = iso => { if(!iso) return null; const d = new Date(iso); if(isNaN(d)) return null;
+      return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; };
+    // Wrist temperature arrives absolute; the score wants a deviation from your own normal,
+    // which is the median of up to the 30 nights before.
+    const temps = {};
+    list.forEach(d => { if(typeof d.wristTempC === 'number') temps[d.date] = d.wristTempC; });
+    const first = list[0].date;
+    for(let i = 1; i <= 30; i++){
+      const d = shiftDateStr(first, -i);
+      try{ const e = JSON.parse((await window.storage.get(keyFor(d))).value); if(e && typeof e.wristTempC === 'number') temps[d] = e.wristTempC; } catch(e){}
+    }
+    const changed = [];
+    for(const d of list){
+      let existing = {};
+      try{ existing = JSON.parse((await window.storage.get(keyFor(d.date))).value) || {}; } catch(e){}
+      const fill = {};
+      const gap = (k, v) => { if(v != null && existing[k] == null) fill[k] = v; };
+      const own = (k, v) => { if(v != null && JSON.stringify(existing[k]) !== JSON.stringify(v)) fill[k] = v; };
+      if(ouraOn) own('hrvApple', num(d.hrvSDNN, 1)); else gap('hrvOura', num(d.hrvSDNN, 1));
+      gap('restingHR', num(d.restingHR, 0));
+      gap('respiratoryRate', num(d.respiratoryRate, 1));
+      gap('steps', num(d.steps, 0));
+      gap('activeCalories', num(d.activeCalories, 0));
+      gap('durationHrs', num(d.sleepHours, 2));
+      gap('wakeClock', hhmm(d.wakeAt));
+      if(typeof d.wristTempC === 'number'){
+        own('wristTempC', num(d.wristTempC, 2));
+        const prior = Object.keys(temps).filter(k => k < d.date && k >= shiftDateStr(d.date, -30)).map(k => temps[k]);
+        if(prior.length >= 7) gap('temperatureDeviation', num(d.wristTempC - medianOf(prior), 2));
+      }
+      if(d.deepMin != null || d.remMin != null || d.coreMin != null || d.awakeMin != null){
+        own('appleSleepStages', { deepMin: d.deepMin ?? null, remMin: d.remMin ?? null, coreMin: d.coreMin ?? null, awakeMin: d.awakeMin ?? null });
+      }
+      // Runs Health saw that day, kept on the day for now rather than logged as sessions:
+      // auto-logging would double anything you log yourself.
+      if(Array.isArray(d.runs) && d.runs.length) own('appleRuns', d.runs);
+      if(Object.keys(fill).length){
+        await window.storage.set(keyFor(d.date), JSON.stringify({ ...existing, ...fill, date: d.date }));
+        changed.push(d.date);
+      }
+    }
+    try{ localStorage.setItem(NATIVE_HEALTH_LAST_KEY, new Date().toISOString()); } catch(e){}
+    if(changed.length){
+      invalidateSignalWindows();
+      try{
+        if(dateInput && changed.includes(dateInput.value)){
+          fillRecoveryForm(JSON.parse((await window.storage.get(keyFor(dateInput.value))).value));
+        }
+      } catch(e){}
+    }
+    return { synced: changed.length, dates: changed };
+  } catch(e){
+    return { error: (e && e.message) || 'read failed', synced: 0, dates: [] };
+  } finally { _nativeHealthBusy = false; }
+}
+function renderNativeHealthStatus(message){
+  const el = document.getElementById('appleHealthStatus');
+  if(!el) return;
+  let last = null;
+  try{ last = localStorage.getItem(NATIVE_HEALTH_LAST_KEY); } catch(e){}
+  const lastTxt = last ? new Date(last).toLocaleString([], { weekday:'short', hour:'2-digit', minute:'2-digit' }) : null;
+  el.innerHTML = nativeHealthOn()
+    ? `<div class="score-note">Apple Health \u00b7 connected${lastTxt ? ` \u00b7 last read ${lastTxt}` : ''}</div>
+       <div class="score-note">Read every time you open the app. To change what Dogfood can see, go to the Health app \u2192 your profile \u2192 Apps \u2192 Dogfood.</div>
+       ${message ? `<div class="score-note" style="font-family:var(--mono); font-size:var(--fs-tag);">${message}</div>` : ''}
+       <button id="nativeHealthSyncBtn" class="small">Read Apple Health now</button>`
+    : `<div class="score-note">Apple Health</div>
+       <div class="score-note">Let Dogfood read your HRV, resting heart rate, sleep, breathing rate, wrist temperature, steps and runs. It only reads, and it fills days you have not logged yourself.</div>
+       ${message ? `<div class="score-note" style="font-family:var(--mono); font-size:var(--fs-tag);">${message}</div>` : ''}
+       <button id="nativeHealthConnectBtn" class="small">Connect Apple Health</button>`;
+  const say = r => r.error ? `Failed: ${r.error}` : r.synced ? `Filled ${r.synced} day${r.synced === 1 ? '' : 's'}` : 'Nothing new to fill';
+  const conn = document.getElementById('nativeHealthConnectBtn');
+  if(conn) conn.addEventListener('click', async ()=>{ renderNativeHealthStatus('Asking Apple Health...'); renderNativeHealthStatus(say(await connectNativeHealth())); });
+  const sync = document.getElementById('nativeHealthSyncBtn');
+  if(sync) sync.addEventListener('click', async ()=>{ renderNativeHealthStatus('Reading...'); renderNativeHealthStatus(say(await syncNativeHealth(14))); });
+  try{ renderDeviceConnectRow(); } catch(e){}
+}
+
 async function renderAppleHealthStatus(message){
+  // Inside the iPhone app, Health is read directly, so the Shortcut setup is not shown.
+  if(NativeHealth) return renderNativeHealthStatus(message);
   const el = document.getElementById('appleHealthStatus');
   el.innerHTML = `
     <div class="score-note">Apple Health (via Health Auto Export)</div>
@@ -14732,7 +14858,19 @@ renderAppleHealthStatus();
    made the missing identifier a live problem rather than a latent one. Data accumulates
    while the app is closed, so an automatic check is still the right behaviour; it just
    waits for someone to say yes now, and the button beside it pulls on demand meanwhile. */
-if(appleHealthSyncOn()){
+/* The iPhone app reads Health on open, and again when it comes back to the front after
+   half an hour or more away, which is when a new night has usually landed. */
+if(NativeHealth && nativeHealthOn()){
+  syncNativeHealth(14).then(r => { if(r && r.synced) renderNativeHealthStatus(); });
+  let _nhLastFront = Date.now();
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.hidden) return;
+    if(Date.now() - _nhLastFront < 30*60*1000) return;
+    _nhLastFront = Date.now();
+    syncNativeHealth(3).then(r => { if(r && r.synced){ renderNativeHealthStatus(); try{ refreshHeaderLogBadge(); }catch(e){} } });
+  });
+}
+if(!NativeHealth && appleHealthSyncOn()){
   syncPendingAppleHealthData().then(result => {
     if(result.synced > 0) renderAppleHealthStatus(`Synced ${result.synced} update(s) across ${result.dates.length} date(s): ${result.dates.join(', ')}`);
   });

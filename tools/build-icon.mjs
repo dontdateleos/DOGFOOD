@@ -16,7 +16,7 @@
  * answer with the old one.
  */
 import { chromium } from 'playwright';
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { createHash } from 'crypto';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -160,6 +160,10 @@ const maskPng = await png(tile(SHELL), 512);
    neither is the mark. 180 because that is the size iOS asks for at 3x. Drawn from the `any`
    tile: iOS rounds the corners itself, it does not mask to a circle. */
 const touchPng = await png(tile(GROUND), 180);
+/* THE IPHONE APP'S ICON, when the Capacitor project is here (see IOS.md). One 1024px image;
+   Xcode makes every other size from it. The App Store refuses an icon with an alpha channel,
+   so the tile is drawn on its own opaque ground and checked for one after it is written. */
+const appIconPng = await png(tile(GROUND), 1024);
 // The tab favicon stays inline. It is 1KB, it is never masked, and a data: URI cannot go stale.
 const b32 = (await png(tile(GROUND), 32)).toString('base64');
 await browser.close();
@@ -173,6 +177,8 @@ const STAMP = createHash('sha1').update(anyPng).update(maskPng).digest('hex').sl
 writeFileSync(join(ROOT, 'icon-512.png'), anyPng);
 writeFileSync(join(ROOT, 'icon-512-maskable.png'), maskPng);
 writeFileSync(join(ROOT, 'apple-touch-icon.png'), touchPng);
+const IOS_ICON = join(ROOT, 'ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png');
+if (existsSync(dirname(IOS_ICON))) writeFileSync(IOS_ICON, appIconPng);
 
 const file = join(ROOT, 'index.html');
 let html = readFileSync(file, 'utf8');
@@ -197,8 +203,12 @@ writeFileSync(file, html);
 
 const mf = join(ROOT, 'manifest.webmanifest');
 let json = readFileSync(mf, 'utf8');
-const stamped = json.replace(/"src":\s*"(icon-512(?:-maskable)?\.png)[^"]*"/g, `"src": "$1?v=${STAMP}"`);
-if (stamped === json) throw new Error('no icon src found in the manifest to stamp');
+const SRC_RE = /"src":\s*"(icon-512(?:-maskable)?\.png)[^"]*"/g;
+// Tested for a match, not for a change: art that has not changed stamps the same value, which
+// leaves the file identical and is not the same thing as finding nothing to stamp.
+if (!SRC_RE.test(json)) throw new Error('no icon src found in the manifest to stamp');
+SRC_RE.lastIndex = 0;
+const stamped = json.replace(SRC_RE, `"src": "$1?v=${STAMP}"`);
 JSON.parse(stamped);   // a manifest that does not parse installs nothing at all
 writeFileSync(mf, stamped);
 console.log(`v=${STAMP} · icon-512.png ${anyPng.length}B on ${GROUND} · icon-512-maskable.png `
