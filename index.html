@@ -2299,6 +2299,8 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .d-badge{ color:var(--text); }
 
   .session-type{ display:flex; gap:8px; margin-bottom:var(--sp-3); }
+  .prio-pills{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:var(--sp-2); }
+  .prio-pills .type-btn{ flex:0 0 auto; padding:8px 10px; min-height:36px; }
   /* SIX METRICS DO NOT FIT ON ONE ROW, AND flex:1 COULD NOT SAVE THEM.
      A flex item's default min-width is auto, so a pill can never shrink below its own text —
      "Body Fat" held the row 31px wider than a 390 screen and 101 wider than a 320 one, and the
@@ -7014,6 +7016,19 @@ if(!window.__pnHold)window.__curtain();
         <div class="field-row"><input type="checkbox" id="finishersCheckbox" checked style="width:auto; flex:none;"><label for="finishersCheckbox" style="font-size:var(--fs-md);">End lift days with a 6–8 min finisher</label></div>
         <div class="score-note">Same results in less time, not better results — applied only when a session won't otherwise fit. Expect sessions to feel harder.</div>
         <div class="score-note">Bands count as bodyweight; barbells, dumbbells, cables and machines don't.</div>
+        <!-- WHERE THE SPARE SETS GO. A choice, not a default read off anything about you: the
+             generator guarantees direct work for whatever is picked here, and turns its
+             rotating block emphasis toward it. Saved on the tap, like the morning dots. -->
+        <div class="field-label" style="margin-top:12px;">Muscles to prioritise</div>
+        <div class="score-note">Where the extra sets go once the main lifts are in: these get direct work every week, scaled to how long you lift. Pick up to four, or a preset. With none picked, arms and shoulders get a small minimum, because presses and rows under-train them.</div>
+        <div class="prio-pills" id="priorityPresetPills">
+          <button type="button" class="type-btn" data-preset="arms">Arms &amp; shoulders</button>
+          <button type="button" class="type-btn" data-preset="glutes">Glutes &amp; legs</button>
+          <button type="button" class="type-btn" data-preset="back">Back &amp; posture</button>
+          <button type="button" class="type-btn" data-preset="none">No priority</button>
+        </div>
+        <div class="prio-pills" id="priorityMusclePills"></div>
+        <div class="score-note note-live" id="priorityMuscleNote"></div>
         <div class="score-note" style="margin-top:12px;">Allocates your days by goal priority, spaces hard sessions apart, and only fills empty days.</div>
         <div class="field-row"><input type="checkbox" id="includeStrengthCheckbox" checked style="width:auto; flex:none;"><label for="includeStrengthCheckbox" style="font-size:var(--fs-md);">Strength</label></div>
         <div class="field-row"><input type="checkbox" id="includeMobilityCheckbox" checked style="width:auto; flex:none;"><label for="includeMobilityCheckbox" style="font-size:var(--fs-md);">Mobility (standalone sessions + bulletproofing added to strength days)</label></div>
@@ -13419,7 +13434,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.021';
+const APP_VERSION = '2026.11.15.022';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13815,6 +13830,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.15.022': 'Choose where your extra sets go. Settings \u2192 training setup \u2192 Muscles to prioritise: up to four, or a preset (arms & shoulders, glutes & legs, back & posture, or none). Your picks get direct work every week, scaled to how long you lift, and become the block\u2019s emphasis; your first pick is kept longest when a session is short. With nothing picked, arms and shoulders keep their small minimum. Top up follows your picks too.',
   '2026.11.15.021': 'Keep the week you like and still get the arm and shoulder work: Build \u2192 Top up arms & shoulders adds what your planned weeks are short of into the strength days you already have, at the end of each, only where it still fits the session. Your days, sessions and exercises stay exactly as they are, and Undo puts it back.',
   '2026.11.15.020': 'Lateral raises too, and rear delts on a muscle goal: the same fault as the arms (presses counted for the side delts, so the raises came last and were cut). How much protected small-muscle work a week gets now follows how long you lift in it, so a short week keeps its rows and presses, and the work goes on the day with the most time to spare.',
   '2026.11.15.019': 'Arms get trained. Every generated week now holds direct biceps and triceps work: two exercises each (six sets) on a muscle goal, one each (three sets) otherwise, and a short session drops other accessories before it drops them. Before, your presses and rows counted for so much arm work that curls and extensions were picked last and then cut to fit the time, so many weeks had none. Generate again to get them in this week.',
@@ -20917,6 +20933,44 @@ async function restoreWeekUndo(){
   renderTodayWorkoutSummary();
 }
 document.getElementById('undoWeekChangeBtn').addEventListener('click', ()=>{ restoreWeekUndo().catch(()=>showToast('Could not restore that change', true)); });
+/* Muscles to prioritise: presets and single areas, saved on the tap. */
+async function renderPriorityMuscles(){
+  const box = document.getElementById('priorityMusclePills');
+  if(!box) return;
+  const chosen = await getPriorityMuscles();
+  box.innerHTML = PRIORITY_MUSCLE_CHOICES.map(([a, label])=>
+    `<button type="button" class="type-btn${chosen.includes(a) ? ' active' : ''}" data-area="${a}" aria-pressed="${chosen.includes(a)}">${label}</button>`).join('');
+  document.querySelectorAll('#priorityPresetPills .type-btn').forEach(b=>{
+    const set = PRIORITY_PRESETS[b.dataset.preset] || [];
+    const on = set.length === chosen.length && set.every(a=> chosen.includes(a));
+    b.classList.toggle('active', on); b.setAttribute('aria-pressed', String(on));
+  });
+  const note = document.getElementById('priorityMuscleNote');
+  const names = chosen.map(a=> (PRIORITY_MUSCLE_CHOICES.find(c=> c[0] === a) || [a, a])[1]);
+  if(note) note.textContent = chosen.length
+    ? `Prioritising ${names.join(', ').toLowerCase()}. New weeks use it; Top up adds it to weeks already planned.`
+    : 'No priority picked: arms and shoulders get the minimum.';
+  const tb = document.getElementById('topUpWeekBtn');
+  if(tb) tb.textContent = chosen.length ? 'Top up priority muscles' : 'Top up arms & shoulders';
+}
+async function savePriorityMuscles(list){
+  try{ await window.storage.set(PRIORITY_MUSCLES_KEY, JSON.stringify(list.slice(0, 4))); } catch(e){}
+  renderPriorityMuscles();
+}
+document.getElementById('priorityPresetPills')?.addEventListener('click', e=>{
+  const b = e.target.closest('[data-preset]');
+  if(b) savePriorityMuscles(PRIORITY_PRESETS[b.dataset.preset] || []);
+});
+document.getElementById('priorityMusclePills')?.addEventListener('click', async e=>{
+  const b = e.target.closest('[data-area]');
+  if(!b) return;
+  const chosen = await getPriorityMuscles();
+  const a = b.dataset.area;
+  if(chosen.includes(a)) return savePriorityMuscles(chosen.filter(x=> x !== a));
+  if(chosen.length >= 4){ showToast('Four at most \u2014 tap one to drop it first', true); return; }
+  savePriorityMuscles(chosen.concat([a]));
+});
+renderPriorityMuscles();
 document.getElementById('topUpWeekBtn')?.addEventListener('click', async ()=>{
   const btn = document.getElementById('topUpWeekBtn');
   btn.disabled = true;
@@ -20928,7 +20982,7 @@ document.getElementById('topUpWeekBtn')?.addEventListener('click', async ()=>{
     } else if(r.missed.length){
       showToast(`No room left this week for ${r.missed.join(', ').toLowerCase()} \u2014 a longer session or another day would fit it`, true);
     } else {
-      showToast('Nothing to add \u2014 your planned weeks already have their arm and shoulder work');
+      showToast('Nothing to add \u2014 your planned weeks already have that work');
     }
     renderWeekGrid();
     renderTodayWorkoutSummary();
@@ -30065,6 +30119,18 @@ function currentEmphasisBlockIndex(date){
 // than re-randomising every generation.
 async function getBlockEmphasisAreas(goalType, date){
   const blockIndex = currentEmphasisBlockIndex(date);
+  /* Chosen priorities are the emphasis. Three a block, as the rotation uses; with four
+     picked, the block index decides which one sits out, so each takes a turn off. Not
+     cached against the block like the automatic choice, so a change applies at once. */
+  const chosen = await getPriorityMuscles();
+  if(chosen.length){
+    let areas = chosen.slice();
+    if(areas.length > EMPHASIS_AREAS_PER_BLOCK){
+      const off = blockIndex % areas.length;
+      areas = areas.filter((_, i)=> i !== off).slice(0, EMPHASIS_AREAS_PER_BLOCK);
+    }
+    return { areas, blockIndex, goalType, reused: false, chosen: true };
+  }
   let history = {};
   try{ history = JSON.parse((await window.storage.get('emphasis:history')).value) || {}; } catch(e){}
   if(history.blockIndex === blockIndex && Array.isArray(history.areas)){
@@ -30357,10 +30423,46 @@ function markMovementUsed(ex, usedNames){
   exerciseIdentityKeys(ex).forEach(k => usedNames.add(k));
 }
 
+/* MUSCLES TO PRIORITISE: the person's own choice of where spare sets go (Settings, training
+   setup). Up to four areas. Empty means no choice made, and the arms-and-shoulders minimum
+   stands, because that one corrects a structural under-dosing rather than expressing a taste. */
+const PRIORITY_MUSCLES_KEY = 'settings:priorityMuscles';
+const PRIORITY_MUSCLE_CHOICES = [
+  ['chest','Chest'], ['thoracic','Back'], ['shoulders','Front delts'], ['side_delts','Side delts'],
+  ['rear_delts','Rear delts'], ['biceps','Biceps'], ['triceps','Triceps'], ['glutes','Glutes'],
+  ['quads_knees','Quads'], ['hamstrings','Hamstrings'], ['hips','Outer hips'], ['adductors','Inner thighs'],
+  ['calves','Calves'], ['core','Core']
+];
+const PRIORITY_PRESETS = {
+  arms:   ['biceps','triceps','side_delts','rear_delts'],
+  glutes: ['glutes','hamstrings','hips','quads_knees'],
+  back:   ['thoracic','rear_delts','core','glutes'],
+  none:   []
+};
+async function getPriorityMuscles(){
+  try{
+    const v = JSON.parse((await window.storage.get(PRIORITY_MUSCLES_KEY)).value);
+    return Array.isArray(v) ? v.filter(a=> VOLUME_LANDMARKS[a]).slice(0, 4) : [];
+  } catch(e){ return []; }
+}
+
 /* The direct small-muscle floor for a week: see DIRECT ARM WORK, GUARANTEED in the
    generator for why it exists and why it scales with the week's lifting minutes. One table,
    read by the generator and by Top up, so the two can never ask for different amounts. */
-function smallMuscleFloor(goalType, isDeload, liftMinutes){
+function smallMuscleFloor(goalType, isDeload, liftMinutes, priorities){
+  /* Chosen priorities replace the default set outright (someone who picked glutes and
+     hamstrings is not also handed curls). Every pick gets direct work; how much follows
+     the same lifting-minutes scale: six sets each at four hours or more, six for the first
+     two and three for the rest between 2h40 and four, three each below that, where only the
+     first three picks fit. A deload holds three each. */
+  if(priorities && priorities.length){
+    const out = {};
+    const list = liftMinutes < 160 ? priorities.slice(0, 3) : priorities;
+    list.forEach((a, i)=>{
+      out[a] = isDeload ? 3 : liftMinutes >= 240 ? 6 : liftMinutes >= 160 ? (i < 2 ? 6 : 3) : 3;
+    });
+    return out;
+  }
   const growing = goalType === 'hypertrophy' && !isDeload;
   if(growing){
     if(liftMinutes >= 240) return { biceps: 6, triceps: 6, side_delts: 6, rear_delts: 3 };
@@ -30389,6 +30491,7 @@ async function topUpSmallMuscleWork(){
   const personalSets = await getPersonalSetsByCategory();
   const equipmentPrefs = await getEquipmentPrefs();
   const injuryMovementFlags = await getInjuryMovementFlags();
+  const priorities = await getPriorityMuscles();
   const keys = ((await window.storage.list('weekplan:')).keys || []);
   const byWeek = {};
   for(const k of keys){
@@ -30407,7 +30510,7 @@ async function topUpSmallMuscleWork(){
   for(const wk of Object.keys(byWeek).sort()){
     const days = byWeek[wk];
     const isDeload = await isDeloadWeek(wk);
-    const floor = smallMuscleFloor(goalType, isDeload, days.length * sessionLength);
+    const floor = smallMuscleFloor(goalType, isDeload, days.length * sessionLength, priorities);
     const usedNames = new Set();
     days.forEach(d=> d.block.details.exercises.forEach(ex=>{ markMovementUsed(EXERCISE_LIBRARY[ex.exerciseId] || ex, usedNames); }));
     const directPicksByArea = {};
@@ -30426,7 +30529,7 @@ async function topUpSmallMuscleWork(){
         let placed = false;
         for(const d of open){
           const picks = selectVolumeGapAccessories({
-            tag: area + '_only', weekSetsByArea: { [area]: 0 }, daysRemaining: 1, goalType,
+            tag: 'full_body', onlyArea: area, weekSetsByArea: { [area]: 0 }, daysRemaining: 1, goalType,
             emphasisAreas: [area], blockPhase: 'accumulation', bodyweightOnly: !!equipmentPrefs.bodyweightAll,
             usedNames, injuryMovementFlags, maxPicks: 1, weekRotationIndex, directPicksByArea
           });
@@ -30458,10 +30561,11 @@ async function topUpSmallMuscleWork(){
   return { added, missed: [...new Set(missed)] };
 }
 
-function selectVolumeGapAccessories({ tag, weekSetsByArea, daysRemaining, goalType, usedNames, injuryMovementFlags, maxPicks, emphasisAreas, blockPhase, bodyweightOnly, weekRotationIndex, directPicksByArea, blocksCompleted, blockProgressionFactor }){
+function selectVolumeGapAccessories({ tag, onlyArea, weekSetsByArea, daysRemaining, goalType, usedNames, injuryMovementFlags, maxPicks, emphasisAreas, blockPhase, bodyweightOnly, weekRotationIndex, directPicksByArea, blocksCompleted, blockProgressionFactor }){
   weekRotationIndex = weekRotationIndex || 0;
   directPicksByArea = directPicksByArea || {};
-  const candidateAreas = TAG_TO_AREAS[tag] || TAG_TO_AREAS.full_body;
+  // onlyArea: the floor's own one-area queue (any area, not only the four with a _only tag).
+  const candidateAreas = onlyArea ? [onlyArea] : (TAG_TO_AREAS[tag] || TAG_TO_AREAS.full_body);
   const emphasis = new Set(emphasisAreas || []);
   // Volume progresses across the block rather than sitting at one level all cycle.
   // Accumulation builds at the bottom of the productive range, intensification pushes
@@ -31155,7 +31259,8 @@ function trimCandidateIndex(exercises, topGoalType, prefersPower){
     const group = trimGroupOf(ex);
     // Direct arm work placed by the arm floor goes last of all: after every other accessory,
     // and only if the session still does not fit.
-    const rank = ex.skippedForInjury ? -1 : ex.armFloor ? order.length + 1 : trimRankIn(order, group);
+    // Among themselves, the first-priority area is kept longest (floorRank 0 is the first pick).
+    const rank = ex.skippedForInjury ? -1 : ex.armFloor ? order.length + 1 + (1 - Math.min(9, ex.floorRank || 0) / 10) : trimRankIn(order, group);
     const count = remaining[group] || 0;
     // Lowest rank goes; among equals, thin whichever kind there is most of, so no single
     // kind of work is emptied out while another still has three of it.
@@ -37706,19 +37811,20 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
        other goals   2h40+: arms and laterals 3 each
                      under: arms 3 each */
   const liftMinutes = dayStates.length * (sessionLength || 60);
-  const ARM_FLOOR_SETS = smallMuscleFloor(topGoalType, effectiveBlockPhase === 'deload', liftMinutes);
+  const priorityMuscles = await getPriorityMuscles();
+  const ARM_FLOOR_SETS = smallMuscleFloor(topGoalType, effectiveBlockPhase === 'deload', liftMinutes, priorityMuscles);
   const directArmSets = area => dayStates.reduce((acc, st)=> acc + st.exercises.reduce((a, ex)=>{
     const g = ex.area ? null : guessTagsFromLibrary(ex.name || '');
     return a + (((ex.area || (g && g.primary)) === area) ? (+ex.sets || 0) : 0);
   }, 0), 0);
-  const SMALL_AREAS = ['biceps', 'triceps', 'side_delts', 'rear_delts'];
+  const SMALL_AREAS = Object.keys(ARM_FLOOR_SETS);
   for(const area of Object.keys(ARM_FLOOR_SETS)){
     /* The arm work the round-robin already picked counts toward the floor, and is protected
        up to it too: left unmarked, it satisfied the check here and was then the first thing
        the trim cut, which is how a strength week still came out with no triceps at all. */
     let protectedSets = 0;
     dayStates.forEach(st=> st.exercises.forEach(ex=>{
-      if(ex.area === area && !ex.isMainLift && protectedSets < ARM_FLOOR_SETS[area]){ ex.armFloor = true; protectedSets += (+ex.sets || 0); }
+      if(ex.area === area && !ex.isMainLift && protectedSets < ARM_FLOOR_SETS[area]){ ex.armFloor = true; ex.floorRank = SMALL_AREAS.indexOf(area); protectedSets += (+ex.sets || 0); }
     }));
     for(let guard = 0; guard < 4 && directArmSets(area) < ARM_FLOOR_SETS[area]; guard++){
       const eligible = dayStates.filter(st=> (TAG_TO_AREAS[st.tag] || []).includes(area));
@@ -37733,9 +37839,12 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
         catch(e){ return -st.exercises.length; }
       };
       eligible.sort((a, b)=> (hasArea(a) - hasArea(b)) || (slack(b) - slack(a)) || (armOn(a) - armOn(b)));
+      /* Most spare time first. Not "only where it fits": before the trim every day is over its
+         length, so nothing ever fit and the floor placed nothing. The trim settles it instead,
+         taking unprotected work first and then the lowest-priority floor pick (floorRank). */
       const state = eligible[0];
       const picks = selectVolumeGapAccessories({
-        tag: area + '_only', weekSetsByArea: { [area]: 0 }, daysRemaining: 1,
+        tag: 'full_body', onlyArea: area, weekSetsByArea: { [area]: 0 }, daysRemaining: 1,
         goalType: FOCUS_TO_GOAL_TYPE[state.plannedFocus] || topGoalType,
         emphasisAreas: [area], blockPhase: effectiveBlockPhase === 'deload' ? 'accumulation' : effectiveBlockPhase,
         bodyweightOnly: equipmentPrefs.bodyweightAll,
@@ -37746,6 +37855,7 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
       const pk = picks[0];
       assignPrescription(pk, state.plannedFocus, personalSets);
       pk.armFloor = true;
+      pk.floorRank = SMALL_AREAS.indexOf(area);
       state.exercises.push(pk);
       creditSets(pk, pk.sets);
       weekUsedExerciseNames.add(pk.name);
