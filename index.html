@@ -1259,12 +1259,6 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .train-panel{ display:flex; flex-direction:column; gap:4px; width:min(100%, 320px); margin:20px auto 8px;
     font-family:var(--mono); font-size:var(--fs-sm); color:var(--bg); font-variant-numeric:tabular-nums; }
   .train-panel:empty{ display:none; }
-  .score-ring-key .cr-sum{ display:block; width:100%; height:auto; min-height:0; padding:2px 0; background:transparent; border:0; color:var(--dim); font:inherit;
-    font-size:var(--fs-xs); text-align:center; text-transform:none; letter-spacing:0; cursor:pointer; }
-  .score-ring-key .cr-chev{ display:inline-block; transition:transform .2s ease; }
-  .score-ring-key .cr-sum[aria-expanded="true"] .cr-chev{ transform:rotate(90deg); }
-  .score-ring-key .cr-more{ display:flex; flex-direction:column; gap:7px; margin-top:6px; }
-  .score-ring-key .cr-more[hidden]{ display:none; }
   .train-panel .tp-rule{ border-top:1px dashed rgba(var(--ink-rgb),0.3); }
   .train-panel .tp-rows{ display:flex; flex-direction:column; }
   .train-panel .tp-line{ display:flex; align-items:center; gap:10px; width:100%; height:auto; min-height:44px; padding:10px 0;
@@ -1281,6 +1275,12 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .train-panel .tp-more{ display:flex; flex-direction:column; gap:8px; padding:4px 0 14px 30px; border-bottom:1px solid rgba(var(--ink-rgb),0.1); }
   .train-panel .tp-more[hidden]{ display:none; }
   .train-panel .tp-more .tp-te, .train-panel .tp-more .tp-bar, .train-panel .tp-more .tp-cal, .train-panel .tp-more .tp-steps{ padding-left:0; margin-left:0; }
+  /* On Build the panels sit in a band's fields: full width, no rule of their own. */
+  #panel-plan .train-panel{ width:100%; margin:0; }
+  #panel-plan .tp-more .head-action{ align-self:flex-start; position:static; margin:4px 0 0; }
+  #panel-plan .tp-ic{ display:flex; flex:none; color:rgba(var(--ink-rgb),0.85); }
+  #panel-plan .tp-v b{ font-weight:var(--fw-bold); }
+  .plan-cell .plan-score{ margin-bottom:1px; }
   .train-panel .tp-head{ font-weight:var(--fw-bold); letter-spacing:0.1em; text-transform:uppercase; font-size:var(--fs-xs);
     border-top:1px dashed rgba(var(--ink-rgb),0.3); padding-top:14px; color:rgba(var(--ink-rgb),0.7); }
   .train-panel .tp-empty{ margin:0; color:var(--dim); font-size:var(--fs-xs); line-height:1.45; }
@@ -6150,8 +6150,8 @@ if(!window.__pnHold)window.__curtain();
          and what is left of .today-field is just the full-bleed margin/padding trick, which
          works the same wherever it sits. -->
     <div class="lift-sheet" id="scoreDetailSheet" style="display:none;">
-      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Charge and training">
-        <div class="lift-sheet-head"><span>Charge &amp; training</span>
+      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Today's charge">
+        <div class="lift-sheet-head"><span>Today's charge</span>
           <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
         <div class="fields">
     <div class="today-field">
@@ -6194,9 +6194,7 @@ if(!window.__pnHold)window.__curtain();
          padding there, which would have left the last 16px above the head undotted. -->
     <div id="acceptanceStats" class="log" style="margin-top:0;"></div>
     </div><!-- /.today-field -->
-    <!-- TRAINING, under the day's Charge: status, recovery time, what each session did,
-         consistency and resilience. Drawn by renderTrainingPanel each time the sheet opens. -->
-    <section class="train-panel" id="trainingPanel" aria-label="Training"></section>
+
         </div>
       </div>
     </div>
@@ -6779,24 +6777,31 @@ if(!window.__pnHold)window.__curtain();
         <div class="plan-lanes" id="planBlockAhead"></div>
       </div>
     </div>
+    <!-- HOW TRAINING IS GOING, one line each (renderTrainingPanel): lifting and running status,
+         recovery time, this week's sessions, how closely you keep to the plan, resilience. Each
+         line opens what is behind it. -->
     <div class="group plan-group">
-      <div class="group-head"><div class="group-title">Goals</div><span class="head-est" id="planGoalsEst"></span>
-        <button type="button" class="head-action" id="planGoalsRow">Change</button></div>
-      <div class="fields"><div class="plan-lanes" id="planGoalsList"></div></div>
+      <div class="group-head"><div class="group-title">Training</div><span class="head-est" id="planTrainEst"></span></div>
+      <div class="fields"><section class="train-panel" id="trainingPanel" aria-label="Training"></section></div>
     </div>
+    <!-- WHAT YOU SET, one line each: goals, sport and weight. The line carries the answer the
+         band's tag used to; tapping it opens the lanes, the week or the number, with the button
+         that changes it. Every id is the one renderPlanTab has always written to. -->
     <div class="group plan-group">
-      <div class="group-head"><div class="group-title">Sport</div><span class="head-est" id="planSportEst"></span>
-        <button type="button" class="head-action" id="planSportRow">Sports</button></div>
-      <div class="fields"><div id="planSportList"></div></div>
-    </div>
-    <div class="group plan-group">
-      <div class="group-head"><div class="group-title">Weight</div><span class="head-est" id="planWeightEst"></span>
-        <button type="button" class="head-action" id="planWeightRow">Log</button></div>
-      <div class="fields">
-        <div class="plan-weight-big" id="planWeightBig">&mdash;</div>
-        <div class="plan-weight-line" id="planWeightLine"></div>
-        <div class="plan-weight-note" id="planWeightSmall"></div>
-      </div>
+      <div class="group-head"><div class="group-title">Set-up</div></div>
+      <div class="fields"><div class="train-panel" id="planSetupRows"><div class="tp-rows">
+        <button type="button" class="tp-line" aria-expanded="false" aria-controls="setupGoals"><span class="tp-ic" data-ic="goals"></span><span class="tp-k">Goals</span><span class="tp-v"><b id="planGoalsEst"></b></span><span class="tp-chev" aria-hidden="true">&rsaquo;</span></button>
+        <div class="tp-more" id="setupGoals" hidden><div class="plan-lanes" id="planGoalsList"></div><button type="button" class="head-action" id="planGoalsRow">Change</button></div>
+        <button type="button" class="tp-line" aria-expanded="false" aria-controls="setupSport"><span class="tp-ic" data-ic="sport"></span><span class="tp-k">Sport</span><span class="tp-v"><b id="planSportEst"></b></span><span class="tp-chev" aria-hidden="true">&rsaquo;</span></button>
+        <div class="tp-more" id="setupSport" hidden><div id="planSportList"></div><button type="button" class="head-action" id="planSportRow">Sports</button></div>
+        <button type="button" class="tp-line" aria-expanded="false" aria-controls="setupWeight"><span class="tp-ic" data-ic="weight"></span><span class="tp-k">Weight</span><span class="tp-v"><b id="planWeightEst"></b></span><span class="tp-chev" aria-hidden="true">&rsaquo;</span></button>
+        <div class="tp-more" id="setupWeight" hidden>
+          <div class="plan-weight-big" id="planWeightBig">&mdash;</div>
+          <div class="plan-weight-line" id="planWeightLine"></div>
+          <div class="plan-weight-note" id="planWeightSmall"></div>
+          <button type="button" class="head-action" id="planWeightRow">Log</button>
+        </div>
+      </div></div></div>
     </div>
 
     <div class="lift-sheet" id="planBlockSheet" style="display:none;">
@@ -13632,7 +13637,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.16.021';
+const APP_VERSION = '2026.11.16.022';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14028,6 +14033,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.16.022': 'Build is simpler: the block stays on top, now with each week\'s average workout score, then your training and your set-up as one line each. Tap a line to open it. The Charge sheet is back the way it was.',
   '2026.11.16.021': 'The Charge & training sheet is simpler: your Charge, one line on what made it, then six lines for your training. Tap any line to see what is behind it.',
   '2026.11.16.020': 'Tap the mascot and there is a Training section under your Charge now: where your lifting and running are each heading, how long until you are recovered, what every session this week did, how steady you have been against the plan, and how well you bounce back.',
   '2026.11.16.019': 'The Charge ring fills right up like a battery on charge, then drains back to what you have left, and the grey of what the day has used appears as it goes.',
@@ -27325,13 +27331,29 @@ function trainClock(t){
 /* LAYOUT A: ONE LINE EACH. Six rows under a dashed rule, each a symbol, a name and the answer;
    tapping a row opens what is behind the answer (the bar, the week, the calendar, the steps
    and one line on what it means) and tapping again closes it. Only one is open at a time. */
+/* One handler for every line list (Training and Set-up on Build): a tap opens that line's
+   detail and closes any other open in the same list; a second tap closes it. */
+document.addEventListener('click', e=>{
+  const btn = e.target && e.target.closest ? e.target.closest('.tp-line') : null;
+  if(!btn) return;
+  const list = btn.closest('.tp-rows');
+  const open = btn.getAttribute('aria-expanded') !== 'true';
+  (list ? list.querySelectorAll('.tp-line') : [btn]).forEach(b=>{
+    b.setAttribute('aria-expanded', 'false');
+    const m = document.getElementById(b.getAttribute('aria-controls')); if(m) m.hidden = true;
+  });
+  if(open){ btn.setAttribute('aria-expanded', 'true'); const m = document.getElementById(btn.getAttribute('aria-controls')); if(m) m.hidden = false; }
+  try{ haptic('light'); } catch(err){}
+});
 async function renderTrainingPanel(){
   const host = document.getElementById('trainingPanel');
   if(!host) return;
   let t = null;
   try{ t = await trainingSummary(); } catch(e){}
   if(!t || !t.any){
-    host.innerHTML = `<div class="tp-rule"></div><p class="tp-empty">Log a session or two and your training shows here: where it is heading, when you are recovered, what each session did, how closely you keep to the plan and how well you bounce back.</p>`;
+    const est = document.getElementById('planTrainEst');
+    if(est) est.textContent = 'no sessions yet';
+    host.innerHTML = `<p class="tp-empty">Log a session or two and your training shows here: where it is heading, when you are recovered, what each session did, how closely you keep to the plan and how well you bounce back.</p>`;
     return;
   }
   const STATUS_TONE = { Productive: 'good', Building: 'good', Maintaining: 'ok', Recovering: 'ok', Learning: 'dim', Stalling: 'low', Detraining: 'low', Overreaching: 'low' };
@@ -27397,15 +27419,12 @@ async function renderTrainingPanel(){
     row('heart', 'Resilience', '<b>Learning</b>', `<small>${rs.haveUsual ? `${rs.need} more training day${rs.need === 1 ? '' : 's'} with a morning check-in after, and this shows how well you bounce back.` : 'A couple of weeks of mornings first, to know your usual.'}</small>`);
   }
 
-  host.innerHTML = `<div class="tp-rule"></div><div class="tp-rows">` + rows.map((r, i)=>
+  // The band's tag: the status words, once if both sides agree.
+  const est = document.getElementById('planTrainEst');
+  if(est) est.textContent = [...new Set(t.status.map(r=> r.word.toLowerCase()))].join(' \u00b7 ');
+  host.innerHTML = `<div class="tp-rows">` + rows.map((r, i)=>
     `<button type="button" class="tp-line" aria-expanded="false" aria-controls="tpMore${i}">${dfIcon(r.icon, 20)}<span class="tp-k">${r.label}</span><span class="tp-v">${r.value}</span><span class="tp-chev" aria-hidden="true">›</span></button>`
     + `<div class="tp-more" id="tpMore${i}" hidden>${r.detail}</div>`).join('') + `</div>`;
-  host.querySelectorAll('.tp-line').forEach(btn=> btn.addEventListener('click', ()=>{
-    const open = btn.getAttribute('aria-expanded') !== 'true';
-    host.querySelectorAll('.tp-line').forEach(b=>{ b.setAttribute('aria-expanded', 'false'); const m = document.getElementById(b.getAttribute('aria-controls')); if(m) m.hidden = true; });
-    if(open){ btn.setAttribute('aria-expanded', 'true'); const m = document.getElementById(btn.getAttribute('aria-controls')); if(m) m.hidden = false; }
-    try{ haptic('light'); } catch(e){}
-  }));
 }
 /* The key to the ring's colours, under the big number in the score sheet. */
 function paintScoreRing(value, ch){
@@ -27437,16 +27456,8 @@ function paintScoreRing(value, ch){
     const rows = [`<div class="cr-row">${ic('sleep')}<span>Woke with</span><b>${ch.start}</b></div>`]
       .concat(ch.parts.map(p=> `<div class="cr-row">${ic(sym[p.label] || 'drain')}<span>${name[p.label] || p.label}${p.at ? ' \u00b7 ' + clock(p.at) : ''}<small>${why(p)}</small></span><b>\u2212${p.pts}</b></div>`))
       .concat([`<div class="cr-row cr-total">${ic('charge')}<span>Left now</span><b>${ch.charge}</b></div>`]);
-    /* Layout A: one line under the ring ("Woke with 51 · lift −13 · long day −3"); tapping it
-       opens the full receipt with times and reasons. */
-    const merged = [];
-    ch.parts.forEach(p=>{ const m = merged.find(x=> x.label === p.label); if(m) m.pts += p.pts; else merged.push({ label: p.label, pts: p.pts }); });
-    const sum = [`Woke with ${ch.start}`].concat(merged.map(p=> `${p.label} \u2212${p.pts}`)).join(' \u00b7 ');
-    key.innerHTML = `<button type="button" class="cr-sum" aria-expanded="false" aria-controls="crMore">${sum} <span class="cr-chev" aria-hidden="true">\u203a</span></button>`
-      + `<div class="cr-more" id="crMore" hidden>` + rows.join('') + (ch.drainFactor && Math.abs(ch.drainFactor - 1) > 0.05
-      ? `<div class="cr-foot">Sessions are scaled \u00d7${ch.drainFactor.toFixed(2)}, learned from your days with two.</div>` : '') + `</div>`;
-    const sumBtn = key.querySelector('.cr-sum'), more = key.querySelector('.cr-more');
-    sumBtn.addEventListener('click', ()=>{ const o = sumBtn.getAttribute('aria-expanded') !== 'true'; sumBtn.setAttribute('aria-expanded', o ? 'true' : 'false'); more.hidden = !o; try{ haptic('light'); } catch(e){} });
+    key.innerHTML = rows.join('') + (ch.drainFactor && Math.abs(ch.drainFactor - 1) > 0.05
+      ? `<div class="cr-foot">Sessions are scaled \u00d7${ch.drainFactor.toFixed(2)}, learned from your days with two.</div>` : '');
     key.hidden = false;
   }
 }
@@ -30585,6 +30596,8 @@ async function planBlockList(){
 const GOAL_ICON = { strength:'strength', hypertrophy:'muscle', running:'run', mobility:'mobility', power:'power' };
 const GOAL_STATUS_WORD = { improving_fast:['ahead','good'], improving:['improving','good'], plateauing:['flat',''], declining:['slipping','warn'] };
 async function renderPlanTab(){
+  document.querySelectorAll('#planSetupRows .tp-ic:empty').forEach(el=>{ el.innerHTML = dfIcon(el.dataset.ic, 20); });
+  renderTrainingPanel();
   // BLOCK: this block's weeks as cells, the next blocks as lanes.
   try{
     const pos = await getBlockPosition(todayStr);
@@ -30601,11 +30614,36 @@ async function renderPlanTab(){
       const start = shiftDateStr(pos.start || getWeekStartFor(todayStr), (w - 1) * 7);
       const mark = dl ? 'DL' : (bt && DF_ICONS[bt] ? dfIcon(bt, 14) : '');
       html += `<div class="plan-cell ${state}${dl ? ' dl' : ''}" aria-label="Week ${w}${dl ? ', deload' : ''}${state === 'now' ? ', this week' : ''}">`
+        + `<span class="week-cal-score plan-score" aria-hidden="true">00</span>`
         + `<span class="k">${localDateFrom(start).getDate()} ${MONTH_SHORT[localDateFrom(start).getMonth()]}</span>`
         + `<span class="n">W${w}</span><span class="m">${mark}</span></div>`;
     }
     cells.style.setProperty('--n', String(pos.length));
     cells.innerHTML = html;
+    /* EACH WEEK'S SCORE: the average of the workout scores in it (the same Performance numbers
+       the week strip on Today shows above each day), on the same chip, lime from 60, amber from
+       40, red below. Weeks still to come, and weeks with no scored workout, show none. */
+    if(pos.started){
+      try{
+        const first = pos.start || getWeekStartFor(todayStr);
+        const dates = [];
+        for(let i = 0; i < pos.weekInBlock * 7; i++){ const d = shiftDateStr(first, i); if(d <= todayStr) dates.push(d); }
+        const perf = await performanceForDates(dates);
+        cells.querySelectorAll('.plan-cell').forEach((cell, w)=>{
+          const scores = [];
+          for(let i = 0; i < 7; i++){ (perf[shiftDateStr(first, w * 7 + i)] || []).forEach(x=> scores.push(x.score)); }
+          if(!scores.length) return;
+          const avg = Math.round(scores.reduce((a, b)=> a + b, 0) / scores.length);
+          const band = avg >= 60 ? 'good' : avg >= 40 ? 'ok' : 'low';
+          const chip = cell.querySelector('.plan-score');
+          if(!chip) return;
+          chip.textContent = avg;
+          chip.className = `week-cal-score on plan-score ${band}`;
+          chip.removeAttribute('aria-hidden');
+          chip.setAttribute('aria-label', `Average workout score ${avg} from ${scores.length} workout${scores.length === 1 ? '' : 's'}`);
+        });
+      } catch(e){}
+    }
     let list = (await planBlockList()).filter(b => b.state === 'next').slice(0, 3);
     // In-season repeats itself: one lane that says so, not three that look the same.
     const repeats = list.length && list.every(b => b.type === bt);
@@ -30662,7 +30700,9 @@ async function renderPlanTab(){
   try{
     const g = await weightGuidance();
     const w = g.trend && g.trend.latest ? g.trend.latest.weight : null;
-    document.getElementById('planWeightEst').textContent = { on:'on target', low:'below target', high:'above target' }[g.status] || (w ? 'not enough yet' : 'no weigh-ins');
+    document.getElementById('planWeightEst').textContent = w
+      ? `${w.toFixed(1)} kg` + ({ on:' \u00b7 on target', low:' \u00b7 below', high:' \u00b7 above' }[g.status] || '')
+      : 'no weigh-ins';
     const bigEl = document.getElementById('planWeightBig');
     bigEl.textContent = w ? `${w.toFixed(1)} kg` : '';
     bigEl.hidden = !w;
@@ -30820,7 +30860,6 @@ document.getElementById('headerScoreBtn')?.addEventListener('click', ()=>{
   // it's not currently showing promised.
   if(todayNeedsLog && currentTabName() === 'insights'){ openMorningLogSheet(); return; }
   scoreDetailSheet.open();
-  renderTrainingPanel();
   // The ring sweeps in and the number counts up with it.
   try{
     const ring = document.querySelector('#scoreDetailSheet .score-stack > .charge-ring');
