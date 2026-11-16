@@ -13542,7 +13542,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.16.012';
+const APP_VERSION = '2026.11.16.013';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13938,6 +13938,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.16.013': 'Settings shows what the page can see of the iPhone app, to track down why the app is being treated as the web version.',
   '2026.11.16.012': 'Settings, under Apple Health, has a Check iPhone connections button: it tests Health, haptics and the widget and says exactly what each one answered.',
   '2026.11.16.011': 'When the widget has no number it now says why: nothing from Dogfood yet, a reading from another day (open Dogfood for today), or this morning\'s reading not in yet.',
   '2026.11.16.010': 'Fixed: opening the app the morning after, when your phone had kept it open overnight, left it on yesterday, and the widget stayed on "Open Dogfood". It now notices the new day. Settings, under Apple Health, says what the widget was last sent.',
@@ -18867,6 +18868,26 @@ function renderWidgetStatus(){
     let note = document.getElementById('widgetStatus');
     if(!note){ note = document.createElement('div'); note.id = 'widgetStatus'; note.className = 'score-note'; host.appendChild(note); }
     note.textContent = 'This is the web version of Dogfood. The widget, haptics, the Live Activity and Apple Health only work in the Dogfood app installed from TestFlight.';
+    /* What the page itself can see, so a copy of the app that thinks it is the web version
+       can say why: its address, whether Capacitor's bridge script arrived, the platform it
+       reports, whether the iOS message channel is there, and the plugins it lists. */
+    let diag = document.getElementById('bridgeDiag');
+    if(!diag){ diag = document.createElement('div'); diag.id = 'bridgeDiag'; diag.className = 'score-note';
+      diag.style.cssText = 'font-family:var(--mono); font-size:var(--fs-tag); white-space:pre-wrap; user-select:text; -webkit-user-select:text;';
+      host.appendChild(diag); }
+    const C = window.Capacitor;
+    const rows = [];
+    const add = (k, f)=>{ let v; try{ v = f(); } catch(e){ v = 'error: ' + e.message; } rows.push(k + ': ' + v); };
+    add('Address', ()=> location.href);
+    add('Capacitor', ()=> C ? 'present' : 'missing');
+    add('Platform', ()=> C && C.getPlatform ? C.getPlatform() : '-');
+    add('Native', ()=> C && C.isNativePlatform ? String(C.isNativePlatform()) : '-');
+    add('iOS channel', ()=> window.webkit && window.webkit.messageHandlers ? Object.keys(window.webkit.messageHandlers).join(', ') || 'none listed' : 'none');
+    add('Bridge handler', ()=> !!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.bridge));
+    add('Plugins', ()=> C && C.PluginHeaders ? C.PluginHeaders.map(h=> h.name).join(', ') || 'none' : (C && C.Plugins ? Object.keys(C.Plugins).join(', ') : '-'));
+    add('Version', ()=> APP_VERSION);
+    add('Browser', ()=> navigator.userAgent.replace(/^Mozilla\/5\.0 /, '').slice(0, 120));
+    diag.textContent = rows.join('\n');
     return;
   }
   let el = document.getElementById('widgetStatus');
