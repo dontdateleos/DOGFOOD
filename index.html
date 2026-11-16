@@ -1253,6 +1253,53 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .score-ring-key .cr-total{ border-top:1px dashed rgba(var(--ink-rgb),0.3); padding-top:7px; font-weight:var(--fw-bold); }
   .score-ring-key .cr-foot{ font-size:var(--fs-xs); color:var(--dim); margin-top:2px; }
   .score-ring-key[hidden]{ display:none; }
+  /* TRAINING, under the Charge receipt: the same mono column, one block per reading, each a
+     symbol and a title with its value on the right, a picture of it, and one line on what it
+     means. Ink is the sheet's (--bg on this ground); tones are the week chips' three. */
+  .train-panel{ display:flex; flex-direction:column; gap:18px; width:min(100%, 320px); margin:26px auto 8px;
+    font-family:var(--mono); font-size:var(--fs-sm); color:var(--bg); font-variant-numeric:tabular-nums; }
+  .train-panel:empty{ display:none; }
+  .train-panel .tp-head{ font-weight:var(--fw-bold); letter-spacing:0.1em; text-transform:uppercase; font-size:var(--fs-xs);
+    border-top:1px dashed rgba(var(--ink-rgb),0.3); padding-top:14px; color:rgba(var(--ink-rgb),0.7); }
+  .train-panel .tp-empty{ margin:0; color:var(--dim); font-size:var(--fs-xs); line-height:1.45; }
+  .train-panel .tp-block{ display:flex; flex-direction:column; gap:7px; }
+  .train-panel .tp-row-head{ display:flex; align-items:center; gap:10px; }
+  .train-panel .tp-row-head .df-icon{ flex:none; color:rgba(var(--ink-rgb),0.85); }
+  .train-panel .tp-title{ flex:1; min-width:0; font-weight:var(--fw-bold); }
+  .train-panel .tp-val{ flex:none; font-weight:var(--fw-bold); }
+  .train-panel small{ font-size:var(--fs-xs); color:var(--dim); line-height:1.4; }
+  .train-panel .tp-note{ padding-left:30px; }
+  .train-panel .tp-status{ display:grid; grid-template-columns:72px auto 1fr; align-items:center; column-gap:8px; row-gap:2px; padding-left:30px; }
+  .train-panel .tp-status small{ grid-column:1 / -1; }
+  .train-panel .tp-k{ color:rgba(var(--ink-rgb),0.75); }
+  .train-panel .tp-chip{ justify-self:start; font-weight:var(--fw-bold); font-size:var(--fs-xs); line-height:1; padding:4px 8px 3px;
+    border-radius:99px; color:#0c0d0b; background:rgba(var(--ink-rgb),0.25); }
+  .train-panel .tp-chip.good{ background:var(--block-lime); }
+  .train-panel .tp-chip.ok{ background:#f4d48a; }
+  .train-panel .tp-chip.low{ background:#f6b3a4; }
+  .train-panel .tp-chip.dim{ background:transparent; color:inherit; box-shadow:inset 0 0 0 1px rgba(var(--ink-rgb),0.45); }
+  .train-panel .tp-bar{ height:6px; margin-left:30px; border-radius:3px; background:rgba(var(--ink-rgb),0.18); overflow:hidden; }
+  .train-panel .tp-bar i{ display:block; height:100%; background:currentColor; border-radius:3px; transition:width .9s cubic-bezier(.22,.9,.24,1); }
+  .train-panel .tp-te{ display:flex; align-items:center; gap:10px; padding-left:30px; }
+  .train-panel .tp-te-ic{ display:flex; flex:none; color:rgba(var(--ink-rgb),0.75); }
+  .train-panel .tp-te-what{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+  .train-panel .tp-te-seg{ display:flex; gap:2px; flex:none; }
+  .train-panel .tp-te-seg i{ width:7px; height:12px; border-radius:2px; background:rgba(var(--ink-rgb),0.18); }
+  .train-panel .tp-te-seg i.on{ background:currentColor; }
+  .train-panel .tp-te-seg i.half{ background:linear-gradient(to top, currentColor 50%, rgba(var(--ink-rgb),0.18) 50%); }
+  .train-panel .tp-te b{ flex:none; width:2.4em; text-align:right; }
+  .train-panel .tp-cal{ display:grid; grid-template-columns:repeat(7, 1fr); gap:6px 4px; margin-left:30px; justify-items:center; }
+  .train-panel .tp-cal span{ font-size:var(--fs-xs); color:var(--dim); line-height:1; }
+  .train-panel .tp-cal i{ width:12px; height:12px; border-radius:50%; background:rgba(var(--ink-rgb),0.12); }
+  .train-panel .tp-cal i.cc-done{ background:currentColor; }
+  .train-panel .tp-cal i.cc-extra{ background:transparent; box-shadow:inset 0 0 0 3px currentColor; }
+  .train-panel .tp-cal i.cc-miss{ background:#f6b3a4; }
+  .train-panel .tp-cal i.cc-plan{ background:transparent; box-shadow:inset 0 0 0 1.5px rgba(var(--ink-rgb),0.55); }
+  .train-panel .tp-cal i.cc-today{ box-shadow:inset 0 0 0 1.5px currentColor; }
+  .train-panel .tp-cal i.cc-f:not(.cc-plan){ background:transparent; }
+  .train-panel .tp-steps{ display:grid; grid-template-columns:repeat(5, 1fr); gap:4px; margin-left:30px; }
+  .train-panel .tp-steps i{ height:6px; border-radius:3px; background:rgba(var(--ink-rgb),0.18); }
+  .train-panel .tp-steps i.on{ background:currentColor; }
   /* LOOKS LIKE IT WANTS A TAP. The outline pill reads as a label everywhere else it is used
      (today's number, tap for detail) — fine for a readout, wrong for an offer. Filled solid
      in the same orange the reminder has used since the very first version of it, plus a slow
@@ -6081,8 +6128,8 @@ if(!window.__pnHold)window.__curtain();
          and what is left of .today-field is just the full-bleed margin/padding trick, which
          works the same wherever it sits. -->
     <div class="lift-sheet" id="scoreDetailSheet" style="display:none;">
-      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Today's charge">
-        <div class="lift-sheet-head"><span>Today's charge</span>
+      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-label="Charge and training">
+        <div class="lift-sheet-head"><span>Charge &amp; training</span>
           <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
         <div class="fields">
     <div class="today-field">
@@ -6125,6 +6172,9 @@ if(!window.__pnHold)window.__curtain();
          padding there, which would have left the last 16px above the head undotted. -->
     <div id="acceptanceStats" class="log" style="margin-top:0;"></div>
     </div><!-- /.today-field -->
+    <!-- TRAINING, under the day's Charge: status, recovery time, what each session did,
+         consistency and resilience. Drawn by renderTrainingPanel each time the sheet opens. -->
+    <section class="train-panel" id="trainingPanel" aria-label="Training"></section>
         </div>
       </div>
     </div>
@@ -13560,7 +13610,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.16.019';
+const APP_VERSION = '2026.11.16.020';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13956,6 +14006,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.16.020': 'Tap the mascot and there is a Training section under your Charge now: where your lifting and running are each heading, how long until you are recovered, what every session this week did, how steady you have been against the plan, and how well you bounce back.',
   '2026.11.16.019': 'The Charge ring fills right up like a battery on charge, then drains back to what you have left, and the grey of what the day has used appears as it goes.',
   '2026.11.16.018': 'The mascot sits where he should from the moment the app opens, not high until you scroll. The Charge ring sweeps in on the iPhone now, and again each time you come back to the app or to Today.',
   '2026.11.16.017': 'The symbols moved in: over each measure in Trends, beside the rest timer, the bedtime line, the workout\'s Performance score, the low-Charge note and Injuries.',
@@ -17636,7 +17687,12 @@ async function computeLoad(asOfDate){
       delta: Math.round(now),
       // Only meaningful once there is a year-ish of shape to compare against.
       flagged: cut != null && hist.length >= 60 && now > cut && now > 0,
-      cut: cut == null ? null : Math.round(cut)
+      cut: cut == null ? null : Math.round(cut),
+      /* The other tail, for Training Status: a week well under your normal for you. Same
+         percentile logic, the bottom tenth instead of the top. histN says how many days of
+         your own history the cuts are drawn from. */
+      low: sorted.length ? Math.round(sorted[Math.floor(0.10 * sorted.length)]) : null,
+      histN: hist.length
     };
   });
   // Weekly hard sets per group, this week against the trailing four.
@@ -27060,6 +27116,263 @@ function syncHeaderScore(value){
   // The number itself rides the label line ("Workouts · Charge 58").
   if(typeof currentTabName === 'function' && currentTabName() === 'insights') renderTabInsight('insights');
 }
+/* ================= TRAINING, ON THE CHARGE SHEET =================
+   Five readings under the day's Charge, each from what the app already holds: logged sessions
+   (and runs Health logged for you), the morning Charge series, the plan and your sleep.
+
+     STATUS       per currency, never merged (see SCORE 6): lifting is the strength
+                  trajectory with mechanical load, running the aerobic trajectory with cardio
+                  load. Load is "climbing" or "easing off" against your own history of
+                  week-against-six-weeks changes, the top or bottom tenth of them.
+     RECOVERY     how long until the last sessions are paid off: each costs its Charge drain
+                  times RECOVERY_H_PER_POINT hours (a typical session about 29 hours, the biggest 66),
+                  a little longer on a sleep debt. The longest still running is the answer.
+     EFFECT       each session of the last week on a 0-5 scale from its size against your
+                  typical one of its kind: 3 is your usual, every doubling adds 1.5. The
+                  benefit is what the work was: low reps strength, 6-12 muscle, higher reps
+                  endurance, jumps and throws power; a run by its type, or its pace against
+                  your usual when it has none.
+     CONSISTENCY  the last four weeks of the plan, planned against done.
+     RESILIENCE   how the morning after a training day compares with your usual morning,
+                  over four weeks, and a sleep debt pulling it down a step. */
+const RECOVERY_H_PER_POINT = 2.2, RECOVERY_DEBT_H = 3;
+// Garmin's bands, which readers of a 0-5 effect will already know: 3 is improving, 5 is too much.
+const TE_WORDS = [[1, 'No real effect'], [2, 'Minor'], [3, 'Maintaining'], [4, 'Improving'], [5, 'Highly improving'], [99, 'Overreaching']];
+const RESILIENCE_LEVELS = ['Limited', 'Adequate', 'Solid', 'Strong', 'Exceptional'];
+let _trainCache = null;
+async function trainingSummary(){
+  if(_trainCache && _trainCache.day === todayStr && Date.now() - _trainCache.at < 60000) return _trainCache.v;
+  const sr = (typeof lastSrResult !== 'undefined' && lastSrResult && lastSrResult.available) ? lastSrResult : null;
+  let sessions = [];
+  try{ sessions = (await getAllTrainingSessions()).filter(sn=> sn && (sn.type === 'strength' || sn.type === 'run') && sn.date <= todayStr); } catch(e){}
+  let bwLine = [];
+  try{ bwLine = await bodyweightTimeline(); } catch(e){}
+  const loadOf = sn=> sn.type === 'strength' ? sessionLoadOf(sn, bodyweightOn(bwLine, sn.date))
+    : (sn.distanceKm ? sn.distanceKm * 90 : (sn.durationMin || 0) * 15);
+  const from60 = shiftDateStr(todayStr, -60);
+  const typical = {};
+  ['strength', 'run'].forEach(t=>{
+    const v = sessions.filter(sn=> sn.type === t && sn.date >= from60 && sn.date < todayStr).map(loadOf).filter(x=> x > 0);
+    typical[t] = v.length >= 3 ? medianOf(v) : null;
+  });
+  const runs60 = sessions.filter(sn=> sn.type === 'run' && sn.date >= from60 && sn.distanceKm > 0 && sn.durationMin > 0);
+  const usualPace = runs60.length >= 3 ? medianOf(runs60.map(sn=> sn.durationMin / sn.distanceKm)) : null;
+  const usualRunMin = runs60.length >= 3 ? medianOf(runs60.map(sn=> sn.durationMin)) : null;
+  let k = 1;
+  try{ if(sr) k = await learnedDrainFactor(sr); } catch(e){}
+
+  // ---- Effect, per session of the last seven days.
+  const benefitOf = sn=>{
+    if(sn.type === 'run'){
+      const t = sn.runType;
+      if(t === 'interval' || t === 'sprint' || t === 'hills' || t === 'race') return 'Speed';
+      if(t === 'tempo' || t === 'threshold' || t === 'fartlek') return 'Threshold';
+      if(t === 'long') return 'Endurance';
+      if(t === 'easy' || t === 'recovery') return 'Base';
+      const pace = sn.distanceKm > 0 && sn.durationMin > 0 ? sn.durationMin / sn.distanceKm : null;
+      if(pace && usualPace && pace < usualPace * 0.94) return 'Threshold';
+      if(usualRunMin && sn.durationMin >= usualRunMin * 1.5) return 'Endurance';
+      return 'Base';
+    }
+    const ex = (sn.exercises || []).filter(e=> e && (e.sets || e.repsPerSet));
+    if(!ex.length) return 'Strength';
+    const power = ex.filter(e=> { try{ return isPowerEffort(e); } catch(err){ return false; } }).length;
+    if(power * 2 > ex.length) return 'Power';
+    const reps = [];
+    ex.forEach(e=>{ const rs = Array.isArray(e.repsPerSet) && e.repsPerSet.length ? e.repsPerSet : [e.reps]; rs.forEach(r=>{ if(+r > 0) reps.push(+r); }); });
+    const avg = reps.length ? reps.reduce((a, b)=> a + b, 0) / reps.length : 8;
+    return avg <= 5.5 ? 'Strength' : avg <= 12.5 ? 'Muscle' : 'Endurance';
+  };
+  const week = sessions.filter(sn=> sn.date > shiftDateStr(todayStr, -7))
+    .sort((a, b)=> (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.timestamp || 0) - (b.timestamp || 0)));
+  const effects = week.map(sn=>{
+    const load = loadOf(sn), t = typical[sn.type];
+    const size = t && load > 0 ? load / t : 1;
+    const te = Math.max(0.5, Math.min(5, 3 + 1.5 * Math.log2(Math.max(0.05, size))));
+    return { date: sn.date, type: sn.type, te: Math.round(te * 10) / 10, word: TE_WORDS.find(w=> te < w[0])[1],
+             benefit: benefitOf(sn), name: sn.workoutTag || '', known: !!t };
+  });
+
+  // ---- Recovery time.
+  let debt = null;
+  try{ const d = await sleepDebtHours(todayStr); debt = d ? d.debt : null; } catch(e){}
+  const now = Date.now();
+  let recovery = null;
+  sessions.filter(sn=> sn.date >= shiftDateStr(todayStr, -4)).forEach(sn=>{
+    const load = loadOf(sn), t = typical[sn.type];
+    if(!(load > 0)) return;
+    const pts = Math.max(CHARGE_SESSION_MIN, Math.min(CHARGE_SESSION_MAX, (t ? CHARGE_SESSION_TYPICAL * load / t : CHARGE_SESSION_TYPICAL) * k));
+    const hours = pts * RECOVERY_H_PER_POINT * (debt != null && debt >= RECOVERY_DEBT_H ? 1.15 : 1);
+    // When it was logged, if that was the same day; a session entered later counts from 6pm on its day.
+    const end = sn.timestamp && localDateStr(new Date(sn.timestamp)) === sn.date ? sn.timestamp : localDateFrom(sn.date).getTime() + 18 * 3600000;
+    const ready = end + hours * 3600000;
+    if(!recovery || ready > recovery.ready) recovery = { ready, hours, from: sn };
+  });
+  if(recovery){
+    // Said to the hour: "23:44" claims a precision the estimate does not have.
+    recovery.ready = Math.ceil(recovery.ready / 3600000) * 3600000;
+    recovery.left = Math.max(0, (recovery.ready - now) / 3600000);
+    recovery.debt = debt != null && debt >= RECOVERY_DEBT_H;
+  }
+
+  // ---- Status, two currencies.
+  let load = null, adapt = null;
+  try{ load = await computeLoad(todayStr); } catch(e){}
+  try{ adapt = await computeAdaptation(todayStr); } catch(e){}
+  const loadWord = c=>{
+    if(!c || !c.available) return null;
+    if(c.histN < 28) return 'learning';
+    if(c.cut != null && c.delta > c.cut && c.delta > 0) return 'climbing';
+    if(c.low != null && c.delta < c.low && c.delta < 0) return 'easing';
+    return 'steady';
+  };
+  const statusOf = (traj, lw)=>{
+    if(!traj && !lw) return null;
+    if(lw === 'easing' && traj !== 'improving') return traj === 'declining' ? 'Detraining' : 'Recovering';
+    if(!traj) return lw === 'climbing' ? 'Building' : 'Learning';
+    if(traj === 'improving') return lw === 'climbing' ? 'Building' : 'Productive';
+    if(traj === 'maintaining') return lw === 'climbing' ? 'Building' : 'Maintaining';
+    return lw === 'climbing' ? 'Overreaching' : 'Stalling';
+  };
+  const status = [
+    { key: 'lift', label: 'Lifting', traj: adapt && adapt.strength, load: loadWord(load && load.mechanical) },
+    { key: 'run', label: 'Running', traj: adapt && adapt.aerobic, load: loadWord(load && load.cardio) }
+  ].map(r=> Object.assign(r, { word: statusOf(r.traj, r.load) })).filter(r=> r.word);
+
+  // ---- Consistency: four weeks, Monday-aligned, ending this week.
+  const monday = d=>{ const x = localDateFrom(d); const dow = (x.getDay() + 6) % 7; return shiftDateStr(d, -dow); };
+  const start = shiftDateStr(monday(todayStr), -21);
+  const days = [];
+  let planned = 0, kept = 0, extra = 0, anyPlan = false;
+  for(let i = 0; i < 28; i++){
+    const d = shiftDateStr(start, i);
+    let p = 0;
+    for(const slot of ['am', 'pm']){
+      try{ const v = JSON.parse((await window.storage.get('weekplan:' + d + ':' + slot)).value); if(v && (v.type === 'strength' || v.type === 'run')) p++; } catch(e){}
+    }
+    if(p) anyPlan = true;
+    const done = sessions.filter(sn=> sn.date === d).length;
+    const future = d > todayStr, isToday = d === todayStr;
+    if(!future && !(isToday && done < p)){ planned += p; kept += Math.min(p, done); }
+    if(!future) extra += Math.max(0, done - p);
+    days.push({ d, p, done, future, isToday });
+  }
+  const pastWeeks = [0, 1, 2, 3].map(w=> days.slice(w * 7, w * 7 + 7));
+  const perWeek = pastWeeks.map(wk=> wk.filter(x=> !x.future).reduce((a, x)=> a + x.done, 0));
+  const consistency = { days, planned, kept, extra, anyPlan,
+    pct: planned ? Math.round(100 * kept / planned) : null,
+    perWeek: Math.round(10 * perWeek.slice(0, 3).reduce((a, b)=> a + b, 0) / 3) / 10 };
+  consistency.word = consistency.pct == null ? null : consistency.pct >= 90 ? 'Steady' : consistency.pct >= 75 ? 'Mostly there' : consistency.pct >= 50 ? 'Patchy' : 'Off track';
+  // Weeks in a row the plan was kept, counting back from last week.
+  let streak = 0;
+  for(let w = 2; w >= 0; w--){
+    const wk = pastWeeks[w], p = wk.reduce((a, x)=> a + x.p, 0);
+    if(p && wk.every(x=> x.done >= x.p)) streak++; else break;
+  }
+  consistency.streak = streak;
+
+  // ---- Resilience.
+  let resilience = null;
+  const series = sr && sr.shownSeries ? sr.shownSeries : null;
+  if(series){
+    const from28 = shiftDateStr(todayStr, -28);
+    const mornings = Object.keys(series).filter(d=> d >= from28 && series[d] != null).map(d=> series[d]);
+    const usual = mornings.length >= 10 ? medianOf(mornings) : null;
+    const trainDays = [...new Set(sessions.filter(sn=> sn.date >= from28 && sn.date < todayStr).map(sn=> sn.date))];
+    const after = trainDays.map(d=> series[shiftDateStr(d, 1)]).filter(v=> v != null);
+    if(usual != null && after.length >= 4){
+      const bounce = after.reduce((a, b)=> a + b, 0) / after.length - usual;
+      let lvl = bounce >= 0 ? 4 : bounce >= -3 ? 3 : bounce >= -7 ? 2 : bounce >= -12 ? 1 : 0;
+      if(debt != null) lvl -= debt >= 6 ? 2 : debt >= 3 ? 1 : 0;
+      lvl = Math.max(0, lvl);
+      resilience = { level: lvl, word: RESILIENCE_LEVELS[lvl], bounce: Math.round(bounce), usual: Math.round(usual), n: after.length, debt };
+    } else resilience = { learning: true, need: Math.max(0, 4 - after.length), haveUsual: usual != null, debt };
+  }
+
+  const v = { status, recovery, effects, consistency, resilience, any: sessions.length > 0 };
+  _trainCache = { day: todayStr, at: Date.now(), v };
+  return v;
+}
+function trainClock(t){
+  const d = new Date(t), h = String(d.getHours()).padStart(2, '0'), m = String(d.getMinutes()).padStart(2, '0');
+  const days = Math.round((localDateFrom(localDateStr(d)) - localDateFrom(todayStr)) / 86400000);
+  const day = days === 0 ? 'today' : days === 1 ? 'tomorrow' : d.toLocaleDateString(undefined, { weekday: 'short' });
+  return `${day} ${h}:${m}`;
+}
+async function renderTrainingPanel(){
+  const host = document.getElementById('trainingPanel');
+  if(!host) return;
+  let t = null;
+  try{ t = await trainingSummary(); } catch(e){}
+  if(!t || !t.any){
+    host.innerHTML = `<div class="tp-head">Training</div><p class="tp-empty">Log a session or two and this fills in: where your training is heading, when you are recovered, what each session did, how steady you are and how well you bounce back.</p>`;
+    return;
+  }
+  const head = (icon, title, value, cls)=> `<div class="tp-row-head">${dfIcon(icon, 20)}<span class="tp-title">${title}</span>${value != null ? `<b class="tp-val${cls ? ' ' + cls : ''}">${value}</b>` : ''}</div>`;
+  const STATUS_TONE = { Productive: 'good', Building: 'good', Maintaining: 'ok', Recovering: 'ok', Learning: 'dim', Stalling: 'low', Detraining: 'low', Overreaching: 'low' };
+  const LOAD_SAY = { climbing: 'load climbing faster than usual', easing: 'load easing off', steady: 'load steady', learning: 'still learning your normal load' };
+  const parts = [];
+
+  // Status
+  if(t.status.length){
+    parts.push(`<div class="tp-block">${head('trends', 'Training status', null)}`
+      + t.status.map(r=> `<div class="tp-status"><span class="tp-k">${r.label}</span><span class="tp-chip ${STATUS_TONE[r.word] || 'dim'}">${r.word}</span>`
+        + `<small>${[r.traj ? (r.key === 'lift' ? 'strength ' : 'pace ') + r.traj : (r.key === 'lift' ? 'strength trend needs a few more sessions' : 'pace trend needs a few more runs'), r.load ? LOAD_SAY[r.load] : ''].filter(Boolean).join(' · ')}</small></div>`).join('')
+      + `</div>`);
+  }
+
+  // Recovery
+  if(t.recovery){
+    const r = t.recovery, left = Math.ceil(r.left);
+    const fill = r.hours > 0 ? Math.max(0, Math.min(1, 1 - r.left / r.hours)) : 1;
+    const kind = r.from.type === 'run' ? 'run' : 'lift';
+    const fromDay = r.from.date === todayStr ? 'today' : r.from.date === shiftDateStr(todayStr, -1) ? 'yesterday' : localDateFrom(r.from.date).toLocaleDateString(undefined, { weekday: 'long' });
+    parts.push(`<div class="tp-block">${head('timer', 'Recovery time', left > 0 ? `${left} h` : 'Recovered')}`
+      + `<div class="tp-bar" role="img" aria-label="${Math.round(fill * 100)}% recovered"><i style="width:${(fill * 100).toFixed(1)}%"></i></div>`
+      + `<small class="tp-note">${left > 0 ? `Ready to go hard ${trainClock(r.ready)}, after ${fromDay}’s ${kind}.` : `Paid off ${fromDay}’s ${kind}; ready to go hard.`}${r.debt ? ' A little longer for the sleep you are owed.' : ''}</small></div>`);
+  } else {
+    parts.push(`<div class="tp-block">${head('timer', 'Recovery time', 'Recovered')}<small class="tp-note">Nothing in the last four days still to pay off.</small></div>`);
+  }
+
+  // Effect
+  if(t.effects.length){
+    const dayName = d=> d === todayStr ? 'Today' : localDateFrom(d).toLocaleDateString(undefined, { weekday: 'short' });
+    parts.push(`<div class="tp-block">${head('power', 'Training effect', null)}`
+      + t.effects.slice(-6).map(e=> `<div class="tp-te"><span class="tp-te-ic">${dfIcon(e.type === 'run' ? 'run' : 'strength', 16)}</span>`
+        + `<span class="tp-te-what">${dayName(e.date)} · ${e.benefit}<small>${e.word}${e.known ? '' : ' · sized once there are three of the kind'}</small></span>`
+        + `<span class="tp-te-seg" aria-hidden="true">${[1, 2, 3, 4, 5].map(i=> `<i class="${e.te >= i ? 'on' : e.te > i - 1 ? 'half' : ''}"></i>`).join('')}</span><b>${e.te.toFixed(1)}</b></div>`).join('')
+      + `<small class="tp-note">0 to 5 against your usual session of the kind, which is 3.</small></div>`);
+  }
+
+  // Consistency
+  const c = t.consistency;
+  const cell = x=>{
+    if(x.future) return `<i class="cc-f${x.p ? ' cc-plan' : ''}"></i>`;
+    if(x.p && x.done >= x.p) return `<i class="cc-done"></i>`;
+    if(x.p && x.isToday) return `<i class="cc-plan cc-today"></i>`;
+    if(x.p) return `<i class="cc-miss"></i>`;
+    if(x.done) return `<i class="cc-done cc-extra"></i>`;
+    return `<i></i>`;
+  };
+  const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  parts.push(`<div class="tp-block">${head('streak', 'Consistency', c.pct != null ? `${c.pct}%` : `${c.perWeek} a week`)}`
+    + `<div class="tp-cal" role="img" aria-label="Last four weeks: ${c.kept} of ${c.planned} planned sessions done">`
+    + DOW.map(d=> `<span>${d}</span>`).join('') + c.days.map(cell).join('') + `</div>`
+    + `<small class="tp-note">${c.pct != null ? `${c.word}: ${c.kept} of ${c.planned} planned sessions done in four weeks${c.extra ? `, ${c.extra} extra` : ''}.${c.streak >= 2 ? ` ${c.streak} weeks in a row on plan.` : ''}` : `About ${c.perWeek} sessions a week over the last three weeks. Plan a week to see how closely you keep to it.`}</small></div>`);
+
+  // Resilience
+  const rs = t.resilience;
+  if(rs && !rs.learning){
+    const bounce = rs.bounce === 0 ? 'the same as your usual' : `${Math.abs(rs.bounce)} ${rs.bounce > 0 ? 'above' : 'below'} your usual ${rs.usual}`;
+    parts.push(`<div class="tp-block">${head('heart', 'Resilience', rs.word)}`
+      + `<div class="tp-steps" role="img" aria-label="${rs.word}, ${rs.level + 1} of 5">${RESILIENCE_LEVELS.map((w, i)=> `<i class="${i <= rs.level ? 'on' : ''}"></i>`).join('')}</div>`
+      + `<small class="tp-note">The morning after training you wake ${bounce}, over ${rs.n} training days.${rs.debt != null && rs.debt >= 3 ? ` ${rs.debt.toFixed(1)} h of sleep owed is holding it down.` : ''}</small></div>`);
+  } else if(rs){
+    parts.push(`<div class="tp-block">${head('heart', 'Resilience', 'Learning')}<small class="tp-note">${rs.haveUsual ? `${rs.need} more training day${rs.need === 1 ? '' : 's'} with a morning check-in after, and this shows how well you bounce back.` : 'A couple of weeks of mornings first, to know your usual.'}</small></div>`);
+  }
+
+  host.innerHTML = `<div class="tp-head">Training</div>` + parts.join('');
+}
 /* The key to the ring's colours, under the big number in the score sheet. */
 function paintScoreRing(value, ch){
   const stack = document.querySelector('#scoreDetailSheet .score-stack') || document.querySelector('.score-stack');
@@ -30465,6 +30778,7 @@ document.getElementById('headerScoreBtn')?.addEventListener('click', ()=>{
   // it's not currently showing promised.
   if(todayNeedsLog && currentTabName() === 'insights'){ openMorningLogSheet(); return; }
   scoreDetailSheet.open();
+  renderTrainingPanel();
   // The ring sweeps in and the number counts up with it.
   try{
     const ring = document.querySelector('#scoreDetailSheet .score-stack > .charge-ring');
