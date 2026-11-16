@@ -13902,7 +13902,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
-  '2026.11.16.005': 'The ring round the mascot is one bar now: white for what you have left, grey for what the day has used, with a small break between each thing that used it. Tap the mascot to see the list: what you woke with, each session or long day with when and why, and what is left.',
+  '2026.11.16.005': 'The ring round the mascot is one bar now: white for what you have left, grey for what the day has used. Tap the mascot to see the list: what you woke with, each session or long day with when and why, and what is left.',
   '2026.11.16.004': 'The mascot sits whole under the date now, smaller, with the full Charge ring round him.',
   '2026.11.16.003': 'A calmer header. Charge sits on the line above the Dogfood name ("Workouts · Charge 58"), and the ring round the mascot is plain: how full you are, nothing else. What spent it, in colour, is in the score sheet when you tap.',
   '2026.11.16.002': 'The widget does more. Its lock-screen circle is a battery now; it says what your next session will leave you with ("Lift next → 49"), then how it went once it is done, and tapping it opens straight into the session. While you lift, the set you just logged and your rest countdown sit on the lock screen and in the Dynamic Island. And from 7pm before a lift or a hard run, Today and the widget say when to be in bed, from the sleep your own best mornings came after.',
@@ -26545,16 +26545,17 @@ const CHARGE_RING_KEYS = { lift: 'lift', run: 'run', day: 'day', 'long day': 'lo
 function chargeRingSvg(ch, value, stroke, arc){
   /* arc: { from, span } in degrees clockwise from twelve o'clock; the whole circle by default.
      The scale is the arc: 100 fills it. */
-  const sw = stroke || 8, r = (arc && arc.r) || 50 - sw / 2 - 1, gap = sw > 6 ? 1.6 : (arc && arc.plain ? 3.2 : 2.4);
+  const sw = stroke || 8, r = (arc && arc.r) || 50 - sw / 2 - 1, gap = sw > 6 ? 1.6 : 2.4;
   const from = arc ? arc.from : 0, span = arc ? arc.span : 360;
   const C = 2 * Math.PI * r * span / 360, CF = 2 * Math.PI * r;
   const rot = `rotate(${(from - 90).toFixed(2)} 50 50)`;
   const bare = arc && arc.bare;
   const v = Math.max(0, Math.min(100, +value || 0));
   const arcs = [{ cls: 'cr-lit', pct: v }];
-  /* Plain (the header): what has been drained is one grey stretch after what is left, broken
-     once per drain, so you can count them without being told what each was. */
-  if(ch && ch.parts) ch.parts.slice().reverse().forEach(p=> arcs.push({ cls: arc && arc.plain ? 'cr-spent' : 'cr-' + (CHARGE_RING_KEYS[p.label] || 'day'), pct: p.pts }));
+  /* Plain (the header): everything the day has drained is one grey stretch after what is left.
+     What each drain was is in the sheet the mascot opens. */
+  if(ch && ch.spent > 0 && arc && arc.plain) arcs.push({ cls: 'cr-spent', pct: ch.spent });
+  else if(ch && ch.parts) ch.parts.slice().reverse().forEach(p=> arcs.push({ cls: 'cr-' + (CHARGE_RING_KEYS[p.label] || 'day'), pct: p.pts }));
   let off = 0, out = `<circle class="cr-trk" cx="50" cy="50" r="${r}" fill="none" stroke-width="${sw}"`
     + (span < 360 ? ` stroke-dasharray="${C.toFixed(2)} ${CF.toFixed(2)}" transform="${rot}"` : '') + `/>`;
   arcs.forEach(a=>{
