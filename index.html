@@ -13542,7 +13542,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.16.013';
+const APP_VERSION = '2026.11.16.014';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13938,6 +13938,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.16.014': 'Fixed: inside the iPhone app, haptics, the widget and the Live Activity were switched off by mistake, because the app was asking for its iPhone features in a way only the web library understands. All three work now.',
   '2026.11.16.013': 'Settings shows what the page can see of the iPhone app, to track down why the app is being treated as the web version.',
   '2026.11.16.012': 'Settings, under Apple Health, has a Check iPhone connections button: it tests Health, haptics and the widget and says exactly what each one answered.',
   '2026.11.16.011': 'When the widget has no number it now says why: nothing from Dogfood yet, a reading from another day (open Dogfood for today), or this morning\'s reading not in yet.',
@@ -14474,12 +14475,31 @@ async function renderDeviceConnectRow(){
    HRV goes where the Shortcut put it, and for the same reason: Apple's HRV is SDNN, Oura's is
    RMSSD, so with a ring connected Apple's is kept apart as hrvApple; without one it is the
    only HRV there is and the score reads it. */
-const NativeHealth = (()=>{
+/* ONE WAY TO REACH THE APP'S OWN iOS PLUGINS. registerPlugin belongs to Capacitor's JavaScript
+   library, which this single-file app does not ship: the script the iPhone app injects provides
+   only the low-level calls (nativePromise, addListener) and Plugins. Haptics, the widget and the
+   Live Activity asked for registerPlugin, found nothing, and quietly switched themselves off
+   inside the app, which is why there were no haptics and the widget never heard from it. This
+   returns an object whose methods go straight to the native plugin either way. Null outside the
+   iPhone app. */
+function nativePlugin(name){
   try{
     const C = window.Capacitor;
     if(!C || !(C.isNativePlatform && C.isNativePlatform())) return null;
-    return C.registerPlugin ? C.registerPlugin('HealthBridge') : ((C.Plugins && C.Plugins.HealthBridge) || null);
+    if(typeof C.registerPlugin === 'function') return C.registerPlugin(name);
+    if(typeof C.nativePromise !== 'function') return (C.Plugins && C.Plugins[name]) || null;
+    return new Proxy({}, { get: (t, method)=>{
+      if(typeof method !== 'string' || method === 'then') return undefined;
+      if(method === 'addListener') return (eventName, cb)=>{
+        const h = typeof C.addListener === 'function' ? C.addListener(name, eventName, cb) : null;
+        return Promise.resolve(h || { remove: async ()=>{} });
+      };
+      return (opts)=> C.nativePromise(name, method, opts || {});
+    } });
   } catch(e){ return null; }
+}
+const NativeHealth = (()=>{
+  try{ return nativePlugin('HealthBridge'); } catch(e){ return null; }
 })();
 /* HAPTICS. In the iPhone app every press, swipe and wheel row is felt as well as seen, through
    the Taptic Engine (HapticsPlugin.swift). Five feels, and which gesture gets which:
@@ -14503,7 +14523,7 @@ function haptic(kind){
   try{
     if(hapticsPlugin === undefined){
       const C = window.Capacitor;
-      hapticsPlugin = C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin ? C.registerPlugin('Haptics') : null;
+      hapticsPlugin = nativePlugin('Haptics');
     }
     if(hapticsPlugin){
       const p = kind === 'tick' ? hapticsPlugin.selection()
@@ -18743,7 +18763,7 @@ let lastSrResult = null;
    still ahead today, handed to WidgetBridgePlugin, which shares them with the widget through
    the App Group and asks it to redraw. Sent whenever the number is worked out. */
 const WidgetBridge = (()=>{
-  try{ const C = window.Capacitor; return C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin ? C.registerPlugin('WidgetBridge') : null; }
+  try{ return nativePlugin('WidgetBridge'); }
   catch(e){ return null; }
 })();
 /* What the widget is sent is exactly what the headline shows, whichever model produced it:
@@ -18837,7 +18857,7 @@ async function runNativeCheck(out){
     say(n, v);
   });
   try{
-    const h = C && C.registerPlugin ? C.registerPlugin('Haptics') : null;
+    const h = nativePlugin('Haptics');
     if(!h) say('Haptic test', 'no plugin');
     else { await h.impact({ style: 'heavy' }); say('Haptic test', 'sent (you should have felt a thud; if not, check Settings \u2192 Sounds & Haptics \u2192 System Haptics)'); }
   } catch(e){ say('Haptic test', 'FAILED: ' + (e && e.message || e)); }
@@ -23871,7 +23891,7 @@ let restTimerId = null, restEndsAt = 0, restChosen = REST_DEFAULT;
    you tick on today's session, not by opening it to look; updated on every set and every rest;
    ended when the session is saved or thrown away. Putting it away on the bar leaves it up. */
 const LiveActivity = (()=>{
-  try{ const C = window.Capacitor; return C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin ? C.registerPlugin('LiveActivity') : null; }
+  try{ return nativePlugin('LiveActivity'); }
   catch(e){ return null; }
 })();
 const liveSession = { on: false, title: '', exercise: '', detail: '' };
