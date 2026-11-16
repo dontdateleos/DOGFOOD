@@ -2925,6 +2925,15 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
     padding:3px 6px; border-radius:99px; min-width:26px; text-align:center; color:#0c0d0b;
     font-variant-numeric:tabular-nums; visibility:hidden; margin-bottom:2px; }
   .week-cal-score.on{ visibility:visible; }
+  /* A score arriving: it springs up out of the day and settles, the days of the week a beat
+     apart (--pop-delay). Only when a score is new or has changed (paintWeekScores). */
+  .week-cal-score.pop{ animation:weekScorePop 560ms cubic-bezier(.34,1.56,.64,1) both; animation-delay:var(--pop-delay, 0ms); }
+  @keyframes weekScorePop{
+    0%{ opacity:0; transform:translateY(8px) scale(0.4); }
+    60%{ opacity:1; transform:translateY(-2px) scale(1.12); }
+    100%{ opacity:1; transform:none; }
+  }
+  @media (prefers-reduced-motion: reduce){ .week-cal-score.pop{ animation:none; } }
   .week-cal-score.good{ background:var(--block-lime); }
   .week-cal-score.ok{ background:#f4d48a; }
   .week-cal-score.low{ background:#f6b3a4; }
@@ -13542,7 +13551,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.16.014';
+const APP_VERSION = '2026.11.16.015';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13938,6 +13947,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.16.015': 'Workout scores spring in above their days and count up to the number.',
   '2026.11.16.014': 'Fixed: inside the iPhone app, haptics, the widget and the Live Activity were switched off by mistake, because the app was asking for its iPhone features in a way only the web library understands. All three work now.',
   '2026.11.16.013': 'Settings shows what the page can see of the iPhone app, to track down why the app is being treated as the web version.',
   '2026.11.16.012': 'Settings, under Apple Health, has a Check iPhone connections button: it tests Health, haptics and the widget and says exactly what each one answered.',
@@ -22146,15 +22156,30 @@ async function performanceForDates(dates){
   _weekPerfCache = { key, out };
   return out;
 }
+const weekScoreShown = {};
 async function paintWeekScores(board, dates){
   const perf = await performanceForDates(dates);
   board.querySelectorAll('.week-cal-score').forEach(el=>{
     const list = perf[el.dataset.scoreDate] || [];
     const p = list[list.length - 1];
     el.classList.remove('good', 'ok', 'low', 'on');
-    if(!p){ el.textContent = '00'; return; }
-    el.textContent = p.score;
+    if(!p){ el.textContent = '00'; delete weekScoreShown[el.dataset.scoreDate]; return; }
+    // Remembered outside the board, which is rebuilt on every tap: a score already seen
+    // just sits there; only a new or changed one pops.
+    const isNew = weekScoreShown[el.dataset.scoreDate] !== p.score;
+    weekScoreShown[el.dataset.scoreDate] = p.score;
     el.classList.add('on', p.score >= 60 ? 'good' : p.score >= 40 ? 'ok' : 'low');
+    if(isNew){
+      // Springs in and counts up to the number, each day a beat after the one before.
+      const i = [...board.querySelectorAll('.week-cal-score')].indexOf(el);
+      el.style.setProperty('--pop-delay', (Math.max(0, i) * 60) + 'ms');
+      el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+      const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(reduce){ el.textContent = p.score; }
+      else { el.textContent = '0'; setTimeout(()=> animateNumber(el, 0, p.score, 520), Math.max(0, i) * 60); }
+    } else {
+      el.textContent = p.score;
+    }
     const lane = el.closest('.week-lane');
     if(lane && !/scored/.test(lane.getAttribute('aria-label') || '')){
       lane.setAttribute('aria-label', lane.getAttribute('aria-label') + ', ' + list.map(x=> `${x.kind === 'run' ? 'run' : 'lift'} scored ${x.score}`).join(', '));
