@@ -13531,7 +13531,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.16.008';
+const APP_VERSION = '2026.11.16.009';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13927,6 +13927,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.16.009': 'Every lift gets a score from your first session now. Until a lift has a few sessions of history to compare with, the session is scored against what the plan asked for: hit it and you get 50, beat it and it goes up.',
   '2026.11.16.008': 'Each day on the week strip shows its workout score in a little chip above the day: lime for a good session, amber for an average one, red for a rough one.',
   '2026.11.16.007': 'The Charge ring moves now: it sweeps round to your number when you open it, and slides down in the header when something uses some up.',
   '2026.11.16.006': 'Today\'s charge, opened from the mascot, is just the number in its ring and the list of what made it.',
@@ -18651,6 +18652,41 @@ function normalCdf(z){
   const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
   return z > 0 ? 1 - p : p;
 }
+/* AGAINST THE PLAN, until there is a trend. A lift is judged against your own trend for it,
+   which needs three other sessions of it within two months either side; a new lift, or a new
+   install, has none, and the session went unscored. Until then each lift's best set (estimated
+   max, reps you entered or ticked) is set against what the plan asked of it that day: the
+   planned weight for the planned reps. Hitting the plan is 50; 3% better is about 84. Shown
+   only, never learned from: the score's own learning still waits for real trends. */
+async function planPerformance(sn){
+  if(!sn || sn.type !== 'strength') return null;
+  let block = null;
+  for(const sl of [sn.slot, 'am', 'pm'].filter(Boolean)){
+    const b = await blockOn(sn.date, sl);
+    if(b && b.type === 'strength'){ block = b; break; }
+  }
+  const planned = block && block.details && Array.isArray(block.details.exercises) ? block.details.exercises : [];
+  const firstNum = v=> Array.isArray(v) ? +v[0] : typeof v === 'string' ? +v.split(',')[0] : +v;
+  const ratios = [];
+  (sn.exercises || []).forEach(ex=>{
+    if(!ex || ex.repsPrefilled) return;
+    const name = (ex.name || '').trim().toLowerCase();
+    const pl = planned.find(p=> p && (p.name || '').trim().toLowerCase() === name);
+    if(!pl) return;
+    const pw = firstNum(pl.weightPerSet && pl.weightPerSet.length ? pl.weightPerSet : pl.weight);
+    const pr = firstNum(pl.repsPerSet && pl.repsPerSet.length ? pl.repsPerSet : pl.reps);
+    if(!(pw > 0) || !(pr >= 1 && pr <= 12)) return;
+    const ws = Array.isArray(ex.weightPerSet) && ex.weightPerSet.length ? ex.weightPerSet : [ex.weight];
+    const reps = Array.isArray(ex.repsPerSet) && ex.repsPerSet.length ? ex.repsPerSet : [ex.reps];
+    let best = null;
+    reps.forEach((rp, k)=>{ const w = +(ws[k] != null ? ws[k] : ws[0]) || 0, n = +rp; if(w > 0 && n >= 1 && n <= 12){ const v = e1RM(w, n); if(v && (best == null || v > best)) best = v; } });
+    const target = e1RM(pw, pr);
+    if(best && target) ratios.push(Math.max(-0.3, Math.min(0.3, best / target - 1)));
+  });
+  if(!ratios.length) return null;
+  const r = ratios.reduce((a, b)=> a + b, 0) / ratios.length;
+  return { kind: 'lift', score: Math.max(1, Math.min(99, Math.round(100 * normalCdf(r / 0.03)))), pct: r, early: true, vsPlan: true };
+}
 async function sessionPerformance(date){
   let sessions = [];
   try{ sessions = await getAllTrainingSessions(); } catch(e){ return []; }
@@ -18660,7 +18696,17 @@ async function sessionPerformance(date){
   let bwLine = [];
   try{ bwLine = await bodyweightTimeline(); } catch(e){}
   const outs = performanceOutcomes(sessions, win, idxOf, bwLine);
-  return outs.filter(o=> o.date === date).map(o=>{
+  const trend = outs.filter(o=> o.date === date);
+  // Lifting sessions that day with no trend to be judged against are judged against the plan.
+  const liftsThatDay = sessions.filter(sn=> sn && sn.date === date && sn.type === 'strength');
+  const extra = [];
+  if(trend.filter(o=> o.kind === 'lift').length < liftsThatDay.length){
+    for(const sn of liftsThatDay.slice(trend.filter(o=> o.kind === 'lift').length)){
+      const p = await planPerformance(sn);
+      if(p) extra.push(p);
+    }
+  }
+  return trend.map(o=>{
     const others = outs.filter(x=> x.kind === o.kind && x.date !== date).map(x=> x.r);
     let mean = 0, sd = 0.03, early = true;
     if(others.length >= 8){
@@ -18670,7 +18716,7 @@ async function sessionPerformance(date){
     }
     const score = Math.max(1, Math.min(99, Math.round(100 * normalCdf((o.r - mean) / sd))));
     return { kind: o.kind, score, pct: o.r, early };
-  });
+  }).concat(extra);
 }
 
 /* The day drains while the app is open too: every fifteen minutes, and on coming back to it,
@@ -21949,6 +21995,15 @@ async function performanceForDates(dates){
         return { kind: o.kind, score: Math.max(1, Math.min(99, Math.round(100 * normalCdf((o.r - mean) / sd)))) };
       });
     });
+    // Lifts with no trend yet are scored against the plan (planPerformance).
+    for(const date of want){
+      const lifts = sessions.filter(sn=> sn && sn.date === date && sn.type === 'strength');
+      const have = out[date].filter(x=> x.kind === 'lift').length;
+      for(const sn of lifts.slice(have)){
+        const p = await planPerformance(sn);
+        if(p) out[date].push({ kind: 'lift', score: p.score, vsPlan: true });
+      }
+    }
   }
   _weekPerfCache = { key, out };
   return out;
@@ -22768,11 +22823,11 @@ async function renderSessionComplete(){
     let going = null;
     try{ const c = sr && sr.available ? await computeCharge(sr, { before: x.timestamp || Date.now() }) : null; going = c ? c.charge : null; } catch(e){}
     if(!p) return x.type === 'strength'
-      ? `<span class="perf-note">Enter the reps on one top set for a performance score.</span>`
-      : (going != null ? `<span class="perf-note">Charge going in ${going}.</span>` : '');
-    const vs = `${p.pct >= 0 ? '+' : '\u2212'}${Math.abs(p.pct * 100).toFixed(1)}% on your trend`;
+      ? `<span class="perf-note">No score: tick or enter the reps and weight on at least one set of a lift that was in today\u2019s plan.</span>`
+      : (going != null ? `<span class="perf-note">Charge going in ${going}. Runs are scored once there are a few of the same kind to compare.</span>` : '');
+    const vs = `${p.pct >= 0 ? '+' : '\u2212'}${Math.abs(p.pct * 100).toFixed(1)}% on ${p.vsPlan ? 'the plan' : 'your trend'}`;
     const call = going == null ? '' : p.score >= going + 10 ? ', better than your charge said' : p.score <= going - 10 ? ', under what your charge said' : ', about what your charge said';
-    return `<span class="perf-line"><b>Performance ${p.score}</b> \u00b7 ${vs}${going != null ? ` \u00b7 charge going in ${going}` : ''}${call}${p.early ? ' (early: few sessions to compare)' : ''}</span>`;
+    return `<span class="perf-line"><b>Performance ${p.score}</b> \u00b7 ${vs}${going != null ? ` \u00b7 charge going in ${going}` : ''}${call}${p.vsPlan ? ' (against the plan until the lift has a few sessions of history)' : p.early ? ' (early: few sessions to compare)' : ''}</span>`;
   };
   const rows = [];
   for(const x of today){ rows.push(line(x) + (x.type === 'strength' || x.type === 'run' ? '<br>' + await perfLine(x) : '')); }
