@@ -42,14 +42,20 @@ jobs:
           echo "simulator $DEV"
           xcrun simctl boot "$DEV"; xcrun simctl bootstatus "$DEV" -b
           xcrun simctl install "$DEV" "$APP"
-          xcrun simctl launch "$DEV" com.touringgroup.dogfood
-          sleep 15
+          # The app's own console (Capacitor's start-up lines, and the page's [dogfood-bridge]
+          # line about what it can see of the iPhone side), printed below.
+          ( xcrun simctl launch --console-pty "$DEV" com.touringgroup.dogfood > app-console.txt 2>&1 & echo $! > console.pid )
+          sleep 20
           xcrun simctl io "$DEV" screenshot launch.png
+          kill "$(cat console.pid)" 2>/dev/null || true
+          echo "----- APP CONSOLE BEGIN -----"; grep -v "^\s*$" app-console.txt | head -150; echo "----- APP CONSOLE END -----"
           sips -Z 520 -s format jpeg -s formatOptions 55 launch.png --out launch-small.jpg >/dev/null
           echo "----- SCREENSHOT BEGIN -----"; base64 -i launch-small.jpg | fold -w 76; echo "----- SCREENSHOT END -----"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: iphone-launch
-          path: launch.png
+          path: |
+            launch.png
+            app-console.txt
           if-no-files-found: ignore

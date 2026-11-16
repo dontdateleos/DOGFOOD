@@ -18855,6 +18855,19 @@ async function runNativeCheck(out){
   say('Version', typeof APP_VERSION === 'string' ? APP_VERSION : '?');
   out.textContent = lines.join('\n');
 }
+/* One line in the console a few seconds after start, on what the page sees of the iPhone
+   bridge. Capacitor copies console output into the app's own log, which the simulator check
+   in .github/workflows/ios.yml prints, so a broken bridge can be seen without a phone. */
+setTimeout(()=>{
+  try{
+    const C = window.Capacitor;
+    console.log('[dogfood-bridge] ' + JSON.stringify({
+      href: location.href, capacitor: !!C, platform: C && C.getPlatform ? C.getPlatform() : null,
+      native: C && C.isNativePlatform ? C.isNativePlatform() : null,
+      handlers: window.webkit && window.webkit.messageHandlers ? Object.keys(window.webkit.messageHandlers) : null,
+      plugins: C && C.PluginHeaders ? C.PluginHeaders.map(h=> h.name) : null, version: APP_VERSION }));
+  } catch(e){ console.log('[dogfood-bridge] error ' + e.message); }
+}, 3000);
 /* WHAT THE WIDGET WAS LAST GIVEN, in Settings under Apple Health: the number, when, and whether
    the space the app shares with the widget could be reached. "Not reachable" means this build
    was signed without the App Group, and the widget can only ever show its placeholder. */
