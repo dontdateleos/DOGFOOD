@@ -13560,7 +13560,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.16.018';
+const APP_VERSION = '2026.11.16.019';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13956,6 +13956,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.16.019': 'The Charge ring fills right up like a battery on charge, then drains back to what you have left, and the grey of what the day has used appears as it goes.',
   '2026.11.16.018': 'The mascot sits where he should from the moment the app opens, not high until you scroll. The Charge ring sweeps in on the iPhone now, and again each time you come back to the app or to Today.',
   '2026.11.16.017': 'The symbols moved in: over each measure in Trends, beside the rest timer, the bedtime line, the workout\'s Performance score, the low-Charge note and Injuries.',
   '2026.11.16.016': 'New symbols throughout: each one drawn in the mascot\'s own rounded shapes and set in a thin ring, like the Charge ring round him.',
@@ -26941,7 +26942,7 @@ function chargeRingSvg(ch, value, stroke, arc){
   arcs.forEach(a=>{
     const pct = Math.max(0, Math.min(a.pct, 100 - off / C * 100));
     const len = C * pct / 100;
-    if(len > gap) out += `<circle class="${a.cls}" cx="50" cy="50" r="${r}" fill="none" stroke-width="${sw}" stroke-linecap="butt"`
+    if(len > gap) out += `<circle class="${a.cls}" cx="50" cy="50" r="${r}" fill="none" stroke-width="${sw}" stroke-linecap="butt"${a.cls === 'cr-lit' ? ` data-arc="${C.toFixed(2)}"` : ''}`
       + ` stroke-dasharray="${(len - gap).toFixed(2)} ${CF.toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="${rot}"/>`;
     off += len;
   });
@@ -26953,30 +26954,46 @@ function chargeRingSvg(ch, value, stroke, arc){
   }
   return bare ? out : `<svg class="charge-ring" viewBox="0 0 100 100" aria-hidden="true">${out}</svg>`;
 }
-/* THE RING MOVES. The white sweeps from where it was (or from nothing) to where it is, easing
-   out like a gauge settling; the grey then fades in behind it. Run when the sheet opens, when
-   the header first gets a number, and whenever the number changes (a session, a long hour).
-   Web Animations rather than CSS, because the arcs are rebuilt on every paint. Off for Reduce
-   Motion. */
+/* THE RING MOVES. Opening (the app, Today, the sheet): the white fills the whole ring like a
+   battery on charge, holds a beat, then drains back to what is left, and the grey of what the
+   day has used fades in behind it as it goes. A change while you watch (a session, a long hour)
+   just moves from the old number to the new one. Web Animations rather than CSS, because the
+   arcs are rebuilt on every paint; every move is a stroke-dashoffset, the one dash property
+   WebKit will tween. Off for Reduce Motion. */
 const RING_EASE = 'cubic-bezier(.22,.9,.24,1)';
 function animateChargeRing(root, fromValue, toValue, ms){
   if(!root || !root.querySelector) return;
   try{ if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return; } catch(e){}
-  const dur = ms || 900;
   const lit = root.querySelector('.cr-lit');
-  if(lit && lit.animate){
-    const [len, C] = (lit.getAttribute('stroke-dasharray') || '').split(' ').map(Number);
-    if(len > 0 && C > 0){
-      const fromLen = fromValue == null || !(toValue > 0) ? 0 : Math.max(0, Math.min(C, len * fromValue / toValue));
-      /* The sweep is the dash sliding out from behind its own start: an offset of len hides it
-         all, 0 shows it all. WebKit will not tween a dash list (the ring just snapped), but it
-         tweens an offset. */
-      lit.animate([{ strokeDashoffset: `${(len - fromLen).toFixed(2)}px` }, { strokeDashoffset: '0px' }], { duration: dur, easing: RING_EASE });
-    }
+  const rest = root.querySelectorAll('.cr-spent, .cr-tick');
+  if(!lit || !lit.animate) return;
+  const da = lit.getAttribute('stroke-dasharray') || '';
+  const [len, CF] = da.split(' ').map(Number);
+  const C = +lit.dataset.arc || CF;
+  if(!(len > 0 && C > 0)) return;
+  if(fromValue != null && toValue > 0){
+    // A change: the dash slides out from behind its own start, from the old length to the new.
+    const dur = ms || 900;
+    const fromLen = Math.max(0, Math.min(C, len * fromValue / toValue));
+    lit.animate([{ strokeDashoffset: `${(len - fromLen).toFixed(2)}px` }, { strokeDashoffset: '0px' }], { duration: dur, easing: RING_EASE });
+    rest.forEach(el=>{ if(el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: dur * 0.45, easing: 'ease-out' }); });
+    return;
   }
-  root.querySelectorAll('.cr-spent, .cr-tick').forEach(el=>{
-    if(el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: dur * 0.45, delay: fromValue == null ? dur * 0.55 : 0, easing: 'ease-out', fill: 'backwards' });
-  });
+  /* Fill, hold, drain. For the length of it the dash is the whole arc, and the offset alone says
+     how much shows: C is none, 0 is all of it, C - len is what is left. Put back as drawn at the
+     end, so the next paint finds the ring it made. */
+  const FILL = 650, HOLD = 180, DRAIN = 1000, total = FILL + HOLD + DRAIN;
+  lit.setAttribute('stroke-dasharray', `${C.toFixed(2)} ${(CF + C).toFixed(2)}`);
+  const a = lit.animate([
+    { strokeDashoffset: `${C.toFixed(2)}px`, easing: 'cubic-bezier(.4,0,.2,1)' },
+    { strokeDashoffset: '0px', offset: FILL / total },
+    { strokeDashoffset: '0px', offset: (FILL + HOLD) / total, easing: RING_EASE },
+    { strokeDashoffset: `${(C - len).toFixed(2)}px` }
+  ], { duration: total, fill: 'forwards' });
+  const done = ()=>{ if(lit.getAttribute('stroke-dasharray') !== da){ lit.setAttribute('stroke-dasharray', da); } try{ a.cancel(); } catch(e){} };
+  a.onfinish = done; a.oncancel = ()=>{ if(lit.getAttribute('stroke-dasharray') !== da) lit.setAttribute('stroke-dasharray', da); };
+  // What the day used shows up behind the white as it drains past it.
+  rest.forEach(el=>{ if(el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: DRAIN * 0.8, delay: FILL + HOLD + DRAIN * 0.15, easing: 'ease-out', fill: 'backwards' }); });
 }
 /* Opening the app, coming back to it, or coming back to Today plays the ring in again from
    empty, so the number is always seen arriving rather than already sitting there. */
@@ -26986,7 +27003,7 @@ function replayHeaderRing(){
   if(!arc || arc.hasAttribute('hidden') || arc.dataset.v == null || arc.dataset.v === '') return;
   if(document.visibilityState !== 'visible' || Date.now() - headerRingPlayedAt < 1500) return;
   headerRingPlayedAt = Date.now();
-  animateChargeRing(arc, null, +arc.dataset.v, 1100);
+  animateChargeRing(arc, null, +arc.dataset.v);
 }
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'visible') setTimeout(replayHeaderRing, 250); });
 window.addEventListener('pageshow', e=>{ if(e.persisted) setTimeout(replayHeaderRing, 250); });
