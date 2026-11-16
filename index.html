@@ -1256,9 +1256,31 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   /* TRAINING, under the Charge receipt: the same mono column, one block per reading, each a
      symbol and a title with its value on the right, a picture of it, and one line on what it
      means. Ink is the sheet's (--bg on this ground); tones are the week chips' three. */
-  .train-panel{ display:flex; flex-direction:column; gap:18px; width:min(100%, 320px); margin:26px auto 8px;
+  .train-panel{ display:flex; flex-direction:column; gap:4px; width:min(100%, 320px); margin:20px auto 8px;
     font-family:var(--mono); font-size:var(--fs-sm); color:var(--bg); font-variant-numeric:tabular-nums; }
   .train-panel:empty{ display:none; }
+  .score-ring-key .cr-sum{ display:block; width:100%; height:auto; min-height:0; padding:2px 0; background:transparent; border:0; color:var(--dim); font:inherit;
+    font-size:var(--fs-xs); text-align:center; text-transform:none; letter-spacing:0; cursor:pointer; }
+  .score-ring-key .cr-chev{ display:inline-block; transition:transform .2s ease; }
+  .score-ring-key .cr-sum[aria-expanded="true"] .cr-chev{ transform:rotate(90deg); }
+  .score-ring-key .cr-more{ display:flex; flex-direction:column; gap:7px; margin-top:6px; }
+  .score-ring-key .cr-more[hidden]{ display:none; }
+  .train-panel .tp-rule{ border-top:1px dashed rgba(var(--ink-rgb),0.3); }
+  .train-panel .tp-rows{ display:flex; flex-direction:column; }
+  .train-panel .tp-line{ display:flex; align-items:center; gap:10px; width:100%; height:auto; min-height:44px; padding:10px 0;
+    background:transparent; border:0; border-bottom:1px solid rgba(var(--ink-rgb),0.1); border-radius:0; color:inherit;
+    font:inherit; text-transform:none; letter-spacing:0; text-align:left; cursor:pointer; }
+  /* Rows sit flush, so the shared button hit-slop (9px above and below) would steal taps from the neighbours. */
+  .train-panel .tp-line::after{ top:0; bottom:0; }
+  .train-panel .tp-line .df-icon{ flex:none; color:rgba(var(--ink-rgb),0.85); }
+  .train-panel .tp-line .tp-k{ flex:1; min-width:0; color:inherit; }
+  .train-panel .tp-line .tp-v{ flex:none; }
+  .train-panel .tp-chev{ flex:none; color:var(--dim); font-size:1.15em; transition:transform .2s ease; }
+  .train-panel .tp-line[aria-expanded="true"] .tp-chev{ transform:rotate(90deg); }
+  .train-panel .tp-line:focus-visible{ outline:2px solid currentColor; outline-offset:2px; }
+  .train-panel .tp-more{ display:flex; flex-direction:column; gap:8px; padding:4px 0 14px 30px; border-bottom:1px solid rgba(var(--ink-rgb),0.1); }
+  .train-panel .tp-more[hidden]{ display:none; }
+  .train-panel .tp-more .tp-te, .train-panel .tp-more .tp-bar, .train-panel .tp-more .tp-cal, .train-panel .tp-more .tp-steps{ padding-left:0; margin-left:0; }
   .train-panel .tp-head{ font-weight:var(--fw-bold); letter-spacing:0.1em; text-transform:uppercase; font-size:var(--fs-xs);
     border-top:1px dashed rgba(var(--ink-rgb),0.3); padding-top:14px; color:rgba(var(--ink-rgb),0.7); }
   .train-panel .tp-empty{ margin:0; color:var(--dim); font-size:var(--fs-xs); line-height:1.45; }
@@ -13610,7 +13632,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.16.020';
+const APP_VERSION = '2026.11.16.021';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14006,6 +14028,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.16.021': 'The Charge & training sheet is simpler: your Charge, one line on what made it, then six lines for your training. Tap any line to see what is behind it.',
   '2026.11.16.020': 'Tap the mascot and there is a Training section under your Charge now: where your lifting and running are each heading, how long until you are recovered, what every session this week did, how steady you have been against the plan, and how well you bounce back.',
   '2026.11.16.019': 'The Charge ring fills right up like a battery on charge, then drains back to what you have left, and the grey of what the day has used appears as it goes.',
   '2026.11.16.018': 'The mascot sits where he should from the moment the app opens, not high until you scroll. The Charge ring sweeps in on the iPhone now, and again each time you come back to the app or to Today.',
@@ -27299,52 +27322,56 @@ function trainClock(t){
   const day = days === 0 ? 'today' : days === 1 ? 'tomorrow' : d.toLocaleDateString(undefined, { weekday: 'short' });
   return `${day} ${h}:${m}`;
 }
+/* LAYOUT A: ONE LINE EACH. Six rows under a dashed rule, each a symbol, a name and the answer;
+   tapping a row opens what is behind the answer (the bar, the week, the calendar, the steps
+   and one line on what it means) and tapping again closes it. Only one is open at a time. */
 async function renderTrainingPanel(){
   const host = document.getElementById('trainingPanel');
   if(!host) return;
   let t = null;
   try{ t = await trainingSummary(); } catch(e){}
   if(!t || !t.any){
-    host.innerHTML = `<div class="tp-head">Training</div><p class="tp-empty">Log a session or two and this fills in: where your training is heading, when you are recovered, what each session did, how steady you are and how well you bounce back.</p>`;
+    host.innerHTML = `<div class="tp-rule"></div><p class="tp-empty">Log a session or two and your training shows here: where it is heading, when you are recovered, what each session did, how closely you keep to the plan and how well you bounce back.</p>`;
     return;
   }
-  const head = (icon, title, value, cls)=> `<div class="tp-row-head">${dfIcon(icon, 20)}<span class="tp-title">${title}</span>${value != null ? `<b class="tp-val${cls ? ' ' + cls : ''}">${value}</b>` : ''}</div>`;
   const STATUS_TONE = { Productive: 'good', Building: 'good', Maintaining: 'ok', Recovering: 'ok', Learning: 'dim', Stalling: 'low', Detraining: 'low', Overreaching: 'low' };
   const LOAD_SAY = { climbing: 'load climbing faster than usual', easing: 'load easing off', steady: 'load steady', learning: 'still learning your normal load' };
-  const parts = [];
+  const rows = [];
+  const row = (icon, label, value, detail)=> rows.push({ icon, label, value, detail });
 
-  // Status
-  if(t.status.length){
-    parts.push(`<div class="tp-block">${head('trends', 'Training status', null)}`
-      + t.status.map(r=> `<div class="tp-status"><span class="tp-k">${r.label}</span><span class="tp-chip ${STATUS_TONE[r.word] || 'dim'}">${r.word}</span>`
-        + `<small>${[r.traj ? (r.key === 'lift' ? 'strength ' : 'pace ') + r.traj : (r.key === 'lift' ? 'strength trend needs a few more sessions' : 'pace trend needs a few more runs'), r.load ? LOAD_SAY[r.load] : ''].filter(Boolean).join(' · ')}</small></div>`).join('')
-      + `</div>`);
-  }
+  // Status, one row a side.
+  t.status.forEach(r=>{
+    const say = [r.traj ? (r.key === 'lift' ? 'Strength ' : 'Pace ') + r.traj : (r.key === 'lift' ? 'Strength trend needs a few more sessions' : 'Pace trend needs a few more runs'), r.load ? LOAD_SAY[r.load] : ''].filter(Boolean).join(' · ');
+    row(r.key === 'lift' ? 'strength' : 'run', r.label, `<span class="tp-chip ${STATUS_TONE[r.word] || 'dim'}">${r.word}</span>`, `<small>${say}.</small>`);
+  });
 
-  // Recovery
+  // Recovery.
   if(t.recovery){
     const r = t.recovery, left = Math.ceil(r.left);
     const fill = r.hours > 0 ? Math.max(0, Math.min(1, 1 - r.left / r.hours)) : 1;
     const kind = r.from.type === 'run' ? 'run' : 'lift';
     const fromDay = r.from.date === todayStr ? 'today' : r.from.date === shiftDateStr(todayStr, -1) ? 'yesterday' : localDateFrom(r.from.date).toLocaleDateString(undefined, { weekday: 'long' });
-    parts.push(`<div class="tp-block">${head('timer', 'Recovery time', left > 0 ? `${left} h` : 'Recovered')}`
-      + `<div class="tp-bar" role="img" aria-label="${Math.round(fill * 100)}% recovered"><i style="width:${(fill * 100).toFixed(1)}%"></i></div>`
-      + `<small class="tp-note">${left > 0 ? `Ready to go hard ${trainClock(r.ready)}, after ${fromDay}’s ${kind}.` : `Paid off ${fromDay}’s ${kind}; ready to go hard.`}${r.debt ? ' A little longer for the sleep you are owed.' : ''}</small></div>`);
+    row('timer', left > 0 ? 'Recovered in' : 'Recovery', `<b>${left > 0 ? left + ' h' : 'Done'}</b>`,
+      `<div class="tp-bar" role="img" aria-label="${Math.round(fill * 100)}% recovered"><i style="width:${(fill * 100).toFixed(1)}%"></i></div>`
+      + `<small>${left > 0 ? `Ready to go hard ${trainClock(r.ready)}, after ${fromDay}’s ${kind}.` : `Paid off ${fromDay}’s ${kind}; ready to go hard.`}${r.debt ? ' A little longer for the sleep you are owed.' : ''}</small>`);
   } else {
-    parts.push(`<div class="tp-block">${head('timer', 'Recovery time', 'Recovered')}<small class="tp-note">Nothing in the last four days still to pay off.</small></div>`);
+    row('timer', 'Recovery', '<b>Done</b>', '<small>Nothing in the last four days still to pay off.</small>');
   }
 
-  // Effect
+  // This week: how many sessions and their average effect; the list behind it.
   if(t.effects.length){
+    const avg = t.effects.reduce((a, e)=> a + e.te, 0) / t.effects.length;
     const dayName = d=> d === todayStr ? 'Today' : localDateFrom(d).toLocaleDateString(undefined, { weekday: 'short' });
-    parts.push(`<div class="tp-block">${head('power', 'Training effect', null)}`
-      + t.effects.slice(-6).map(e=> `<div class="tp-te"><span class="tp-te-ic">${dfIcon(e.type === 'run' ? 'run' : 'strength', 16)}</span>`
+    row('power', 'This week', `<b>${t.effects.length} session${t.effects.length === 1 ? '' : 's'} · ${avg.toFixed(1)}</b>`,
+      t.effects.slice(-6).map(e=> `<div class="tp-te"><span class="tp-te-ic">${dfIcon(e.type === 'run' ? 'run' : 'strength', 16)}</span>`
         + `<span class="tp-te-what">${dayName(e.date)} · ${e.benefit}<small>${e.word}${e.known ? '' : ' · sized once there are three of the kind'}</small></span>`
         + `<span class="tp-te-seg" aria-hidden="true">${[1, 2, 3, 4, 5].map(i=> `<i class="${e.te >= i ? 'on' : e.te > i - 1 ? 'half' : ''}"></i>`).join('')}</span><b>${e.te.toFixed(1)}</b></div>`).join('')
-      + `<small class="tp-note">0 to 5 against your usual session of the kind, which is 3.</small></div>`);
+      + `<small>Training effect, 0 to 5 against your usual session of the kind, which is 3.</small>`);
+  } else {
+    row('power', 'This week', '<b>No sessions</b>', '<small>Nothing logged in the last seven days.</small>');
   }
 
-  // Consistency
+  // On plan.
   const c = t.consistency;
   const cell = x=>{
     if(x.future) return `<i class="cc-f${x.p ? ' cc-plan' : ''}"></i>`;
@@ -27354,24 +27381,31 @@ async function renderTrainingPanel(){
     if(x.done) return `<i class="cc-done cc-extra"></i>`;
     return `<i></i>`;
   };
-  const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  parts.push(`<div class="tp-block">${head('streak', 'Consistency', c.pct != null ? `${c.pct}%` : `${c.perWeek} a week`)}`
-    + `<div class="tp-cal" role="img" aria-label="Last four weeks: ${c.kept} of ${c.planned} planned sessions done">`
-    + DOW.map(d=> `<span>${d}</span>`).join('') + c.days.map(cell).join('') + `</div>`
-    + `<small class="tp-note">${c.pct != null ? `${c.word}: ${c.kept} of ${c.planned} planned sessions done in four weeks${c.extra ? `, ${c.extra} extra` : ''}.${c.streak >= 2 ? ` ${c.streak} weeks in a row on plan.` : ''}` : `About ${c.perWeek} sessions a week over the last three weeks. Plan a week to see how closely you keep to it.`}</small></div>`);
+  row('streak', c.pct != null ? 'On plan' : 'Sessions a week', `<b>${c.pct != null ? c.pct + '%' : c.perWeek}</b>`,
+    `<div class="tp-cal" role="img" aria-label="Last four weeks: ${c.kept} of ${c.planned} planned sessions done">`
+    + ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(d=> `<span>${d}</span>`).join('') + c.days.map(cell).join('') + `</div>`
+    + `<small>${c.pct != null ? `${c.word}: ${c.kept} of ${c.planned} planned sessions done in four weeks${c.extra ? `, ${c.extra} extra` : ''}.${c.streak >= 2 ? ` ${c.streak} weeks in a row on plan.` : ''}` : `Over the last three weeks. Plan a week to see how closely you keep to it.`}</small>`);
 
-  // Resilience
+  // Resilience.
   const rs = t.resilience;
   if(rs && !rs.learning){
     const bounce = rs.bounce === 0 ? 'the same as your usual' : `${Math.abs(rs.bounce)} ${rs.bounce > 0 ? 'above' : 'below'} your usual ${rs.usual}`;
-    parts.push(`<div class="tp-block">${head('heart', 'Resilience', rs.word)}`
-      + `<div class="tp-steps" role="img" aria-label="${rs.word}, ${rs.level + 1} of 5">${RESILIENCE_LEVELS.map((w, i)=> `<i class="${i <= rs.level ? 'on' : ''}"></i>`).join('')}</div>`
-      + `<small class="tp-note">The morning after training you wake ${bounce}, over ${rs.n} training days.${rs.debt != null && rs.debt >= 3 ? ` ${rs.debt.toFixed(1)} h of sleep owed is holding it down.` : ''}</small></div>`);
+    row('heart', 'Resilience', `<b>${rs.word}</b>`,
+      `<div class="tp-steps" role="img" aria-label="${rs.word}, ${rs.level + 1} of 5">${RESILIENCE_LEVELS.map((w, i)=> `<i class="${i <= rs.level ? 'on' : ''}"></i>`).join('')}</div>`
+      + `<small>The morning after training you wake ${bounce}, over ${rs.n} training days.${rs.debt != null && rs.debt >= 3 ? ` ${rs.debt.toFixed(1)} h of sleep owed is holding it down.` : ''}</small>`);
   } else if(rs){
-    parts.push(`<div class="tp-block">${head('heart', 'Resilience', 'Learning')}<small class="tp-note">${rs.haveUsual ? `${rs.need} more training day${rs.need === 1 ? '' : 's'} with a morning check-in after, and this shows how well you bounce back.` : 'A couple of weeks of mornings first, to know your usual.'}</small></div>`);
+    row('heart', 'Resilience', '<b>Learning</b>', `<small>${rs.haveUsual ? `${rs.need} more training day${rs.need === 1 ? '' : 's'} with a morning check-in after, and this shows how well you bounce back.` : 'A couple of weeks of mornings first, to know your usual.'}</small>`);
   }
 
-  host.innerHTML = `<div class="tp-head">Training</div>` + parts.join('');
+  host.innerHTML = `<div class="tp-rule"></div><div class="tp-rows">` + rows.map((r, i)=>
+    `<button type="button" class="tp-line" aria-expanded="false" aria-controls="tpMore${i}">${dfIcon(r.icon, 20)}<span class="tp-k">${r.label}</span><span class="tp-v">${r.value}</span><span class="tp-chev" aria-hidden="true">›</span></button>`
+    + `<div class="tp-more" id="tpMore${i}" hidden>${r.detail}</div>`).join('') + `</div>`;
+  host.querySelectorAll('.tp-line').forEach(btn=> btn.addEventListener('click', ()=>{
+    const open = btn.getAttribute('aria-expanded') !== 'true';
+    host.querySelectorAll('.tp-line').forEach(b=>{ b.setAttribute('aria-expanded', 'false'); const m = document.getElementById(b.getAttribute('aria-controls')); if(m) m.hidden = true; });
+    if(open){ btn.setAttribute('aria-expanded', 'true'); const m = document.getElementById(btn.getAttribute('aria-controls')); if(m) m.hidden = false; }
+    try{ haptic('light'); } catch(e){}
+  }));
 }
 /* The key to the ring's colours, under the big number in the score sheet. */
 function paintScoreRing(value, ch){
@@ -27403,8 +27437,16 @@ function paintScoreRing(value, ch){
     const rows = [`<div class="cr-row">${ic('sleep')}<span>Woke with</span><b>${ch.start}</b></div>`]
       .concat(ch.parts.map(p=> `<div class="cr-row">${ic(sym[p.label] || 'drain')}<span>${name[p.label] || p.label}${p.at ? ' \u00b7 ' + clock(p.at) : ''}<small>${why(p)}</small></span><b>\u2212${p.pts}</b></div>`))
       .concat([`<div class="cr-row cr-total">${ic('charge')}<span>Left now</span><b>${ch.charge}</b></div>`]);
-    key.innerHTML = rows.join('') + (ch.drainFactor && Math.abs(ch.drainFactor - 1) > 0.05
-      ? `<div class="cr-foot">Sessions are scaled \u00d7${ch.drainFactor.toFixed(2)}, learned from your days with two.</div>` : '');
+    /* Layout A: one line under the ring ("Woke with 51 · lift −13 · long day −3"); tapping it
+       opens the full receipt with times and reasons. */
+    const merged = [];
+    ch.parts.forEach(p=>{ const m = merged.find(x=> x.label === p.label); if(m) m.pts += p.pts; else merged.push({ label: p.label, pts: p.pts }); });
+    const sum = [`Woke with ${ch.start}`].concat(merged.map(p=> `${p.label} \u2212${p.pts}`)).join(' \u00b7 ');
+    key.innerHTML = `<button type="button" class="cr-sum" aria-expanded="false" aria-controls="crMore">${sum} <span class="cr-chev" aria-hidden="true">\u203a</span></button>`
+      + `<div class="cr-more" id="crMore" hidden>` + rows.join('') + (ch.drainFactor && Math.abs(ch.drainFactor - 1) > 0.05
+      ? `<div class="cr-foot">Sessions are scaled \u00d7${ch.drainFactor.toFixed(2)}, learned from your days with two.</div>` : '') + `</div>`;
+    const sumBtn = key.querySelector('.cr-sum'), more = key.querySelector('.cr-more');
+    sumBtn.addEventListener('click', ()=>{ const o = sumBtn.getAttribute('aria-expanded') !== 'true'; sumBtn.setAttribute('aria-expanded', o ? 'true' : 'false'); more.hidden = !o; try{ haptic('light'); } catch(e){} });
     key.hidden = false;
   }
 }
