@@ -1778,6 +1778,9 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .session-complete .perf-line, .session-complete .perf-note{ font-size:var(--fs-tag); color:var(--dim); }
   .session-complete .perf-line b{ color:inherit; }
   .charge-note{ margin-top:var(--sp-2); }
+  .bedtime-note{ margin-bottom:var(--sp-3); }
+  .bedtime-note[hidden]{ display:none; }
+  .bedtime-note .bt-time{ font-family:var(--mono); font-weight:var(--fw-bold); font-size:var(--fs-xl); color:var(--text); }
   .charge-acts{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
   .score-meaning{ font-family:var(--sans); font-size:var(--fs-tag); color:var(--dim); text-align:center; max-width:34ch; margin:6px auto 0; line-height:1.4; text-wrap:balance; }
   .score-note{ font-size:var(--fs-tag); color:var(--dim); margin-top:8px; line-height:1.4; letter-spacing:0.015em; font-weight:var(--fw-medium); }
@@ -6320,6 +6323,7 @@ if(!window.__pnHold)window.__curtain();
       </div>
       <div id="recommendationCards" style="display:none;"></div>
     </div>
+    <div class="charge-note bedtime-note" id="bedtimeNote" hidden></div>
     <div id="progressSnapshot"></div>
     <div id="sessionCompleteCard"></div>
 
@@ -13484,7 +13488,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.16.001';
+const APP_VERSION = '2026.11.16.002';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13880,6 +13884,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.16.002': 'The widget does more. Its lock-screen circle is a battery now; it says what your next session will leave you with ("Lift next → 49"), then how it went once it is done, and tapping it opens straight into the session. While you lift, the set you just logged and your rest countdown sit on the lock screen and in the Dynamic Island. And from 7pm before a lift or a hard run, Today and the widget say when to be in bed, from the sleep your own best mornings came after.',
   '2026.11.16.001': 'Charge has a new home. The number sits under the Dogfood name with what spent it today, and a ring round the mascot fills with what you have left, coloured by where the rest went: orange for lifts, blue for runs, purple for a busy day, yellow for a long one. The tick is where you started.',
   '2026.11.15.026': 'The widget now shows the same number as the app, even before Charge has enough history to take over. It goes blank at midnight instead of showing last night\'s number, and the long-day drain keeps ticking down on it while the app is closed.',
   '2026.11.15.025': 'Charge on your lock screen and home screen: a Dogfood widget showing your charge, where it went today, and your next session. Long-press the lock screen, Customise, and add Dogfood. It updates whenever the app works the number out.',
@@ -18634,17 +18639,44 @@ async function pushChargeToWidget(sr, shown){
         longFrom = localDateFrom(todayStr).getTime() + (wakeH + CHARGE_LONG_DAY_H) * 3600000;
       } catch(e){}
     }
-    let session = null;
+    let session = null, nextLabel = '', nextCost = 0, link = 'today';
     try{
       const found = await todaysBlockAnySlot();
       const done = (await getAllTrainingSessions()).some(sn=> sn && sn.date === todayStr && found && found.block && sn.type === found.block.type);
-      if(found && found.block && (found.block.type === 'strength' || found.block.type === 'run')) session = done ? 'Done for today' : sessionTitle(found.block);
+      if(found && found.block && (found.block.type === 'strength' || found.block.type === 'run')){
+        session = done ? 'Done for today' : sessionTitle(found.block);
+        if(!done){
+          /* WHAT IT WILL COST. A planned session has no load yet, so it is priced as a typical
+             one of its kind, through your learned drain (computeCharge's drainFor at load =
+             typical). The widget takes it off whatever the charge is by then. */
+          const k = ch && ch.drainFactor ? ch.drainFactor : 1;
+          nextCost = Math.round(Math.max(CHARGE_SESSION_MIN, Math.min(CHARGE_SESSION_MAX, CHARGE_SESSION_TYPICAL * k)));
+          nextLabel = found.block.type === 'run' ? 'Run' : 'Lift';
+          link = 'session';
+        }
+      }
     } catch(e){}
+    /* The last session's Performance score, today's or else yesterday's, until the next one. */
+    let lastPerf = '';
+    try{
+      for(const d of [todayStr, shiftDateStr(todayStr, -1)]){
+        const perf = await sessionPerformance(d);
+        if(perf && perf.length){
+          const p = perf[perf.length - 1];
+          lastPerf = `${p.kind === 'run' ? 'Run' : 'Lift'}${d === todayStr ? '' : ' yesterday'} scored ${p.score}`;
+          break;
+        }
+      }
+    } catch(e){}
+    let bedtime = '';
+    try{ const a = await bedtimeAdvice(); if(a) bedtime = `In bed by ${a.bed} for tomorrow\u2019s ${a.kind}`; } catch(e){}
     const payload = {
       day: todayStr,
       charge: Math.round(shown),
       base: Math.round(shown + longPts),
-      session: session || ''
+      session: session || '',
+      nextLabel, nextCost, lastPerf, link, bedtime,
+      bedtimeFrom: localDateFrom(todayStr).getTime() + BEDTIME_FROM_H * 3600000
     };
     if(ch){
       payload.start = Math.round(ch.start);
@@ -18654,12 +18686,103 @@ async function pushChargeToWidget(sr, shown){
     await WidgetBridge.update(payload);
   } catch(e){}
 }
+/* ================= THE BEDTIME NUDGE =================
+   From seven in the evening, when tomorrow holds a lift or a hard run (long, tempo, intervals,
+   sprints, fartlek): when to be in bed to wake on the sleep your best mornings come after.
+     need      the median sleep before your top quarter of mornings, last 60 days (6.5-9.5 h)
+     wake      your median wake time on the same kind of day (weekday or weekend), last 4 weeks
+     overhead  your median time in bed not asleep (bed to wake, less sleep), 0-90 min
+   bed = wake - need - overhead, to five minutes. With a straight line of score on sleep that
+   goes the right way (r above 0.15) it also says the morning that much sleep has meant for
+   you. Fourteen paired nights before it says anything. */
+const BEDTIME_FROM_H = 19;
+const BEDTIME_HARD_RUNS = ['long', 'tempo', 'interval', 'sprint', 'fartlek'];
+async function bedtimeAdvice(){
+  const sr = lastSrResult;
+  if(!sr || !sr.available || !sr.shownSeries) return null;
+  const tomorrow = shiftDateStr(todayStr, 1);
+  let hard = null;
+  for(const sl of ['am', 'pm']){
+    try{
+      const b = JSON.parse((await window.storage.get(`weekplan:${tomorrow}:${sl}`)).value);
+      if(b && !hard && (b.type === 'strength' || (b.type === 'run' && BEDTIME_HARD_RUNS.includes(b.details && b.details.runType)))) hard = b;
+    } catch(e){}
+  }
+  if(!hard) return null;
+  const toMin = c => { if(typeof c !== 'string') return null; const [h, m] = c.split(':').map(Number); return isNaN(h) ? null : h * 60 + (m || 0); };
+  const med = a => { const b = a.slice().sort((x, y)=> x - y); const n = b.length; return n ? (n % 2 ? b[(n - 1) / 2] : (b[n / 2 - 1] + b[n / 2]) / 2) : null; };
+  const weekendDay = d => { const w = localDateFrom(d).getDay(); return w === 0 || w === 6; };
+  const pairs = [], wakes = [], wakesSame = [], over = [];
+  for(let i = 0; i <= 60; i++){
+    const d = shiftDateStr(todayStr, -i);
+    let e = null;
+    try{ e = JSON.parse((await window.storage.get(keyFor(d))).value); } catch(err){}
+    if(!e) continue;
+    const hrs = +e.durationHrs;
+    const sc = sr.shownSeries[d];
+    if(hrs > 0 && sc != null) pairs.push({ h: hrs, s: sc });
+    const w = toMin(e.wakeClock);
+    if(i <= 28 && w != null){ wakes.push(w); if(weekendDay(d) === weekendDay(tomorrow)) wakesSame.push(w); }
+    const b = toMin(e.bedClock);
+    if(w != null && b != null && hrs > 0){ const tib = (w - b + 1440) % 1440; const o = tib - hrs * 60; if(o >= 0 && o <= 180) over.push(o); }
+  }
+  if(pairs.length < 14) return null;
+  const wake = med(wakesSame.length >= 3 ? wakesSame : wakes);
+  if(wake == null) return null;
+  const scores = pairs.map(p=> p.s).sort((a, b)=> a - b);
+  const q75 = scores[Math.floor(scores.length * 0.75)];
+  const need = Math.max(6.5, Math.min(9.5, med(pairs.filter(p=> p.s >= q75).map(p=> p.h))));
+  const overhead = Math.max(0, Math.min(90, over.length >= 5 ? med(over) : 20));
+  const bed = Math.round(((wake - need * 60 - overhead) % 1440 + 1440) % 1440 / 5) * 5 % 1440;
+  const mh = pairs.reduce((a, p)=> a + p.h, 0) / pairs.length, ms = pairs.reduce((a, p)=> a + p.s, 0) / pairs.length;
+  let sxy = 0, sxx = 0, syy = 0;
+  pairs.forEach(p=>{ sxy += (p.h - mh) * (p.s - ms); sxx += (p.h - mh) ** 2; syy += (p.s - ms) ** 2; });
+  const slope = sxx > 0 ? sxy / sxx : 0, r = sxx > 0 && syy > 0 ? sxy / Math.sqrt(sxx * syy) : 0;
+  const pred = slope > 0 && r > 0.15 ? Math.max(0, Math.min(100, Math.round(ms + slope * (need - mh)))) : null;
+  const clock = m => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(Math.round(m % 60)).padStart(2, '0')}`;
+  const hm = h => `${Math.floor(h)}h${Math.round((h % 1) * 60) ? ' ' + String(Math.round((h % 1) * 60)).padStart(2, '0') + 'm' : ''}`;
+  return { bed: clock(bed), bedMin: bed, wake: clock(wake), need, needText: hm(need), overhead: Math.round(overhead), pred,
+           kind: hard.type === 'run' ? 'run' : 'lift', title: sessionTitle(hard) };
+}
+async function renderBedtimeNote(){
+  const el = document.getElementById('bedtimeNote');
+  if(!el) return null;
+  const now = new Date();
+  if(now.getHours() < BEDTIME_FROM_H){ el.hidden = true; return null; }
+  let a = null;
+  try{ a = await bedtimeAdvice(); } catch(e){}
+  if(!a){ el.hidden = true; return null; }
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const past = a.bedMin >= BEDTIME_FROM_H * 60 && nowMin > a.bedMin;
+  const morning = a.pred != null ? ` A night like that has had you waking near ${a.pred}.` : '';
+  el.innerHTML = `<div class="bt-time">${past ? 'Past ' : 'In bed by '}${a.bed}</div>`
+    + `<div class="score-note">Tomorrow is ${escapeHtmlLite(a.title)}. Your best mornings come after ${a.needText} asleep, you usually wake at ${a.wake}`
+    + `${a.overhead ? ` and spend about ${a.overhead} min of the night awake` : ''}.${morning}`
+    + `${past ? ' Sooner is still better than later.' : ''}</div>`;
+  el.hidden = false;
+  return a;
+}
+function escapeHtmlLite(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, c=> ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]); }
+
+/* A TAP ON THE WIDGET. It opens the app at dogfood://today, or dogfood://session when a
+   session is still to do today; the scene delegate hands the host to WidgetBridgePlugin, which
+   keeps it for a cold start (takeLink) and announces it when the app is already running. */
+function handleWidgetLink(to){
+  if(!to) return;
+  try{ activateTab('insights'); } catch(e){}
+  if(to === 'session') setTimeout(()=>{ openLogFromAnywhere().catch(()=>{}); }, 450);
+}
+if(WidgetBridge){
+  try{ WidgetBridge.addListener('link', d=> handleWidgetLink(d && d.to)); } catch(e){}
+  setTimeout(()=>{ try{ WidgetBridge.takeLink().then(r=> handleWidgetLink(r && r.to)).catch(()=>{}); } catch(e){} }, 1500);
+}
 async function refreshCharge(){
   if(!lastSrResult || !lastSrResult.available || document.hidden) return;
   try{
     lastSrResult.charge = await computeCharge(lastSrResult);
     const shown = updateOverallScore(null, null, null, null, null, lastSrResult);
     syncHeaderScore(shown);
+    renderBedtimeNote().catch(()=>{});
     pushChargeToWidget(lastSrResult, shown);
   } catch(e){}
 }
@@ -22902,6 +23025,7 @@ function closeBlockEditor(opts){
   if(home && panel.parentElement !== home) home.appendChild(panel);
   blockEditDirty = false;
   // Putting it away leaves the claim standing; finishing or discarding takes it down.
+  if(!keepDraft) liveSessionEnd();
   if(blockEditDate && !keepDraft){
     clearLoggingStarted(blockEditDate);
     clearLogDraft(blockEditDate, blockEditSlot);
@@ -23448,6 +23572,41 @@ function restClockText(sec){
   return `${m}:${String(r).padStart(2, '0')}`;
 }
 let restTimerId = null, restEndsAt = 0, restChosen = REST_DEFAULT;
+/* THE SESSION ON THE LOCK SCREEN (iPhone app, LiveActivityPlugin). Started by the first set
+   you tick on today's session, not by opening it to look; updated on every set and every rest;
+   ended when the session is saved or thrown away. Putting it away on the bar leaves it up. */
+const LiveActivity = (()=>{
+  try{ const C = window.Capacitor; return C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin ? C.registerPlugin('LiveActivity') : null; }
+  catch(e){ return null; }
+})();
+const liveSession = { on: false, title: '', exercise: '', detail: '' };
+async function liveSessionPush(){
+  if(!LiveActivity || blockEditDate !== todayStr || !liveSession.exercise) return;
+  try{
+    if(!liveSession.title){
+      const found = await todaysBlockAnySlot();
+      liveSession.title = found && found.block ? sessionTitle(found.block) : 'Session';
+    }
+    const ch = lastSrResult && lastSrResult.available && lastSrResult.charge ? lastSrResult.charge.charge : null;
+    const payload = { title: liveSession.title, exercise: liveSession.exercise, detail: liveSession.detail };
+    if(restTimerId && restEndsAt > Date.now()) payload.restEnds = restEndsAt;
+    if(ch != null) payload.charge = ch;
+    liveSession.on = true;
+    await LiveActivity.update(payload);
+  } catch(e){}
+}
+function liveSessionSet(name, i, sets, unit){
+  const x = sets[i]; if(!x) return;
+  const w = x.weight == null ? '' : ` \u00d7 ${+(+x.weight).toFixed(2)} ${unit}`;
+  liveSession.exercise = name || 'Set';
+  liveSession.detail = `Set ${i + 1} of ${sets.length} \u00b7 ${+(+x.reps).toFixed(2)}${w ? w : ' reps'}`;
+  liveSessionPush();
+}
+function liveSessionEnd(){
+  const was = liveSession.on;
+  Object.assign(liveSession, { on: false, title: '', exercise: '', detail: '' });
+  if(LiveActivity && was) LiveActivity.end().catch(()=>{});
+}
 // There are two clocks now — the one in the editor and the one on the minimised bar — and
 // the countdown belongs to the session, not to either of them. Write to every clock on the
 // page and neither can drift or go stale behind the other.
@@ -23485,12 +23644,12 @@ function wireRestTimer(panel){
     b.addEventListener('click', ()=>{
       restChosen = +b.dataset.rest;
       panel.querySelectorAll('.rest-preset').forEach(x=> x.classList.toggle('on', +x.dataset.rest === restChosen));
-      if(restTimerId){ restEndsAt = Date.now() + restChosen * 1000; tickRestTimer(); }
+      if(restTimerId){ restEndsAt = Date.now() + restChosen * 1000; tickRestTimer(); liveSessionPush(); }
       else paintRestClocks(restClockText(restChosen), false);
     });
   });
   go.addEventListener('click', ()=>{
-    if(restTimerId){ stopRestTimer(); return; }
+    if(restTimerId){ stopRestTimer(); liveSessionPush(); return; }
     restEndsAt = Date.now() + restChosen * 1000;
     go.textContent = 'Stop';
     paintRestClocks(restClockText(restChosen), true);
@@ -23498,6 +23657,7 @@ function wireRestTimer(panel){
     // tab would otherwise come back with a timer that has quietly lost the minute it slept.
     restTimerId = setInterval(tickRestTimer, 250);
     tickRestTimer();
+    liveSessionPush();
   });
 }
 
@@ -29403,7 +29563,7 @@ function initSetTicks(row){
     const r = e.target.closest('.st-row'); const i = r ? +r.dataset.i : -1;
     if(e.target.closest('.st-ok')){
       sets[i].done = !sets[i].done; paint(); write();
-      if(sets[i].done) restNow();
+      if(sets[i].done){ restNow(); liveSessionSet(nameEl ? nameEl.value : '', i, sets, unit); }
       return;
     }
     if(e.target.closest('.st-v')){
@@ -29417,7 +29577,7 @@ function initSetTicks(row){
           if(rr.length) x.reps = rr[rr.length - 1];
           if(ww.length) x.weight = ww[ww.length - 1];
           const wasDone = x.done; x.done = true; paint(); write();
-          if(!wasDone) restNow();
+          if(!wasDone){ restNow(); liveSessionSet(nameEl ? nameEl.value : '', i, sets, unit); }
         } });
       return;
     }
@@ -40688,6 +40848,7 @@ async function generateRecommendations(){
   lastSrResult = srResult;
   renderReadinessConfidence(srResult);
   const overallShown = updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, entry, srResult);
+  renderBedtimeNote().catch(()=>{});
   pushChargeToWidget(srResult, overallShown);
   renderScoreTrace(overallShown);
   syncHeaderScore(overallShown);

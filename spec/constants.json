@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.11.16.001",
+ "generatedFrom": "2026.11.16.002",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1507,7 +1507,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.11.16.001",
+  "APP_VERSION": "2026.11.16.002",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1885,6 +1885,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.11.16.002": "The widget does more. Its lock-screen circle is a battery now; it says what your next session will leave you with (\"Lift next → 49\"), then how it went once it is done, and tapping it opens straight into the session. While you lift, the set you just logged and your rest countdown sit on the lock screen and in the Dynamic Island. And from 7pm before a lift or a hard run, Today and the widget say when to be in bed, from the sleep your own best mornings came after.",
    "2026.11.16.001": "Charge has a new home. The number sits under the Dogfood name with what spent it today, and a ring round the mascot fills with what you have left, coloured by where the rest went: orange for lifts, blue for runs, purple for a busy day, yellow for a long one. The tick is where you started.",
    "2026.11.15.026": "The widget now shows the same number as the app, even before Charge has enough history to take over. It goes blank at midnight instead of showing last night's number, and the long-day drain keeps ticking down on it while the app is closed.",
    "2026.11.15.025": "Charge on your lock screen and home screen: a Dogfood widget showing your charge, where it went today, and your next session. Long-press the lock screen, Customise, and add Dogfood. It updates whenever the app works the number out.",
@@ -2180,6 +2181,14 @@
   "CHARGE_SESSION_TYPICAL": 13,
   "CHARGE_STEPS_PER_POINT": 2000,
   "CHARGE_LONG_DAY_H": 12,
+  "BEDTIME_FROM_H": 19,
+  "BEDTIME_HARD_RUNS": [
+   "long",
+   "tempo",
+   "interval",
+   "sprint",
+   "fartlek"
+  ],
   "CV_RECENT_DAYS": 14,
   "SHIFT_RECENT_DAYS": 10,
   "POWER_REP_MAX": 6,

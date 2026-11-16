@@ -9,6 +9,9 @@ import SwiftUI
  file only draws what it is given, so it can never disagree with the app. Charge only ever
  falls through the day and refills overnight, so a widget showing the last number the app
  worked out is at worst a little optimistic, and it says when that was.
+
+ Tapping it opens the app: at today's session if one is still to do (dogfood://session),
+ otherwise at Today (dogfood://today).
 */
 let dogfoodAppGroup = "group.com.touringgroup.dogfood"
 
@@ -21,6 +24,12 @@ struct ChargeSnapshot: Codable {
     var session: String?
     var longFrom: Double?   // ms: when the long-day points start (wake + 12 h)
     var longMax: Int?
+    var nextLabel: String?  // "Lift" or "Run": today's session, still to do
+    var nextCost: Int?      // what it will take off, priced as a typical one of its kind
+    var lastPerf: String?   // "Lift scored 71": the last session's Performance score
+    var link: String?       // "session" or "today"
+    var bedtime: String?    // "In bed by 22:35 for tomorrow's lift", when tomorrow is a hard day
+    var bedtimeFrom: Double? // ms: from when to show it (seven in the evening)
     var updatedAt: Double?
 }
 
@@ -33,6 +42,10 @@ struct ChargeReading {
     let start: Int?
     let drain: String
     let session: String?
+    let next: String?       // "Lift next → 49"
+    let lastPerf: String?
+    let bedtime: String?    // only once the evening has started
+    let link: URL
     let updatedAt: Date?
 
     static let dayFormat: DateFormatter = {
@@ -45,10 +58,20 @@ struct ChargeReading {
     }()
 
     init(_ snap: ChargeSnapshot?, at date: Date) {
-        guard let s = snap, let c = s.charge, let day = s.day, day == ChargeReading.dayFormat.string(from: date) else {
+        let sameDay = snap?.day == ChargeReading.dayFormat.string(from: date)
+        let linkHost = sameDay ? (snap?.link ?? "today") : "today"
+        link = URL(string: "dogfood://\(linkHost)")!
+        // The app already says "yesterday" when the last score was; a snapshot older than today
+        // is too old to say anything.
+        lastPerf = sameDay && !(snap?.lastPerf ?? "").isEmpty ? snap?.lastPerf : nil
+        if sameDay, let b = snap?.bedtime, let from = snap?.bedtimeFrom, date.timeIntervalSince1970 * 1000 >= from {
+            bedtime = b
+        } else {
+            bedtime = nil
+        }
+        guard let s = snap, let c = s.charge, sameDay else {
+            charge = nil; start = nil; drain = ""; updatedAt = nil; next = nil
             // Today's session still shows before there is a reading; yesterday's does not.
-            let sameDay = snap?.day == ChargeReading.dayFormat.string(from: date)
-            charge = nil; start = nil; drain = ""; updatedAt = nil
             session = sameDay ? snap?.session.flatMap { $0.isEmpty ? nil : $0 } : nil
             return
         }
@@ -65,6 +88,11 @@ struct ChargeReading {
         if long > 0 { parts.append("long day \u{2212}\(long)") }
         drain = parts.joined(separator: " \u{00B7} ")
         session = (s.session ?? "").isEmpty ? nil : s.session
+        if let label = s.nextLabel, let cost = s.nextCost, cost > 0 {
+            next = "\(label) next \u{2192} \(max(0, now - cost))"
+        } else {
+            next = nil
+        }
         updatedAt = s.updatedAt.map { Date(timeIntervalSince1970: $0 / 1000) }
     }
 }
@@ -76,7 +104,9 @@ struct ChargeEntry: TimelineEntry {
 
 struct ChargeProvider: TimelineProvider {
     static let sample = ChargeSnapshot(day: ChargeReading.dayFormat.string(from: Date()), charge: 72, base: 72, start: 85,
-                                       drain: "lift \u{2212}13", session: "Full body", longFrom: nil, longMax: nil, updatedAt: nil)
+                                       drain: "lift \u{2212}13", session: "Full body", longFrom: nil, longMax: nil,
+                                       nextLabel: "Run", nextCost: 11, lastPerf: "Lift scored 71", link: "session",
+                                       bedtime: nil, bedtimeFrom: nil, updatedAt: nil)
     func placeholder(in context: Context) -> ChargeEntry {
         ChargeEntry(date: Date(), reading: ChargeReading(ChargeProvider.sample, at: Date()))
     }
@@ -117,6 +147,26 @@ extension View {
     }
 }
 
+/* A battery, filled to the charge. Drawn rather than an SF Symbol so the fill is exact rather
+   than one of five steps. */
+struct BatteryGlyph: View {
+    let level: Int?
+    var body: some View {
+        HStack(spacing: 1) {
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 3.5).stroke(lineWidth: 1.8)
+                GeometryReader { g in
+                    RoundedRectangle(cornerRadius: 1.8)
+                        .frame(width: max(0, (g.size.width - 5) * CGFloat(min(100, max(0, level ?? 0))) / 100))
+                        .padding(2.5)
+                }
+            }
+            .frame(width: 30, height: 15)
+            RoundedRectangle(cornerRadius: 1).frame(width: 2.5, height: 6)
+        }
+    }
+}
+
 struct ChargeView: View {
     @Environment(\.widgetFamily) var family
     let entry: ChargeEntry
@@ -131,39 +181,51 @@ struct ChargeView: View {
         }
         return nil
     }
+    /* The third line: in the evening before a hard day, when to be asleep; otherwise what today's
+       session will leave you with, or, once it is done, how it went. */
+    var lastLine: String? { r.bedtime ?? r.next ?? r.lastPerf ?? r.session }
 
     var body: some View {
+        content.widgetURL(r.link)
+    }
+
+    @ViewBuilder var content: some View {
         switch family {
         case .accessoryCircular:
-            Gauge(value: Double(r.charge ?? 0), in: 0...100) {
-                Text("CHG")
-            } currentValueLabel: {
-                Text(chargeText)
+            ZStack {
+                AccessoryWidgetBackground()
+                VStack(spacing: 3) {
+                    BatteryGlyph(level: r.charge).widgetAccentable()
+                    Text(chargeText).font(.system(size: 17, weight: .bold, design: .rounded))
+                }
             }
-            .gaugeStyle(.accessoryCircular)
-            .widgetAccentable()
             .dogfoodBackground(true)
         case .accessoryInline:
-            Text(r.charge == nil ? "Charge \u{2013} open Dogfood" : "Charge \(chargeText)\(r.session.map { " \u{00B7} \($0)" } ?? "")")
+            Text(r.charge == nil ? "Charge \u{2013} open Dogfood"
+                 : "Charge \(chargeText)\(r.next.map { " \u{00B7} \($0)" } ?? r.session.map { " \u{00B7} \($0)" } ?? "")")
                 .dogfoodBackground(true)
         case .accessoryRectangular:
             VStack(alignment: .leading, spacing: 1) {
                 Text("Charge \(chargeText)").font(.headline).widgetAccentable()
                 if let line = subline { Text(line).font(.caption).lineLimit(1).minimumScaleFactor(0.8) }
-                if let s = r.session { Text(s).font(.caption).lineLimit(1) }
+                if let s = lastLine { Text(s).font(.caption).lineLimit(1) }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .dogfoodBackground(true)
         default:
             VStack(alignment: .leading, spacing: 4) {
-                Text("CHARGE").font(.system(size: 11, weight: .bold)).foregroundColor(Color(white: 0.75))
+                HStack(alignment: .center, spacing: 6) {
+                    Text("CHARGE").font(.system(size: 11, weight: .bold)).foregroundColor(Color(white: 0.75))
+                    Spacer(minLength: 0)
+                    BatteryGlyph(level: r.charge).foregroundColor(Color(white: 0.75)).scaleEffect(0.8)
+                }
                 Text(chargeText).font(.system(size: 46, weight: .heavy, design: .rounded)).foregroundColor(.white)
                 if let line = subline {
                     Text(line).font(.system(size: 12)).foregroundColor(Color(white: 0.8)).lineLimit(2).minimumScaleFactor(0.8)
                 }
                 Spacer(minLength: 0)
-                if let s = r.session {
-                    Text(s).font(.system(size: 12, weight: .semibold)).foregroundColor(.white).lineLimit(1)
+                if let s = lastLine {
+                    Text(s).font(.system(size: 12, weight: .semibold)).foregroundColor(.white).lineLimit(1).minimumScaleFactor(0.8)
                 }
                 if let u = r.updatedAt {
                     Text(u, style: .time).font(.system(size: 10)).foregroundColor(Color(white: 0.6))
@@ -183,12 +245,15 @@ struct ChargeWidget: Widget {
             ChargeView(entry: entry)
         }
         .configurationDisplayName("Charge")
-        .description("What you have left to perform with today, and your next session.")
+        .description("What you have left to perform with today, what your next session will cost, and how the last one went.")
         .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline, .systemSmall])
     }
 }
 
 @main
 struct DogfoodWidgetBundle: WidgetBundle {
-    var body: some Widget { ChargeWidget() }
+    var body: some Widget {
+        ChargeWidget()
+        SessionLiveActivity()
+    }
 }

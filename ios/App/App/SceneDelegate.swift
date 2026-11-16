@@ -12,10 +12,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.makeKeyAndVisible()
 
         SceneDelegateProxy.shared.scene(scene, willConnectTo: session, options: connectionOptions)
+        // Opened from the widget while not running: keep the link for the page (WidgetBridgePlugin).
+        connectionOptions.urlContexts.forEach { WidgetBridgePlugin.receive($0.url) }
     }
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         SceneDelegateProxy.shared.scene(scene, openURLContexts: URLContexts)
+        URLContexts.forEach { WidgetBridgePlugin.receive($0.url) }
     }
 
     func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {

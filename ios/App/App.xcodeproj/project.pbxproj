@@ -20,6 +20,10 @@
 		D0F00D000000000000000A03 /* HapticsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B04 /* HapticsPlugin.swift */; };
 		D0F00D000000000000000A02 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B02 /* MainViewController.swift */; };
 		D0F00D000000000000000A04 /* WidgetBridgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B05 /* WidgetBridgePlugin.swift */; };
+		D0F00D000000000000000A05 /* LiveActivityPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B06 /* LiveActivityPlugin.swift */; };
+		D0F00D000000000000000A06 /* SessionActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B07 /* SessionActivityAttributes.swift */; };
+		D0F00D000000000000000A11 /* SessionActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B07 /* SessionActivityAttributes.swift */; };
+		D0F00D000000000000000A12 /* SessionLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B15 /* SessionLiveActivity.swift */; };
 		D0F00D000000000000000A10 /* DogfoodWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B10 /* DogfoodWidget.swift */; };
 		D0F00D000000000000000A14 /* DogfoodWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B14 /* DogfoodWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -64,6 +68,9 @@
 		D0F00D000000000000000B02 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		D0F00D000000000000000B03 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		D0F00D000000000000000B05 /* WidgetBridgePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetBridgePlugin.swift; sourceTree = "<group>"; };
+		D0F00D000000000000000B06 /* LiveActivityPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityPlugin.swift; sourceTree = "<group>"; };
+		D0F00D000000000000000B07 /* SessionActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionActivityAttributes.swift; sourceTree = "<group>"; };
+		D0F00D000000000000000B15 /* SessionLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLiveActivity.swift; sourceTree = "<group>"; };
 		D0F00D000000000000000B13 /* AppWithWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppWithWidget.entitlements; sourceTree = "<group>"; };
 		D0F00D000000000000000B10 /* DogfoodWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DogfoodWidget.swift; sourceTree = "<group>"; };
 		D0F00D000000000000000B11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -118,6 +125,8 @@
 				D0F00D000000000000000B01 /* HealthBridgePlugin.swift */,
 				D0F00D000000000000000B04 /* HapticsPlugin.swift */,
 				D0F00D000000000000000B05 /* WidgetBridgePlugin.swift */,
+				D0F00D000000000000000B06 /* LiveActivityPlugin.swift */,
+				D0F00D000000000000000B07 /* SessionActivityAttributes.swift */,
 				D0F00D000000000000000B03 /* App.entitlements */,
 				D0F00D000000000000000B13 /* AppWithWidget.entitlements */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
@@ -136,6 +145,7 @@
 			isa = PBXGroup;
 			children = (
 				D0F00D000000000000000B10 /* DogfoodWidget.swift */,
+				D0F00D000000000000000B15 /* SessionLiveActivity.swift */,
 				D0F00D000000000000000B11 /* Info.plist */,
 				D0F00D000000000000000B12 /* DogfoodWidget.entitlements */,
 			);
@@ -256,6 +266,8 @@
 				D0F00D000000000000000A03 /* HapticsPlugin.swift in Sources */,
 				D0F00D000000000000000A02 /* MainViewController.swift in Sources */,
 				D0F00D000000000000000A04 /* WidgetBridgePlugin.swift in Sources */,
+				D0F00D000000000000000A05 /* LiveActivityPlugin.swift in Sources */,
+				D0F00D000000000000000A06 /* SessionActivityAttributes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -264,6 +276,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D0F00D000000000000000A10 /* DogfoodWidget.swift in Sources */,
+				D0F00D000000000000000A11 /* SessionActivityAttributes.swift in Sources */,
+				D0F00D000000000000000A12 /* SessionLiveActivity.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -464,7 +478,7 @@
 				DEVELOPMENT_TEAM = M6AXSFYX2W;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = DogfoodWidget/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -489,7 +503,7 @@
 				DEVELOPMENT_TEAM = M6AXSFYX2W;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = DogfoodWidget/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
