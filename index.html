@@ -1228,6 +1228,21 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .header-charge .hc-drains i{ display:inline-block; width:7px; height:7px; border-radius:50%; margin:0 4px 0 0; }
   .header-charge .hc-drains i:not(:first-child){ margin-left:9px; }
   .header-charge:focus-visible{ outline:2px solid var(--bg); outline-offset:3px; }
+  /* THE SHEET, SIMPLIFIED. Opened from the mascot, it is the number in the same one-bar ring as
+     the header, the list of what made it, and one line on what it means. Yesterday's ghost, the
+     eyes chip, the form badge, the expander, the trace, the suggestion, the block line and the
+     acceptance stats are still kept up to date by the code that owns them, just not shown here. */
+  #scoreDetailSheet :is(#scoreGhost, #scoreEyes, #formMark, #scoreChevron, #scoreTrace, #recLeft, #todayFaceDock,
+    #baselineStatus, #todayBlockContext, #acceptanceStats){ display:none !important; }
+  #scoreDetailSheet .score-label-row{ pointer-events:none; }
+  /* The room above the number was for the eyes chip, which no longer shows here. */
+  #scoreDetailSheet .today-open{ padding-top:var(--sp-3); }
+  #scoreDetailSheet .today-open .gauge-wrap{ margin-top:0; }
+  #scoreDetailSheet.has-breakdown .score-label-row{ display:none; }
+  #scoreDetailSheet .score-stack.has-ring{ width:196px; height:196px; justify-content:center; margin:8px auto 0; }
+  #scoreDetailSheet .score-stack .charge-ring{ z-index:0; }
+  #scoreDetailSheet .score-stack.has-ring > .score-num{ position:relative; z-index:1; }
+  #scoreDetailSheet .score-meaning{ text-align:center; margin-top:14px; }
   .score-ring-key{ display:flex; flex-direction:column; gap:7px; margin:14px auto 0; width:min(100%, 320px);
     font-family:var(--mono); font-size:var(--fs-sm); color:var(--bg); font-variant-numeric:tabular-nums; }
   .score-ring-key .cr-row{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
@@ -13506,7 +13521,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.16.005';
+const APP_VERSION = '2026.11.16.006';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13902,6 +13917,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.16.006': 'Today\'s charge, opened from the mascot, is just the number in its ring and the list of what made it.',
   '2026.11.16.005': 'The ring round the mascot is one bar now: white for what you have left, grey for what the day has used. Tap the mascot to see the list: what you woke with, each session or long day with when and why, and what is left.',
   '2026.11.16.004': 'The mascot sits whole under the date now, smaller, with the full Charge ring round him.',
   '2026.11.16.003': 'A calmer header. Charge sits on the line above the Dogfood name ("Workouts · Charge 58"), and the ring round the mascot is plain: how full you are, nothing else. What spent it, in colour, is in the score sheet when you tap.',
@@ -26624,11 +26640,15 @@ function paintScoreRing(value, ch){
   if(!stack) return;
   const old = stack.querySelector(':scope > .charge-ring');
   if(old) old.remove();
-  if(value == null){ stack.classList.remove('has-ring'); if(key) key.hidden = true; return; }
-  // The ring itself is round the mark in the header; here the sheet keeps the key to it.
+  if(value == null){ stack.classList.remove('has-ring'); if(key) key.hidden = true; document.getElementById('scoreDetailSheet')?.classList.remove('has-breakdown'); return; }
+  // The same one-bar ring as round the mascot: white what is left, grey what was used.
+  stack.insertAdjacentHTML('afterbegin', chargeRingSvg(ch, value, 4.5, { from: 0, span: 360, plain: true }));
+  stack.classList.add('has-ring');
   if(key){
     /* THE BREAKDOWN, opened by tapping the mascot: what you woke with, each drain with when
        and why, and what is left. The same numbers the ring draws. */
+    const sheet = document.getElementById('scoreDetailSheet');
+    if(sheet) sheet.classList.toggle('has-breakdown', !!ch);
     if(!ch){ key.hidden = true; return; }
     const clock = t=>{ if(!t) return ''; const d = new Date(t); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
     const why = p=>{
