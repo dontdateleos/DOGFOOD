@@ -72,6 +72,9 @@ public class WidgetBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         if #available(iOS 14.0, *) {
             WidgetCenter.shared.reloadAllTimelines()
         }
-        call.resolve(["ok": true])
+        // Whether the shared container is really there: without the App Group in this build's
+        // signature the write lands somewhere the widget cannot see.
+        let shared = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: WidgetBridgePlugin.group) != nil
+        call.resolve(["ok": true, "shared": shared])
     }
 }

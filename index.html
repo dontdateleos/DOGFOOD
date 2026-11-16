@@ -13311,6 +13311,17 @@ function localDateFrom(dateStr){
   return new Date(+m[1], +m[2] - 1, +m[3]);
 }
 const todayStr = localDateStr();
+/* A NEW DAY, AND THE APP NOTICES. todayStr is fixed when the page loads, and iOS keeps the app
+   suspended in memory for hours: brought back the next morning it went on thinking it was
+   yesterday, reading yesterday's entry and handing the widget yesterday's date (which the widget
+   then rightly refused). Coming back to the front on a different date reloads, and so does the
+   once-a-minute check while it stays open across midnight. */
+(function watchForNewDay(){
+  const check = ()=>{ if(localDateStr() !== todayStr){ try{ location.reload(); } catch(e){} } };
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) check(); });
+  window.addEventListener('pageshow', check);
+  setInterval(()=>{ if(!document.hidden) check(); }, 60 * 1000);
+})();
 // The app is a home-screen PWA that can sit open across midnight, so the header date is
 // re-read on every wake rather than written once at load. todayStr is not re-derived: a
 // day's data is keyed to the date the session started under, and changing that mid-session
@@ -13531,7 +13542,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.16.009';
+const APP_VERSION = '2026.11.16.010';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13927,6 +13938,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.16.010': 'Fixed: opening the app the morning after, when your phone had kept it open overnight, left it on yesterday, and the widget stayed on "Open Dogfood". It now notices the new day. Settings, under Apple Health, says what the widget was last sent.',
   '2026.11.16.009': 'Every lift gets a score from your first session now. Until a lift has a few sessions of history to compare with, the session is scored against what the plan asked for: hit it and you get 50, beat it and it goes up.',
   '2026.11.16.008': 'Each day on the week strip shows its workout score in a little chip above the day: lime for a good session, amber for an average one, red for a rough one.',
   '2026.11.16.007': 'The Charge ring moves now: it sweeps round to your number when you open it, and slides down in the header when something uses some up.',
@@ -14726,6 +14738,7 @@ async function autoLogHealthRuns(dates){
 function renderNativeHealthStatus(message){
   const el = document.getElementById('appleHealthStatus');
   if(!el) return;
+  setTimeout(()=>{ try{ renderWidgetStatus(); } catch(e){} }, 0);
   let last = null;
   try{ last = localStorage.getItem(NATIVE_HEALTH_LAST_KEY); } catch(e){}
   const lastTxt = last ? new Date(last).toLocaleString([], { weekday:'short', hour:'2-digit', minute:'2-digit' }) : null;
@@ -18799,8 +18812,26 @@ async function pushChargeToWidget(sr, shown){
       payload.drain = merged.map(p=> `${p.n > 1 ? p.label + 's' : p.label} \u2212${p.pts}`).join(' \u00b7 ');
       if(longFrom != null){ payload.longFrom = longFrom; payload.longMax = CHARGE_LONG_DAY_MAX; }
     }
-    await WidgetBridge.update(payload);
-  } catch(e){}
+    const res = await WidgetBridge.update(payload);
+    widgetLastSent = { at: Date.now(), charge: payload.charge, shared: res ? res.shared : undefined };
+  } catch(e){ widgetLastSent = { at: Date.now(), error: String(e && e.message || e) }; }
+  try{ renderWidgetStatus(); } catch(e){}
+}
+/* WHAT THE WIDGET WAS LAST GIVEN, in Settings under Apple Health: the number, when, and whether
+   the space the app shares with the widget could be reached. "Not reachable" means this build
+   was signed without the App Group, and the widget can only ever show its placeholder. */
+let widgetLastSent = null;
+function renderWidgetStatus(){
+  const host = document.getElementById('appleHealthStatus');
+  if(!host || !WidgetBridge) return;
+  let el = document.getElementById('widgetStatus');
+  if(!el){ el = document.createElement('div'); el.id = 'widgetStatus'; el.className = 'score-note'; host.appendChild(el); }
+  const w = widgetLastSent;
+  const t = w ? new Date(w.at).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
+  el.textContent = !w ? 'Widget \u00b7 nothing sent yet: it fills in once today\u2019s reading is in.'
+    : w.error ? `Widget \u00b7 could not be updated at ${t} (${w.error}).`
+    : w.shared === false ? `Widget \u00b7 sent at ${t}, but the space it shares with the app is not reachable in this build.`
+    : `Widget \u00b7 showing ${w.charge != null ? w.charge : 'no reading yet'}, sent at ${t}.`;
 }
 /* ================= THE BEDTIME NUDGE =================
    From seven in the evening, when tomorrow holds a lift or a hard run (long, tempo, intervals,
