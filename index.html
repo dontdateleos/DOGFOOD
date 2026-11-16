@@ -13493,7 +13493,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.16.003';
+const APP_VERSION = '2026.11.16.004';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13889,6 +13889,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.16.004': 'The mascot sits whole under the date now, smaller, with the full Charge ring round him.',
   '2026.11.16.003': 'A calmer header. Charge sits on the line above the Dogfood name ("Workouts · Charge 58"), and the ring round the mascot is plain: how full you are, nothing else. What spent it, in colour, is in the score sheet when you tap.',
   '2026.11.16.002': 'The widget does more. Its lock-screen circle is a battery now; it says what your next session will leave you with ("Lift next → 49"), then how it went once it is done, and tapping it opens straight into the session. While you lift, the set you just logged and your rest countdown sit on the lock screen and in the Dynamic Island. And from 7pm before a lift or a hard run, Today and the widget say when to be in bed, from the sleep your own best mornings came after.',
   '2026.11.16.001': 'Charge has a new home. The number sits under the Dogfood name with what spent it today, and a ring round the mascot fills with what you have left, coloured by where the rest went: orange for lifts, blue for runs, purple for a busy day, yellow for a long one. The tick is where you started.',
@@ -14941,14 +14942,14 @@ function headerTitleFit(){
   return need > room ? Math.max(0.6, room / need) : 1;
 }
 
-/* THE MARK'S SIZE IN THE HEADER, while the choice is being made: corner120 is the original
-   (120 across, peeking in from the corner), corner104 and corner92 the same placement smaller,
-   medium a 60-across mark tucked under the date with its whole ring showing. ?mark= picks one. */
+/* THE MARK'S SIZE IN THE HEADER. Medium, the default: 60 across, whole under the date, with the
+   full Charge ring round him. The others stay for comparison (?mark=): corner120 is the original
+   (120 across, peeking in from the corner), corner104 and corner92 the same placement smaller. */
 const HEADER_MARK_SIZES = {
   corner120: { s: 1 }, corner104: { s: 104 / 120 }, corner92: { s: 92 / 120 },
   medium: { s: 0.5, full: true }
 };
-const HEADER_MARK = (()=>{ try{ const m = new URLSearchParams(location.search).get('mark'); return HEADER_MARK_SIZES[m] ? m : 'corner120'; } catch(e){ return 'corner120'; } })();
+const HEADER_MARK = (()=>{ try{ const m = new URLSearchParams(location.search).get('mark'); return HEADER_MARK_SIZES[m] ? m : 'medium'; } catch(e){ return 'medium'; } })();
 function updateHeaderCollapse(){
   if(window.headerCollapseSuspended) return;
   headerCollapseCache();

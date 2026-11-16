@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.11.16.003",
+ "generatedFrom": "2026.11.16.004",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1507,7 +1507,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.11.16.003",
+  "APP_VERSION": "2026.11.16.004",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1885,6 +1885,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.11.16.004": "The mascot sits whole under the date now, smaller, with the full Charge ring round him.",
    "2026.11.16.003": "A calmer header. Charge sits on the line above the Dogfood name (\"Workouts · Charge 58\"), and the ring round the mascot is plain: how full you are, nothing else. What spent it, in colour, is in the score sheet when you tap.",
    "2026.11.16.002": "The widget does more. Its lock-screen circle is a battery now; it says what your next session will leave you with (\"Lift next → 49\"), then how it went once it is done, and tapping it opens straight into the session. While you lift, the set you just logged and your rest countdown sit on the lock screen and in the Dynamic Island. And from 7pm before a lift or a hard run, Today and the widget say when to be in bed, from the sleep your own best mornings came after.",
    "2026.11.16.001": "Charge has a new home. The number sits under the Dogfood name with what spent it today, and a ring round the mascot fills with what you have left, coloured by where the rest went: orange for lifts, blue for runs, purple for a busy day, yellow for a long one. The tick is where you started.",
@@ -2052,7 +2053,7 @@
     "full": true
    }
   },
-  "HEADER_MARK": "corner120",
+  "HEADER_MARK": "medium",
   "TAB_TITLES": {},
   "WORDMARK_HTML": "<div class=\"logo-line\"><span style=\"margin-right:-0.01em;\">D</span><span style=\"margin-right:-0.03em;\">o</span><span>g</span><span style=\"margin-right:-0.04em;\">f</span><span style=\"margin-right:0.005em;\">o</span><span style=\"margin-right:-0.025em;\">o</span><span>d</span><i class=\"tm\" aria-hidden=\"true\"><svg viewBox=\"0 0 20 20\"><circle cx=\"10\" cy=\"10\" r=\"10\" style=\"fill:var(--mark-shell)\"></circle></svg></i></div>",
   "SHIFT_MS": 560,
@@ -2880,8 +2881,8 @@
    "r": 45
   },
   "MARK_ARC": {
-   "from": 266,
-   "span": 114,
+   "from": 0,
+   "span": 360,
    "r": 45
   },
   "READING_FULL": 3,
