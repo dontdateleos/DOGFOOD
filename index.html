@@ -1190,6 +1190,45 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .header-score-sunrise{ display:flex; }
   .header-score-sunrise svg{ width:13px; height:13px; }
   .header-score-sunrise[hidden]{ display:none; }
+  /* THE SPLIT RING (chargeRingSvg). What is left in the band's own ink (the number's colour,
+     readable on every masthead, the lime one included), each thing that spent it in its
+     own colour after it, most recent first, and a tick where the day started. */
+  .charge-ring{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; }
+  :is(.charge-ring, .mark-charge) .cr-trk{ stroke:rgba(var(--ink-rgb),0.16); }
+  :is(.charge-ring, .mark-charge) .cr-lit{ stroke:var(--bg); }
+  :is(.charge-ring, .mark-charge) .cr-lift{ stroke:var(--block-orange); }
+  :is(.charge-ring, .mark-charge) .cr-run{ stroke:var(--block-blue); }
+  :is(.charge-ring, .mark-charge) .cr-day{ stroke:var(--block-purple); }
+  :is(.charge-ring, .mark-charge) .cr-long{ stroke:var(--block-yellow); }
+  :is(.charge-ring, .mark-charge) .cr-tick{ stroke:var(--bg); }
+  /* THE ARC ROUND THE MARK. The mark sits in the corner, cut off by the band's bottom edge and
+     the screen's right, so the ring is drawn only over the part of him that shows: from just
+     under his left side, over the top, to just short of the screen edge (MARK_ARC). A child of
+     the mark, so it rides every collapse and perch move; faded out as the header collapses. */
+  .mark-charge{ position:absolute; inset:-15px; width:calc(100% + 30px); height:calc(100% + 30px);
+    pointer-events:none; overflow:visible; z-index:-1; }
+  .mark-charge[hidden]{ display:none; }
+  /* THE NUMBER, ON THE LEFT. Under the wordmark and above the tab scale: Charge, and what has
+     spent it in the arc's colours. Tapping it opens the score sheet, as the pill did. */
+  .header-brand > .header-charge{ position:absolute; left:var(--gutter, 22px); top:calc(80px + var(--native-safe-top, 0px)); z-index:2; line-height:1.1;
+    display:flex; align-items:center; gap:9px; max-width:calc(100% - 132px); padding:0; margin:0; min-height:0; height:auto;
+    text-transform:none; letter-spacing:0;
+    background:none; border:0; color:var(--bg); cursor:pointer; text-align:left; font:inherit; }
+  .header-charge[hidden]{ display:none; }
+  .header-charge .hc-num{ font-family:var(--mono); font-weight:var(--fw-bold); font-size:30px; line-height:0.9;
+    letter-spacing:-0.03em; font-variant-numeric:tabular-nums; -webkit-text-stroke:0.8px currentColor; }
+  .header-charge .hc-side{ display:flex; flex-direction:column; gap:2px; min-width:0; line-height:1.15; }
+  .header-charge .hc-tag{ font-family:var(--mono); font-size:var(--fs-xs); font-weight:var(--fw-bold);
+    letter-spacing:0.08em; text-transform:uppercase; color:rgba(var(--ink-rgb),0.72); }
+  .header-charge .hc-drains{ font-family:var(--mono); font-size:var(--fs-xs); white-space:nowrap; overflow:hidden;
+    text-overflow:ellipsis; color:rgba(var(--ink-rgb),0.85); }
+  .header-charge .hc-drains i{ display:inline-block; width:7px; height:7px; border-radius:50%; margin:0 4px 0 0; }
+  .header-charge .hc-drains i:not(:first-child){ margin-left:9px; }
+  .header-charge:focus-visible{ outline:2px solid var(--bg); outline-offset:3px; }
+  .score-ring-key{ display:flex; flex-wrap:wrap; justify-content:center; gap:4px 12px; margin-top:6px;
+    font-family:var(--mono); font-size:var(--fs-tag); color:var(--dim); }
+  .score-ring-key[hidden]{ display:none; }
+  .score-ring-key i{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:0; }
   /* LOOKS LIKE IT WANTS A TAP. The outline pill reads as a label everywhere else it is used
      (today's number, tap for detail) — fine for a readout, wrong for an offer. Filled solid
      in the same orange the reminder has used since the very first version of it, plus a slow
@@ -5708,7 +5747,12 @@ if(!window.__pnHold)window.__curtain();
         <div class="header-score-sunrise" id="headerScoreSunrise" aria-hidden="true" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16h16M7 16a5 5 0 0110 0"/><path d="M12 3v3M4.5 7.5l1.8 1.8M19.5 7.5l-1.8 1.8"/></svg></div>
         <div id="headerScoreOut">—</div>
       </button>
+      <svg class="mark-charge" id="markCharge" viewBox="0 0 100 100" aria-hidden="true" hidden></svg>
     </div>
+    <button type="button" class="header-charge" id="headerCharge" hidden aria-label="Charge: tap for detail">
+      <span class="hc-num" id="headerChargeNum"></span>
+      <span class="hc-side"><span class="hc-tag" id="headerChargeTag">Charge</span><span class="hc-drains" id="headerChargeDrains"></span></span>
+    </button>
   <div class="tabs">
     <!-- Weekly merged into Today in .659ish — the calendar strip and the week's planning
          controls live on this tab now instead of a separate one. See RETIRED_TABS for the
@@ -6004,6 +6048,7 @@ if(!window.__pnHold)window.__curtain();
         <span class="conf-chevron" id="scoreChevron">▾</span>
       </div>
     </div>
+    <div class="score-ring-key" id="scoreRingKey" hidden></div>
     <div class="score-meaning" id="scoreMeaning" hidden></div>
     <div id="scoreTrace" role="img" aria-label=""></div>
     <!-- The suggestion, small, in the column the trace used to face across. -->
@@ -13439,7 +13484,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.15.026';
+const APP_VERSION = '2026.11.16.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13835,6 +13880,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.16.001': 'Charge has a new home. The number sits under the Dogfood name with what spent it today, and a ring round the mascot fills with what you have left, coloured by where the rest went: orange for lifts, blue for runs, purple for a busy day, yellow for a long one. The tick is where you started.',
   '2026.11.15.026': 'The widget now shows the same number as the app, even before Charge has enough history to take over. It goes blank at midnight instead of showing last night\'s number, and the long-day drain keeps ticking down on it while the app is closed.',
   '2026.11.15.025': 'Charge on your lock screen and home screen: a Dogfood widget showing your charge, where it went today, and your next session. Long-press the lock screen, Customise, and add Dogfood. It updates whenever the app works the number out.',
   '2026.11.15.024': 'Garmin runs log themselves: a run that reaches Apple Health is logged as the run planned that day (or an easy one), with its heart rate, so it counts on your week, your Charge and your Performance. A low Charge before a lifting session now offers to trim it to the main lifts or move it to tomorrow, and a run planned before a lift offers to swap them. Trends shows Charge as it really goes: up overnight, down through each day. And how much a session drains you is learned from your own days with two sessions.',
@@ -14904,6 +14950,11 @@ function updateHeaderCollapse(){
      never arrives on top of live text — by the time it perches the line is already gone. */
   const insightEl = document.getElementById('currentTabInsight');
   if(insightEl) insightEl.style.opacity = (0.72 * (1 - progress)).toFixed(3);
+  // The Charge block goes with them, and the arc round the mark before it shrinks away.
+  const chargeEl = document.getElementById('headerCharge');
+  if(chargeEl){ chargeEl.style.opacity = (1 - progress).toFixed(3); chargeEl.style.visibility = progress > 0.98 ? 'hidden' : ''; }
+  const arcEl = document.getElementById('markCharge');
+  if(arcEl) arcEl.style.opacity = Math.max(0, 1 - progress * 2).toFixed(3);
   /* Collapsed, this row was 47px carrying 20px of content: a 15px label and the 20px mark
      perched beside it, inside 30px of padding. Everything else in it is already gone by then
      — the wordmark is at font-size 0 and the date at opacity 0 — so the padding was sized for
@@ -26284,12 +26335,94 @@ function scoreRollFrom(out){
    and the header badge is not a thing you browse — it is always today's, or nothing. Called
    from generateRecommendations' two outcomes (a score, or not logged yet), not from the roll
    itself, so it jumps straight to the answer instead of re-running a second animation. */
+/* THE SPLIT RING. One drawing for the header and the score sheet: the lit arc is what is left,
+   then each drain in its colour (most recent first, so the arc reads back through the day),
+   then the track; a tick marks what you woke with. Without Charge (an early read) it is the
+   lit arc alone. Sizes are in viewBox units, so the same markup scales to either place. */
+const CHARGE_RING_KEYS = { lift: 'lift', run: 'run', day: 'day', 'long day': 'long' };
+function chargeRingSvg(ch, value, stroke, arc){
+  /* arc: { from, span } in degrees clockwise from twelve o'clock; the whole circle by default.
+     The scale is the arc: 100 fills it. */
+  const sw = stroke || 8, r = (arc && arc.r) || 50 - sw / 2 - 1, gap = sw > 6 ? 1.6 : 2.4;
+  const from = arc ? arc.from : 0, span = arc ? arc.span : 360;
+  const C = 2 * Math.PI * r * span / 360, CF = 2 * Math.PI * r;
+  const rot = `rotate(${(from - 90).toFixed(2)} 50 50)`;
+  const bare = arc && arc.bare;
+  const v = Math.max(0, Math.min(100, +value || 0));
+  const arcs = [{ cls: 'cr-lit', pct: v }];
+  if(ch && ch.parts) ch.parts.slice().reverse().forEach(p=> arcs.push({ cls: 'cr-' + (CHARGE_RING_KEYS[p.label] || 'day'), pct: p.pts }));
+  let off = 0, out = `<circle class="cr-trk" cx="50" cy="50" r="${r}" fill="none" stroke-width="${sw}"`
+    + (span < 360 ? ` stroke-dasharray="${C.toFixed(2)} ${CF.toFixed(2)}" transform="${rot}"` : '') + `/>`;
+  arcs.forEach(a=>{
+    const pct = Math.max(0, Math.min(a.pct, 100 - off / C * 100));
+    const len = C * pct / 100;
+    if(len > gap) out += `<circle class="${a.cls}" cx="50" cy="50" r="${r}" fill="none" stroke-width="${sw}" stroke-linecap="butt"`
+      + ` stroke-dasharray="${(len - gap).toFixed(2)} ${CF.toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="${rot}"/>`;
+    off += len;
+  });
+  if(ch && ch.spent > 0 && ch.start != null){
+    const ang = ((from + span * Math.min(100, ch.start) / 100) / 360) * 2 * Math.PI - Math.PI / 2;
+    const r0 = r - sw / 2 - 2, r1 = r + sw / 2 + 2;
+    out += `<line class="cr-tick" x1="${(50 + r0 * Math.cos(ang)).toFixed(2)}" y1="${(50 + r0 * Math.sin(ang)).toFixed(2)}"`
+      + ` x2="${(50 + r1 * Math.cos(ang)).toFixed(2)}" y2="${(50 + r1 * Math.sin(ang)).toFixed(2)}" stroke-width="2" stroke-linecap="round"/>`;
+  }
+  return bare ? out : `<svg class="charge-ring" viewBox="0 0 100 100" aria-hidden="true">${out}</svg>`;
+}
+/* Today's Charge, when the number on show is it (and not an early read). */
+function chargeForShown(value){
+  const ch = lastSrResult && lastSrResult.available ? lastSrResult.charge : null;
+  return ch && ch.charge === value ? ch : null;
+}
+/* Where the mark is on screen, open: its centre sits 30px in from the right edge and 16.8px
+   above the band's bottom (MARK_RIGHT, MARK_SUNK), so a ring 68px out shows from about 14°
+   under nine o'clock to about 26° past twelve. The arc keeps inside that with a margin, and
+   allows for the sag that drops him on a low score. */
+const MARK_ARC = { from: 266, span: 114, r: 45 };
+function chargeDrainsHtml(ch){
+  const merged = [];
+  (ch && ch.parts ? ch.parts : []).forEach(p=>{ const m = merged.find(x=> x.label === p.label); if(m){ m.pts += p.pts; m.n++; } else merged.push({ label: p.label, pts: p.pts, n: 1 }); });
+  const col = { lift: 'orange', run: 'blue', day: 'purple', 'long day': 'yellow' };
+  return merged.map(p=> `<i style="background:var(--block-${col[p.label] || 'purple'})"></i>${p.n > 1 ? p.label + 's' : p.label} \u2212${p.pts}`).join('');
+}
 function syncHeaderScore(value){
   const el = document.getElementById('headerScoreOut');
   if(!el) return;
-  if(value == null){ el.textContent = '—'; delete el.dataset.value; return; }
+  const block = document.getElementById('headerCharge');
+  const arc = document.getElementById('markCharge');
+  if(value == null){
+    el.textContent = '—'; delete el.dataset.value;
+    if(block){ block.dataset.has = ''; block.hidden = true; }
+    if(arc) arc.setAttribute('hidden', '');
+    return;
+  }
   el.textContent = value;
   el.dataset.value = value;
+  const ch = chargeForShown(value);
+  if(block){
+    document.getElementById('headerChargeNum').textContent = value;
+    const drains = chargeDrainsHtml(ch);
+    document.getElementById('headerChargeTag').textContent = ch ? (ch.spent > 0 ? `Charge \u00b7 woke ${ch.start}` : 'Charge') : 'Early read';
+    document.getElementById('headerChargeDrains').innerHTML = drains || (ch ? 'nothing spent yet' : 'Charge takes over with more nights');
+    block.dataset.has = '1';
+  }
+  if(arc) arc.innerHTML = chargeRingSvg(ch, value, 4.2, Object.assign({ bare: true }, MARK_ARC));
+  refreshHeaderLogBadge();
+}
+/* The key to the ring's colours, under the big number in the score sheet. */
+function paintScoreRing(value, ch){
+  const stack = document.querySelector('#scoreDetailSheet .score-stack') || document.querySelector('.score-stack');
+  const key = document.getElementById('scoreRingKey');
+  if(!stack) return;
+  const old = stack.querySelector(':scope > .charge-ring');
+  if(old) old.remove();
+  if(value == null){ stack.classList.remove('has-ring'); if(key) key.hidden = true; return; }
+  // The ring itself is round the mark in the header; here the sheet keeps the key to it.
+  if(key){
+    const merged = [];
+    (ch && ch.parts ? ch.parts : []).forEach(p=>{ const m = merged.find(x=> x.label === p.label); if(m){ m.pts += p.pts; m.n++; } else merged.push({ label: p.label, pts: p.pts, n: 1 }); });
+    key.innerHTML = merged.map(p=> `<span><i style="background:var(--block-${({ lift: 'orange', run: 'blue', day: 'purple', 'long day': 'yellow' })[p.label] || 'purple'})"></i>${p.n > 1 ? p.label + 's' : p.label} \u2212${p.pts}</span>`).join('');
+    key.hidden = !merged.length;
+  }
 }
 function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, entry, srResult){
   const out = document.getElementById('overallScoreOut');
@@ -26330,6 +26463,7 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
     }
     if(!rollNumber(out, prevNum, shown)) animateNumber(out, isNaN(prevNum) ? 0 : prevNum, shown, 500);
     setEyeScore(shown);
+    paintScoreRing(shown, ch);
     const rank = srResult.percentile;
     if(!srResult.gateReason && ch && ch.spent > 0){
       // Same kinds together ("lifts −31"), so two sessions do not run the line off the screen.
@@ -26338,7 +26472,9 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
         const m = merged.find(x=> x.label === p.label);
         if(m){ m.pts += p.pts; m.n++; } else merged.push({ label: p.label, pts: p.pts, n: 1 });
       });
-      label.textContent = `Woke at ${ch.start} \u00b7 ` + merged.map(p=> `${p.n > 1 ? p.label + 's' : p.label} \u2212${p.pts}`).join(' \u00b7 ');
+      // The drains themselves are in the ring and its key (paintScoreRing); the label keeps the
+      // start, which the tick marks.
+      label.textContent = `Woke at ${ch.start} \u00b7 ${ch.spent} spent`;
       return shown;
     }
     label.textContent = srResult.gateReason ? 'Not a training read'
@@ -26360,6 +26496,7 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
     // target is what made it animate from its final position to its final position.
     const prevNum = scoreRollFrom(out);
     const shown = capacityResult.score;
+    paintScoreRing(shown, null);
     if(!rollNumber(out, prevNum, shown)){
       animateNumber(out, isNaN(prevNum) ? 0 : prevNum, shown, 500);
     }
@@ -26373,6 +26510,7 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
 
   const parts = [targetScore, adaptiveScore].filter(v=>v!=null);
   if(parts.length === 0){
+    paintScoreRing(null, null);
     out.innerHTML=SCORE_PLACEHOLDER_SVG;
     delete out.dataset.value;
     out.removeAttribute('aria-label');
@@ -26391,6 +26529,7 @@ function updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, e
     return null;
   }
   const overall = provisionalScore(parts.reduce((a,b)=>a+b,0)/parts.length);
+  paintScoreRing(overall, null);
   const rollFrom = scoreRollFrom(out);
   if(!rollNumber(out, rollFrom, overall)) animateNumber(out, isNaN(rollFrom) ? 0 : rollFrom, overall, 500);
   // Set up before setEyeScore, so the roll owns the expression for its duration.
@@ -29648,6 +29787,7 @@ const scoreDetailSheet = wireSheet('scoreDetailSheet');
 // Two destinations behind one tap, same fork refreshHeaderLogBadge already decided when it
 // picked which face to show: nothing logged yet opens the log sheet instead of the detail
 // one, since there is no "detail" worth showing for a score that has not been computed.
+document.getElementById('headerCharge')?.addEventListener('click', ()=> document.getElementById('headerScoreBtn')?.click());
 document.getElementById('headerScoreBtn')?.addEventListener('click', ()=>{
   // Same condition refreshHeaderLogBadge used to pick the face this button is currently
   // showing — off tab as well as off todayNeedsLog, so a tap never does the thing the face
@@ -40442,7 +40582,14 @@ function refreshHeaderLogBadge(){
   syncThemeColor();
   const ins = document.getElementById('currentTabInsight');
   if(ins && onToday && needsLog) ins.textContent = 'tap him to start the day';
-  if(btn) btn.hidden = !onToday || needsLog;
+  // The pill's number lives on the left now (#headerCharge) and its ring round the mark.
+  if(btn) btn.hidden = true;
+  const chBlock = document.getElementById('headerCharge');
+  const chArc = document.getElementById('markCharge');
+  const showCharge = onToday && !needsLog && !!(chBlock && chBlock.dataset.has);
+  if(chBlock) chBlock.hidden = !showCharge;
+  // An <svg> has no .hidden property; the attribute is what the [hidden] rule reads.
+  if(chArc) chArc.toggleAttribute('hidden', !showCharge);
   if(sunrise) sunrise.hidden = !needsLog;
   if(out) out.hidden = needsLog;
   if(btn) btn.classList.toggle('needs-tap', needsLog);
@@ -40495,6 +40642,7 @@ async function generateRecommendations(){
     if(scoreOut){ scoreOut.textContent = '\u2014'; scoreOut.classList.add('score-waiting'); delete scoreOut.dataset.value; }
     if(scoreLbl) scoreLbl.textContent = 'Not logged yet';
     syncHeaderScore(null);
+    paintScoreRing(null, null);
     pushChargeToWidget(null, null);
     // The ring offer is rendered INTO the card container, and the container now folds — so
     // collapsing the stack would hide the one action this state still has to offer. It is not
