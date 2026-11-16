@@ -2686,6 +2686,12 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .plan-tl-row{ display:grid; grid-template-columns:1fr auto; gap:2px 10px; padding:10px 0; border-bottom:1px solid rgba(var(--ink-rgb),0.12); }
   .df-title{ display:flex; align-items:center; gap:8px; }
   .df-title .df-icon{ flex:none; }
+  /* A symbol sat in a line of text: on the text's baseline, a little gap before the words. */
+  .df-icon.inl{ vertical-align:-0.18em; margin-right:0.4em; flex:none; }
+  .rest-ic{ display:inline-flex; color:rgba(var(--ink-rgb),0.58); flex:0 0 auto; }
+  #trendMetricPills .type-btn .df-icon{ display:block; margin:0 auto 4px; opacity:0.8; }
+  #trendMetricPills .type-btn.active .df-icon{ opacity:1; }
+  .group-title.df-title{ display:inline-flex; gap:6px; }
   .plan-tl-row b .df-icon{ vertical-align:-3px; margin-right:8px; }
   .plan-tl-row b{ font-family:var(--mono); text-transform:uppercase; letter-spacing:var(--track-ui); font-size:var(--fs-md); }
   .plan-tl-row span{ font-family:var(--mono); font-size:var(--fs-sm); color:rgba(var(--ink-rgb),0.72); text-align:right; font-variant-numeric:tabular-nums; }
@@ -6853,7 +6859,7 @@ if(!window.__pnHold)window.__curtain();
          standing on a tab you open to read what is sore. -->
     <div class="group form-panel">
       <div class="group-head">
-        <div class="group-title">Injuries</div>
+        <div class="group-title df-title" id="injuryTitle">Injuries</div>
         <div class="group-sub" id="injurySummary">nothing logged &mdash; the plan runs as written</div>
         <button type="button" class="head-action" id="logInjuryBtn">Log an injury</button>
       </div>
@@ -13552,7 +13558,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.16.016';
+const APP_VERSION = '2026.11.16.017';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13948,6 +13954,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.16.017': 'The symbols moved in: over each measure in Trends, beside the rest timer, the bedtime line, the workout\'s Performance score, the low-Charge note and Injuries.',
   '2026.11.16.016': 'New symbols throughout: each one drawn in the mascot\'s own rounded shapes and set in a thin ring, like the Charge ring round him.',
   '2026.11.16.015': 'Workout scores spring in above their days and count up to the number.',
   '2026.11.16.014': 'Fixed: inside the iPhone app, haptics, the widget and the Live Activity were switched off by mistake, because the app was asking for its iPhone features in a way only the web library understands. All three work now.',
@@ -19021,7 +19028,7 @@ async function renderBedtimeNote(){
   const nowMin = now.getHours() * 60 + now.getMinutes();
   const past = a.bedMin >= BEDTIME_FROM_H * 60 && nowMin > a.bedMin;
   const morning = a.pred != null ? ` A night like that has had you waking near ${a.pred}.` : '';
-  el.innerHTML = `<div class="bt-time">${past ? 'Past ' : 'In bed by '}${a.bed}</div>`
+  el.innerHTML = `<div class="bt-time">${dfIcon('bedtime', 20, 'inl')}${past ? 'Past ' : 'In bed by '}${a.bed}</div>`
     + `<div class="score-note">Tomorrow is ${escapeHtmlLite(a.title)}. Your best mornings come after ${a.needText} asleep, you usually wake at ${a.wake}`
     + `${a.overhead ? ` and spend about ${a.overhead} min of the night awake` : ''}.${morning}`
     + `${past ? ' Sooner is still better than later.' : ''}</div>`;
@@ -23048,7 +23055,7 @@ async function renderSessionComplete(){
       : (going != null ? `<span class="perf-note">Charge going in ${going}. Runs are scored once there are a few of the same kind to compare.</span>` : '');
     const vs = `${p.pct >= 0 ? '+' : '\u2212'}${Math.abs(p.pct * 100).toFixed(1)}% on ${p.vsPlan ? 'the plan' : 'your trend'}`;
     const call = going == null ? '' : p.score >= going + 10 ? ', better than your charge said' : p.score <= going - 10 ? ', under what your charge said' : ', about what your charge said';
-    return `<span class="perf-line"><b>Performance ${p.score}</b> \u00b7 ${vs}${going != null ? ` \u00b7 charge going in ${going}` : ''}${call}${p.vsPlan ? ' (against the plan until the lift has a few sessions of history)' : p.early ? ' (early: few sessions to compare)' : ''}</span>`;
+    return `<span class="perf-line">${dfIcon('score', 14, 'inl')}<b>Performance ${p.score}</b> \u00b7 ${vs}${going != null ? ` \u00b7 charge going in ${going}` : ''}${call}${p.vsPlan ? ' (against the plan until the lift has a few sessions of history)' : p.early ? ' (early: few sessions to compare)' : ''}</span>`;
   };
   const rows = [];
   for(const x of today){ rows.push(line(x) + (x.type === 'strength' || x.type === 'run' ? '<br>' + await perfLine(x) : '')); }
@@ -24800,6 +24807,7 @@ async function openBlockEditor(date, slot, block){
       <button id="deleteWeekBlockBtn" class="log-act">Delete</button>
     </div>
     ${block.type === 'strength' ? `<div class="rest-timer" id="restTimer">
+      <span class="rest-ic">${dfIcon('timer', 16)}</span>
       <button type="button" class="rest-go" id="restGoBtn">Rest</button>
       <span class="rest-clock" id="restClock">2:00</span>
       <span class="rest-steps">${REST_PRESETS.map(sec=>`<button type="button" class="rest-preset" data-rest="${sec}">${restLabel(sec)}</button>`).join('')}</span>
@@ -40613,7 +40621,7 @@ async function renderTodayWorkoutSummary(){
         btns.push('<button type="button" class="small outline" id="chargeSwapBtn">Lift first</button>');
       }
       if(say){
-        chargeNote = `<div class="charge-note"><div class="score-note">${say}</div><div class="charge-acts">${btns.join('')}</div></div>`;
+        chargeNote = `<div class="charge-note"><div class="score-note df-title">${dfIcon(ch.charge < 35 ? 'drain' : 'run', 16)}<span>${say}</span></div><div class="charge-acts">${btns.join('')}</div></div>`;
         chargeActs = { tomorrow };
       }
     }
@@ -41661,6 +41669,16 @@ async function refreshRecHistory(){
 }
 /* ---------- TRENDS ---------- */
 let selectedTrendMetric = 'charge';
+/* Each measure wears its symbol over its name, so the pills read before the words do. */
+(()=>{
+  const TREND_SYM = { charge:'charge', restingHR:'heart', sleepHrs:'sleep', sleepDebt:'bedtime', weight:'weight', bodyFat:'protein' };
+  document.querySelectorAll('#trendMetricPills .type-btn').forEach(b=>{
+    const k = TREND_SYM[b.dataset.metric];
+    if(k && !b.querySelector('.df-icon')) b.insertAdjacentHTML('afterbegin', dfIcon(k, 18));
+  });
+  const inj = document.getElementById('injuryTitle');
+  if(inj && !inj.querySelector('.df-icon')) inj.insertAdjacentHTML('afterbegin', dfIcon('injury', 14));
+})();
 document.querySelectorAll('#trendMetricPills .type-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('#trendMetricPills .type-btn').forEach(b=>b.classList.remove('active'));
