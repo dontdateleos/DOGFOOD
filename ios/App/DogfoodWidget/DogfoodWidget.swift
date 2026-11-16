@@ -47,6 +47,9 @@ struct ChargeReading {
     let bedtime: String?    // only once the evening has started
     let link: URL
     let updatedAt: Date?
+    /* Why there is no number, in words that say which of three it is: nothing ever reached the
+       widget, a reading from another day, or today's reading not in yet. */
+    let empty: String
 
     static let dayFormat: DateFormatter = {
         let f = DateFormatter()
@@ -57,8 +60,13 @@ struct ChargeReading {
         return f
     }()
 
-    init(_ snap: ChargeSnapshot?, at date: Date) {
+    init(_ snap: ChargeSnapshot?, at date: Date, unreadable: Bool = false) {
         let sameDay = snap?.day == ChargeReading.dayFormat.string(from: date)
+        empty = unreadable ? "Can't read Dogfood"
+            : snap == nil ? "Nothing from Dogfood yet"
+            : !sameDay ? "Open Dogfood for today"
+            : "Waiting for this morning"
+
         let linkHost = sameDay ? (snap?.link ?? "today") : "today"
         link = URL(string: "dogfood://\(linkHost)")!
         // The app already says "yesterday" when the last score was; a snapshot older than today
@@ -118,21 +126,27 @@ struct ChargeProvider: TimelineProvider {
        own, then one at midnight that clears it, and WidgetKit asks again after that. */
     func getTimeline(in context: Context, completion: @escaping (Timeline<ChargeEntry>) -> Void) {
         let snap = load()
+        let bad = snap == nil && unreadable()
         let now = Date()
         let cal = Calendar.current
         let midnight = cal.startOfDay(for: cal.date(byAdding: .day, value: 1, to: now) ?? now.addingTimeInterval(86_400))
         var entries: [ChargeEntry] = []
         var t = now
         while t < midnight && entries.count < 96 {
-            entries.append(ChargeEntry(date: t, reading: ChargeReading(snap, at: t)))
+            entries.append(ChargeEntry(date: t, reading: ChargeReading(snap, at: t, unreadable: bad)))
             t = t.addingTimeInterval(15 * 60)
         }
-        entries.append(ChargeEntry(date: midnight, reading: ChargeReading(snap, at: midnight)))
+        entries.append(ChargeEntry(date: midnight, reading: ChargeReading(snap, at: midnight, unreadable: bad)))
         completion(Timeline(entries: entries, policy: .after(midnight.addingTimeInterval(60))))
     }
     private func load() -> ChargeSnapshot? {
         guard let data = UserDefaults(suiteName: dogfoodAppGroup)?.data(forKey: "chargeSnapshot") else { return nil }
         return try? JSONDecoder().decode(ChargeSnapshot.self, from: data)
+    }
+    /* Data that is there but does not decode is its own message, not "nothing yet". */
+    private func unreadable() -> Bool {
+        guard let data = UserDefaults(suiteName: dogfoodAppGroup)?.data(forKey: "chargeSnapshot") else { return false }
+        return (try? JSONDecoder().decode(ChargeSnapshot.self, from: data)) == nil
     }
 }
 
@@ -175,7 +189,7 @@ struct ChargeView: View {
     var chargeText: String { r.charge.map { String($0) } ?? "\u{2013}" }
     /* With no reading today, the line under the number says what would give it one. */
     var subline: String? {
-        guard r.charge != nil else { return "Open Dogfood" }
+        guard r.charge != nil else { return r.empty }
         if let start = r.start {
             return r.drain.isEmpty ? "woke at \(start)" : "woke \(start) \u{00B7} \(r.drain)"
         }
@@ -201,7 +215,7 @@ struct ChargeView: View {
             }
             .dogfoodBackground(true)
         case .accessoryInline:
-            Text(r.charge == nil ? "Charge \u{2013} open Dogfood"
+            Text(r.charge == nil ? r.empty
                  : "Charge \(chargeText)\(r.next.map { " \u{00B7} \($0)" } ?? r.session.map { " \u{00B7} \($0)" } ?? "")")
                 .dogfoodBackground(true)
         case .accessoryRectangular:
