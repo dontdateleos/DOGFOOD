@@ -13521,7 +13521,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.16.006';
+const APP_VERSION = '2026.11.16.007';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -13917,6 +13917,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.16.007': 'The Charge ring moves now: it sweeps round to your number when you open it, and slides down in the header when something uses some up.',
   '2026.11.16.006': 'Today\'s charge, opened from the mascot, is just the number in its ring and the list of what made it.',
   '2026.11.16.005': 'The ring round the mascot is one bar now: white for what you have left, grey for what the day has used. Tap the mascot to see the list: what you woke with, each session or long day with when and why, and what is left.',
   '2026.11.16.004': 'The mascot sits whole under the date now, smaller, with the full Charge ring round him.',
@@ -26589,6 +26590,28 @@ function chargeRingSvg(ch, value, stroke, arc){
   }
   return bare ? out : `<svg class="charge-ring" viewBox="0 0 100 100" aria-hidden="true">${out}</svg>`;
 }
+/* THE RING MOVES. The white sweeps from where it was (or from nothing) to where it is, easing
+   out like a gauge settling; the grey then fades in behind it. Run when the sheet opens, when
+   the header first gets a number, and whenever the number changes (a session, a long hour).
+   Web Animations rather than CSS, because the arcs are rebuilt on every paint. Off for Reduce
+   Motion. */
+const RING_EASE = 'cubic-bezier(.22,.9,.24,1)';
+function animateChargeRing(root, fromValue, toValue, ms){
+  if(!root || !root.querySelector) return;
+  try{ if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return; } catch(e){}
+  const dur = ms || 900;
+  const lit = root.querySelector('.cr-lit');
+  if(lit && lit.animate){
+    const [len, C] = (lit.getAttribute('stroke-dasharray') || '').split(' ').map(Number);
+    if(len > 0 && C > 0){
+      const fromLen = fromValue == null || !(toValue > 0) ? 0 : Math.max(0, Math.min(C, len * fromValue / toValue));
+      lit.animate([{ strokeDasharray: `${fromLen} ${C}` }, { strokeDasharray: `${len} ${C}` }], { duration: dur, easing: RING_EASE });
+    }
+  }
+  root.querySelectorAll('.cr-spent, .cr-tick').forEach(el=>{
+    if(el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: dur * 0.45, delay: fromValue == null ? dur * 0.55 : 0, easing: 'ease-out', fill: 'backwards' });
+  });
+}
 /* Today's Charge, when the number on show is it (and not an early read). */
 function chargeForShown(value){
   const ch = lastSrResult && lastSrResult.available ? lastSrResult.charge : null;
@@ -26628,7 +26651,12 @@ function syncHeaderScore(value){
     block.dataset.has = '1';
   }
   // Layout D: the ring is plain (what is left, on its track); colours and sums are in the sheet.
-  if(arc) arc.innerHTML = chargeRingSvg(ch, value, 4.2, Object.assign({ bare: true, plain: true }, MARK_ARC));
+  if(arc){
+    const prev = arc.dataset.v != null && arc.dataset.v !== '' ? +arc.dataset.v : null;
+    arc.innerHTML = chargeRingSvg(ch, value, 4.2, Object.assign({ bare: true, plain: true }, MARK_ARC));
+    arc.dataset.v = value;
+    if(prev !== value) animateChargeRing(arc, prev, value, prev == null ? 1100 : 900);
+  }
   refreshHeaderLogBadge();
   // The number itself rides the label line ("Workouts · Charge 58").
   if(typeof currentTabName === 'function' && currentTabName() === 'insights') renderTabInsight('insights');
@@ -30036,6 +30064,16 @@ document.getElementById('headerScoreBtn')?.addEventListener('click', ()=>{
   // it's not currently showing promised.
   if(todayNeedsLog && currentTabName() === 'insights'){ openMorningLogSheet(); return; }
   scoreDetailSheet.open();
+  // The ring sweeps in and the number counts up with it.
+  try{
+    const ring = document.querySelector('#scoreDetailSheet .score-stack > .charge-ring');
+    const out = document.getElementById('overallScoreOut');
+    const v = out ? parseInt(out.dataset.value || out.textContent, 10) : NaN;
+    if(ring && !isNaN(v)){
+      animateChargeRing(ring, null, v, 1000);
+      if(!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) animateNumber(out, 0, v, 900);
+    }
+  } catch(e){}
   // Everything inside measures itself off its own box — layoutBandColumn, the trace, the
   // suggestion preview — and while the sheet sits display:none that box is a zero rect, so
   // whatever they last computed was computed against nothing. Redone now that the sheet
