@@ -17,6 +17,7 @@ struct SessionActivityAttributes: ActivityAttributes {
         var detail: String        // "Set 3 of 5 · 8 × 60 kg"
         var restEnds: Date?       // when the rest is up, if one is running
         var charge: Int?          // Charge when the set was logged
+        var next: String?         // the next set as planned, "Next · 8 × 62.5 kg"
     }
     var title: String             // the session, "Full body A"
 }

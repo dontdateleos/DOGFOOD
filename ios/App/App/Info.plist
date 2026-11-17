@@ -38,7 +38,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Dogfood reads your sleep, heart rate, resting heart rate, breathing rate, wrist temperature, weight, body fat, steps and runs from Apple Health to work out how ready you are to train and to plan your training. It never writes to Health, and your health data stays on this iPhone.</string>
+	<string>Dogfood reads your sleep, heart rate, resting heart rate, breathing rate, wrist temperature, weight, body fat, VO2 max, steps and runs from Apple Health to work out how ready you are to train and to plan your training. It never writes to Health, and your health data stays on this iPhone.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Dogfood only reads from Apple Health and never saves anything to it. Apple asks every Health app to include this note.</string>
 	<key>NSSupportsLiveActivities</key>

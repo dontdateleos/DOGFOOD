@@ -44,7 +44,8 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "isAvailable", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "requestAuthorization", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "readDays", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "readDays", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "readVO2", returnType: CAPPluginReturnPromise)
     ]
 
     private let store = HKHealthStore()
@@ -54,7 +55,7 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         var types = Set<HKObjectType>()
         let ids: [HKQuantityTypeIdentifier] = [
             .heartRate, .restingHeartRate, .respiratoryRate, .stepCount, .activeEnergyBurned,
-            .bodyMass, .bodyFatPercentage
+            .bodyMass, .bodyFatPercentage, .vo2Max
         ]
         for id in ids {
             if let t = HKObjectType.quantityType(forIdentifier: id) { types.insert(t) }
@@ -65,6 +66,29 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         if let t = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) { types.insert(t) }
         types.insert(HKObjectType.workoutType())
         return types
+    }
+
+    /* VO2 MAX, as Apple Watch estimates it from outdoor walks and runs (other watches can write
+       it too). Every sample in the last `days` (default 365), oldest first:
+         { samples: [ { date: 'YYYY-MM-DD', value: ml/kg/min, source } ] } */
+    @objc func readVO2(_ call: CAPPluginCall) {
+        guard HKHealthStore.isHealthDataAvailable(),
+              let type = HKQuantityType.quantityType(forIdentifier: .vo2Max) else { call.resolve(["samples": []]); return }
+        let days = call.getInt("days") ?? 365
+        let start = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: Date(), options: .strictStartDate)
+        let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+        let unit = HKUnit(from: "ml/kg*min")
+        let fmt = DateFormatter()
+        fmt.locale = Locale(identifier: "en_US_POSIX")
+        fmt.dateFormat = "yyyy-MM-dd"
+        let query = HKSampleQuery(sampleType: type, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sort]) { _, samples, _ in
+            let out: [[String: Any]] = (samples as? [HKQuantitySample] ?? []).map { s in
+                ["date": fmt.string(from: s.startDate), "value": s.quantity.doubleValue(for: unit), "source": s.sourceRevision.source.name]
+            }
+            call.resolve(["samples": out])
+        }
+        store.execute(query)
     }
 
     @objc func isAvailable(_ call: CAPPluginCall) {

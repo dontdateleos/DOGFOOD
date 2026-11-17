@@ -21,6 +21,9 @@
 		D0F00D000000000000000A02 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B02 /* MainViewController.swift */; };
 		D0F00D000000000000000A04 /* WidgetBridgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B05 /* WidgetBridgePlugin.swift */; };
 		D0F00D000000000000000A05 /* LiveActivityPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B06 /* LiveActivityPlugin.swift */; };
+		D0F00D000000000000000A15 /* RemindersPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B16 /* RemindersPlugin.swift */; };
+		D0F00D000000000000000A16 /* BackupPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B17 /* BackupPlugin.swift */; };
+		D0F00D000000000000000A17 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B18 /* PrivacyInfo.xcprivacy */; };
 		D0F00D000000000000000A06 /* SessionActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B07 /* SessionActivityAttributes.swift */; };
 		D0F00D000000000000000A11 /* SessionActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B07 /* SessionActivityAttributes.swift */; };
 		D0F00D000000000000000A12 /* SessionLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F00D000000000000000B15 /* SessionLiveActivity.swift */; };
@@ -69,6 +72,9 @@
 		D0F00D000000000000000B03 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		D0F00D000000000000000B05 /* WidgetBridgePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetBridgePlugin.swift; sourceTree = "<group>"; };
 		D0F00D000000000000000B06 /* LiveActivityPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityPlugin.swift; sourceTree = "<group>"; };
+		D0F00D000000000000000B16 /* RemindersPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersPlugin.swift; sourceTree = "<group>"; };
+		D0F00D000000000000000B17 /* BackupPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupPlugin.swift; sourceTree = "<group>"; };
+		D0F00D000000000000000B18 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D0F00D000000000000000B07 /* SessionActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionActivityAttributes.swift; sourceTree = "<group>"; };
 		D0F00D000000000000000B15 /* SessionLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLiveActivity.swift; sourceTree = "<group>"; };
 		D0F00D000000000000000B13 /* AppWithWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppWithWidget.entitlements; sourceTree = "<group>"; };
@@ -126,6 +132,9 @@
 				D0F00D000000000000000B04 /* HapticsPlugin.swift */,
 				D0F00D000000000000000B05 /* WidgetBridgePlugin.swift */,
 				D0F00D000000000000000B06 /* LiveActivityPlugin.swift */,
+				D0F00D000000000000000B16 /* RemindersPlugin.swift */,
+				D0F00D000000000000000B17 /* BackupPlugin.swift */,
+				D0F00D000000000000000B18 /* PrivacyInfo.xcprivacy */,
 				D0F00D000000000000000B07 /* SessionActivityAttributes.swift */,
 				D0F00D000000000000000B03 /* App.entitlements */,
 				D0F00D000000000000000B13 /* AppWithWidget.entitlements */,
@@ -243,6 +252,7 @@
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
+				D0F00D000000000000000A17 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -267,6 +277,8 @@
 				D0F00D000000000000000A02 /* MainViewController.swift in Sources */,
 				D0F00D000000000000000A04 /* WidgetBridgePlugin.swift in Sources */,
 				D0F00D000000000000000A05 /* LiveActivityPlugin.swift in Sources */,
+				D0F00D000000000000000A15 /* RemindersPlugin.swift in Sources */,
+				D0F00D000000000000000A16 /* BackupPlugin.swift in Sources */,
 				D0F00D000000000000000A06 /* SessionActivityAttributes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -12,5 +12,7 @@ class MainViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(HapticsPlugin())
         bridge?.registerPluginInstance(WidgetBridgePlugin())
         bridge?.registerPluginInstance(LiveActivityPlugin())
+        bridge?.registerPluginInstance(RemindersPlugin())
+        bridge?.registerPluginInstance(BackupPlugin())
     }
 }

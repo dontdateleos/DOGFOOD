@@ -33,6 +33,9 @@ struct SessionLiveActivity: Widget {
                         .font(.system(size: 11, weight: .bold)).foregroundColor(Color(white: 0.7))
                     Text(context.state.exercise).font(.headline).foregroundColor(.white).lineLimit(1)
                     Text(context.state.detail).font(.subheadline).foregroundColor(Color(white: 0.85)).lineLimit(1)
+                    if let next = context.state.next {
+                        Text(next).font(.caption).foregroundColor(lime).lineLimit(1)
+                    }
                 }
                 Spacer(minLength: 0)
                 VStack(alignment: .trailing, spacing: 2) {
@@ -65,7 +68,7 @@ struct SessionLiveActivity: Widget {
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     HStack {
-                        Text(context.attributes.title).font(.caption).foregroundColor(.secondary)
+                        Text(context.state.next ?? context.attributes.title).font(.caption).foregroundColor(.secondary)
                         Spacer()
                         if let c = context.state.charge { Text("Charge \(c)").font(.caption).foregroundColor(.secondary) }
                     }

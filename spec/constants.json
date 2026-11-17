@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.11.16.023",
+ "generatedFrom": "2026.11.17.001",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1507,7 +1507,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.11.16.023",
+  "APP_VERSION": "2026.11.17.001",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1885,6 +1885,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.11.17.001": "A big one. Build: tap a week of the block to see its sessions and scores, the block's average, recovery set against your next session, a Fitness section (strength score, VO2 max, race times, last night's sleep) and \"In form\" when you are. Today offers a lighter session when you have not recovered, the bedtime note leads with the Charge you will wake to and can remind you, a new best shows on the workout card, and Sunday's review adds your workout score and morning Charge. The lock screen shows the next set, and a session left open clears itself. Backups save to Files or iCloud Drive and restore from a file.",
    "2026.11.16.023": "The Charge ring stays round the mascot on every tab, and tapping him opens today's Charge from wherever you are.",
    "2026.11.16.022": "Build is simpler: the block stays on top, now with each week's average workout score, then your training and your set-up as one line each. Tap a line to open it. The Charge sheet is back the way it was.",
    "2026.11.16.021": "The Charge & training sheet is simpler: your Charge, one line on what made it, then six lines for your training. Tap any line to see what is behind it.",
@@ -2037,7 +2038,7 @@
   "NATIVE_HEALTH_KEY": "settings:nativeHealth",
   "NATIVE_HEALTH_LAST_KEY": "settings:nativeHealthLastSync",
   "NATIVE_HEALTH_AUTH_KEY": "settings:nativeHealthAuth",
-  "NATIVE_HEALTH_AUTH_V": "3",
+  "NATIVE_HEALTH_AUTH_V": "4",
   "GOAL_PROFILES": {
    "perform": {
     "scoreLow": 35,
@@ -2226,6 +2227,7 @@
    "sprint",
    "fartlek"
   ],
+  "BEDTIME_REMIND_KEY": "settings:bedtimeReminder",
   "CV_RECENT_DAYS": 14,
   "SHIFT_RECENT_DAYS": 10,
   "POWER_REP_MAX": 6,
@@ -2975,6 +2977,50 @@
    "Solid",
    "Strong",
    "Exceptional"
+  ],
+  "STRENGTH_STANDARDS": [
+   {
+    "key": "squat",
+    "name": "Squat",
+    "std": 2,
+    "test": "[fn]"
+   },
+   {
+    "key": "bench",
+    "name": "Bench press",
+    "std": 1.5,
+    "test": "[fn]"
+   },
+   {
+    "key": "dead",
+    "name": "Deadlift",
+    "std": 2.5,
+    "test": "[fn]"
+   },
+   {
+    "key": "press",
+    "name": "Overhead press",
+    "std": 1,
+    "test": "[fn]"
+   }
+  ],
+  "RACES": [
+   {
+    "k": "5k",
+    "km": 5
+   },
+   {
+    "k": "10k",
+    "km": 10
+   },
+   {
+    "k": "Half",
+    "km": 21.0975
+   },
+   {
+    "k": "Marathon",
+    "km": 42.195
+   }
   ],
   "READING_FULL": 3,
   "TICK_H": 4,

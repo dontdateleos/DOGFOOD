@@ -1281,6 +1281,34 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   #panel-plan .tp-ic{ display:flex; flex:none; color:rgba(var(--ink-rgb),0.85); }
   #panel-plan .tp-v b{ font-weight:var(--fw-bold); }
   .plan-cell .plan-score{ margin-bottom:1px; }
+  .train-panel .tp-line[hidden], .plan-group[hidden]{ display:none; }
+  .train-panel .tp-kv{ display:flex; justify-content:space-between; gap:12px; }
+  .train-panel .tp-kv span{ color:var(--dim); }
+  .train-panel .tp-delta{ font-size:var(--fs-xs); margin-left:4px; }
+  .train-panel .tp-delta.up{ color:var(--good, #5c6b0f); }
+  .train-panel .tp-delta.down{ color:var(--bad, #e8391a); }
+  .plan-cell[role="button"]{ cursor:pointer; }
+  /* Read by VoiceOver, reached by Tab, seen only when focused. */
+  .header-brand > .a11y-charge, .a11y-charge{ position:absolute; width:1px; height:1px; min-height:0; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+  .a11y-charge:focus-visible{ width:auto; height:auto; clip:auto; overflow:visible; margin:0; right:var(--gutter, 22px); top:calc(8px + var(--native-safe-top, 0px)); z-index:20;
+    padding:6px 10px; border-radius:6px; background:var(--bg); color:var(--text); font-family:var(--mono); font-size:var(--fs-xs); outline:2px solid var(--bg); outline-offset:2px; }
+  .a11y-charge[hidden]{ display:none; }
+  .plan-cell[role="button"]:focus-visible{ outline:2px solid var(--bg); outline-offset:2px; }
+  #panel-plan .tp-add{ align-self:flex-start; height:auto; min-height:0; margin-top:10px; padding:4px 0; background:transparent; border:0;
+    color:var(--dim); font:inherit; font-size:var(--fs-xs); text-transform:none; letter-spacing:0; text-decoration:underline; text-underline-offset:3px; }
+  #planSetupRows{ display:flex; flex-direction:column; }
+  #blockWeekBody{ display:flex; flex-direction:column; gap:0; font-family:var(--mono); font-size:var(--fs-sm); font-variant-numeric:tabular-nums; }
+  #blockWeekBody .bw-sum{ display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; padding-bottom:12px; color:var(--dim); font-size:var(--fs-xs); }
+  #blockWeekBody .bw-sum .week-cal-score{ font-size:var(--fs-sm); padding:4px 8px; margin:0; }
+  #blockWeekBody .bw-kept{ margin-left:auto; }
+  #blockWeekBody .bw-day{ display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-top:1px solid rgba(var(--ink-rgb),0.12); }
+  #blockWeekBody .bw-day.today .bw-d{ font-weight:var(--fw-bold); color:var(--bg); }
+  #blockWeekBody .bw-d{ flex:none; width:64px; color:var(--dim); }
+  #blockWeekBody .bw-list{ flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; }
+  #blockWeekBody .bw-s{ display:flex; align-items:center; gap:8px; }
+  #blockWeekBody .bw-s .week-cal-score{ margin:0 0 0 auto; }
+  #blockWeekBody .bw-s.missed{ color:#f6b3a4; }
+  #blockWeekBody .bw-s.ahead, #blockWeekBody .bw-rest{ color:var(--dim); }
   .train-panel .tp-head{ font-weight:var(--fw-bold); letter-spacing:0.1em; text-transform:uppercase; font-size:var(--fs-xs);
     border-top:1px dashed rgba(var(--ink-rgb),0.3); padding-top:14px; color:rgba(var(--ink-rgb),0.7); }
   .train-panel .tp-empty{ margin:0; color:var(--dim); font-size:var(--fs-xs); line-height:1.45; }
@@ -1873,6 +1901,11 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .charge-note{ margin-top:var(--sp-2); }
   .bedtime-note{ margin-bottom:var(--sp-3); }
   .bedtime-note[hidden]{ display:none; }
+  .bedtime-note .bt-remind{ margin-top:8px; }
+  .session-complete .pr-line{ font-size:var(--fs-tag); display:inline-block; animation:prLineIn 520ms cubic-bezier(.34,1.56,.64,1) both; }
+  @keyframes prLineIn{ 0%{ opacity:0; transform:translateY(6px) scale(.9); } 100%{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce){ .session-complete .pr-line{ animation:none; } }
+  .bedtime-note .bt-fc{ display:inline-flex; align-items:center; margin-left:12px; font-size:var(--fs-sm); color:var(--dim); font-weight:var(--fw-bold); vertical-align:middle; }
   .bedtime-note .bt-time{ font-family:var(--mono); font-weight:var(--fw-bold); font-size:var(--fs-xl); color:var(--text); }
   .charge-acts{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
   .score-meaning{ font-family:var(--sans); font-size:var(--fs-tag); color:var(--dim); text-align:center; max-width:34ch; margin:6px auto 0; line-height:1.4; text-wrap:balance; }
@@ -5852,6 +5885,10 @@ if(!window.__pnHold)window.__curtain();
          Purely visual now — no role, no tabindex, no click wiring. #headerScoreBtn, its new
          right-hand neighbor, carries the one interactive job (opening the morning log) the
          mark used to do alone, so there is nothing left here to expand a hit area for. -->
+    <!-- THE MASCOT, FOR VOICEOVER AND THE KEYBOARD. He is drawn, not a control, so this is the
+         way to hear today's Charge and open it without seeing him: read out with the number,
+         invisible until it has keyboard focus. Its label is kept by syncHeaderScore. -->
+    <button type="button" class="a11y-charge" id="chargeA11yBtn" aria-label="Today's Charge">Charge</button>
     <div class="header-mark eyes mark-solid" id="headerMark" aria-hidden="true"><svg class="mark-cube" id="headerMarkCube" aria-hidden="true"></svg><div class="eye-gaze"><div class="eye-motion"><span></span><span></span></div></div>
       <!-- THE SCORE, BESIDE THE MARK NOW — a child of it rather than a separately-positioned
            sibling, so it rides every scroll-collapse and perch move .header-mark already
@@ -6784,6 +6821,12 @@ if(!window.__pnHold)window.__curtain();
       <div class="group-head"><div class="group-title">Training</div><span class="head-est" id="planTrainEst"></span></div>
       <div class="fields"><section class="train-panel" id="trainingPanel" aria-label="Training"></section></div>
     </div>
+    <!-- FITNESS, one line each (renderFitnessPanel): strength score, VO2 max, race times and
+         last night's sleep. The band hides itself when there is nothing to show yet. -->
+    <div class="group plan-group" hidden>
+      <div class="group-head"><div class="group-title">Fitness</div><span class="head-est" id="planFitEst"></span></div>
+      <div class="fields"><section class="train-panel" id="fitnessPanel" aria-label="Fitness"></section></div>
+    </div>
     <!-- WHAT YOU SET, one line each: goals, sport and weight. The line carries the answer the
          band's tag used to; tapping it opens the lanes, the week or the number, with the button
          that changes it. Every id is the one renderPlanTab has always written to. -->
@@ -6801,7 +6844,9 @@ if(!window.__pnHold)window.__curtain();
           <div class="plan-weight-note" id="planWeightSmall"></div>
           <button type="button" class="head-action" id="planWeightRow">Log</button>
         </div>
-      </div></div></div>
+      </div>
+      <button type="button" class="tp-add" id="planSportAdd" hidden>Play a sport? Add it</button>
+      </div></div>
     </div>
 
     <div class="lift-sheet" id="planBlockSheet" style="display:none;">
@@ -6837,6 +6882,16 @@ if(!window.__pnHold)window.__curtain();
         <div class="field-row"><button class="small outline" id="resetBlockBtn">Start a new block from this week</button></div>
           <button type="button" id="savePlanBlockBtn" class="small" style="margin-top:8px;">Save</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ONE WEEK OF THE BLOCK, opened by tapping its cell: each day's sessions with their
+         scores, what was planned and missed, and the week's average. -->
+    <div class="lift-sheet" id="blockWeekSheet" style="display:none;">
+      <div class="lift-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="blockWeekTitle">
+        <div class="lift-sheet-head"><span id="blockWeekTitle">Week</span>
+          <button type="button" class="lift-sheet-x" aria-label="Close">&times;</button></div>
+        <div class="fields" id="blockWeekBody"></div>
       </div>
     </div>
 
@@ -7261,6 +7316,7 @@ if(!window.__pnHold)window.__curtain();
         <div class="score-note" style="margin-top:16px;">Writes exported data back in. For migrations and recovery, <em>not daily use</em>.</div>
         <textarea id="bulkImportInput" aria-label="Paste data to import" placeholder='{"entry:2026-08-14": {...}, "training:2026-08-14:1234567890": {...}}' style="min-height:100px; font-family:var(--mono); font-size:var(--fs-tag);"></textarea>
         <button id="bulkImportBtn">Import</button>
+        <button id="restoreFileBtn" class="outline" hidden>Choose a backup file</button>
         <div id="bulkImportResult" class="score-note note-live"></div>
       </div>
     </div>
@@ -13644,7 +13700,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.16.023';
+const APP_VERSION = '2026.11.17.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14040,6 +14096,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.17.001': 'A big one. Build: tap a week of the block to see its sessions and scores, the block\'s average, recovery set against your next session, a Fitness section (strength score, VO2 max, race times, last night\'s sleep) and "In form" when you are. Today offers a lighter session when you have not recovered, the bedtime note leads with the Charge you will wake to and can remind you, a new best shows on the workout card, and Sunday\'s review adds your workout score and morning Charge. The lock screen shows the next set, and a session left open clears itself. Backups save to Files or iCloud Drive and restore from a file.',
   '2026.11.16.023': 'The Charge ring stays round the mascot on every tab, and tapping him opens today\'s Charge from wherever you are.',
   '2026.11.16.022': 'Build is simpler: the block stays on top, now with each week\'s average workout score, then your training and your set-up as one line each. Tap a line to open it. The Charge sheet is back the way it was.',
   '2026.11.16.021': 'The Charge & training sheet is simpler: your Charge, one line on what made it, then six lines for your training. Tap any line to see what is behind it.',
@@ -14684,7 +14741,7 @@ function tzLog(){ try{ return JSON.parse(localStorage.getItem(TZ_LOG_KEY) || '{}
 const NATIVE_HEALTH_KEY = 'settings:nativeHealth';
 const NATIVE_HEALTH_LAST_KEY = 'settings:nativeHealthLastSync';
 const NATIVE_HEALTH_AUTH_KEY = 'settings:nativeHealthAuth';
-const NATIVE_HEALTH_AUTH_V = '3';   // bump when HealthBridge reads a new type (3: weight, body fat)
+const NATIVE_HEALTH_AUTH_V = '4';   // bump when HealthBridge reads a new type (3: weight, body fat; 4: VO2 max)
 function nativeHealthOn(){ try{ return localStorage.getItem(NATIVE_HEALTH_KEY) === 'on'; } catch(e){ return false; } }
 async function connectNativeHealth(){
   if(!NativeHealth) return { error: 'not-native' };
@@ -14716,6 +14773,17 @@ async function syncNativeHealthOnce(days){
       try{ await NativeHealth.requestAuthorization(); localStorage.setItem(NATIVE_HEALTH_AUTH_KEY, NATIVE_HEALTH_AUTH_V); } catch(e){}
     }
     const res = await NativeHealth.readDays({ days: days || 14 });
+    /* VO2 MAX, once a day: what Apple Watch (or another watch) has written for the last year,
+       kept as it came for the Fitness lines on Build. A year of samples is a few dozen. */
+    try{
+      const prev = JSON.parse((await window.storage.get('health:vo2')).value || 'null');
+      if(!prev || prev.day !== todayStr){
+        const v = await NativeHealth.readVO2({ days: 365 });
+        await window.storage.set('health:vo2', JSON.stringify({ day: todayStr, samples: (v && v.samples) || [] }));
+      }
+    } catch(e){
+      try{ const v = await NativeHealth.readVO2({ days: 365 }); await window.storage.set('health:vo2', JSON.stringify({ day: todayStr, samples: (v && v.samples) || [] })); } catch(err){}
+    }
     const list = ((res && res.days) || []).filter(d => d && /^\d{4}-\d{2}-\d{2}$/.test(d.date) && d.date <= todayStr);
     if(!list.length) return { synced: 0, dates: [] };
     const num = (v, dp) => (typeof v === 'number' && isFinite(v)) ? Math.round(v * Math.pow(10, dp)) / Math.pow(10, dp) : null;
@@ -15764,7 +15832,12 @@ function kishN(ws){
    _sigWindowCache already runs on. A cache is only as correct as its invalidation, so if a
    new writer appears it must call invalidateTrainingSessions() or this goes stale. */
 let _trainingRaw = null;
-function invalidateTrainingSessions(){ _trainingRaw = null; }
+function invalidateTrainingSessions(){
+  _trainingRaw = null;
+  // The Training lines on Build read through their own cache; a saved session clears it so
+  // they show the session the moment you are back, not a minute later.
+  try{ _trainCache = null; _fitCache = null; } catch(e){}
+}
 async function getAllTrainingSessions(){
   if(!_trainingRaw){
     const res = await window.storage.list('training:');
@@ -19127,21 +19200,65 @@ async function bedtimeAdvice(){
   return { bed: clock(bed), bedMin: bed, wake: clock(wake), need, needText: hm(need), overhead: Math.round(overhead), pred,
            kind: hard.type === 'run' ? 'run' : 'lift', title: sessionTitle(hard) };
 }
+/* THE BEDTIME NUDGE AS A NOTIFICATION (iPhone app). Off until you turn it on from the note
+   itself; then every time the app works out tonight's bedtime it schedules one notification
+   BEDTIME_REMIND_LEAD_MIN before it, replacing the last, and cancels it on a night with no
+   hard session tomorrow. */
+const Reminders = (()=>{ try{ return nativePlugin('Reminders'); } catch(e){ return null; } })();
+const BEDTIME_REMIND_KEY = 'settings:bedtimeReminder', BEDTIME_REMIND_LEAD_MIN = 30;
+async function bedtimeReminderOn(){ try{ return JSON.parse((await window.storage.get(BEDTIME_REMIND_KEY)).value).on === true; } catch(e){ return false; } }
+function bedtimeRemindAt(a){
+  let at = localDateFrom(todayStr).getTime() + a.bedMin * 60000;
+  if(a.bedMin < 12 * 60) at += 86400000;            // a bedtime after midnight is tomorrow's clock
+  return at - BEDTIME_REMIND_LEAD_MIN * 60000;
+}
+async function scheduleBedtimeReminder(a){
+  if(!Reminders || !(await bedtimeReminderOn())) return;
+  try{ await Reminders.cancel({ id: 'bedtime' }); } catch(e){}
+  if(!a) return;
+  const at = bedtimeRemindAt(a);
+  if(at <= Date.now()) return;
+  try{
+    await Reminders.schedule({ id: 'bedtime', at, link: 'today', title: `In bed by ${a.bed}`,
+      body: `Tomorrow is ${a.title}.${a.pred != null ? ` A night like that has you waking near ${a.pred}.` : ''}` });
+  } catch(e){}
+}
 async function renderBedtimeNote(){
   const el = document.getElementById('bedtimeNote');
   if(!el) return null;
   const now = new Date();
-  if(now.getHours() < BEDTIME_FROM_H){ el.hidden = true; return null; }
   let a = null;
   try{ a = await bedtimeAdvice(); } catch(e){}
+  scheduleBedtimeReminder(a).catch(()=>{});
+  if(now.getHours() < BEDTIME_FROM_H){ el.hidden = true; return null; }
   if(!a){ el.hidden = true; return null; }
   const nowMin = now.getHours() * 60 + now.getMinutes();
   const past = a.bedMin >= BEDTIME_FROM_H * 60 && nowMin > a.bedMin;
-  const morning = a.pred != null ? ` A night like that has had you waking near ${a.pred}.` : '';
-  el.innerHTML = `<div class="bt-time">${dfIcon('bedtime', 20, 'inl')}${past ? 'Past ' : 'In bed by '}${a.bed}</div>`
+  /* THE FORECAST IS THE HEADLINE: the bedtime and the Charge a night like that has given you,
+     side by side, so the promise is read before the reasoning. */
+  const morning = '';
+  el.innerHTML = `<div class="bt-time">${dfIcon('bedtime', 20, 'inl')}${past ? 'Past ' : 'In bed by '}${a.bed}${a.pred != null ? `<span class="bt-fc">${dfIcon('charge', 16, 'inl')}wake near ${a.pred}</span>` : ''}</div>`
     + `<div class="score-note">Tomorrow is ${escapeHtmlLite(a.title)}. Your best mornings come after ${a.needText} asleep, you usually wake at ${a.wake}`
     + `${a.overhead ? ` and spend about ${a.overhead} min of the night awake` : ''}.${morning}`
     + `${past ? ' Sooner is still better than later.' : ''}</div>`;
+  // The offer to be reminded, once, while there is still a reminder to give tonight.
+  if(Reminders && !past && !(await bedtimeReminderOn()) && bedtimeRemindAt(a) > Date.now()){
+    const t = new Date(bedtimeRemindAt(a));
+    const hm = `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`;
+    el.insertAdjacentHTML('beforeend', `<button type="button" class="small outline bt-remind" id="bedtimeRemindBtn">Remind me at ${hm}</button>`);
+    document.getElementById('bedtimeRemindBtn').addEventListener('click', async ()=>{
+      let r = null;
+      try{ r = await Reminders.permission({ ask: true }); } catch(e){}
+      if(r && r.granted){
+        await window.storage.set(BEDTIME_REMIND_KEY, JSON.stringify({ on: true, at: Date.now() }));
+        await scheduleBedtimeReminder(a);
+        showToast(`Reminder set for ${hm}, and before each hard day from now on`);
+        renderBedtimeNote().catch(()=>{});
+      } else {
+        showToast(r && r.denied ? 'Notifications are off for Dogfood: turn them on in the iPhone\u2019s Settings' : 'No reminder set');
+      }
+    });
+  }
   el.hidden = false;
   return a;
 }
@@ -22296,9 +22413,15 @@ let _weekPerfCache = null;
 async function performanceForDates(dates){
   let sessions = [];
   try{ sessions = await getAllTrainingSessions(); } catch(e){ return {}; }
-  const key = todayStr + ':' + sessions.length + ':' + dates[0];
-  if(_weekPerfCache && _weekPerfCache.key === key) return _weekPerfCache.out;
-  const want = dates.filter(d=> d <= todayStr && sessions.some(sn=> sn && sn.date === d && (sn.type === 'strength' || sn.type === 'run')));
+  /* REMEMBERED PER DAY, not per range. Today's week strip and Build's block ask for different
+     ranges, and a cache that held one range threw the other's away, so going between the two
+     redid the whole history each time. A day's score depends on every other session of its
+     kind, so the lot is forgotten when a session is added or removed (the count changes) or
+     the day turns; otherwise only days not yet worked out are worked out. */
+  const key = todayStr + ':' + sessions.length;
+  if(!_weekPerfCache || _weekPerfCache.key !== key) _weekPerfCache = { key, days: {} };
+  const known = _weekPerfCache.days;
+  const want = dates.filter(d=> !(d in known) && d <= todayStr && sessions.some(sn=> sn && sn.date === d && (sn.type === 'strength' || sn.type === 'run')));
   const out = {};
   if(want.length){
     const win = await buildSignalWindow(todayStr, 365);
@@ -22328,8 +22451,11 @@ async function performanceForDates(dates){
       }
     }
   }
-  _weekPerfCache = { key, out };
-  return out;
+  Object.assign(known, out);
+  dates.forEach(d=>{ if(!(d in known)) known[d] = undefined; });
+  const res = {};
+  dates.forEach(d=>{ if(known[d]) res[d] = known[d]; });
+  return res;
 }
 const weekScoreShown = {};
 async function paintWeekScores(board, dates){
@@ -23168,7 +23294,15 @@ async function renderSessionComplete(){
     return `<span class="perf-line">${dfIcon('score', 14, 'inl')}<b>Performance ${p.score}</b> \u00b7 ${vs}${going != null ? ` \u00b7 charge going in ${going}` : ''}${call}${p.vsPlan ? ' (against the plan until the lift has a few sessions of history)' : p.early ? ' (early: few sessions to compare)' : ''}</span>`;
   };
   const rows = [];
-  for(const x of today){ rows.push(line(x) + (x.type === 'strength' || x.type === 'run' ? '<br>' + await perfLine(x) : '')); }
+  /* A NEW BEST, SAID ON THE CARD. The mascot hops for it in the header; the card keeps it, with
+     the lift and the weight, for as long as the card is there. */
+  const prLine = async x=>{
+    if(x.type !== 'strength') return '';
+    let pr = null;
+    try{ pr = await sessionBestLift(x); } catch(e){}
+    return pr ? `<br><span class="pr-line">${dfIcon('pr', 16, 'inl')}<b>New best</b> \u00b7 ${escapeHtmlLite(pr.name)} ${+(+pr.weight).toFixed(2)} kg</span>` : '';
+  };
+  for(const x of today){ rows.push(line(x) + (x.type === 'strength' || x.type === 'run' ? '<br>' + await perfLine(x) : '') + await prLine(x)); }
   const detail = rows.join('<br>');
   host.innerHTML = `<div class="session-complete"><b>${today.length > 1 ? 'Workouts complete' : 'Workout complete'}</b>${detail}</div>`;
 }
@@ -24094,7 +24228,7 @@ const LiveActivity = (()=>{
   try{ return nativePlugin('LiveActivity'); }
   catch(e){ return null; }
 })();
-const liveSession = { on: false, title: '', exercise: '', detail: '' };
+const liveSession = { on: false, title: '', exercise: '', detail: '', next: '' };
 async function liveSessionPush(){
   if(!LiveActivity || blockEditDate !== todayStr || !liveSession.exercise) return;
   try{
@@ -24104,6 +24238,7 @@ async function liveSessionPush(){
     }
     const ch = lastSrResult && lastSrResult.available && lastSrResult.charge ? lastSrResult.charge.charge : null;
     const payload = { title: liveSession.title, exercise: liveSession.exercise, detail: liveSession.detail };
+    if(liveSession.next) payload.next = liveSession.next;
     if(restTimerId && restEndsAt > Date.now()) payload.restEnds = restEndsAt;
     if(ch != null) payload.charge = ch;
     liveSession.on = true;
@@ -24115,13 +24250,25 @@ function liveSessionSet(name, i, sets, unit){
   const w = x.weight == null ? '' : ` \u00d7 ${+(+x.weight).toFixed(2)} ${unit}`;
   liveSession.exercise = name || 'Set';
   liveSession.detail = `Set ${i + 1} of ${sets.length} \u00b7 ${+(+x.reps).toFixed(2)}${w ? w : ' reps'}`;
+  // What to load for the next one, so the bar can be set up without unlocking the phone.
+  const n = sets.slice(i + 1).find(s=> s && !s.done);
+  liveSession.next = n ? `Next \u00b7 ${n.reps != null ? +(+n.reps).toFixed(2) : '?'}${n.weight != null ? ` \u00d7 ${+(+n.weight).toFixed(2)} ${unit}` : ' reps'}` : 'Last set of this lift';
   liveSessionPush();
 }
 function liveSessionEnd(){
   const was = liveSession.on;
-  Object.assign(liveSession, { on: false, title: '', exercise: '', detail: '' });
+  Object.assign(liveSession, { on: false, title: '', exercise: '', detail: '', next: '' });
   if(LiveActivity && was) LiveActivity.end().catch(()=>{});
 }
+/* A session left open on the lock screen comes down by itself: when the app opens or comes
+   back after 90 minutes without a set, whatever is still up is ended (LiveActivityPlugin
+   endStale; the lock screen also greys it at 90 minutes on its own). */
+(()=>{
+  if(!LiveActivity) return;
+  const sweep = ()=>{ try{ LiveActivity.endStale({ minutes: 90 }).then(r=>{ if(r && r.ended) Object.assign(liveSession, { on: false }); }).catch(()=>{}); } catch(e){} };
+  setTimeout(sweep, 2000);
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'visible') sweep(); });
+})();
 // There are two clocks now — the one in the editor and the one on the minimised bar — and
 // the countdown belongs to the session, not to either of them. Write to every clock on the
 // page and neither can drift or go stale behind the other.
@@ -27122,6 +27269,12 @@ function syncHeaderScore(value){
   if(!el) return;
   const block = document.getElementById('headerCharge');
   const arc = document.getElementById('markCharge');
+  const a11y = document.getElementById('chargeA11yBtn');
+  if(a11y){
+    const chv = value == null ? null : chargeForShown(value);
+    a11y.hidden = value == null;
+    a11y.setAttribute('aria-label', value == null ? "Today's Charge" : `Today's Charge, ${value}${chv && chv.start != null ? `, woke with ${chv.start}` : ''}. Opens the breakdown`);
+  }
   if(value == null){
     el.textContent = '—'; delete el.dataset.value;
     if(block){ block.dataset.has = ''; block.hidden = true; }
@@ -27271,10 +27424,31 @@ async function trainingSummary(){
     if(traj === 'maintaining') return lw === 'climbing' ? 'Building' : 'Maintaining';
     return lw === 'climbing' ? 'Overreaching' : 'Stalling';
   };
+  /* THE NEXT HARD SESSION THE PLAN HOLDS, from today on: a lift or a run, the morning slot read
+     as 07:00 and the evening as 17:00. Today's is skipped once a session of its kind is in. */
+  const plannedAhead = [];
+  for(let i = 0; i < 15; i++){
+    const d = shiftDateStr(todayStr, i);
+    for(const slot of ['am', 'pm']){
+      try{ const v = JSON.parse((await window.storage.get('weekplan:' + d + ':' + slot)).value); if(v && (v.type === 'strength' || v.type === 'run')) plannedAhead.push({ date: d, slot, type: v.type }); } catch(e){}
+    }
+  }
+  const doneToday = new Set(sessions.filter(sn=> sn.date === todayStr).map(sn=> sn.type));
+  const next = plannedAhead.find(x=> !(x.date === todayStr && doneToday.has(x.type))) || null;
+  if(next) next.at = localDateFrom(next.date).getTime() + (next.slot === 'pm' ? 17 : 7) * 3600000;
+  // Recovery against it: ready in time, or how many hours short.
+  if(recovery && next && recovery.left > 0){
+    recovery.next = next;
+    recovery.shortH = Math.max(0, Math.ceil((recovery.ready - next.at) / 3600000));
+  }
+  /* A side you do not train has nothing to say: Running shows only with a run in the last
+     sixty days or one planned, Lifting the same with lifts. */
+  const from60s = shiftDateStr(todayStr, -60);
+  const trains = t=> sessions.some(sn=> sn.type === t && sn.date >= from60s) || plannedAhead.some(x=> x.type === t);
   const status = [
-    { key: 'lift', label: 'Lifting', traj: adapt && adapt.strength, load: loadWord(load && load.mechanical) },
-    { key: 'run', label: 'Running', traj: adapt && adapt.aerobic, load: loadWord(load && load.cardio) }
-  ].map(r=> Object.assign(r, { word: statusOf(r.traj, r.load) })).filter(r=> r.word);
+    { key: 'lift', label: 'Lifting', traj: adapt && adapt.strength, load: loadWord(load && load.mechanical), loadDays: load && load.mechanical && load.mechanical.available ? Math.max(0, 28 - load.mechanical.histN) : 0, on: trains('strength') },
+    { key: 'run', label: 'Running', traj: adapt && adapt.aerobic, load: loadWord(load && load.cardio), loadDays: load && load.cardio && load.cardio.available ? Math.max(0, 28 - load.cardio.histN) : 0, on: trains('run') }
+  ].filter(r=> r.on).map(r=> Object.assign(r, { word: statusOf(r.traj, r.load) })).filter(r=> r.word);
 
   // ---- Consistency: four weeks, Monday-aligned, ending this week.
   const monday = d=>{ const x = localDateFrom(d); const dow = (x.getDay() + 6) % 7; return shiftDateStr(d, -dow); };
@@ -27326,7 +27500,7 @@ async function trainingSummary(){
     } else resilience = { learning: true, need: Math.max(0, 4 - after.length), haveUsual: usual != null, debt };
   }
 
-  const v = { status, recovery, effects, consistency, resilience, any: sessions.length > 0 };
+  const v = { status, recovery, effects, consistency, resilience, next, any: sessions.length > 0 };
   _trainCache = { day: todayStr, at: Date.now(), v };
   return v;
 }
@@ -27339,6 +27513,169 @@ function trainClock(t){
 /* LAYOUT A: ONE LINE EACH. Six rows under a dashed rule, each a symbol, a name and the answer;
    tapping a row opens what is behind the answer (the bar, the week, the calendar, the steps
    and one line on what it means) and tapping again closes it. Only one is open at a time. */
+/* ================= FITNESS, ON BUILD =================
+   Four slower readings, each a line that opens to what is behind it.
+
+     STRENGTH SCORE  your best estimated max (Epley, sets of 10 or fewer) in the last eight
+                     weeks for each main lift you do, against bodyweight and against a
+                     strong-lifter standard for that lift (STRENGTH_STANDARDS, multiples of
+                     bodyweight). 100 is that standard on every lift; the score is the average.
+                     Against eight weeks before, so it trends over months.
+     VO2 MAX         what Apple Watch (or another watch) wrote to Health, latest, with the
+                     change over three months. Without one, estimated from your best recent run
+                     (Daniels' VDOT), and it says so.
+     RACE TIMES      from your best run of 3 km or more in the last sixty days, by Riegel's
+                     formula (time grows with distance to the power 1.06).
+     SLEEP SCORE     last night out of 100: time asleep against what your best mornings need
+                     (half), bedtime against your usual (a quarter), time awake in the night (a
+                     quarter). A part with no data is left out and the rest share its weight. */
+const STRENGTH_STANDARDS = [
+  { key: 'squat', name: 'Squat', std: 2.0, test: n=> /squat/.test(n) && !/(split|goblet|bulgarian|jump|pistol|hack|box)/.test(n) },
+  { key: 'bench', name: 'Bench press', std: 1.5, test: n=> /bench/.test(n) && !/(dumbbell|db|incline|decline|close)/.test(n) },
+  { key: 'dead', name: 'Deadlift', std: 2.5, test: n=> /deadlift/.test(n) && !/(romanian|rdl|stiff|single|trap|sumo)/.test(n) },
+  { key: 'press', name: 'Overhead press', std: 1.0, test: n=> /(overhead press|military press|ohp|strict press)/.test(n) }
+];
+const RACES = [{ k: '5k', km: 5 }, { k: '10k', km: 10 }, { k: 'Half', km: 21.0975 }, { k: 'Marathon', km: 42.195 }];
+function fmtRaceTime(min){
+  const t = Math.round(min * 60), h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = t % 60;
+  return h ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${m}:${String(s).padStart(2, '0')}`;
+}
+function vdotOf(km, min){
+  const v = km * 1000 / min;                                   // metres a minute
+  const vo2 = -4.60 + 0.182258 * v + 0.000104 * v * v;
+  const pct = 0.8 + 0.1894393 * Math.exp(-0.012778 * min) + 0.2989558 * Math.exp(-0.1932605 * min);
+  return vo2 / pct;
+}
+let _fitCache = null;
+async function fitnessSummary(){
+  if(_fitCache && _fitCache.day === todayStr && Date.now() - _fitCache.at < 60000) return _fitCache.v;
+  let sessions = [];
+  try{ sessions = (await getAllTrainingSessions()).filter(sn=> sn && sn.date <= todayStr); } catch(e){}
+  let bwLine = [];
+  try{ bwLine = await bodyweightTimeline(); } catch(e){}
+
+  // ---- Strength score, now and eight weeks before.
+  const bestIn = (from, to)=>{
+    const best = {};
+    sessions.filter(sn=> sn.type === 'strength' && sn.date > from && sn.date <= to).forEach(sn=>{
+      (sn.exercises || []).forEach(ex=>{
+        const n = (ex.name || '').toLowerCase();
+        const lift = STRENGTH_STANDARDS.find(L=> L.test(n));
+        if(!lift || ex.repsPrefilled) return;
+        const ws = Array.isArray(ex.weightPerSet) && ex.weightPerSet.length ? ex.weightPerSet : [ex.weight];
+        const rs = Array.isArray(ex.repsPerSet) && ex.repsPerSet.length ? ex.repsPerSet : [ex.reps];
+        rs.forEach((r, i)=>{
+          const w = +(ws[i] != null ? ws[i] : ws[0]) || 0, n2 = +r;
+          if(!(w > 0) || !(n2 >= 1 && n2 <= 10)) return;
+          const e = e1RM(w, n2);
+          if(e && (!best[lift.key] || e > best[lift.key].e)) best[lift.key] = { e, date: sn.date };
+        });
+      });
+    });
+    return best;
+  };
+  const scoreOf = (best, date)=>{
+    const bw = bodyweightOn(bwLine, date);
+    if(!(bw > 0)) return null;
+    const parts = STRENGTH_STANDARDS.filter(L=> best[L.key]).map(L=> ({ name: L.name, ratio: best[L.key].e / bw, kg: best[L.key].e, pct: Math.min(1.3, best[L.key].e / bw / L.std) }));
+    if(!parts.length) return null;
+    return { score: Math.round(100 * parts.reduce((a, p)=> a + p.pct, 0) / parts.length), parts, bw };
+  };
+  const now8 = bestIn(shiftDateStr(todayStr, -56), todayStr);
+  const then8 = bestIn(shiftDateStr(todayStr, -112), shiftDateStr(todayStr, -56));
+  const strength = scoreOf(now8, todayStr);
+  const strengthThen = scoreOf(then8, shiftDateStr(todayStr, -56));
+  const liftsNoBw = !strength && Object.keys(now8).length > 0;
+
+  // ---- VO2 max: Health first, else the best recent run.
+  let vo2 = null;
+  try{
+    const h = JSON.parse((await window.storage.get('health:vo2')).value || 'null');
+    const smp = (h && h.samples) || [];
+    if(smp.length){
+      const last = smp[smp.length - 1];
+      const old = smp.filter(x=> x.date <= shiftDateStr(todayStr, -90)).pop();
+      vo2 = { value: Math.round(last.value * 10) / 10, date: last.date, source: last.source || 'Health', change: old ? Math.round((last.value - old.value) * 10) / 10 : null, measured: true };
+    }
+  } catch(e){}
+  const runs = sessions.filter(sn=> sn.type === 'run' && sn.date >= shiftDateStr(todayStr, -60) && sn.distanceKm >= 3 && sn.durationMin > 0);
+  let bestRun = null;
+  runs.forEach(r=>{ const v = vdotOf(r.distanceKm, r.durationMin); if(isFinite(v) && (!bestRun || v > bestRun.vdot)) bestRun = { vdot: v, km: r.distanceKm, min: r.durationMin, date: r.date }; });
+  if(!vo2 && bestRun) vo2 = { value: Math.round(bestRun.vdot * 10) / 10, measured: false, date: bestRun.date };
+  const races = bestRun ? RACES.map(R=> ({ k: R.k, min: bestRun.min * Math.pow(R.km / bestRun.km, 1.06) })) : null;
+
+  // ---- Sleep score, last night and the week.
+  let need = 8;
+  try{ const a = await bedtimeAdvice(); if(a && a.need) need = a.need; } catch(e){}
+  const nights = [];
+  for(let i = 0; i < 14; i++){
+    const d = shiftDateStr(todayStr, -i);
+    try{ const e = JSON.parse((await window.storage.get(keyFor(d))).value); if(e && e.durationHrs != null) nights.push({ d, e }); } catch(err){}
+  }
+  const toMin = c=>{ if(typeof c !== 'string') return null; const [h, m] = c.split(':').map(Number); if(isNaN(h)) return null; let x = h * 60 + (m || 0); if(x < 12 * 60) x += 1440; return x; };
+  const beds = nights.map(n=> toMin(n.e.bedClock)).filter(x=> x != null);
+  const usualBed = beds.length >= 5 ? medianOf(beds) : null;
+  const nightScore = n=>{
+    const parts = [];
+    const hrs = +n.e.durationHrs;
+    parts.push({ k: 'Asleep', w: 0.5, v: Math.max(0, Math.min(1, (hrs - 4) / Math.max(0.5, need - 4))), say: `${Math.floor(hrs)} h ${String(Math.round((hrs % 1) * 60)).padStart(2, '0')} of ${hmOf(need)}` });
+    const b = toMin(n.e.bedClock);
+    if(b != null && usualBed != null){ const off = Math.abs(b - usualBed); parts.push({ k: 'Bedtime', w: 0.25, v: Math.max(0, Math.min(1, 1 - (off - 15) / 105)), say: off <= 15 ? 'on your usual' : `${Math.round(off)} min ${b > usualBed ? 'later' : 'earlier'} than usual` }); }
+    const aw = awakeOf(n.e);
+    if(aw != null){ parts.push({ k: 'Awake in the night', w: 0.25, v: Math.max(0, Math.min(1, 1 - (aw - 10) / 80)), say: `${Math.round(aw)} min` }); }
+    const W = parts.reduce((a, p)=> a + p.w, 0);
+    return { score: Math.round(100 * parts.reduce((a, p)=> a + p.w * p.v, 0) / W), parts, d: n.d };
+  };
+  const scored = nights.map(nightScore);
+  const sleep = scored.length ? { last: scored[0], week: Math.round(scored.slice(0, 7).reduce((a, x)=> a + x.score, 0) / Math.min(7, scored.length)), lastIsToday: scored[0].d === todayStr } : null;
+
+  const v = { strength, strengthThen, liftsNoBw, vo2, bestRun, races, sleep };
+  _fitCache = { day: todayStr, at: Date.now(), v };
+  return v;
+}
+function hmOf(h){ return `${Math.floor(h)} h ${String(Math.round((h % 1) * 60)).padStart(2, '0')}`; }
+async function renderFitnessPanel(){
+  const host = document.getElementById('fitnessPanel');
+  if(!host) return;
+  let f = null;
+  try{ f = await fitnessSummary(); } catch(e){}
+  if(!f) return;
+  const rows = [];
+  const tone = v=> v >= 75 ? 'good' : v >= 50 ? 'ok' : 'low';
+  // Strength.
+  if(f.strength){
+    const ch = f.strengthThen ? f.strength.score - f.strengthThen.score : null;
+    rows.push({ icon: 'muscle', label: 'Strength score', value: `<b>${f.strength.score}${ch ? ` <small class="tp-delta ${ch > 0 ? 'up' : 'down'}">${ch > 0 ? '+' : '−'}${Math.abs(ch)}</small>` : ''}</b>`,
+      detail: f.strength.parts.map(p=> `<div class="tp-kv"><span>${p.name}</span><b>${Math.round(p.kg)} kg · ${p.ratio.toFixed(2)}×</b></div>`).join('')
+        + `<small>Best estimated max in the last eight weeks against your ${f.strength.bw.toFixed(1)} kg. 100 is a strong lifter's standard on every lift you do${ch != null ? `; ${ch >= 0 ? 'up' : 'down'} ${Math.abs(ch)} on the eight weeks before` : ''}.</small>` });
+  } else if(f.liftsNoBw){
+    rows.push({ icon: 'muscle', label: 'Strength score', value: '<b>Needs a weigh-in</b>', detail: '<small>It is your lifts against your bodyweight. Log your weight under Set-up and it appears.</small>' });
+  }
+  // VO2 max and races.
+  if(f.vo2){
+    rows.push({ icon: 'health', label: 'VO2 max', value: `<b>${f.vo2.value}${f.vo2.change ? ` <small class="tp-delta ${f.vo2.change > 0 ? 'up' : 'down'}">${f.vo2.change > 0 ? '+' : '−'}${Math.abs(f.vo2.change)}</small>` : ''}</b>`,
+      detail: `<small>${f.vo2.measured ? `From ${escapeHtmlLite(f.vo2.source)}, ${localDateFrom(f.vo2.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}, in ml/kg/min${f.vo2.change != null ? `; ${f.vo2.change >= 0 ? 'up' : 'down'} ${Math.abs(f.vo2.change)} on three months ago` : ''}.` : 'Estimated from your best run in the last sixty days, in ml/kg/min. A watch that writes VO2 max to Apple Health replaces this with its own reading.'}</small>` });
+  }
+  if(f.races){
+    const r5 = f.races.find(r=> r.k === '5k');
+    rows.push({ icon: 'run', label: 'Race times', value: `<b>5k ${fmtRaceTime(r5.min)}</b>`,
+      detail: f.races.map(r=> `<div class="tp-kv"><span>${r.k}</span><b>${fmtRaceTime(r.min)}</b></div>`).join('')
+        + `<small>Predicted from ${localDateFrom(f.bestRun.date).toLocaleDateString(undefined, { weekday: 'long' })}’s ${f.bestRun.km.toFixed(1)} km in ${fmtRaceTime(f.bestRun.min)}, your best of the last sixty days. Longer races assume the training for them.</small>` });
+  }
+  // Sleep.
+  if(f.sleep){
+    const L = f.sleep.last;
+    rows.push({ icon: 'sleep', label: f.sleep.lastIsToday ? 'Last night’s sleep' : 'Sleep', value: `<span class="tp-chip ${tone(L.score)}">${L.score}</span>`,
+      detail: L.parts.map(p=> `<div class="tp-kv"><span>${p.k}</span><b>${p.say}</b></div>`).join('')
+        + `<small>Out of 100. ${f.sleep.week} on average this week.</small>` });
+  }
+  const est = document.getElementById('planFitEst');
+  if(est) est.textContent = f.strength ? `strength ${f.strength.score}` : f.vo2 ? `VO2 ${f.vo2.value}` : '';
+  host.closest('.group').hidden = !rows.length;
+  host.innerHTML = `<div class="tp-rows">` + rows.map((r, i)=>
+    `<button type="button" class="tp-line" aria-expanded="false" aria-controls="fitMore${i}">${dfIcon(r.icon, 20)}<span class="tp-k">${r.label}</span><span class="tp-v">${r.value}</span><span class="tp-chev" aria-hidden="true">›</span></button>`
+    + `<div class="tp-more" id="fitMore${i}" hidden>${r.detail}</div>`).join('') + `</div>`;
+}
 /* One handler for every line list (Training and Set-up on Build): a tap opens that line's
    detail and closes any other open in the same list; a second tap closes it. */
 document.addEventListener('click', e=>{
@@ -27367,13 +27704,27 @@ async function renderTrainingPanel(){
   const STATUS_TONE = { Productive: 'good', Building: 'good', Maintaining: 'ok', Recovering: 'ok', Learning: 'dim', Stalling: 'low', Detraining: 'low', Overreaching: 'low' };
   const LOAD_SAY = { climbing: 'load climbing faster than usual', easing: 'load easing off', steady: 'load steady', learning: 'still learning your normal load' };
   const rows = [];
-  const row = (icon, label, value, detail)=> rows.push({ icon, label, value, detail });
+  const row = (icon, label, value, detail, learn)=> rows.push({ icon, label, value, detail, learn });
+  const dayWord = d=> d === todayStr ? 'today' : d === shiftDateStr(todayStr, 1) ? 'tomorrow' : localDateFrom(d).toLocaleDateString(undefined, { weekday: 'long' });
 
-  // Status, one row a side.
+  // Status, one row a side. A side still learning says what it is waiting for.
   t.status.forEach(r=>{
     const say = [r.traj ? (r.key === 'lift' ? 'Strength ' : 'Pace ') + r.traj : (r.key === 'lift' ? 'Strength trend needs a few more sessions' : 'Pace trend needs a few more runs'), r.load ? LOAD_SAY[r.load] : ''].filter(Boolean).join(' · ');
-    row(r.key === 'lift' ? 'strength' : 'run', r.label, `<span class="tp-chip ${STATUS_TONE[r.word] || 'dim'}">${r.word}</span>`, `<small>${say}.</small>`);
+    const learn = r.word === 'Learning'
+      ? { text: `${r.label}: ${r.key === 'lift' ? 'four sessions of the same lift for the strength trend' : 'four easy or long runs for the pace trend'}${r.loadDays ? `, and ${r.loadDays} more days for your normal load` : ''}.`, days: r.loadDays || null }
+      : null;
+    row(r.key === 'lift' ? 'strength' : 'run', r.label, `<span class="tp-chip ${STATUS_TONE[r.word] || 'dim'}">${r.word}</span>`, `<small>${say}.</small>`, learn);
   });
+
+  /* IN FORM: the readiness model's run of days performing above what your Charge predicted.
+     Shown when it is on, with the streak symbol, on the line under the two sides. */
+  try{
+    const sr0 = lastSrResult;
+    if(sr0 && sr0.inForm && sr0.formDays >= 1){
+      const d = sr0.formDaysCapped ? sr0.formDays + '+' : sr0.formDays;
+      row('streak', 'In form', `<span class="tp-chip good">${d} day${sr0.formDays === 1 ? '' : 's'}</span>`, '<small>Your sessions have been coming in above what your Charge said they would. Days in a row.</small>');
+    }
+  } catch(e){}
 
   // Recovery.
   if(t.recovery){
@@ -27383,7 +27734,8 @@ async function renderTrainingPanel(){
     const fromDay = r.from.date === todayStr ? 'today' : r.from.date === shiftDateStr(todayStr, -1) ? 'yesterday' : localDateFrom(r.from.date).toLocaleDateString(undefined, { weekday: 'long' });
     row('timer', left > 0 ? 'Recovered in' : 'Recovery', `<b>${left > 0 ? left + ' h' : 'Done'}</b>`,
       `<div class="tp-bar" role="img" aria-label="${Math.round(fill * 100)}% recovered"><i style="width:${(fill * 100).toFixed(1)}%"></i></div>`
-      + `<small>${left > 0 ? `Ready to go hard ${trainClock(r.ready)}, after ${fromDay}’s ${kind}.` : `Paid off ${fromDay}’s ${kind}; ready to go hard.`}${r.debt ? ' A little longer for the sleep you are owed.' : ''}</small>`);
+      + `<small>${left > 0 ? `Ready to go hard ${trainClock(r.ready)}, after ${fromDay}’s ${kind}.` : `Paid off ${fromDay}’s ${kind}; ready to go hard.`}${r.debt ? ' A little longer for the sleep you are owed.' : ''}`
+      + `${r.next ? (r.shortH > 0 ? ` <b>${r.shortH} h short</b> of ${dayWord(r.next.date)}’s ${r.next.type === 'run' ? 'run' : 'lift'}: keep it easy, or take the lighter version Today offers.` : ` Ready in time for ${dayWord(r.next.date)}’s ${r.next.type === 'run' ? 'run' : 'lift'}.`) : ''}</small>`);
   } else {
     row('timer', 'Recovery', '<b>Done</b>', '<small>Nothing in the last four days still to pay off.</small>');
   }
@@ -27424,12 +27776,23 @@ async function renderTrainingPanel(){
       `<div class="tp-steps" role="img" aria-label="${rs.word}, ${rs.level + 1} of 5">${RESILIENCE_LEVELS.map((w, i)=> `<i class="${i <= rs.level ? 'on' : ''}"></i>`).join('')}</div>`
       + `<small>The morning after training you wake ${bounce}, over ${rs.n} training days.${rs.debt != null && rs.debt >= 3 ? ` ${rs.debt.toFixed(1)} h of sleep owed is holding it down.` : ''}</small>`);
   } else if(rs){
-    row('heart', 'Resilience', '<b>Learning</b>', `<small>${rs.haveUsual ? `${rs.need} more training day${rs.need === 1 ? '' : 's'} with a morning check-in after, and this shows how well you bounce back.` : 'A couple of weeks of mornings first, to know your usual.'}</small>`);
+    rows.push({ icon: 'heart', label: 'Resilience', value: '<b>Learning</b>', learn: { text: rs.haveUsual ? `Resilience: ${rs.need} more training day${rs.need === 1 ? '' : 's'} with a morning check-in after.` : 'Resilience: a couple of weeks of mornings first, to know your usual.', days: rs.haveUsual ? null : 14 }, detail: `<small>${rs.haveUsual ? `${rs.need} more training day${rs.need === 1 ? '' : 's'} with a morning check-in after, and this shows how well you bounce back.` : 'A couple of weeks of mornings first, to know your usual.'}</small>` });
   }
 
   // The band's tag: the status words, once if both sides agree.
   const est = document.getElementById('planTrainEst');
   if(est) est.textContent = [...new Set(t.status.map(r=> r.word.toLowerCase()))].join(' \u00b7 ');
+  /* ONE LINE FOR EVERYTHING STILL LEARNING. A new start had three or four lines each saying
+     "Learning"; two or more fold into one, which opens to say what each is waiting for. */
+  const learning = rows.filter(r=> r.learn);
+  if(learning.length >= 2){
+    const days = Math.max(0, ...learning.map(r=> r.learn.days || 0));
+    const at = rows.indexOf(learning[0]);
+    const one = { icon: 'trends', label: 'Learning your normal', value: `<b>${days ? `${days} days to go` : 'a few sessions'}</b>`,
+      detail: learning.map(r=> `<small>${r.learn.text}</small>`).join('') };
+    for(let i = rows.length - 1; i >= 0; i--) if(rows[i].learn) rows.splice(i, 1);
+    rows.splice(Math.min(at, rows.length), 0, one);
+  }
   host.innerHTML = `<div class="tp-rows">` + rows.map((r, i)=>
     `<button type="button" class="tp-line" aria-expanded="false" aria-controls="tpMore${i}">${dfIcon(r.icon, 20)}<span class="tp-k">${r.label}</span><span class="tp-v">${r.value}</span><span class="tp-chev" aria-hidden="true">›</span></button>`
     + `<div class="tp-more" id="tpMore${i}" hidden>${r.detail}</div>`).join('') + `</div>`;
@@ -29397,6 +29760,26 @@ async function renderWeekReview(){
       : done < plannedDays ? 'below'
       : extra ? 'ahead' : 'on'));
 
+  /* HOW THE SESSIONS WENT AND WHAT YOU WOKE WITH. The week's workout scores averaged (the
+     numbers on the week strip), the best of them, and morning Charge against the week before.
+     Said as numbers, like the rest of the review; no grade. */
+  try{
+    const perf = await performanceForDates(when.dates);
+    const sc = [];
+    when.dates.forEach(d=> (perf[d] || []).forEach(x=> sc.push({ d, ...x })));
+    if(sc.length){
+      const avg = Math.round(sc.reduce((a, x)=> a + x.score, 0) / sc.length);
+      const best = sc.slice().sort((a, b)=> b.score - a.score)[0];
+      rows.push(weekReviewRow('Workout score', `${avg} average from ${sc.length} workout${sc.length === 1 ? '' : 's'}`,
+        [ `best ${best.score}, ${localDateFrom(best.d).toLocaleDateString(undefined, { weekday: 'long' })}\u2019s ${best.kind === 'run' ? 'run' : 'lift'}` ], null));
+    }
+    const series = lastSrResult && lastSrResult.shownSeries ? lastSrResult.shownSeries : {};
+    const mean = ds=>{ const v = ds.map(d=> series[d]).filter(x=> x != null); return v.length ? Math.round(v.reduce((a, b)=> a + b, 0) / v.length) : null; };
+    const chThis = mean(when.dates), chLast = mean(when.dates.map(d=> shiftDateStr(d, -7)));
+    if(chThis != null) rows.push(weekReviewRow('Morning Charge', `${chThis} on average`,
+      [ chLast != null ? (chThis === chLast ? 'the same as the week before' : `${Math.abs(chThis - chLast)} ${chThis > chLast ? 'more' : 'less'} than the week before`) : null ], null));
+  } catch(e){}
+
   /* Mobility, against the target as it is actually defined — per area, not per week. Ahead
      needs every area at the target AND a quarter again on top of it, because reaching 600s
      in every area is the target being met, not beaten. */
@@ -30606,6 +30989,7 @@ const GOAL_STATUS_WORD = { improving_fast:['ahead','good'], improving:['improvin
 async function renderPlanTab(){
   document.querySelectorAll('#planSetupRows .tp-ic:empty').forEach(el=>{ el.innerHTML = dfIcon(el.dataset.ic, 20); });
   renderTrainingPanel();
+  renderFitnessPanel();
   // BLOCK: this block's weeks as cells, the next blocks as lanes.
   try{
     const pos = await getBlockPosition(todayStr);
@@ -30621,7 +31005,7 @@ async function renderPlanTab(){
       const state = !pos.started ? '' : w < pos.weekInBlock ? 'done' : w === pos.weekInBlock ? 'now' : '';
       const start = shiftDateStr(pos.start || getWeekStartFor(todayStr), (w - 1) * 7);
       const mark = dl ? 'DL' : (bt && DF_ICONS[bt] ? dfIcon(bt, 14) : '');
-      html += `<div class="plan-cell ${state}${dl ? ' dl' : ''}" aria-label="Week ${w}${dl ? ', deload' : ''}${state === 'now' ? ', this week' : ''}">`
+      html += `<div class="plan-cell ${state}${dl ? ' dl' : ''}" role="button" tabindex="0" data-week="${w}" data-start="${start}" data-dl="${dl ? 1 : ''}" aria-label="Week ${w}${dl ? ', deload' : ''}${state === 'now' ? ', this week' : ''}. Open the week">`
         + `<span class="week-cal-score plan-score" aria-hidden="true">00</span>`
         + `<span class="k">${localDateFrom(start).getDate()} ${MONTH_SHORT[localDateFrom(start).getMonth()]}</span>`
         + `<span class="n">W${w}</span><span class="m">${mark}</span></div>`;
@@ -30637,6 +31021,11 @@ async function renderPlanTab(){
         const dates = [];
         for(let i = 0; i < pos.weekInBlock * 7; i++){ const d = shiftDateStr(first, i); if(d <= todayStr) dates.push(d); }
         const perf = await performanceForDates(dates);
+        // The block so far: every scored workout in it, averaged, on the band's tag.
+        const all = [];
+        Object.values(perf).forEach(list=> (list || []).forEach(x=> all.push(x.score)));
+        // The masthead already says which week it is, so the tag trades that for the average.
+        if(all.length) est.textContent = `${label} \u00b7 avg ${Math.round(all.reduce((a, b)=> a + b, 0) / all.length)}`;
         cells.querySelectorAll('.plan-cell').forEach((cell, w)=>{
           const scores = [];
           for(let i = 0; i < 7; i++){ (perf[shiftDateStr(first, w * 7 + i)] || []).forEach(x=> scores.push(x.score)); }
@@ -30649,6 +31038,7 @@ async function renderPlanTab(){
           chip.className = `week-cal-score on plan-score ${band}`;
           chip.removeAttribute('aria-hidden');
           chip.setAttribute('aria-label', `Average workout score ${avg} from ${scores.length} workout${scores.length === 1 ? '' : 's'}`);
+          cell.setAttribute('aria-label', cell.getAttribute('aria-label').replace('. Open the week', `, average workout score ${avg}. Open the week`));
         });
       } catch(e){}
     }
@@ -30688,6 +31078,11 @@ async function renderPlanTab(){
     const sports = await activeSports();
     const main = mainSportOf(sports);
     document.getElementById('planSportEst').textContent = main ? `${main.def.label} · ${main.season === 'in' ? 'in-season' : 'off-season'}` : 'none';
+    // No sport, no line: a quiet offer under the list instead.
+    const sportLine = document.querySelector('[aria-controls="setupSport"]');
+    if(sportLine){ sportLine.hidden = !sports.length; if(!sports.length){ sportLine.setAttribute('aria-expanded', 'false'); document.getElementById('setupSport').hidden = true; } }
+    const sportAdd = document.getElementById('planSportAdd');
+    if(sportAdd) sportAdd.hidden = !!sports.length;
     const box = document.getElementById('planSportList');
     box.innerHTML = sports.length ? sports.map(sp =>{
       const days = WEEKDAY_NAMES.map(d =>{
@@ -30766,6 +31161,59 @@ async function saveBlockLengthSelect(){
 const planBlockSheet = wireSheet('planBlockSheet', ()=> renderPlanTab().catch(()=>{}));
 const planSportSheet = wireSheet('planSportSheet', ()=> renderPlanTab().catch(()=>{}));
 const planWeightSheet = wireSheet('planWeightSheet', ()=> renderPlanTab().catch(()=>{}));
+const blockWeekSheet = wireSheet('blockWeekSheet');
+/* A WEEK OF THE BLOCK, OPENED. Seven days, each with what was done (and its score), what was
+   planned and missed, or still to come; the week's average and how much of the plan happened
+   at the top. */
+async function openBlockWeek(cell){
+  const first = cell.dataset.start, w = +cell.dataset.week, dl = !!cell.dataset.dl;
+  const dates = [0, 1, 2, 3, 4, 5, 6].map(i=> shiftDateStr(first, i));
+  let sessions = [];
+  try{ sessions = (await getAllTrainingSessions()).filter(sn=> sn && dates.includes(sn.date)); } catch(e){}
+  let perf = {};
+  try{ perf = await performanceForDates(dates); } catch(e){}
+  const tone = v=> v >= 60 ? 'good' : v >= 40 ? 'ok' : 'low';
+  const KIND = { strength: ['strength', 'Lift'], run: ['run', 'Run'], mobility: ['mobility', 'Mobility'] };
+  let planned = 0, kept = 0;
+  const scores = [];
+  const rows = [];
+  for(const d of dates){
+    const plans = [];
+    for(const slot of ['am', 'pm']){
+      try{ const v = JSON.parse((await window.storage.get('weekplan:' + d + ':' + slot)).value); if(v && (v.type === 'strength' || v.type === 'run')) plans.push(v.type); } catch(e){}
+    }
+    const done = sessions.filter(sn=> sn.date === d && (sn.type === 'strength' || sn.type === 'run')).sort((a, b)=> (a.timestamp || 0) - (b.timestamp || 0));
+    const sc = (perf[d] || []).slice();
+    const past = d < todayStr, isToday = d === todayStr;
+    if(d <= todayStr){ planned += past || done.length >= plans.length ? plans.length : 0; kept += Math.min(plans.length, done.length); }
+    const bits = [];
+    done.forEach(sn=>{
+      const k = KIND[sn.type] || KIND.strength;
+      const i = sc.findIndex(x=> x.kind === (sn.type === 'run' ? 'run' : 'lift'));
+      const p = i >= 0 ? sc.splice(i, 1)[0] : null;
+      if(p) scores.push(p.score);
+      bits.push(`<span class="bw-s">${dfIcon(k[0], 16)}${k[1]}${p ? `<span class="week-cal-score on ${tone(p.score)}">${p.score}</span>` : ''}</span>`);
+    });
+    const left = plans.slice();
+    done.forEach(sn=>{ const i = left.indexOf(sn.type); if(i >= 0) left.splice(i, 1); });
+    left.forEach(t=>{
+      const k = KIND[t] || KIND.strength;
+      bits.push(`<span class="bw-s ${past ? 'missed' : 'ahead'}">${dfIcon(k[0], 16)}${k[1]} \u00b7 ${past ? 'missed' : isToday ? 'today' : 'planned'}</span>`);
+    });
+    const name = localDateFrom(d).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' });
+    rows.push(`<div class="bw-day${isToday ? ' today' : ''}"><span class="bw-d">${name}</span><span class="bw-list">${bits.join('') || '<span class="bw-rest">Rest</span>'}</span></div>`);
+  }
+  const avg = scores.length ? Math.round(scores.reduce((a, b)=> a + b, 0) / scores.length) : null;
+  document.getElementById('blockWeekTitle').textContent = `Week ${w}${dl ? ' \u00b7 deload' : ''}`;
+  document.getElementById('blockWeekBody').innerHTML =
+    `<div class="bw-sum">${avg != null ? `<span class="week-cal-score on ${tone(avg)}">${avg}</span><span>average from ${scores.length} workout${scores.length === 1 ? '' : 's'}</span>` : `<span>${first > todayStr ? 'Still to come' : 'No scored workouts yet'}</span>`}`
+    + `${planned ? `<span class="bw-kept">${kept} of ${planned} planned done</span>` : ''}</div>`
+    + rows.join('');
+  blockWeekSheet.open();
+}
+document.getElementById('planBlockWeeks')?.addEventListener('click', e=>{ const c = e.target.closest('.plan-cell'); if(c && c.dataset.start) openBlockWeek(c); });
+document.getElementById('planBlockWeeks')?.addEventListener('keydown', e=>{ if(e.key !== 'Enter' && e.key !== ' ') return; const c = e.target.closest('.plan-cell'); if(c && c.dataset.start){ e.preventDefault(); openBlockWeek(c); } });
+document.getElementById('planSportAdd')?.addEventListener('click', ()=> document.getElementById('planSportRow')?.click());
 wireWheelField(document.getElementById('planWeightInput'), { title:'Weight', min:30, max:200, step:0.1, decimals:2, unit:'kg' });
 async function paintPlanWeightSheet(){
   const g = await weightGuidance();
@@ -30862,6 +31310,7 @@ const scoreDetailSheet = wireSheet('scoreDetailSheet');
 // picked which face to show: nothing logged yet opens the log sheet instead of the detail
 // one, since there is no "detail" worth showing for a score that has not been computed.
 document.getElementById('headerCharge')?.addEventListener('click', ()=> document.getElementById('headerScoreBtn')?.click());
+document.getElementById('chargeA11yBtn')?.addEventListener('click', ()=> document.getElementById('headerScoreBtn')?.click());
 document.getElementById('headerScoreBtn')?.addEventListener('click', ()=>{
   // Same condition refreshHeaderLogBadge used to pick the face this button is currently
   // showing — off tab as well as off todayNeedsLog, so a tap never does the thing the face
@@ -41066,6 +41515,17 @@ async function renderTodayWorkoutSummary(){
       } catch(e){}
       const btns = [];
       let say = '';
+      /* STILL PAYING OFF THE LAST ONE. Charge can be fine and the last hard session still not
+         recovered (Build's recovery time): the same offer, said for that reason. */
+      let rec = null;
+      try{ const t = await trainingSummary(); rec = t && t.recovery && t.recovery.left > 0 ? t.recovery : null; } catch(e){}
+      if(ch.charge >= 35 && rec && rec.left >= 6){
+        const kind = rec.from.type === 'run' ? 'run' : 'lift';
+        const when = rec.from.date === shiftDateStr(todayStr, -1) ? 'yesterday\u2019s' : rec.from.date === todayStr ? 'this morning\u2019s' : 'the last';
+        say = `About ${Math.ceil(rec.left)} h still to recover from ${when} ${kind}. Keep the main lifts and drop the rest, or move it to a fresher day.`;
+        btns.push('<button type="button" class="small outline" id="chargeTrimBtn">Main lifts only</button>');
+        if(!tomorrowLifts) btns.push('<button type="button" class="small outline" id="chargeMoveBtn">Move to tomorrow</button>');
+      }
       if(ch.charge < 35){
         say = `Charge is ${ch.charge}, low for a lifting session. Keep the main lifts and drop the rest, or move it to a fresher day.`;
         btns.push('<button type="button" class="small outline" id="chargeTrimBtn">Main lifts only</button>');
@@ -44738,19 +45198,50 @@ document.getElementById('exportAllBtn').addEventListener('click', async ()=>{
     try{ await window.storage.set('settings:lastExport', JSON.stringify({ at: Date.now() })); } catch(e){}
     renderSettingsSummaries();
 
-    // also offer a file download for safekeeping
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `factors-backup-${todayStr}.json`;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    /* AS A FILE. In the iPhone app a download link does nothing, so the backup goes to the share
+       sheet as a file: Save to Files puts it in iCloud Drive, which outlives the app and the
+       phone. In a browser it downloads as before. */
+    const filename = `dogfood-backup-${todayStr}.json`;
+    if(BackupNative){
+      try{
+        const r = await BackupNative.share({ text: json, filename });
+        result.textContent = r && r.saved
+          ? `Backup saved (${count} keys). Keep it in iCloud Drive and it survives deleting the app or changing phones.`
+          : `Exported ${count} keys. Not saved as a file: tap Export again and choose Save to Files.`;
+      } catch(e){}
+    } else {
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   } catch(e){
     result.textContent = 'Export failed — storage may not be reachable right now.';
     result.style.color = '';
   }
 });
 
+const BackupNative = (()=>{ try{ return nativePlugin('Backup'); } catch(e){ return null; } })();
+/* RESTORE FROM A FILE (iPhone app): choose a backup in Files, and it lands in the box below
+   for you to check and Import. Two steps on purpose: an import writes over what is here. */
+(()=>{
+  const btn = document.getElementById('restoreFileBtn');
+  if(!btn || !BackupNative) return;
+  btn.hidden = false;
+  btn.addEventListener('click', async ()=>{
+    const result = document.getElementById('bulkImportResult');
+    try{
+      const r = await BackupNative.pick();
+      if(!r || r.cancelled || !r.text) return;
+      document.getElementById('bulkImportInput').value = r.text;
+      let n = null; try{ n = Object.keys(JSON.parse(r.text)).length; } catch(e){}
+      result.textContent = n != null ? `${r.name || 'Backup'} loaded: ${n} keys. Tap Import to restore it (what is here now is kept as a snapshot first).` : 'That file is not a Dogfood backup.';
+      result.style.color = '';
+    } catch(e){ result.textContent = 'Could not open that file.'; }
+  });
+})();
 /* ---------- BULK IMPORT (backup recovery after an outage) ---------- */
 document.getElementById('bulkImportBtn').addEventListener('click', async ()=>{
   const input = document.getElementById('bulkImportInput');
