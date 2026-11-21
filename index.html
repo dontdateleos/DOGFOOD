@@ -1902,6 +1902,16 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .bedtime-note{ margin-bottom:var(--sp-3); }
   .bedtime-note[hidden]{ display:none; }
   .bedtime-note .bt-remind{ margin-top:8px; }
+  .bedtime-note .bt-next{ margin-top:6px; font-family:var(--mono); font-size:var(--fs-tag); font-weight:var(--fw-bold); }
+  .session-complete .perf-vs{ display:inline-block; font-family:var(--mono); font-weight:var(--fw-bold); font-size:var(--fs-sm); padding:3px 8px; border-radius:99px; margin:4px 0 2px; color:#0c0d0b; background:rgba(var(--ink-rgb),0.25); }
+  .session-complete .perf-vs small{ font-weight:var(--fw-medium); opacity:0.75; }
+  .session-complete .perf-vs.beat{ background:var(--block-lime); animation:prLineIn 520ms cubic-bezier(.34,1.56,.64,1) both; }
+  .session-complete .perf-vs.even{ background:#f4d48a; }
+  .session-complete .perf-vs.under{ background:#f6b3a4; }
+  .charge-plan-note{ display:flex; flex-direction:column; gap:6px; margin:0 0 14px; padding:10px 12px; border-left:3px solid var(--block-lime); font-family:var(--mono); font-size:var(--fs-tag); line-height:1.45; }
+  .charge-plan-note[hidden]{ display:none; }
+  .charge-plan-note .cpn-list{ color:var(--dim); }
+  .charge-plan-note .cpn-pred b{ font-size:var(--fs-sm); }
   .session-complete .pr-line{ font-size:var(--fs-tag); display:inline-block; animation:prLineIn 520ms cubic-bezier(.34,1.56,.64,1) both; }
   @keyframes prLineIn{ 0%{ opacity:0; transform:translateY(6px) scale(.9); } 100%{ opacity:1; transform:none; } }
   @media (prefers-reduced-motion: reduce){ .session-complete .pr-line{ animation:none; } }
@@ -13700,7 +13710,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.17.001';
+const APP_VERSION = '2026.11.21.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14096,6 +14106,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.21.001': 'Charge now sets the session. Today\'s weights move with it, a little up when you are fresh and a little down when you are not, from what your own sessions have shown, and the top of the session says what moved and when a new best is in reach. It predicts your score too, and the Workout complete card tells you whether you beat it. Runs get strides on fresh days and an easy cap on flat ones, Build shows how your sessions have gone by the Charge you woke with, and the bedtime note says what a good night does to tomorrow.',
   '2026.11.17.001': 'A big one. Build: tap a week of the block to see its sessions and scores, the block\'s average, recovery set against your next session, a Fitness section (strength score, VO2 max, race times, last night\'s sleep) and "In form" when you are. Today offers a lighter session when you have not recovered, the bedtime note leads with the Charge you will wake to and can remind you, a new best shows on the workout card, and Sunday\'s review adds your workout score and morning Charge. The lock screen shows the next set, and a session left open clears itself. Backups save to Files or iCloud Drive and restore from a file.',
   '2026.11.16.023': 'The Charge ring stays round the mascot on every tab, and tapping him opens today\'s Charge from wherever you are.',
   '2026.11.16.022': 'Build is simpler: the block stays on top, now with each week\'s average workout score, then your training and your set-up as one line each. Tap a line to open it. The Charge sheet is back the way it was.',
@@ -19240,7 +19251,17 @@ async function renderBedtimeNote(){
   el.innerHTML = `<div class="bt-time">${dfIcon('bedtime', 20, 'inl')}${past ? 'Past ' : 'In bed by '}${a.bed}${a.pred != null ? `<span class="bt-fc">${dfIcon('charge', 16, 'inl')}wake near ${a.pred}</span>` : ''}</div>`
     + `<div class="score-note">Tomorrow is ${escapeHtmlLite(a.title)}. Your best mornings come after ${a.needText} asleep, you usually wake at ${a.wake}`
     + `${a.overhead ? ` and spend about ${a.overhead} min of the night awake` : ''}.${morning}`
-    + `${past ? ' Sooner is still better than later.' : ''}</div>`;
+    + `${past ? ' Sooner is still better than later.' : ''}</div>`
+    + (()=>{
+      /* AND WHAT THAT NIGHT BUYS TOMORROW: the same line that sets today's weights, at the
+         Charge this bedtime has given you. */
+      if(a.pred == null) return '';
+      const adj = chargeAdjustFor(a.kind === 'run' ? 'run' : 'lift', a.pred);
+      if(!adj || adj.cal.flat) return '';
+      if(a.kind === 'run') return a.pred >= 70 ? `<div class="bt-next">${dfIcon('run', 16, 'inl')}Wake near ${a.pred} and tomorrow\u2019s run gets strides.</div>` : '';
+      const pct = Math.round(Math.abs(adj.adj) * 1000) / 10;
+      return pct >= 1 ? `<div class="bt-next">${dfIcon(adj.adj > 0 ? 'charge' : 'drain', 16, 'inl')}Wake near ${a.pred} and tomorrow\u2019s weights go ${adj.adj > 0 ? 'up' : 'down'} ${pct}%.</div>` : '';
+    })();
   // The offer to be reminded, once, while there is still a reminder to give tonight.
   if(Reminders && !past && !(await bedtimeReminderOn()) && bedtimeRemindAt(a) > Date.now()){
     const t = new Date(bedtimeRemindAt(a));
@@ -22437,6 +22458,7 @@ async function performanceForDates(dates){
         if(others.length >= 8){
           mean = others.reduce((a, b)=> a + b, 0) / others.length;
           sd = Math.sqrt(others.reduce((a, b)=> a + (b - mean) * (b - mean), 0) / (others.length - 1)) || 0.03;
+          PERF_SPREAD[o.kind] = { mean, sd };
         }
         return { kind: o.kind, score: Math.max(1, Math.min(99, Math.round(100 * normalCdf((o.r - mean) / sd)))) };
       });
@@ -23290,8 +23312,12 @@ async function renderSessionComplete(){
       ? `<span class="perf-note">No score: tick or enter the reps and weight on at least one set of a lift that was in today\u2019s plan.</span>`
       : (going != null ? `<span class="perf-note">Charge going in ${going}. Runs are scored once there are a few of the same kind to compare.</span>` : '');
     const vs = `${p.pct >= 0 ? '+' : '\u2212'}${Math.abs(p.pct * 100).toFixed(1)}% on ${p.vsPlan ? 'the plan' : 'your trend'}`;
-    const call = going == null ? '' : p.score >= going + 10 ? ', better than your charge said' : p.score <= going - 10 ? ', under what your charge said' : ', about what your charge said';
-    return `<span class="perf-line">${dfIcon('score', 14, 'inl')}<b>Performance ${p.score}</b> \u00b7 ${vs}${going != null ? ` \u00b7 charge going in ${going}` : ''}${call}${p.vsPlan ? ' (against the plan until the lift has a few sessions of history)' : p.early ? ' (early: few sessions to compare)' : ''}</span>`;
+    /* BEAT YOUR CHARGE. What the Charge you went in with predicted (predictedScore, the same
+       line that set today's weights), against what you scored: the verdict is the headline. */
+    const pred = going != null && !p.vsPlan ? predictedScore(k === 'run' ? 'run' : 'lift', going) : null;
+    const diff = pred != null ? p.score - pred : null;
+    const verdict = pred == null ? '' : `<span class="perf-vs ${diff >= 5 ? 'beat' : diff <= -5 ? 'under' : 'even'}">${diff >= 5 ? `Beat your Charge by ${diff}` : diff <= -5 ? `${-diff} under your Charge` : 'Right on your Charge'}<small> \u00b7 it said about ${pred}</small></span><br>`;
+    return verdict + `<span class="perf-line">${dfIcon('score', 14, 'inl')}<b>Performance ${p.score}</b> \u00b7 ${vs}${going != null ? ` \u00b7 Charge going in ${going}` : ''}${p.vsPlan ? ' (against the plan until the lift has a few sessions of history)' : p.early ? ' (early: few sessions to compare)' : ''}</span>`;
   };
   const rows = [];
   /* A NEW BEST, SAID ON THE CARD. The mascot hops for it in the header; the card keeps it, with
@@ -24042,18 +24068,152 @@ function startingLoadFor(name, src){
   for(const k2 of kit){ if(BARE_IMPLEMENT_KG[k2] != null) return { kg: BARE_IMPLEMENT_KG[k2], why: 'the bar' }; }
   return null;
 }
+/* ================= CHARGE SETS THE TARGETS =================
+   The score has always learned, from your own sessions, how much better or worse than your
+   normal you perform per ten points of it (learned.calib[kind].per10: a lift's top sets
+   against its trend, a run's speed against your recent runs). It used that only to check
+   itself. Here it sets the session:
+
+     LIFTS   each prefilled weight moves by what today's Charge says you have: per10 times
+             (Charge - 50) / 10, held within CHARGE_LOAD_CAP either way and rounded to the
+             plates (2.5 kg from 40 kg, 1 kg from 10, else 0.5). A weight that moves past
+             your best for that lift is called out as a best in reach.
+     RUNS    fresh (70 and up) adds strides to the end; flat (under 40) caps the pace a little
+             slower than your usual easy pace.
+     SCORE   the session's Performance score predicted from the same line, on the spread your
+             own sessions have shown (PERF_SPREAD, kept by performanceForDates), so the Workout
+             complete card can say whether you beat it.
+
+   Until a kind has its own calibration (twelve sessions), CHARGE_LOAD_PRIOR stands in and the
+   app says it is a starting estimate. A calibration that came out flat or backwards moves
+   nothing: the score has not earned it for that kind yet. */
+const CHARGE_LOAD_CAP = 0.05, CHARGE_LOAD_PRIOR = 0.01;
+const PERF_SPREAD = { lift: null, run: null };
+function chargeTodayValue(){
+  const sr = typeof lastSrResult !== 'undefined' ? lastSrResult : null;
+  return sr && sr.available && sr.charge && sr.charge.charge != null ? sr.charge.charge : null;
+}
+function chargeCalib(kind){
+  const sr = typeof lastSrResult !== 'undefined' ? lastSrResult : null;
+  const c = sr && sr.learned && sr.learned.calib ? sr.learned.calib[kind] : null;
+  if(!c) return { per10: CHARGE_LOAD_PRIOR, learned: false };
+  if(!(c.per10 > 0) || !(c.r > 0.1)) return { per10: 0, learned: true, flat: true, n: c.n };
+  return { per10: c.per10, learned: true, n: c.n };
+}
+function chargeAdjustFor(kind, charge){
+  const C = charge != null ? charge : chargeTodayValue();
+  if(C == null) return null;
+  const cal = chargeCalib(kind);
+  const adj = Math.max(-CHARGE_LOAD_CAP, Math.min(CHARGE_LOAD_CAP, cal.per10 * (C - 50) / 10));
+  return { C, adj, cal };
+}
+function plateStep(w){ return w >= 40 ? 2.5 : w >= 10 ? 1 : 0.5; }
+function chargeWeight(w, adj){
+  if(!(w > 0) || !adj) return w;
+  const step = plateStep(w);
+  return Math.round(w * (1 + adj) / step) * step;
+}
+function predictedScore(kind, charge){
+  const a = chargeAdjustFor(kind, charge);
+  if(!a || a.cal.flat) return null;
+  const sp = PERF_SPREAD[kind] || { mean: 0, sd: 0.03 };
+  const r = a.cal.per10 * (a.C - 50) / 10;
+  return Math.max(1, Math.min(99, Math.round(100 * normalCdf((r - sp.mean) / (sp.sd || 0.03)))));
+}
+/* THE NOTE AT THE TOP OF TODAY'S SESSION: what Charge did to it, the score it predicts, and a
+   best in reach. Lifts list the weights it moved. */
+function paintChargePlanNote(block){
+  const el = document.getElementById('chargePlanNote');
+  if(!el) return;
+  const kind = block.type === 'run' ? 'run' : 'lift';
+  const a = chargeAdjustFor(kind);
+  if(!a){ el.hidden = true; return; }
+  const pred = predictedScore(kind);
+  const bits = [];
+  if(block.type === 'strength'){
+    const moved = [], bests = [];
+    logExRows().forEach(row=>{
+      if(!row.dataset.chargeFrom) return;
+      const name = (row.querySelector('.week-ex-name') || {}).value || '';
+      const to = +row.querySelector('.week-ex-weight').value, from = +row.dataset.chargeFrom;
+      moved.push(`${escapeHtmlLite(name)} ${to} kg <small>(${to > from ? '+' : '−'}${+(Math.abs(to - from)).toFixed(2)})</small>`);
+      if(row.dataset.bestInReach) bests.push(escapeHtmlLite(name));
+    });
+    const pct = Math.round(Math.abs(a.adj) * 1000) / 10;
+    if(a.cal.flat) bits.push(`Charge ${a.C}. Your lifts have not followed Charge yet, so the weights are as planned.`);
+    else if(!moved.length) bits.push(`Charge ${a.C}: weights as planned today.`);
+    else bits.push(`Charge ${a.C}: weights set ${pct}% ${a.adj > 0 ? 'up' : 'down'} for today${a.cal.learned ? '' : ' (a starting estimate until twelve sessions teach it yours)'}.`);
+    if(moved.length) bits.push(`<span class="cpn-list">${moved.join(' · ')}</span>`);
+    if(bests.length) bits.push(`<b class="cpn-best">${dfIcon('pr', 16, 'inl')}A new best is in reach on ${bests.length > 1 ? bests.slice(0, -1).join(', ') + ' and ' + bests[bests.length - 1] : bests[0]}.</b>`);
+    if(a.C < 45 && a.C >= 35) bits.push('Low on Charge: drop the last set of anything after the main lifts.');
+  } else {
+    let easy = null;
+    try{
+      const runs = (typeof _trainingRaw !== 'undefined' && _trainingRaw ? _trainingRaw.map(v=>{ try{ return JSON.parse(v); } catch(e){ return null; } }) : [])
+        .filter(sn=> sn && sn.type === 'run' && sn.distanceKm > 0 && sn.durationMin > 0 && (!sn.runType || sn.runType === 'easy' || sn.runType === 'long'));
+      if(runs.length >= 3) easy = medianOf(runs.map(sn=> sn.durationMin / sn.distanceKm));
+    } catch(e){}
+    const pace = m=> `${Math.floor(m)}:${String(Math.round((m % 1) * 60)).padStart(2, '0')}`;
+    if(a.C >= 70) bits.push(`Charge ${a.C}: fresh. Finish with 4 × 20 s strides, walking back between them.`);
+    else if(a.C < 40) bits.push(`Charge ${a.C}: keep it easy${easy ? `, no faster than ${pace(easy + 1 / 3)} a km` : ''}, and cut it short if it feels heavy.`);
+    else bits.push(`Charge ${a.C}: run it as planned.`);
+  }
+  if(pred != null) bits.push(`<span class="cpn-pred">Charge says you will score about <b>${pred}</b>. Beat it.</span>`);
+  el.innerHTML = bits.map(b=> `<div>${b}</div>`).join('');
+  el.hidden = false;
+}
+/* WHAT CHARGE HAS MEANT FOR YOU, as one comparison: sessions on mornings at 70 or above
+   against mornings under 40, in percent against your own trend. Needs three of each. */
+let _chargeProofCache = null;
+async function chargeProof(){
+  if(_chargeProofCache && _chargeProofCache.day === todayStr) return _chargeProofCache.v;
+  let v = null;
+  try{
+    const sr = lastSrResult;
+    const series = sr && sr.shownSeries;
+    if(series){
+      const sessions = await getAllTrainingSessions();
+      const win = await buildSignalWindow(todayStr, 365);
+      const idxOf = {}; win.dates.forEach((d, i)=>{ idxOf[d] = i; });
+      let bwLine = []; try{ bwLine = await bodyweightTimeline(); } catch(e){}
+      const outs = performanceOutcomes(sessions, win, idxOf, bwLine).filter(o=> series[o.date] != null);
+      const hi = outs.filter(o=> series[o.date] >= 70).map(o=> o.r), lo = outs.filter(o=> series[o.date] < 40).map(o=> o.r);
+      if(hi.length >= 3 && lo.length >= 3){
+        const m = a=> a.reduce((x, y)=> x + y, 0) / a.length;
+        v = { hi: m(hi), lo: m(lo), nHi: hi.length, nLo: lo.length };
+      }
+    }
+  } catch(e){}
+  _chargeProofCache = { day: todayStr, v };
+  return v;
+}
 function plannedFillFor(row){
   const src = row._srcExercise || {};
   const nameEl = row.querySelector('.week-ex-name');
   const name = nameEl ? nameEl.value : (src.name || '');
   const h = exerciseHistory[exHistKey(name)];
   const start = startingLoadFor(name, src);
-  return {
+  const f = {
     sets:   src.sets != null ? src.sets : (h && h.sets != null ? h.sets : null),
     reps:   src.repLow != null ? src.repLow : (h && h.reps != null ? h.reps : null),
     weight: h && h.weight != null ? h.weight : (start ? start.kg : null),
     weightWhy: (h && h.weight != null) ? null : (start ? start.why : null)
   };
+  /* Today's session, a weight from your own history: Charge moves it (see CHARGE SETS THE
+     TARGETS). Kept on the row as chargeFrom so the note can say what moved and by how much. */
+  delete row.dataset.chargeFrom; delete row.dataset.bestInReach;
+  if(typeof blockEditDate !== 'undefined' && blockEditDate === todayStr && h && h.weight > 0 && f.weight === h.weight){
+    const a = chargeAdjustFor('lift');
+    if(a && a.adj){
+      const w = chargeWeight(h.weight, a.adj);
+      if(w !== h.weight){
+        row.dataset.chargeFrom = h.weight;
+        f.weight = w;
+        if(w > Math.max(h.weight, h.bestBefore || 0)) row.dataset.bestInReach = '1';
+      }
+    }
+  }
+  return f;
 }
 /* THE SHEET OPENS FILLED IN. "Fill it in as planned" was a button under the lifts that put
    these same numbers in these same boxes; almost every session began by pressing it, so the
@@ -25055,8 +25215,10 @@ async function openBlockEditor(date, slot, block){
      sets x reps @ kg also records it to your history — which is a paragraph telling you the
      form is wrong. There is nothing left to explain once the question over the rows says
      "What did you lift?" and the answer is the row filled in. */
+  const chargeNoteHtml = date === todayStr && (block.type === 'strength' || block.type === 'run')
+    ? '<div class="charge-plan-note" id="chargePlanNote" hidden></div>' : '';
   panel.innerHTML = `
-    ${fieldsHtml}
+    ${chargeNoteHtml}${fieldsHtml}
     <div class="log-acts">
       <button id="logWeekSessionBtn" class="log-act go">Save</button>
       ${block.type === 'strength' ? '<button id="logAsPlannedBtn" class="log-act">Done as planned</button>' : ''}
@@ -25382,6 +25544,7 @@ async function openBlockEditor(date, slot, block){
   // Last, so that anything actually logged or drafted is already in the boxes and the plan
   // only lands where there is nothing.
   if(block.type === 'strength') logExRows().forEach(row=>{ prefillPlanned(row); refreshOverPlan(row); refreshWeightWhy(row); initSetTicks(row); });
+  try{ paintChargePlanNote(block); } catch(e){}
   /* THE SUBSTITUTION, SHOWN HAPPENING RATHER THAN ALREADY DONE.
 
      Change a lift twice and the generator stops asking for the original — applyExerciseSwaps
@@ -27723,6 +27886,17 @@ async function renderTrainingPanel(){
     if(sr0 && sr0.inForm && sr0.formDays >= 1){
       const d = sr0.formDaysCapped ? sr0.formDays + '+' : sr0.formDays;
       row('streak', 'In form', `<span class="tp-chip good">${d} day${sr0.formDays === 1 ? '' : 's'}</span>`, '<small>Your sessions have been coming in above what your Charge said they would. Days in a row.</small>');
+    }
+  } catch(e){}
+
+  /* CHARGE AND YOU: the evidence the score is worth following, from your own sessions. */
+  try{
+    const pf = await chargeProof();
+    if(pf){
+      const pc = x=> `${x >= 0 ? '+' : '\u2212'}${Math.abs(x * 100).toFixed(1)}%`;
+      row('charge', 'Charge and you', `<b>${pc(pf.hi - pf.lo)}</b>`,
+        `<div class="tp-kv"><span>Mornings 70 and up</span><b>${pc(pf.hi)} on your trend</b></div><div class="tp-kv"><span>Mornings under 40</span><b>${pc(pf.lo)}</b></div>`
+        + `<small>How your sessions went against your own normal, by the Charge you woke with (${pf.nHi} and ${pf.nLo} sessions). It is why Charge sets the weights.</small>`);
     }
   } catch(e){}
 
@@ -41538,7 +41712,18 @@ async function renderTodayWorkoutSummary(){
       if(say){
         chargeNote = `<div class="charge-note"><div class="score-note df-title">${dfIcon(ch.charge < 35 ? 'drain' : 'run', 16)}<span>${say}</span></div><div class="charge-acts">${btns.join('')}</div></div>`;
         chargeActs = { tomorrow };
+      } else {
+        /* EVERY OTHER DAY, TOO: what Charge has done to today's weights and the score it
+           predicts, so the number changes the session on an ordinary morning as well. */
+        const a = chargeAdjustFor('lift', ch.charge), pred = predictedScore('lift', ch.charge);
+        const pct = a ? Math.round(Math.abs(a.adj) * 1000) / 10 : 0;
+        const line = !a || a.cal.flat ? '' : pct >= 1 ? `Charge ${ch.charge}: today\u2019s weights are set ${pct}% ${a.adj > 0 ? 'up' : 'down'}.` : `Charge ${ch.charge}: weights as planned.`;
+        if(line) chargeNote = `<div class="charge-note"><div class="score-note df-title">${dfIcon(a.adj > 0.009 ? 'charge' : a.adj < -0.009 ? 'drain' : 'charge', 16)}<span>${line}${pred != null ? ` Charge says you will score about ${pred}.` : ''}</span></div></div>`;
       }
+    } else if(ch && !loggedToday && block.type === 'run'){
+      const pred = predictedScore('run', ch.charge);
+      const line = ch.charge >= 70 ? `Charge ${ch.charge}: fresh. Finish today\u2019s run with 4 \u00d7 20 s strides.` : ch.charge < 40 ? `Charge ${ch.charge}: keep today\u2019s run easy and cut it short if it feels heavy.` : `Charge ${ch.charge}: run it as planned.`;
+      chargeNote = `<div class="charge-note"><div class="score-note df-title">${dfIcon(ch.charge < 40 ? 'drain' : 'run', 16)}<span>${line}${pred != null ? ` Charge says you will score about ${pred}.` : ''}</span></div></div>`;
     }
   } catch(e){}
   container.innerHTML = `
