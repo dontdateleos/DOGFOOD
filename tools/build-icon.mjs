@@ -39,133 +39,43 @@ const DARK_GROUND = '#0c0d0b', LIGHT_GROUND = '#fbfaf6';
    it run off and the eyes get 3.85px at 29pt instead of the 2.05px a fitted sphere leaves.
    Maskable crops take the central 80% — a circle of radius 0.4S — and at this size the eyes and
    the crescent are both inside it, which is the constraint that fixes the ceiling. */
-const FRAC = 1.34;
-
+/* THE PIÑATA ON PEACH (2026.11.22). The mascot became a paper piñata, a picture rather than a
+   drawing, so the icon is composed here from the full-size cutout (tools/art/pinata-full.png;
+   the app itself uses mascot/pinata.png, a 360px copy) on the peach of the morning masthead,
+   lit from the top left like the masthead's own ground. The option picked from six.
+     any       he fills most of the tile, ears in, the bottom of his fringe running off the edge
+     maskable  scaled into the central 80% circle a launcher's mask always keeps */
+const ART = join(ROOT, 'tools/art/pinata-full.png');
+const PEACH_LIT = '#fbe9d3', PEACH = '#f3cfa6';
+const GROUND = 'peach', SHELL = 'peach (maskable fit)';
+const ART_B64 = readFileSync(ART).toString('base64');
+const ART_ASPECT = 578 / 701;
 const browser = await chromium.launch({ executablePath: EXEC });
-const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-await page.goto(URL_, { waitUntil: 'networkidle' });
-await page.waitForTimeout(2500);
-if (await page.$('#firstRunBuildBtn')) {
-  // The first-run steps as they are now: goal, an optional second goal, days, length.
-  await page.click('#firstRunGoal [data-goal="strength"]');
-  await page.waitForTimeout(200);
-  try { await page.click('#firstRunSecondaryGoal .fr-a[data-goal=""]', { timeout: 1500 }); } catch (e) {}
-  if (await page.$('[data-freq="4"]')) await page.click('[data-freq="4"]');
-  else { const days = await page.$$('#firstRunDays .type-btn'); for (let i = 0; i < 7; i++) if (days[i]) await days[i].click(); }
-  await page.click('#firstRunLength [data-len="60"]');
-  await page.click('#firstRunBuildBtn');
-  await page.waitForTimeout(4000);
-}
-// The wordmark's mount is the one that carries the mark's own colours.
-await page.evaluate(() => activateTab('training'));
-await page.waitForTimeout(1600);
-const cube = await page.evaluate(() => {
-  if (mcState.raf) { cancelAnimationFrame(mcState.raf); mcState.raf = null; }
-  mcState.step = null; mcState.queue = [];
-  // Face on, which is the cube's rest. The gaze and the blink animate, so park those or the
-  // icon is whatever frame the idle happened to be on.
-  mcState.rx = 0; mcState.ry = 0; mcState.rz = 0;
-  mcState.blink = 1; mcState.wide = 1; mcState.gx = 0; mcState.gy = 0;
-  // The body moves too, or a bounce caught mid-flight would park the drawing squashed.
-  mcState.body = null; mcState.sx = 1; mcState.sy = 1; mcState.ty = 0;
-  // Awake and plain: before the morning check-in he sleeps with his eyes shut to slits, and
-  // the moods can leave a lid or a squash behind. None of that belongs on the icon.
-  mcState.sleepy = false; mcState.act = null; mcState.sw = null; mcState.think = null; mcState.hold = null;
-  mcState.lidT = 0; mcState.lidA = 0; mcState.lidB = 0; mcState.swEh = 1; mcState.talkEh = 1;
-  mcState.actSy = 1; mcState.breath = 1; mcState.tx = 0; mcState.shake = 0;
-  // Lit as at noon whatever the time it is built, and his edge still (no jelly).
-  mcState.sunHour = 12; mcState.jelly = 0; mcState.jPrev = null;
-  drawMarkCube();
-  const svg = document.getElementById('headerMarkCube');
-  // The body is the first drawn shape and it IS the whole extent. Which element it is says
-  // what shape the mark is: a path for the cube, a circle for anything round.
-  const body = svg.querySelector('circle, path');
-  const bb = body.getBBox();
-  const cs = getComputedStyle(document.documentElement);
-  return { inner: svg.innerHTML, x: bb.x, y: bb.y, w: bb.width, h: bb.height,
-           round: body.tagName.toLowerCase() === 'circle',
-           shell: cs.getPropertyValue('--mark-shell').trim(),
-           ink: cs.getPropertyValue('--mark-ink').trim(),
-           eye: cs.getPropertyValue('--mark-eye').trim(),
-           shade: cs.getPropertyValue('--mark-shade').trim(),
-           lit: cs.getPropertyValue('--mark-lit').trim(),
-           rest: `${mcState.rx}/${mcState.ry}/${mcState.rz}` };
-});
-await page.close();
-
-// sRGB relative luminance of the body, which is what decides which ground it needs.
-// Registered as <color> (see @property --mark-shell), the computed value reads as rgb(), so
-// both spellings are taken.
-const lum = (hex)=>{ const m = hex.match(/^#?([0-9a-f]{6})$/i);
-  const rgb = !m && hex.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
-  if(!m && !rgb) throw new Error(`--mark-shell is not a plain colour: ${hex}`);
-  const [r,g,b] = (m ? [0,2,4].map(i=> parseInt(m[1].slice(i,i+2),16)/255) : rgb.slice(1,4).map(v=> +v/255))
-                         .map(v=> v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4));
-  return 0.2126*r + 0.7152*g + 0.0722*b; };
-const SHELL = cube.shell, INK = cube.ink;
-const GROUND = lum(SHELL) > 0.28 ? DARK_GROUND : LIGHT_GROUND;
-console.log(`mark at ${cube.rest}, drawn ${cube.w.toFixed(1)}x${cube.h.toFixed(1)}`
-          + `, ${SHELL} on ${GROUND}`);
-
 const S = 512;
-/* The extent is what the CROP measures: the furthest the drawing gets from its own centre.
-   For the cube that was the bbox's half-diagonal, because the corners were the furthest
-   points. A circle inscribed in that same bbox has empty corners, and measuring the diagonal
-   anyway would shrink the mark by root-two against the margin it is being fitted to. */
-const reach = cube.round ? Math.max(cube.w, cube.h) : Math.hypot(cube.w, cube.h);
-const k  = (S * FRAC) / reach;
-const tx = S / 2 - (cube.x + cube.w / 2) * k;
-const ty = S / 2 - (cube.y + cube.h / 2) * k;
-/* Every var() the mark emits has to be substituted, not just the two it used to have: an
-   unresolved custom property in a standalone SVG is not transparent, it makes the property
-   invalid and the fill falls back to BLACK. The lit crescent was the third. */
-const art = cube.inner.replaceAll('var(--mark-shell)', SHELL)
-                      .replaceAll('var(--mark-ink)', INK)
-                      .replaceAll('var(--mark-eye)', cube.eye)
-                      .replaceAll('var(--mark-shade)', cube.shade)
-                      .replaceAll('var(--mark-lit)', cube.lit);
-if(/var\(/.test(art)) throw new Error('unsubstituted var() left in the icon art: '
-  + art.match(/var\([^)]*\)/g).join(' '));
-const tile = (ground)=>
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}">`
-  + `<rect width="${S}" height="${S}" fill="${ground}"/>`
-  + `<g transform="translate(${tx.toFixed(2)},${ty.toFixed(2)}) scale(${k.toFixed(5)})">${art}</g></svg>`;
-
+const tile = (maskable)=>{
+  const w = (maskable ? 0.56 : 0.78) * S, h = w / ART_ASPECT;
+  const x = (maskable ? 0.22 : 0.12) * S, y = (maskable ? 0.15 : 0.09) * S;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${S} ${S}">`
+    + `<defs><radialGradient id="g" cx="30%" cy="20%" r="110%"><stop offset="0" stop-color="${PEACH_LIT}"/><stop offset="1" stop-color="${PEACH}"/></radialGradient></defs>`
+    + `<rect width="${S}" height="${S}" fill="url(#g)"/>`
+    + `<image href="data:image/png;base64,${ART_B64}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"/></svg>`;
+};
 async function png(svg, size) {
   const p = await browser.newPage({ viewport: { width: size, height: size }, deviceScaleFactor: 1 });
-  await p.setContent(`<style>html,body{margin:0}svg{width:${size}px;height:${size}px;display:block}</style>${svg}`);
+  await p.setContent(`<style>html,body{margin:0;background:${PEACH}}svg{width:${size}px;height:${size}px;display:block}</style>${svg}`);
   await p.waitForTimeout(250);
-  const buf = await p.screenshot();
+  const buf = await p.screenshot({ omitBackground: false });
   await p.close();
   return buf;
 }
-
-/* TWO GROUNDS, ONE DRAWING. The corners are the only place the two purposes disagree, and they
-   disagree for a real reason rather than for the padding a maskable icon usually wants — this
-   mark needs none, it already fills the safe circle.
-     any      shown as the square it is, so the corners carry the contrasting ground and the
-              sphere reads as a sphere too big for its box, which is the picture that was picked.
-     maskable cropped to a shape the launcher chooses, and Android's square-ish masks keep most
-              of the corner. On the contrasting ground that leaves four bright wedges where the
-              sphere's edge cuts the corner — a crop artefact, not a design. Filling the ground
-              with the body's own colour makes the corners part of the sphere, so every mask
-              from circle to square lands on the same solid tile with the crescent across it. */
-const anyPng = await png(tile(GROUND), 512);
-const maskPng = await png(tile(SHELL), 512);
-/* THE APPLE TOUCH ICON HAS TO BE A FILE.
-   It was a data: URI, for the same one-file reason everything else in this app is inline, and
-   iOS does not read those: Safari's Add to Home Screen wants a real URL for rel=apple-touch-icon
-   and silently ignores a data one, which is how an icon that had plainly changed kept installing
-   as the old picture. It falls through to the manifest or to a screenshot of the page, and
-   neither is the mark. 180 because that is the size iOS asks for at 3x. Drawn from the `any`
-   tile: iOS rounds the corners itself, it does not mask to a circle. */
-const touchPng = await png(tile(GROUND), 180);
-/* THE IPHONE APP'S ICON, when the Capacitor project is here (see IOS.md). One 1024px image;
-   Xcode makes every other size from it. The App Store refuses an icon with an alpha channel,
-   so the tile is drawn on its own opaque ground and checked for one after it is written. */
-const appIconPng = await png(tile(GROUND), 1024);
-// The tab favicon stays inline. It is 1KB, it is never masked, and a data: URI cannot go stale.
-const b32 = (await png(tile(GROUND), 32)).toString('base64');
+const anyPng = await png(tile(false), 512);
+const maskPng = await png(tile(true), 512);
+// iOS's Add to Home Screen reads a real file at 180, and rounds the corners itself.
+const touchPng = await png(tile(false), 180);
+// The iPhone app's one 1024 icon; Xcode makes the rest. Opaque: the App Store refuses alpha.
+const appIconPng = await png(tile(false), 1024);
+// The tab favicon stays inline.
+const b32 = (await png(tile(false), 32)).toString('base64');
 await browser.close();
 
 /* One stamp for every icon URL, taken from the art itself rather than from a counter someone

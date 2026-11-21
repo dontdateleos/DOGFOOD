@@ -1,4 +1,7 @@
-/* Regenerates the launch screens an iPhone shows while the home-screen app opens, FROM THE APP.
+/* SUPERSEDED (2026.11.22) by build-launch.mjs: the launch screens are the piñata on peach now,
+ * to match the icon. Running this would put the old wordmark-on-black back.
+ *
+ * Regenerates the launch screens an iPhone shows while the home-screen app opens, FROM THE APP.
  *
  * Same rule as build-icon.mjs, for the same reason: the splash is the masthead's own lockup —
  * the stacked DOG FOOD and the mark beside it — lifted off the running page, so a recoloured
