@@ -9562,6 +9562,44 @@ function mcMounts(){
   return out;
 }
 function drawMarkCube(){ for(const m of mcMounts()) mcPaint(m); }
+/* THE PIÑATA (2026.11.22). The mascot is a paper piñata now, a picture rather than a drawn
+   ball, and the rig that turned the ball turns him: roll tilts him, a turn narrows him and,
+   past side-on, shows his other side; a nod squeezes him; looking leans him; every act's hop,
+   squash and tremble still lands through mcApplySquash. His eye can't move in a picture, so
+   blinks, sleep and the lids are an orange lid drawn over it, from the top, and a happy arch
+   rising from below. Built once per size and only re-posed each frame: the picture is decoded
+   once, not re-parsed sixty times a second. */
+const MC_PINATA = true;
+const PINATA = { src: 'mascot/pinata.png', w: 360, h: 437, eye: { x: 217, y: 191, rx: 41, ry: 39 }, lid: '#f47b2f' };
+function mcPinataPaint(svg, s, B, c){
+  const H = s * 1.08, W = H * PINATA.w / PINATA.h;
+  const x0 = c - W / 2 + s * 0.02, y0 = c + s / 2 - H + s * 0.03;
+  const ex = x0 + PINATA.eye.x / PINATA.w * W, ey = y0 + PINATA.eye.y / PINATA.h * H;
+  const erx = PINATA.eye.rx / PINATA.w * W, ery = PINATA.eye.ry / PINATA.h * H;
+  if(svg.dataset.pnB !== String(B) || !svg.querySelector('g.pn')){
+    const id = (svg.id || 'mc') + 'Eye';
+    svg.innerHTML = `<defs><clipPath id="${id}"><ellipse cx="${ex.toFixed(2)}" cy="${ey.toFixed(2)}" rx="${erx.toFixed(2)}" ry="${ery.toFixed(2)}"/></clipPath></defs>`
+      + `<g class="pn"><image href="${PINATA.src}" x="${x0.toFixed(2)}" y="${y0.toFixed(2)}" width="${W.toFixed(2)}" height="${H.toFixed(2)}" preserveAspectRatio="xMidYMid meet"/>`
+      + `<g clip-path="url(#${id})"><rect class="pn-lid" x="${(ex - erx - 1).toFixed(2)}" y="${(ey - ery - 1).toFixed(2)}" width="${(2 * erx + 2).toFixed(2)}" height="0" fill="${PINATA.lid}"/>`
+      + `<rect class="pn-low" x="${(ex - erx - 1).toFixed(2)}" y="${(ey + ery + 1).toFixed(2)}" width="${(2 * erx + 2).toFixed(2)}" height="0" fill="${PINATA.lid}"/></g></g>`;
+    svg.dataset.pnB = String(B);
+    svg.setAttribute('width', B); svg.setAttribute('height', B); svg.setAttribute('viewBox', `0 0 ${B} ${B}`);
+  }
+  const g = svg.querySelector('g.pn');
+  const R = Math.PI / 180;
+  const yaw = Math.cos((mcState.ry || 0) * R), pitch = Math.cos((mcState.rx || 0) * R);
+  const sx = (yaw < 0 ? -1 : 1) * Math.max(0.2, Math.abs(yaw)), sy = Math.max(0.6, Math.abs(pitch));
+  const lx = (mcState.gx || 0) * s * 0.05, ly = (mcState.gy || 0) * s * 0.03;
+  g.setAttribute('transform', `translate(${(c + lx).toFixed(2)} ${(c + ly).toFixed(2)}) rotate(${(mcState.rz || 0).toFixed(2)}) scale(${sx.toFixed(3)} ${sy.toFixed(3)}) translate(${(-c).toFixed(2)} ${(-c).toFixed(2)})`);
+  g.style.filter = mcState.sleepy ? 'saturate(.7) brightness(.86)' : '';
+  // Shut: a blink, a top lid, or asleep. Happy: the lower lid rising.
+  const blink = mcState.blink == null ? 1 : mcState.blink;
+  const shut = Math.max(0, Math.min(1, Math.max(1 - blink, mcState.lidT || 0, mcState.sleepy ? 1 : 0)));
+  const happy = Math.max(0, Math.min(1, mcState.lidB || 0));
+  const top = svg.querySelector('.pn-lid'), low = svg.querySelector('.pn-low');
+  if(top) top.setAttribute('height', ((2 * ery + 2) * shut).toFixed(2));
+  if(low){ const hh = (2 * ery + 2) * 0.55 * happy; low.setAttribute('height', hh.toFixed(2)); low.setAttribute('y', (ey + ery + 1 - hh).toFixed(2)); }
+}
 /* LIT BY THE SUN (.11.10.001). The two-tone light on him comes from a light in the world, not
    one painted on him: the lit patch is every part of his surface that faces the sun, so he can
    turn as he likes and the light stays where the light is. The sun keeps the clock. At 6am it
@@ -9647,6 +9685,7 @@ function mcPaint(m){
   const B = Math.round(s * 1.08), c = B/2, h = s/2;
   svg.setAttribute('width', B); svg.setAttribute('height', B);
   svg.setAttribute('viewBox', `0 0 ${B} ${B}`);
+  if(MC_PINATA && !m.line){ mcPinataPaint(svg, s, B, c); mcApplySquash(svg, s); return; }
   const P = mcProject(mcState.rx, mcState.ry, mcState.rz);
   // His outline: a circle, or the jelly while he is moving. Shared by the body and both clips.
   const jelly = m.line ? null : mcJellyPath(c, h);
@@ -9762,6 +9801,9 @@ function mcPaint(m){
   if(eyes) out += `<clipPath id="${m.id}E">${shapeEl}</clipPath>`
                 + `<g clip-path="url(#${m.id}E)">${eyes}</g>`;
   svg.innerHTML = out;
+  mcApplySquash(svg, s);
+}
+function mcApplySquash(svg, s){
   /* THE SQUASH GOES ON THE SVG, NOT ON THE HOST.
      The host's transform is already spoken for: updateHeaderCollapse writes a scale to it on
      every scroll frame and the perch writes another, so anything written there would be
@@ -13730,7 +13772,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.21.002';
+const APP_VERSION = '2026.11.22.001';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14126,6 +14168,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.22.001': 'Meet the piñata. The mascot is a paper piñata now, in the same Charge ring. He bobs and tilts, blinks, squints happily at a new best, hops and turns, droops on a low Charge and shuts his eye when he dozes.',
   '2026.11.21.002': 'Progress on Build: every main lift, your strength score, 5k, VO2 max, morning Charge, resting heart rate, sleep, sessions a week, bodyweight, bests this block and a year ago, each with where it is and how it has moved. Goals say how far to go and roughly when. The Workout complete card shows what the session just moved: each lift against its best of the last eight weeks, and your pace against your usual.',
   '2026.11.21.001': 'Charge now sets the session. Today\'s weights move with it, a little up when you are fresh and a little down when you are not, from what your own sessions have shown, and the top of the session says what moved and when a new best is in reach. It predicts your score too, and the Workout complete card tells you whether you beat it. Runs get strides on fresh days and an easy cap on flat ones, Build shows how your sessions have gone by the Charge you woke with, and the bedtime note says what a good night does to tomorrow.',
   '2026.11.17.001': 'A big one. Build: tap a week of the block to see its sessions and scores, the block\'s average, recovery set against your next session, a Fitness section (strength score, VO2 max, race times, last night\'s sleep) and "In form" when you are. Today offers a lighter session when you have not recovered, the bedtime note leads with the Charge you will wake to and can remind you, a new best shows on the workout card, and Sunday\'s review adds your workout score and morning Charge. The lock screen shows the next set, and a session left open clears itself. Backups save to Files or iCloud Drive and restore from a file.',
