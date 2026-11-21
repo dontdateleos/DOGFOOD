@@ -1287,6 +1287,12 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .train-panel .tp-delta{ font-size:var(--fs-xs); margin-left:4px; }
   .train-panel .tp-delta.up{ color:var(--good, #5c6b0f); }
   .train-panel .tp-delta.down{ color:var(--bad, #e8391a); }
+  .train-panel .tp-delta.flat{ color:var(--dim); }
+  .train-panel .pg-spark{ display:block; width:100%; height:56px; margin:2px 0 4px; }
+  .pg-spark .pg-line{ fill:none; stroke:currentColor; stroke-width:2; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+  .pg-spark .pg-area{ fill:rgba(var(--ink-rgb),0.08); stroke:none; }
+  .pg-spark .pg-dot{ fill:currentColor; }
+  .pg-spark .pg-goal{ stroke:var(--block-lime); stroke-width:2; stroke-dasharray:4 4; vector-effect:non-scaling-stroke; }
   .plan-cell[role="button"]{ cursor:pointer; }
   /* Read by VoiceOver, reached by Tab, seen only when focused. */
   .header-brand > .a11y-charge, .a11y-charge{ position:absolute; width:1px; height:1px; min-height:0; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
@@ -1897,7 +1903,7 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .score-label{ font-family:var(--sans); font-size:var(--fs-tag); color:var(--dim);  letter-spacing:0.05em; margin-top:4px; -webkit-text-stroke:0.15px currentColor; }
   /* What the number has meant for you, in kilos or seconds: one quiet line under the gauge. */
   .session-complete .perf-line, .session-complete .perf-note{ font-size:var(--fs-tag); color:var(--dim); }
-  .session-complete .perf-line b{ color:inherit; }
+  .session-complete .perf-line b{ color:inherit; display:inline; text-transform:none; font-size:inherit; letter-spacing:0; margin:0; }
   .charge-note{ margin-top:var(--sp-2); }
   .bedtime-note{ margin-bottom:var(--sp-3); }
   .bedtime-note[hidden]{ display:none; }
@@ -1908,6 +1914,19 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .session-complete .perf-vs.beat{ background:var(--block-lime); animation:prLineIn 520ms cubic-bezier(.34,1.56,.64,1) both; }
   .session-complete .perf-vs.even{ background:#f4d48a; }
   .session-complete .perf-vs.under{ background:#f6b3a4; }
+  .session-complete .progress-strip{ display:flex; flex-direction:column; gap:8px; margin-top:10px; padding-top:10px; border-top:1px dashed rgba(var(--ink-rgb),0.3); font-family:var(--mono); font-size:var(--fs-tag); font-variant-numeric:tabular-nums; }
+  .progress-strip .ps-row{ display:grid; grid-template-columns:1fr 84px auto; gap:10px; align-items:center; }
+  .progress-strip .ps-k{ display:flex; flex-direction:column; min-width:0; }
+  .progress-strip .ps-k small{ color:var(--dim); font-size:var(--fs-xs); }
+  .progress-strip .ps-bar{ position:relative; height:6px; border-radius:3px; background:rgba(var(--ink-rgb),0.15); }
+  .progress-strip .ps-bar:empty{ background:transparent; }
+  .progress-strip .ps-bar i{ position:absolute; inset:0 auto 0 0; border-radius:3px; background:var(--bg); }
+  .progress-strip .ps-bar em{ position:absolute; top:0; bottom:0; border-radius:3px; background:var(--block-lime); animation:psGrow 700ms cubic-bezier(.22,.9,.24,1) both; transform-origin:left; }
+  @keyframes psGrow{ from{ transform:scaleX(0); } to{ transform:none; } }
+  @media (prefers-reduced-motion: reduce){ .progress-strip .ps-bar em{ animation:none; } }
+  .progress-strip .ps-d{ font-weight:var(--fw-bold); min-width:64px; text-align:right; color:var(--dim); }
+  .progress-strip .ps-d.up{ color:var(--good, #5c6b0f); }
+  .progress-strip .ps-d.new{ color:var(--bg); }
   .charge-plan-note{ display:flex; flex-direction:column; gap:6px; margin:0 0 14px; padding:10px 12px; border-left:3px solid var(--block-lime); font-family:var(--mono); font-size:var(--fs-tag); line-height:1.45; }
   .charge-plan-note[hidden]{ display:none; }
   .charge-plan-note .cpn-list{ color:var(--dim); }
@@ -6831,11 +6850,12 @@ if(!window.__pnHold)window.__curtain();
       <div class="group-head"><div class="group-title">Training</div><span class="head-est" id="planTrainEst"></span></div>
       <div class="fields"><section class="train-panel" id="trainingPanel" aria-label="Training"></section></div>
     </div>
-    <!-- FITNESS, one line each (renderFitnessPanel): strength score, VO2 max, race times and
-         last night's sleep. The band hides itself when there is nothing to show yet. -->
+    <!-- PROGRESS, one line each (renderProgressPanel): goals, bests, every main lift, strength
+         score, 5k, VO2 max, morning Charge, resting heart rate, sleep, sessions a week,
+         bodyweight and a year ago, each where it is now and how it has moved. -->
     <div class="group plan-group" hidden>
-      <div class="group-head"><div class="group-title">Fitness</div><span class="head-est" id="planFitEst"></span></div>
-      <div class="fields"><section class="train-panel" id="fitnessPanel" aria-label="Fitness"></section></div>
+      <div class="group-head"><div class="group-title">Progress</div><span class="head-est" id="planFitEst"></span></div>
+      <div class="fields"><section class="train-panel" id="fitnessPanel" aria-label="Progress"></section></div>
     </div>
     <!-- WHAT YOU SET, one line each: goals, sport and weight. The line carries the answer the
          band's tag used to; tapping it opens the lanes, the week or the number, with the button
@@ -13710,7 +13730,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.21.001';
+const APP_VERSION = '2026.11.21.002';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14106,6 +14126,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.21.002': 'Progress on Build: every main lift, your strength score, 5k, VO2 max, morning Charge, resting heart rate, sleep, sessions a week, bodyweight, bests this block and a year ago, each with where it is and how it has moved. Goals say how far to go and roughly when. The Workout complete card shows what the session just moved: each lift against its best of the last eight weeks, and your pace against your usual.',
   '2026.11.21.001': 'Charge now sets the session. Today\'s weights move with it, a little up when you are fresh and a little down when you are not, from what your own sessions have shown, and the top of the session says what moved and when a new best is in reach. It predicts your score too, and the Workout complete card tells you whether you beat it. Runs get strides on fresh days and an easy cap on flat ones, Build shows how your sessions have gone by the Charge you woke with, and the bedtime note says what a good night does to tomorrow.',
   '2026.11.17.001': 'A big one. Build: tap a week of the block to see its sessions and scores, the block\'s average, recovery set against your next session, a Fitness section (strength score, VO2 max, race times, last night\'s sleep) and "In form" when you are. Today offers a lighter session when you have not recovered, the bedtime note leads with the Charge you will wake to and can remind you, a new best shows on the workout card, and Sunday\'s review adds your workout score and morning Charge. The lock screen shows the next set, and a session left open clears itself. Backups save to Files or iCloud Drive and restore from a file.',
   '2026.11.16.023': 'The Charge ring stays round the mascot on every tab, and tapping him opens today\'s Charge from wherever you are.',
@@ -15847,7 +15868,7 @@ function invalidateTrainingSessions(){
   _trainingRaw = null;
   // The Training lines on Build read through their own cache; a saved session clears it so
   // they show the session the moment you are back, not a minute later.
-  try{ _trainCache = null; _fitCache = null; } catch(e){}
+  try{ _trainCache = null; _fitCache = null; _progCache = null; } catch(e){}
 }
 async function getAllTrainingSessions(){
   if(!_trainingRaw){
@@ -23330,7 +23351,46 @@ async function renderSessionComplete(){
   };
   for(const x of today){ rows.push(line(x) + (x.type === 'strength' || x.type === 'run' ? '<br>' + await perfLine(x) : '') + await prLine(x)); }
   const detail = rows.join('<br>');
-  host.innerHTML = `<div class="session-complete"><b>${today.length > 1 ? 'Workouts complete' : 'Workout complete'}</b>${detail}</div>`;
+  /* WHAT TODAY MOVED. Each lift's estimated max today against its best of the last eight
+     weeks (lime where it went past it), a goal's distance left where one names the lift, and
+     a run's pace against your usual. The Progress lines on Build are the same numbers. */
+  let strip = '';
+  try{
+    const all = await getAllTrainingSessions();
+    const before = liftSeries(all.filter(sn=> sn && sn.date < todayStr));
+    let goals = [];
+    try{ goals = (((await getCurrentGoals(todayStr)) || {}).list || []).filter(g=> g.targetExercise && g.targetWeight); } catch(e){}
+    const items = [];
+    today.filter(x=> x.type === 'strength').forEach(x=> (x.exercises || []).forEach(ex=>{
+      const b = bestSetE1(ex);
+      if(!b || items.some(it=> it.key === liftKey(ex.name))) return;
+      const L = before[liftKey(ex.name)];
+      const prev = L ? L.pts.filter(q=> q.date > shiftDateStr(todayStr, -56)) : [];
+      const ref = prev.length ? Math.max(...prev.map(q=> q.e)) : null;
+      const g = goals.find(g=> liftKey(g.targetExercise) === liftKey(ex.name) || liftKey(ex.name).includes(liftKey(g.targetExercise).replace(/^(barbell|back|dumbbell)\s+/, '')));
+      items.push({ key: liftKey(ex.name), name: ex.name, e: b.e, ref, goal: g ? { label: planGoalShort(g), left: g.targetWeight - Math.max(b.e, ref || 0) } : null });
+    }));
+    const r1 = v=> Math.round(v * 2) / 2;
+    const liftRows = items.sort((a, b)=> (b.ref != null ? b.e - b.ref : -99) - (a.ref != null ? a.e - a.ref : -99)).slice(0, 4).map(it=>{
+      const hi = Math.max(it.e, it.ref || it.e);
+      const base = it.ref != null ? Math.min(it.e, it.ref) / hi : 1, ext = it.ref != null && it.e > it.ref ? (it.e - it.ref) / hi : 0;
+      const d = it.ref == null ? '<span class="ps-d new">new</span>' : it.e > it.ref ? `<span class="ps-d up">+${r1(it.e - it.ref)} kg</span>` : `<span class="ps-d">held ${Math.round(100 * it.e / it.ref)}%</span>`;
+      return `<div class="ps-row"><span class="ps-k">${escapeHtmlLite(it.name)}<small>${r1(it.e)} kg est. max${it.goal && it.goal.left > 0 ? ` \u00b7 ${r1(it.goal.left)} kg to ${escapeHtmlLite(it.goal.label)}` : ''}</small></span>`
+        + `<span class="ps-bar"><i style="width:${(base * 100).toFixed(1)}%"></i>${ext ? `<em style="left:${(base * 100).toFixed(1)}%;width:${(ext * 100).toFixed(1)}%"></em>` : ''}</span>${d}</div>`;
+    });
+    const runRows = today.filter(x=> x.type === 'run' && x.distanceKm >= 1 && x.durationMin > 0).map(x=>{
+      const pace = x.durationMin / x.distanceKm;
+      const usual = all.filter(sn=> sn && sn.type === 'run' && sn.date < todayStr && sn.date >= shiftDateStr(todayStr, -60) && sn.distanceKm >= 3 && sn.durationMin > 0).map(sn=> sn.durationMin / sn.distanceKm);
+      const u = usual.length >= 3 ? medianOf(usual) : null;
+      const pf = m=> `${Math.floor(m)}:${String(Math.round((m % 1) * 60)).padStart(2, '0')}`;
+      const diff = u != null ? Math.round((u - pace) * 60) : null;
+      return `<div class="ps-row"><span class="ps-k">Run pace<small>${pf(pace)} a km${u != null ? ` \u00b7 usual ${pf(u)}` : ''}</small></span><span class="ps-bar"></span>`
+        + (diff == null ? '' : diff >= 3 ? `<span class="ps-d up">${diff} s faster</span>` : diff <= -3 ? `<span class="ps-d">${-diff} s slower</span>` : '<span class="ps-d">usual</span>') + `</div>`;
+    });
+    const all2 = liftRows.concat(runRows);
+    if(all2.length) strip = `<div class="progress-strip">${all2.join('')}</div>`;
+  } catch(e){}
+  host.innerHTML = `<div class="session-complete"><b>${today.length > 1 ? 'Workouts complete' : 'Workout complete'}</b>${detail}${strip}</div>`;
 }
 async function renderWeekGrid(){
   // Surface block position where the week is actually planned. Previously the whole
@@ -27797,46 +27857,238 @@ async function fitnessSummary(){
   return v;
 }
 function hmOf(h){ return `${Math.floor(h)} h ${String(Math.round((h % 1) * 60)).padStart(2, '0')}`; }
-async function renderFitnessPanel(){
+/* ================= PROGRESS, ON BUILD =================
+   Everything that can get better, each as one line: where it is now and how it has moved.
+   Opens to a chart of it, or the list behind it. Good direction is lime, bad is red, and a
+   change too small to mean anything is left uncoloured. Windows: lifts and the strength
+   score against eight weeks ago; runs against the sixty days before the last sixty; body and
+   habits against the four weeks before the last four.
+
+     GOALS            each goal, how far to go, and when at the current rate
+     BESTS            new top-set bests in this block
+     LIFTS            estimated max (Epley, sets of 10 or fewer) for the lifts you do most,
+                      best of the last three sessions against the best of three eight weeks ago
+     STRENGTH SCORE, 5K, VO2 MAX          from fitnessSummary
+     MORNING CHARGE, RESTING HR, SLEEP    four-week averages
+     SESSIONS A WEEK, BODYWEIGHT          (bodyweight has no good direction here: the block
+                                          says what it wants)
+     A YEAR AGO       each tracked lift then and now, once there is a year of history */
+const PROGRESS_LIFTS_MAX = 5;
+function liftKey(n){ return String(n || '').trim().toLowerCase(); }
+function bestSetE1(ex){
+  if(!ex || ex.repsPrefilled) return null;
+  const ws = Array.isArray(ex.weightPerSet) && ex.weightPerSet.length ? ex.weightPerSet : [ex.weight];
+  const rs = Array.isArray(ex.repsPerSet) && ex.repsPerSet.length ? ex.repsPerSet : [ex.reps];
+  let best = null;
+  rs.forEach((r, i)=>{ const w = +(ws[i] != null ? ws[i] : ws[0]) || 0, n = +r; if(w > 0 && n >= 1 && n <= 10){ const e = e1RM(w, n); if(e && (!best || e > best.e)) best = { e, w, n }; } });
+  return best;
+}
+function liftSeries(sessions){
+  const by = {};
+  sessions.filter(sn=> sn.type === 'strength').sort((a, b)=> a.date < b.date ? -1 : 1).forEach(sn=>{
+    (sn.exercises || []).forEach(ex=>{
+      const b = bestSetE1(ex);
+      if(!b) return;
+      const k = liftKey(ex.name);
+      const L = by[k] = by[k] || { name: (ex.name || '').trim(), pts: [] };
+      const last = L.pts[L.pts.length - 1];
+      if(last && last.date === sn.date){ if(b.e > last.e) Object.assign(last, b); }
+      else L.pts.push({ date: sn.date, ...b });
+    });
+  });
+  return by;
+}
+function sparkSvg(vals, opts){
+  const o = opts || {}, W = 260, H = 56;
+  if(vals.length < 2) return '';
+  let lo = Math.min(...vals, o.goal != null ? o.goal : Infinity), hi = Math.max(...vals, o.goal != null ? o.goal : -Infinity);
+  if(hi - lo < 1e-9){ hi += 1; lo -= 1; }
+  const pad = (hi - lo) * 0.12; lo -= pad; hi += pad;
+  const x = i=> 3 + i * (W - 10) / (vals.length - 1), y = v=> H - 4 - (v - lo) / (hi - lo) * (H - 8);
+  const d = vals.map((v, i)=> `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' ');
+  return `<svg class="pg-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">`
+    + (o.goal != null ? `<line x1="0" x2="${W}" y1="${y(o.goal).toFixed(1)}" y2="${y(o.goal).toFixed(1)}" class="pg-goal"/>` : '')
+    + `<path d="${d} L${x(vals.length - 1).toFixed(1)} ${H} L${x(0).toFixed(1)} ${H} Z" class="pg-area"/>`
+    + `<path d="${d}" class="pg-line"/><circle cx="${x(vals.length - 1).toFixed(1)}" cy="${y(vals[vals.length - 1]).toFixed(1)}" r="3.2" class="pg-dot"/></svg>`;
+}
+let _progCache = null;
+async function progressSummary(){
+  if(_progCache && _progCache.day === todayStr && Date.now() - _progCache.at < 60000) return _progCache.v;
+  let sessions = [];
+  try{ sessions = (await getAllTrainingSessions()).filter(sn=> sn && sn.date <= todayStr); } catch(e){}
+  const series = liftSeries(sessions);
+  const d56 = shiftDateStr(todayStr, -56), d112 = shiftDateStr(todayStr, -112);
+  const recent = sessions.filter(sn=> sn.type === 'strength' && sn.date > d112);
+  const counts = {};
+  recent.forEach(sn=> (sn.exercises || []).forEach(ex=>{ if(bestSetE1(ex)) counts[liftKey(ex.name)] = (counts[liftKey(ex.name)] || 0) + 1; }));
+  const main = Object.keys(counts).filter(k=> counts[k] >= 3).sort((a, b)=>{
+    const sa = STRENGTH_STANDARDS.some(L=> L.test(a)) ? 1 : 0, sb = STRENGTH_STANDARDS.some(L=> L.test(b)) ? 1 : 0;
+    return sb - sa || counts[b] - counts[a];
+  }).slice(0, PROGRESS_LIFTS_MAX);
+  const lifts = main.map(k=>{
+    const L = series[k], pts = L.pts;
+    const nowPts = pts.slice(-3), now = Math.max(...nowPts.map(p=> p.e));
+    /* Eight weeks back where the history reaches; a shorter history compares against its own
+       first sessions instead (two weeks back at least), so a new start still sees itself move. */
+    let before = pts.filter(p=> p.date <= d56).slice(-3), since = null;
+    if(!before.length && pts.length >= 4 && pts[0].date <= shiftDateStr(todayStr, -14)){ before = pts.slice(0, 2); since = before[before.length - 1].date; }
+    const then = before.length ? Math.max(...before.map(p=> p.e)) : null;
+    const win = pts.filter(p=> p.date > d112);
+    // Rate over the last eight weeks, kg a week, for goal dates.
+    const last8 = pts.filter(p=> p.date > d56);
+    let rate = null;
+    if(last8.length >= 3){
+      const xs = last8.map(p=> (localDateFrom(p.date) - localDateFrom(d56)) / 604800000), ys = last8.map(p=> p.e);
+      const mx = xs.reduce((a, b)=> a + b, 0) / xs.length, my = ys.reduce((a, b)=> a + b, 0) / ys.length;
+      let sxy = 0, sxx = 0; xs.forEach((x, i)=>{ sxy += (x - mx) * (ys[i] - my); sxx += (x - mx) * (x - mx); });
+      rate = sxx ? sxy / sxx : null;
+    }
+    const best = pts.reduce((a, p)=> !a || p.e > a.e ? p : a, null);
+    const topW = pts.reduce((a, p)=> Math.max(a, p.w), 0);
+    return { key: k, name: L.name, now, then, since, change: then != null ? now - then : null, spark: win.map(p=> p.e), best, topW, rate };
+  });
+  // Bests in this block: a top-set weight above every one before it.
+  let blockStart = shiftDateStr(todayStr, -28);
+  try{ const pos = await getBlockPosition(todayStr); if(pos && pos.start) blockStart = pos.start; } catch(e){}
+  const bests = [];
+  Object.values(series).forEach(L=>{
+    let top = 0;
+    L.pts.forEach((p, i)=>{ if(i > 0 && p.w > top && p.date >= blockStart) bests.push({ name: L.name, w: p.w, n: p.n, date: p.date }); top = Math.max(top, p.w); });
+  });
+  bests.sort((a, b)=> a.date < b.date ? 1 : -1);
+  // Four-week averages from the daily entries.
+  const days = d=> [...Array(28)].map((_, i)=> shiftDateStr(d, -i));
+  const nowDays = days(todayStr), prevDays = days(shiftDateStr(todayStr, -28));
+  const entries = {};
+  for(const d of nowDays.concat(prevDays)){ try{ entries[d] = JSON.parse((await window.storage.get(keyFor(d))).value); } catch(e){} }
+  const avg = (ds, f)=>{ const v = ds.map(d=> entries[d] ? f(entries[d]) : null).filter(x=> x != null && isFinite(x)); return v.length >= 7 ? v.reduce((a, b)=> a + b, 0) / v.length : null; };
+  const rhr = { now: avg(nowDays, e=> e.restingHR != null ? +e.restingHR : null), then: avg(prevDays, e=> e.restingHR != null ? +e.restingHR : null) };
+  const sleep = { now: avg(nowDays, e=> e.durationHrs != null ? +e.durationHrs : null), then: avg(prevDays, e=> e.durationHrs != null ? +e.durationHrs : null) };
+  const ss = lastSrResult && lastSrResult.shownSeries ? lastSrResult.shownSeries : {};
+  const cAvg = ds=>{ const v = ds.map(d=> ss[d]).filter(x=> x != null); return v.length >= 7 ? v.reduce((a, b)=> a + b, 0) / v.length : null; };
+  const charge = { now: cAvg(nowDays), then: cAvg(prevDays) };
+  const perWeek = ds=> sessions.filter(sn=> (sn.type === 'strength' || sn.type === 'run') && ds.includes(sn.date)).length / 4;
+  const freq = { now: perWeek(nowDays), then: sessions.some(sn=> sn.date < prevDays[prevDays.length - 1]) ? perWeek(prevDays) : null };
+  let bw = null;
+  try{ const line = await bodyweightTimeline(); const n = bodyweightOn(line, todayStr), t = bodyweightOn(line, shiftDateStr(todayStr, -28)); if(n > 0) bw = { now: n, then: t > 0 && t !== n ? t : null }; } catch(e){}
+  // A year ago, per tracked lift: the session nearest a year back, within three weeks.
+  const yr = shiftDateStr(todayStr, -365);
+  const yearAgo = lifts.map(l=>{
+    const near = series[l.key].pts.filter(p=> Math.abs((localDateFrom(p.date) - localDateFrom(yr)) / 86400000) <= 21);
+    return near.length ? { name: l.name, then: Math.max(...near.map(p=> p.e)), now: l.now } : null;
+  }).filter(Boolean);
+  // Goals.
+  const goals = [];
+  let fit = null;
+  try{ fit = await fitnessSummary(); } catch(e){}
+  try{
+    const list = ((await getCurrentGoals(todayStr)) || {}).list || [];
+    list.forEach(g=>{
+      if(g.targetExercise && g.targetWeight){
+        const gk = liftKey(g.targetExercise);
+        const l = lifts.find(x=> x.key === gk) || lifts.find(x=> x.key.includes(gk.replace(/^(barbell|back|dumbbell)\s+/, '')) || gk.includes(x.key));
+        const L = l || (series[gk] ? { now: Math.max(...series[gk].pts.slice(-3).map(p=> p.e)), rate: null, spark: series[gk].pts.map(p=> p.e) } : null);
+        if(!L) return;
+        const toGo = g.targetWeight - L.now;
+        const weeks = toGo > 0 && L.rate > 0.05 ? toGo / L.rate : null;
+        goals.push({ label: planGoalShort(g), unit: 'kg', now: L.now, target: g.targetWeight, toGo, done: toGo <= 0, eta: weeks != null && weeks < 104 ? new Date(Date.now() + weeks * 604800000) : null, spark: L.spark });
+      } else if(g.type === 'running' && g.targetDistance && g.targetTime && fit && fit.bestRun){
+        const pred = fit.bestRun.min * Math.pow(g.targetDistance / fit.bestRun.km, 1.06);
+        goals.push({ label: `${g.targetDistance} km in ${fmtRaceTime(g.targetTime)}`, now: pred, target: g.targetTime, toGo: pred - g.targetTime, done: pred <= g.targetTime, time: true, eta: null });
+      }
+    });
+  } catch(e){}
+  // Running: the 5k now against the sixty days before.
+  let run5 = null;
+  const runsIn = (from, to)=> sessions.filter(sn=> sn.type === 'run' && sn.date > from && sn.date <= to && sn.distanceKm >= 3 && sn.durationMin > 0);
+  const best5 = rs=>{ let b = null; rs.forEach(r=>{ const v = vdotOf(r.distanceKm, r.durationMin); if(isFinite(v) && (!b || v > b.v)) b = { v, t: r.durationMin * Math.pow(5 / r.distanceKm, 1.06) }; }); return b; };
+  const r5n = best5(runsIn(shiftDateStr(todayStr, -60), todayStr)), r5t = best5(runsIn(shiftDateStr(todayStr, -120), shiftDateStr(todayStr, -60)));
+  if(r5n) run5 = { now: r5n.t, then: r5t ? r5t.t : null };
+  const v = { goals, bests, lifts, fit, run5, charge, rhr, sleep, freq, bw, yearAgo, blockStart };
+  _progCache = { day: todayStr, at: Date.now(), v };
+  return v;
+}
+async function renderProgressPanel(){
   const host = document.getElementById('fitnessPanel');
   if(!host) return;
-  let f = null;
-  try{ f = await fitnessSummary(); } catch(e){}
-  if(!f) return;
+  let p = null;
+  try{ p = await progressSummary(); } catch(e){}
+  if(!p) return;
   const rows = [];
-  const tone = v=> v >= 75 ? 'good' : v >= 50 ? 'ok' : 'low';
-  // Strength.
+  let up = 0, measured = 0;
+  /* A change, said with its direction: good is lime, bad is red, under `min` is flat. */
+  const delta = (d, unit, goodIsUp, min, fmt)=>{
+    if(d == null || !isFinite(d)) return '';
+    measured++;
+    const f = fmt || (x=> (Math.round(x * 10) / 10).toString());
+    if(Math.abs(d) < (min || 0)) return `<small class="tp-delta flat">\u2192</small>`;
+    const good = goodIsUp == null ? null : (d > 0) === goodIsUp;
+    if(good) up++;
+    return `<small class="tp-delta ${good == null ? 'flat' : good ? 'up' : 'down'}">${d > 0 ? '\u2191' : '\u2193'}${f(Math.abs(d))}${unit}</small>`;
+  };
+  const kg = x=> `${Math.round(x * 2) / 2}`;
+  const mon = dt=> dt.toLocaleDateString(undefined, { month: 'short', year: dt.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined });
+  // Goals.
+  p.goals.forEach(g=>{
+    const val = g.done ? 'reached' : g.time ? `${fmtRaceTime(g.toGo)} to go` : `${kg(g.toGo)} kg to go`;
+    rows.push({ icon: 'goals', label: g.label, value: `<b>${val}</b>`,
+      detail: (g.spark ? sparkSvg(g.spark, { goal: g.target }) : '')
+        + `<div class="tp-kv"><span>Now</span><b>${g.time ? fmtRaceTime(g.now) : kg(g.now) + ' kg'}</b></div><div class="tp-kv"><span>Goal</span><b>${g.time ? fmtRaceTime(g.target) : g.target + ' kg'}</b></div>`
+        + `<small>${g.done ? 'Reached on your estimated max. Set the next one under Set-up.' : g.eta ? `At the rate of the last eight weeks you get there around ${mon(g.eta)}.` : 'Not moving towards it over the last eight weeks yet, so no date.'}</small>` });
+  });
+  // Bests this block.
+  if(p.bests.length || p.lifts.length){
+    rows.push({ icon: 'pr', label: 'Bests this block', value: `<b>${p.bests.length ? p.bests.length + ' new' : 'none yet'}</b>`,
+      detail: p.bests.length ? p.bests.slice(0, 8).map(b=> `<div class="tp-kv"><span>${escapeHtmlLite(b.name)}</span><b>${b.w} kg \u00d7 ${b.n} \u00b7 ${localDateFrom(b.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</b></div>`).join('') + '<small>Top sets heavier than any before them, since this block began.</small>'
+        : '<small>A top set heavier than any before it shows here.</small>' });
+  }
+  // Lifts.
+  p.lifts.forEach(l=>{
+    rows.push({ icon: 'strength', label: l.name, value: `<b>${kg(l.now)} kg${delta(l.change, '', true, 1, kg)}</b>`,
+      detail: sparkSvg(l.spark)
+        + `<div class="tp-kv"><span>Estimated max now</span><b>${kg(l.now)} kg</b></div>`
+        + (l.then != null ? `<div class="tp-kv"><span>${l.since ? `Your start, ${localDateFrom(l.since).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}` : 'Eight weeks ago'}</span><b>${kg(l.then)} kg</b></div>` : '')
+        + (l.best ? `<div class="tp-kv"><span>Best set</span><b>${l.best.w} kg \u00d7 ${l.best.n}</b></div>` : '')
+        + `<small>Estimated one-rep max from your best set each session, over the last sixteen weeks.</small>` });
+  });
+  const f = p.fit || {};
   if(f.strength){
     const ch = f.strengthThen ? f.strength.score - f.strengthThen.score : null;
-    rows.push({ icon: 'muscle', label: 'Strength score', value: `<b>${f.strength.score}${ch ? ` <small class="tp-delta ${ch > 0 ? 'up' : 'down'}">${ch > 0 ? '+' : '−'}${Math.abs(ch)}</small>` : ''}</b>`,
-      detail: f.strength.parts.map(p=> `<div class="tp-kv"><span>${p.name}</span><b>${Math.round(p.kg)} kg · ${p.ratio.toFixed(2)}×</b></div>`).join('')
-        + `<small>Best estimated max in the last eight weeks against your ${f.strength.bw.toFixed(1)} kg. 100 is a strong lifter's standard on every lift you do${ch != null ? `; ${ch >= 0 ? 'up' : 'down'} ${Math.abs(ch)} on the eight weeks before` : ''}.</small>` });
-  } else if(f.liftsNoBw){
-    rows.push({ icon: 'muscle', label: 'Strength score', value: '<b>Needs a weigh-in</b>', detail: '<small>It is your lifts against your bodyweight. Log your weight under Set-up and it appears.</small>' });
+    rows.push({ icon: 'muscle', label: 'Strength score', value: `<b>${f.strength.score}${delta(ch, '', true, 1)}</b>`,
+      detail: f.strength.parts.map(q=> `<div class="tp-kv"><span>${q.name}</span><b>${Math.round(q.kg)} kg \u00b7 ${q.ratio.toFixed(2)}\u00d7</b></div>`).join('')
+        + `<small>Your main lifts against your ${f.strength.bw.toFixed(1)} kg bodyweight. 100 is a strong lifter's standard on every lift you do.</small>` });
   }
-  // VO2 max and races.
+  if(p.run5){
+    rows.push({ icon: 'run', label: '5k', value: `<b>${fmtRaceTime(p.run5.now)}${delta(p.run5.then != null ? p.run5.now - p.run5.then : null, '', false, 0.1, x=> fmtRaceTime(x))}</b>`,
+      detail: (f.races ? f.races.map(r=> `<div class="tp-kv"><span>${r.k}</span><b>${fmtRaceTime(r.min)}</b></div>`).join('') : '')
+        + `<small>Predicted from your best run of the last sixty days${p.run5.then != null ? ', against the sixty days before' : ''}.</small>` });
+  }
   if(f.vo2){
-    rows.push({ icon: 'health', label: 'VO2 max', value: `<b>${f.vo2.value}${f.vo2.change ? ` <small class="tp-delta ${f.vo2.change > 0 ? 'up' : 'down'}">${f.vo2.change > 0 ? '+' : '−'}${Math.abs(f.vo2.change)}</small>` : ''}</b>`,
-      detail: `<small>${f.vo2.measured ? `From ${escapeHtmlLite(f.vo2.source)}, ${localDateFrom(f.vo2.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}, in ml/kg/min${f.vo2.change != null ? `; ${f.vo2.change >= 0 ? 'up' : 'down'} ${Math.abs(f.vo2.change)} on three months ago` : ''}.` : 'Estimated from your best run in the last sixty days, in ml/kg/min. A watch that writes VO2 max to Apple Health replaces this with its own reading.'}</small>` });
+    rows.push({ icon: 'health', label: 'VO2 max', value: `<b>${f.vo2.value}${delta(f.vo2.change, '', true, 0.3)}</b>`,
+      detail: `<small>${f.vo2.measured ? `From ${escapeHtmlLite(f.vo2.source)}, in ml/kg/min, against three months ago.` : 'Estimated from your best run in the last sixty days, in ml/kg/min. A watch that writes VO2 max to Apple Health replaces this.'}</small>` });
   }
-  if(f.races){
-    const r5 = f.races.find(r=> r.k === '5k');
-    rows.push({ icon: 'run', label: 'Race times', value: `<b>5k ${fmtRaceTime(r5.min)}</b>`,
-      detail: f.races.map(r=> `<div class="tp-kv"><span>${r.k}</span><b>${fmtRaceTime(r.min)}</b></div>`).join('')
-        + `<small>Predicted from ${localDateFrom(f.bestRun.date).toLocaleDateString(undefined, { weekday: 'long' })}’s ${f.bestRun.km.toFixed(1)} km in ${fmtRaceTime(f.bestRun.min)}, your best of the last sixty days. Longer races assume the training for them.</small>` });
+  if(p.charge.now != null) rows.push({ icon: 'charge', label: 'Morning Charge', value: `<b>${Math.round(p.charge.now)}${delta(p.charge.then != null ? p.charge.now - p.charge.then : null, '', true, 1.5, x=> Math.round(x))}</b>`,
+    detail: `<small>What you woke with, on average over four weeks${p.charge.then != null ? `, against ${Math.round(p.charge.then)} the four weeks before` : ''}. It rises as recovery, sleep and fitness do.</small>` });
+  if(p.rhr.now != null) rows.push({ icon: 'heart', label: 'Resting heart rate', value: `<b>${Math.round(p.rhr.now)}${delta(p.rhr.then != null ? p.rhr.now - p.rhr.then : null, '', false, 0.8, x=> Math.round(x))}</b>`,
+    detail: `<small>Beats a minute, four-week average${p.rhr.then != null ? `, against ${Math.round(p.rhr.then)}` : ''}. Lower usually means fitter and better recovered.</small>` });
+  if(p.sleep.now != null){
+    const hm = h=> `${Math.floor(h)}h ${String(Math.round((h % 1) * 60)).padStart(2, '0')}`;
+    rows.push({ icon: 'sleep', label: 'Sleep', value: `<b>${hm(p.sleep.now)}${delta(p.sleep.then != null ? (p.sleep.now - p.sleep.then) * 60 : null, 'm', true, 8, x=> Math.round(x))}</b>`,
+      detail: (f.sleep ? f.sleep.last.parts.map(q=> `<div class="tp-kv"><span>${q.k}</span><b>${q.say}</b></div>`).join('') + `<div class="tp-kv"><span>Last night\u2019s sleep score</span><b>${f.sleep.last.score}</b></div>` : '')
+        + `<small>Time asleep a night, four-week average${p.sleep.then != null ? `, against ${hm(p.sleep.then)}` : ''}.</small>` });
   }
-  // Sleep.
-  if(f.sleep){
-    const L = f.sleep.last;
-    rows.push({ icon: 'sleep', label: f.sleep.lastIsToday ? 'Last night’s sleep' : 'Sleep', value: `<span class="tp-chip ${tone(L.score)}">${L.score}</span>`,
-      detail: L.parts.map(p=> `<div class="tp-kv"><span>${p.k}</span><b>${p.say}</b></div>`).join('')
-        + `<small>Out of 100. ${f.sleep.week} on average this week.</small>` });
-  }
+  rows.push({ icon: 'streak', label: 'Sessions a week', value: `<b>${(Math.round(p.freq.now * 10) / 10)}${delta(p.freq.then != null ? p.freq.now - p.freq.then : null, '', true, 0.3)}</b>`,
+    detail: `<small>Lifts and runs a week over the last four weeks${p.freq.then != null ? `, against ${Math.round(p.freq.then * 10) / 10} the four before` : ''}.</small>` });
+  if(p.bw) rows.push({ icon: 'weight', label: 'Bodyweight', value: `<b>${p.bw.now.toFixed(1)} kg${p.bw.then != null ? ` <small class="tp-delta flat">${p.bw.now > p.bw.then ? '\u2191' : '\u2193'}${Math.abs(p.bw.now - p.bw.then).toFixed(1)}</small>` : ''}</b>`,
+    detail: '<small>Against four weeks ago. Whether that is the right way depends on the block: Set-up says what this one wants.</small>' });
+  if(p.yearAgo.length) rows.push({ icon: 'trends', label: 'A year ago', value: `<b>${p.yearAgo[0].name.split(' ').slice(-1)[0].toLowerCase()} ${kg(p.yearAgo[0].then)} \u2192 ${kg(p.yearAgo[0].now)}</b>`,
+    detail: p.yearAgo.map(y=> `<div class="tp-kv"><span>${escapeHtmlLite(y.name)}</span><b>${kg(y.then)} \u2192 ${kg(y.now)} kg</b></div>`).join('') + '<small>Estimated max a year ago against now.</small>' });
+
   const est = document.getElementById('planFitEst');
-  if(est) est.textContent = f.strength ? `strength ${f.strength.score}` : f.vo2 ? `VO2 ${f.vo2.value}` : '';
+  if(est) est.textContent = measured ? `${up} of ${measured} improving` : '';
   host.closest('.group').hidden = !rows.length;
   host.innerHTML = `<div class="tp-rows">` + rows.map((r, i)=>
-    `<button type="button" class="tp-line" aria-expanded="false" aria-controls="fitMore${i}">${dfIcon(r.icon, 20)}<span class="tp-k">${r.label}</span><span class="tp-v">${r.value}</span><span class="tp-chev" aria-hidden="true">›</span></button>`
+    `<button type="button" class="tp-line" aria-expanded="false" aria-controls="fitMore${i}">${dfIcon(r.icon, 20)}<span class="tp-k">${escapeHtmlLite(r.label)}</span><span class="tp-v">${r.value}</span><span class="tp-chev" aria-hidden="true">\u203a</span></button>`
     + `<div class="tp-more" id="fitMore${i}" hidden>${r.detail}</div>`).join('') + `</div>`;
 }
 /* One handler for every line list (Training and Set-up on Build): a tap opens that line's
@@ -31163,7 +31415,7 @@ const GOAL_STATUS_WORD = { improving_fast:['ahead','good'], improving:['improvin
 async function renderPlanTab(){
   document.querySelectorAll('#planSetupRows .tp-ic:empty').forEach(el=>{ el.innerHTML = dfIcon(el.dataset.ic, 20); });
   renderTrainingPanel();
-  renderFitnessPanel();
+  renderProgressPanel();
   // BLOCK: this block's weeks as cells, the next blocks as lanes.
   try{
     const pos = await getBlockPosition(todayStr);
