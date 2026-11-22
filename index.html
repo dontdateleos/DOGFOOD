@@ -1288,6 +1288,12 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .train-panel .tp-delta.up{ color:var(--good, #5c6b0f); }
   .train-panel .tp-delta.down{ color:var(--bad, #e8391a); }
   .train-panel .tp-delta.flat{ color:var(--dim); }
+  .train-panel .tp-group{ font-size:var(--fs-xs); font-weight:var(--fw-bold); letter-spacing:.1em; text-transform:uppercase; color:var(--dim); padding:16px 0 4px; }
+  .train-panel .tp-group:first-child{ padding-top:4px; }
+  .train-panel .tp-wins{ display:flex; gap:10px; align-items:flex-start; padding:10px 12px; margin:2px 0 6px; border-left:3px solid var(--block-lime); font-size:var(--fs-tag); line-height:1.45; }
+  .train-panel .tp-wins .df-icon{ flex:none; margin-top:1px; }
+  .train-panel .tp-wins b{ display:block; font-size:var(--fs-xs); letter-spacing:.08em; text-transform:uppercase; }
+  .train-panel .skg-bar{ margin:2px 0; }
   .train-panel .pg-spark{ display:block; width:100%; height:56px; margin:2px 0 4px; }
   .pg-spark .pg-line{ fill:none; stroke:currentColor; stroke-width:2; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
   .pg-spark .pg-area{ fill:rgba(var(--ink-rgb),0.08); stroke:none; }
@@ -13772,7 +13778,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.22.002';
+const APP_VERSION = '2026.11.22.003';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14168,6 +14174,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.22.003': 'Progress covers everything now, grouped: goals, strength, running, mobility (your mobility test, areas getting their ten minutes a week, minutes stretching), skills, body and recovery (including injuries you rate in the morning check-in) and habits. Your three biggest moves sit at the top. A stretching session\'s card shows each area\'s week against its target.',
   '2026.11.22.002': 'A new icon to go with him: the piñata on peach. The app opens on the same picture.',
   '2026.11.22.001': 'Meet the piñata. The mascot is a paper piñata now, in the same Charge ring. He bobs and tilts, blinks, squints happily at a new best, hops and turns, droops on a low Charge and shuts his eye when he dozes.',
   '2026.11.21.002': 'Progress on Build: every main lift, your strength score, 5k, VO2 max, morning Charge, resting heart rate, sleep, sessions a week, bodyweight, bests this block and a year ago, each with where it is and how it has moved. Goals say how far to go and roughly when. The Workout complete card shows what the session just moved: each lift against its best of the last eight weeks, and your pace against your usual.',
@@ -23431,7 +23438,27 @@ async function renderSessionComplete(){
       return `<div class="ps-row"><span class="ps-k">Run pace<small>${pf(pace)} a km${u != null ? ` \u00b7 usual ${pf(u)}` : ''}</small></span><span class="ps-bar"></span>`
         + (diff == null ? '' : diff >= 3 ? `<span class="ps-d up">${diff} s faster</span>` : diff <= -3 ? `<span class="ps-d">${-diff} s slower</span>` : '<span class="ps-d">usual</span>') + `</div>`;
     });
-    const all2 = liftRows.concat(runRows);
+    /* A STRETCHING SESSION: each area it reached, this week's minutes against the 10-minute
+       target, today's share in lime. */
+    let mobRows = [];
+    const mob = today.filter(x=> x.type === 'mobility' && Array.isArray(x.stretches));
+    if(mob.length){
+      try{
+        const led = await loadWeekStretchLedger(getWeekDates());
+        const todaySecs = {};
+        mob.forEach(x=> x.stretches.forEach(st=>{ let secs = 0; try{ secs = romSecondsFor(st) || 0; } catch(e){} const areasHit = [st.area].concat(MOBILITY_SKILL_TARGET_AREAS[st.skill] || []).filter(Boolean); areasHit.forEach(ar=>{ todaySecs[ar] = (todaySecs[ar] || 0) + secs; }); }));
+        const T = MOBILITY_WEEKLY_TARGET_SECONDS;
+        mobRows = Object.keys(todaySecs).filter(ar=> todaySecs[ar] > 0).sort((x, y)=> todaySecs[y] - todaySecs[x]).slice(0, 5).map(ar=>{
+          const week = led[ar] || todaySecs[ar], before = Math.max(0, week - todaySecs[ar]);
+          const b = Math.min(1, before / T), e = Math.min(1, week / T) - b;
+          const done = week >= T;
+          return `<div class="ps-row"><span class="ps-k">${escapeHtmlLite(BODY_AREAS[ar] || ar)}<small>${Math.round(week / 60)} of ${Math.round(T / 60)} min this week</small></span>`
+            + `<span class="ps-bar"><i style="width:${(b * 100).toFixed(1)}%"></i>${e > 0 ? `<em style="left:${(b * 100).toFixed(1)}%;width:${(e * 100).toFixed(1)}%"></em>` : ''}</span>`
+            + `<span class="ps-d${done ? ' up' : ''}">${done ? 'on target' : `+${Math.round(todaySecs[ar] / 60)} min`}</span></div>`;
+        });
+      } catch(e){}
+    }
+    const all2 = liftRows.concat(runRows, mobRows);
     if(all2.length) strip = `<div class="progress-strip">${all2.join('')}</div>`;
   } catch(e){}
   host.innerHTML = `<div class="session-complete"><b>${today.length > 1 ? 'Workouts complete' : 'Workout complete'}</b>${detail}${strip}</div>`;
@@ -28048,7 +28075,72 @@ async function progressSummary(){
   const best5 = rs=>{ let b = null; rs.forEach(r=>{ const v = vdotOf(r.distanceKm, r.durationMin); if(isFinite(v) && (!b || v > b.v)) b = { v, t: r.durationMin * Math.pow(5 / r.distanceKm, 1.06) }; }); return b; };
   const r5n = best5(runsIn(shiftDateStr(todayStr, -60), todayStr)), r5t = best5(runsIn(shiftDateStr(todayStr, -120), shiftDateStr(todayStr, -60)));
   if(r5n) run5 = { now: r5n.t, then: r5t ? r5t.t : null };
-  const v = { goals, bests, lifts, fit, run5, charge, rhr, sleep, freq, bw, yearAgo, blockStart };
+  /* MOBILITY. Time spent stretching a week (each stretch counted once, not once per area it
+     reaches), the areas reaching the 10-minute weekly target (the last seven days against the
+     seven days four weeks before), and the mobility test, now against its earliest dated copy. */
+  const weekDates = end=> [...Array(7)].map((_, i)=> shiftDateStr(end, -i));
+  const stretchSecs = ds=> sessions.filter(sn=> sn.type === 'mobility' && ds.includes(sn.date) && Array.isArray(sn.stretches))
+    .reduce((a, sn)=> a + sn.stretches.reduce((b, st)=>{ try{ return b + (romSecondsFor(st) || 0); } catch(e){ return b; } }, 0), 0);
+  const stretch = { now: stretchSecs(nowDays) / 4 / 60, then: sessions.some(sn=> sn.type === 'mobility' && prevDays.includes(sn.date)) ? stretchSecs(prevDays) / 4 / 60 : null,
+                    any: sessions.some(sn=> sn.type === 'mobility') };
+  let areas = null;
+  try{
+    const onT = async end=>{ const led = await loadWeekStretchLedger(weekDates(end)); const v = Object.values(led).filter(x=> x > 0); return { at: v.filter(x=> x >= MOBILITY_WEEKLY_TARGET_SECONDS).length, touched: v.length, led }; };
+    const a1 = await onT(todayStr), a0 = await onT(shiftDateStr(todayStr, -28));
+    if(a1.touched || a0.touched) areas = { now: a1.at, then: a0.touched ? a0.at : null, touched: a1.touched, led: a1.led };
+  } catch(e){}
+  let mobTest = null;
+  try{
+    const cur = await getCurrentMobilityAssessment();
+    if(cur && cur.scores && Object.keys(cur.scores).length){
+      const hist = [];
+      try{ const r = await window.storage.list('mobilityAssessHist:'); for(const k of ((r && r.keys) || []).sort()){ try{ const h = JSON.parse((await window.storage.get(k)).value); if(h && h.scaleVersion === MOBILITY_SCALE_VERSION) hist.push(h); } catch(e){} } } catch(e){}
+      // First visit since the history began: the current rating is the first copy.
+      if(!hist.length && cur.lastUpdated){
+        try{ await window.storage.set(`mobilityAssessHist:${cur.lastUpdated}`, JSON.stringify({ scores: cur.scores, date: cur.lastUpdated, scaleVersion: MOBILITY_SCALE_VERSION })); } catch(e){}
+      }
+      const first = hist.length ? hist[0] : null;
+      const sum = sc=> MOBILITY_DOMAINS.reduce((a, d)=> a + (sc && sc[d] != null ? +sc[d] : 0), 0);
+      const max = MOBILITY_DOMAINS.reduce((a, d)=> a + ((MOBILITY_DOMAIN_TESTS[d] || []).length), 0);
+      mobTest = { now: sum(cur.scores), max, then: first && first.date !== cur.lastUpdated ? sum(first.scores) : null, since: first ? first.date : null,
+                  lastUpdated: cur.lastUpdated, domains: MOBILITY_DOMAINS.filter(d=> cur.scores[d] != null).map(d=> ({ d, now: +cur.scores[d], then: first && first.scores && first.scores[d] != null ? +first.scores[d] : null, of: (MOBILITY_DOMAIN_TESTS[d] || []).length })) };
+    }
+  } catch(e){}
+  /* SKILLS, mobility and exercise: each skill goal's level now, against its level in the goal
+     record standing eight weeks ago (or the first one that has it). */
+  const skills = [];
+  try{
+    const cur = await getCurrentGoals(todayStr);
+    const sgs = ((cur && cur.skillGoals) || []);
+    const recs = [];
+    try{ const r = await window.storage.list('goals:'); for(const k of ((r && r.keys) || []).sort()){ const d = k.replace('goals:', ''); if(d > todayStr) continue; try{ recs.push({ d, v: JSON.parse((await window.storage.get(k)).value) }); } catch(e){} } } catch(e){}
+    sgs.forEach(sg=>{
+      const tree = PROGRESSION_TREES[sg.category === 'exercise' ? 'exercise' : 'mobility'] && PROGRESSION_TREES[sg.category === 'exercise' ? 'exercise' : 'mobility'][sg.skill];
+      if(!tree) return;
+      const has = recs.map(r=> ({ d: r.d, sg: ((r.v && r.v.skillGoals) || []).find(x=> x.skill === sg.skill && x.category === sg.category) })).filter(x=> x.sg);
+      const back = has.filter(x=> x.d <= d56).pop() || has[0] || null;
+      skills.push({ label: tree.label, category: sg.category, now: sg.levelIndex + 1, of: tree.levels.length, level: tree.levels[sg.levelIndex],
+                    then: back && back.d < todayStr && back.sg.levelIndex !== sg.levelIndex ? back.sg.levelIndex + 1 : (back ? back.sg.levelIndex + 1 : null),
+                    since: back ? back.d : null, advancedOn: sg.advancedOn || null, maint: !!sg.isMaintenance });
+    });
+  } catch(e){}
+  // INJURIES still healing: the model's estimate, said as one, never counted as improvement.
+  const injuries = [];
+  try{
+    const r = await window.storage.list('injury:');
+    for(const k of ((r && r.keys) || [])){
+      try{
+        const inj = JSON.parse((await window.storage.get(k)).value);
+        if(!inj || inj.resolved) continue;
+        // Your own rating from the morning check-in when there is one this week; otherwise the
+        // model's estimate from it, decayed to today.
+        const now = severityNow(inj.initialSeverity, injDecayDate(inj), inj.halfLife);
+        const rated = inj.confirmedOn && inj.confirmedOn >= shiftDateStr(todayStr, -7);
+        injuries.push({ part: inj.part || 'Injury', first: inj.onsetSeverity != null ? inj.onsetSeverity : inj.initialSeverity, now, rated, ratedOn: inj.confirmedOn || null, since: inj.date });
+      } catch(e){}
+    }
+  } catch(e){}
+  const v = { goals, bests, lifts, fit, run5, charge, rhr, sleep, freq, bw, yearAgo, blockStart, stretch, areas, mobTest, skills, injuries };
   _progCache = { day: todayStr, at: Date.now(), v };
   return v;
 }
@@ -28058,82 +28150,126 @@ async function renderProgressPanel(){
   let p = null;
   try{ p = await progressSummary(); } catch(e){}
   if(!p) return;
-  const rows = [];
-  let up = 0, measured = 0;
-  /* A change, said with its direction: good is lime, bad is red, under `min` is flat. */
-  const delta = (d, unit, goodIsUp, min, fmt)=>{
+  /* GROUPED, WITH THE BIGGEST MOVES ON TOP. Every line belongs to one of the areas below, in
+     this order; the summary names the three changes that moved furthest past their own
+     threshold for "meaningful", so the first thing read is what got better. */
+  const GROUPS = [['goals', 'Goals'], ['strength', 'Strength'], ['running', 'Running'], ['mobility', 'Mobility'], ['skills', 'Skills'], ['body', 'Body and recovery'], ['habits', 'Habits']];
+  const rows = [], wins = [];
+  let up = 0, measured = 0, curGroup = 'goals';
+  const add = (group, icon, label, value, detail)=> rows.push({ group, icon, label, value, detail });
+  /* A change with its direction: good is lime, bad red, under `min` flat. A good one big
+     enough counts towards the summary, scored by how many times its threshold it moved. */
+  const delta = (d, unit, goodIsUp, min, fmt, winLabel)=>{
     if(d == null || !isFinite(d)) return '';
     measured++;
     const f = fmt || (x=> (Math.round(x * 10) / 10).toString());
-    if(Math.abs(d) < (min || 0)) return `<small class="tp-delta flat">\u2192</small>`;
+    if(Math.abs(d) < (min || 0)) return `<small class="tp-delta flat">→</small>`;
     const good = goodIsUp == null ? null : (d > 0) === goodIsUp;
-    if(good) up++;
-    return `<small class="tp-delta ${good == null ? 'flat' : good ? 'up' : 'down'}">${d > 0 ? '\u2191' : '\u2193'}${f(Math.abs(d))}${unit}</small>`;
+    if(good){ up++; if(winLabel) wins.push({ group: curGroup, text: `${winLabel} ${d > 0 ? '+' : '−'}${f(Math.abs(d))}${unit}`, k: Math.abs(d) / (min || 1) }); }
+    return `<small class="tp-delta ${good == null ? 'flat' : good ? 'up' : 'down'}">${d > 0 ? '↑' : '↓'}${f(Math.abs(d))}${unit}</small>`;
   };
   const kg = x=> `${Math.round(x * 2) / 2}`;
+  const day = d=> localDateFrom(d).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
   const mon = dt=> dt.toLocaleDateString(undefined, { month: 'short', year: dt.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined });
+  const hm = h=> `${Math.floor(h)}h ${String(Math.round((h % 1) * 60)).padStart(2, '0')}`;
+  const f = p.fit || {};
+
   // Goals.
   p.goals.forEach(g=>{
     const val = g.done ? 'reached' : g.time ? `${fmtRaceTime(g.toGo)} to go` : `${kg(g.toGo)} kg to go`;
-    rows.push({ icon: 'goals', label: g.label, value: `<b>${val}</b>`,
-      detail: (g.spark ? sparkSvg(g.spark, { goal: g.target }) : '')
-        + `<div class="tp-kv"><span>Now</span><b>${g.time ? fmtRaceTime(g.now) : kg(g.now) + ' kg'}</b></div><div class="tp-kv"><span>Goal</span><b>${g.time ? fmtRaceTime(g.target) : g.target + ' kg'}</b></div>`
-        + `<small>${g.done ? 'Reached on your estimated max. Set the next one under Set-up.' : g.eta ? `At the rate of the last eight weeks you get there around ${mon(g.eta)}.` : 'Not moving towards it over the last eight weeks yet, so no date.'}</small>` });
+    add('goals', 'goals', g.label, `<b>${val}</b>`, (g.spark ? sparkSvg(g.spark, { goal: g.target }) : '')
+      + `<div class="tp-kv"><span>Now</span><b>${g.time ? fmtRaceTime(g.now) : kg(g.now) + ' kg'}</b></div><div class="tp-kv"><span>Goal</span><b>${g.time ? fmtRaceTime(g.target) : g.target + ' kg'}</b></div>`
+      + `<small>${g.done ? 'Reached on your estimated max. Set the next one under Set-up.' : g.eta ? `At the rate of the last eight weeks you get there around ${mon(g.eta)}.` : 'Not moving towards it over the last eight weeks yet, so no date.'}</small>`);
   });
-  // Bests this block.
-  if(p.bests.length || p.lifts.length){
-    rows.push({ icon: 'pr', label: 'Bests this block', value: `<b>${p.bests.length ? p.bests.length + ' new' : 'none yet'}</b>`,
-      detail: p.bests.length ? p.bests.slice(0, 8).map(b=> `<div class="tp-kv"><span>${escapeHtmlLite(b.name)}</span><b>${b.w} kg \u00d7 ${b.n} \u00b7 ${localDateFrom(b.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</b></div>`).join('') + '<small>Top sets heavier than any before them, since this block began.</small>'
-        : '<small>A top set heavier than any before it shows here.</small>' });
-  }
-  // Lifts.
-  p.lifts.forEach(l=>{
-    rows.push({ icon: 'strength', label: l.name, value: `<b>${kg(l.now)} kg${delta(l.change, '', true, 1, kg)}</b>`,
-      detail: sparkSvg(l.spark)
-        + `<div class="tp-kv"><span>Estimated max now</span><b>${kg(l.now)} kg</b></div>`
-        + (l.then != null ? `<div class="tp-kv"><span>${l.since ? `Your start, ${localDateFrom(l.since).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}` : 'Eight weeks ago'}</span><b>${kg(l.then)} kg</b></div>` : '')
-        + (l.best ? `<div class="tp-kv"><span>Best set</span><b>${l.best.w} kg \u00d7 ${l.best.n}</b></div>` : '')
-        + `<small>Estimated one-rep max from your best set each session, over the last sixteen weeks.</small>` });
-  });
-  const f = p.fit || {};
+  // Strength.
+  curGroup = 'strength';
+  if(p.bests.length || p.lifts.length)
+    add('strength', 'pr', 'Bests this block', `<b>${p.bests.length ? p.bests.length + ' new' : 'none yet'}</b>`,
+      p.bests.length ? p.bests.slice(0, 8).map(b=> `<div class="tp-kv"><span>${escapeHtmlLite(b.name)}</span><b>${b.w} kg × ${b.n} · ${day(b.date)}</b></div>`).join('') + '<small>Top sets heavier than any before them, since this block began.</small>'
+        : '<small>A top set heavier than any before it shows here.</small>');
+  p.lifts.forEach(l=> add('strength', 'strength', l.name, `<b>${kg(l.now)} kg${delta(l.change, ' kg', true, 1, kg, l.name)}</b>`,
+    sparkSvg(l.spark) + `<div class="tp-kv"><span>Estimated max now</span><b>${kg(l.now)} kg</b></div>`
+    + (l.then != null ? `<div class="tp-kv"><span>${l.since ? `Your start, ${day(l.since)}` : 'Eight weeks ago'}</span><b>${kg(l.then)} kg</b></div>` : '')
+    + (l.best ? `<div class="tp-kv"><span>Best set</span><b>${l.best.w} kg × ${l.best.n}</b></div>` : '')
+    + '<small>Estimated one-rep max from your best set each session, over the last sixteen weeks.</small>'));
   if(f.strength){
     const ch = f.strengthThen ? f.strength.score - f.strengthThen.score : null;
-    rows.push({ icon: 'muscle', label: 'Strength score', value: `<b>${f.strength.score}${delta(ch, '', true, 1)}</b>`,
-      detail: f.strength.parts.map(q=> `<div class="tp-kv"><span>${q.name}</span><b>${Math.round(q.kg)} kg \u00b7 ${q.ratio.toFixed(2)}\u00d7</b></div>`).join('')
-        + `<small>Your main lifts against your ${f.strength.bw.toFixed(1)} kg bodyweight. 100 is a strong lifter's standard on every lift you do.</small>` });
+    add('strength', 'muscle', 'Strength score', `<b>${f.strength.score}${delta(ch, '', true, 1, null, 'Strength score')}</b>`,
+      f.strength.parts.map(q=> `<div class="tp-kv"><span>${q.name}</span><b>${Math.round(q.kg)} kg · ${q.ratio.toFixed(2)}×</b></div>`).join('')
+      + `<small>Your main lifts against your ${f.strength.bw.toFixed(1)} kg bodyweight. 100 is a strong lifter's standard on every lift you do.</small>`);
   }
-  if(p.run5){
-    rows.push({ icon: 'run', label: '5k', value: `<b>${fmtRaceTime(p.run5.now)}${delta(p.run5.then != null ? p.run5.now - p.run5.then : null, '', false, 0.1, x=> fmtRaceTime(x))}</b>`,
-      detail: (f.races ? f.races.map(r=> `<div class="tp-kv"><span>${r.k}</span><b>${fmtRaceTime(r.min)}</b></div>`).join('') : '')
-        + `<small>Predicted from your best run of the last sixty days${p.run5.then != null ? ', against the sixty days before' : ''}.</small>` });
+  // Running.
+  curGroup = 'running';
+  if(p.run5) add('running', 'run', '5k', `<b>${fmtRaceTime(p.run5.now)}${delta(p.run5.then != null ? p.run5.now - p.run5.then : null, '', false, 0.1, x=> fmtRaceTime(x), '5k')}</b>`,
+    (f.races ? f.races.map(r=> `<div class="tp-kv"><span>${r.k}</span><b>${fmtRaceTime(r.min)}</b></div>`).join('') : '')
+    + `<small>Predicted from your best run of the last sixty days${p.run5.then != null ? ', against the sixty days before' : ''}.</small>`);
+  if(f.vo2) add('running', 'health', 'VO2 max', `<b>${f.vo2.value}${delta(f.vo2.change, '', true, 0.3, null, 'VO2 max')}</b>`,
+    `<small>${f.vo2.measured ? `From ${escapeHtmlLite(f.vo2.source)}, in ml/kg/min, against three months ago.` : 'Estimated from your best run in the last sixty days, in ml/kg/min. A watch that writes VO2 max to Apple Health replaces this.'}</small>`);
+  // Mobility.
+  curGroup = 'mobility';
+  if(p.mobTest){
+    const mt = p.mobTest;
+    add('mobility', 'mobility', 'Mobility test', `<b>${mt.now} of ${mt.max}${delta(mt.then != null ? mt.now - mt.then : null, '', true, 1, x=> Math.round(x), 'Mobility test')}</b>`,
+      mt.domains.map(x=> `<div class="tp-kv"><span>${x.d.charAt(0).toUpperCase() + x.d.slice(1)}</span><b>${x.now} of ${x.of}${x.then != null && x.then !== x.now ? ` <small class="tp-delta ${x.now > x.then ? 'up' : 'down'}">${x.now > x.then ? '↑' : '↓'}${Math.abs(x.now - x.then)}</small>` : ''}</b></div>`).join('')
+      + `<small>Levels passed on the mobility test, area by area${mt.then != null ? `, against your first test on ${day(mt.since)}` : ''}. Last taken ${day(mt.lastUpdated)}${assessmentAgeDays({ lastUpdated: mt.lastUpdated }) >= MOBILITY_REASSESS_DAYS ? '; due a retest under Skills' : ''}.</small>`);
   }
-  if(f.vo2){
-    rows.push({ icon: 'health', label: 'VO2 max', value: `<b>${f.vo2.value}${delta(f.vo2.change, '', true, 0.3)}</b>`,
-      detail: `<small>${f.vo2.measured ? `From ${escapeHtmlLite(f.vo2.source)}, in ml/kg/min, against three months ago.` : 'Estimated from your best run in the last sixty days, in ml/kg/min. A watch that writes VO2 max to Apple Health replaces this.'}</small>` });
+  if(p.areas){
+    const a = p.areas;
+    const led = Object.entries(a.led || {}).filter(([, v])=> v > 0).sort((x, y)=> y[1] - x[1]);
+    add('mobility', 'streak', 'Areas on target', `<b>${a.now} of ${Math.max(a.touched, a.now)}${delta(a.then != null ? a.now - a.then : null, '', true, 1, x=> Math.round(x), 'Areas on target')}</b>`,
+      led.map(([ar, v])=> `<div class="tp-kv"><span>${escapeHtmlLite(BODY_AREAS[ar] || ar)}</span><b>${Math.round(v / 60)} of ${Math.round(MOBILITY_WEEKLY_TARGET_SECONDS / 60)} min</b></div>`).join('')
+      + `<small>Body areas that got ${Math.round(MOBILITY_WEEKLY_TARGET_SECONDS / 60)} minutes of stretching in the last seven days${a.then != null ? `, against ${a.then} four weeks ago` : ''}. Lifts through a full range count towards it.</small>`);
   }
-  if(p.charge.now != null) rows.push({ icon: 'charge', label: 'Morning Charge', value: `<b>${Math.round(p.charge.now)}${delta(p.charge.then != null ? p.charge.now - p.charge.then : null, '', true, 1.5, x=> Math.round(x))}</b>`,
-    detail: `<small>What you woke with, on average over four weeks${p.charge.then != null ? `, against ${Math.round(p.charge.then)} the four weeks before` : ''}. It rises as recovery, sleep and fitness do.</small>` });
-  if(p.rhr.now != null) rows.push({ icon: 'heart', label: 'Resting heart rate', value: `<b>${Math.round(p.rhr.now)}${delta(p.rhr.then != null ? p.rhr.now - p.rhr.then : null, '', false, 0.8, x=> Math.round(x))}</b>`,
-    detail: `<small>Beats a minute, four-week average${p.rhr.then != null ? `, against ${Math.round(p.rhr.then)}` : ''}. Lower usually means fitter and better recovered.</small>` });
-  if(p.sleep.now != null){
-    const hm = h=> `${Math.floor(h)}h ${String(Math.round((h % 1) * 60)).padStart(2, '0')}`;
-    rows.push({ icon: 'sleep', label: 'Sleep', value: `<b>${hm(p.sleep.now)}${delta(p.sleep.then != null ? (p.sleep.now - p.sleep.then) * 60 : null, 'm', true, 8, x=> Math.round(x))}</b>`,
-      detail: (f.sleep ? f.sleep.last.parts.map(q=> `<div class="tp-kv"><span>${q.k}</span><b>${q.say}</b></div>`).join('') + `<div class="tp-kv"><span>Last night\u2019s sleep score</span><b>${f.sleep.last.score}</b></div>` : '')
-        + `<small>Time asleep a night, four-week average${p.sleep.then != null ? `, against ${hm(p.sleep.then)}` : ''}.</small>` });
-  }
-  rows.push({ icon: 'streak', label: 'Sessions a week', value: `<b>${(Math.round(p.freq.now * 10) / 10)}${delta(p.freq.then != null ? p.freq.now - p.freq.then : null, '', true, 0.3)}</b>`,
-    detail: `<small>Lifts and runs a week over the last four weeks${p.freq.then != null ? `, against ${Math.round(p.freq.then * 10) / 10} the four before` : ''}.</small>` });
-  if(p.bw) rows.push({ icon: 'weight', label: 'Bodyweight', value: `<b>${p.bw.now.toFixed(1)} kg${p.bw.then != null ? ` <small class="tp-delta flat">${p.bw.now > p.bw.then ? '\u2191' : '\u2193'}${Math.abs(p.bw.now - p.bw.then).toFixed(1)}</small>` : ''}</b>`,
-    detail: '<small>Against four weeks ago. Whether that is the right way depends on the block: Set-up says what this one wants.</small>' });
-  if(p.yearAgo.length) rows.push({ icon: 'trends', label: 'A year ago', value: `<b>${p.yearAgo[0].name.split(' ').slice(-1)[0].toLowerCase()} ${kg(p.yearAgo[0].then)} \u2192 ${kg(p.yearAgo[0].now)}</b>`,
-    detail: p.yearAgo.map(y=> `<div class="tp-kv"><span>${escapeHtmlLite(y.name)}</span><b>${kg(y.then)} \u2192 ${kg(y.now)} kg</b></div>`).join('') + '<small>Estimated max a year ago against now.</small>' });
+  if(p.stretch && p.stretch.any) add('mobility', 'timer', 'Stretching a week', `<b>${Math.round(p.stretch.now)} min${delta(p.stretch.then != null ? p.stretch.now - p.stretch.then : null, ' min', true, 3, x=> Math.round(x), 'Stretching')}</b>`,
+    `<small>Minutes of stretching sessions a week over the last four weeks${p.stretch.then != null ? `, against ${Math.round(p.stretch.then)} the four before` : ''}, each stretch counted once.</small>`);
+  // Skills.
+  curGroup = 'skills';
+  p.skills.forEach(k=>{
+    const ch = k.then != null ? k.now - k.then : null;
+    add('skills', k.category === 'exercise' ? 'power' : 'mobility', k.label, `<b>L${k.now}/${k.of}${delta(ch, '', true, 1, x=> Math.round(x), k.label)}</b>`,
+      `<div class="skg-bar"><div class="skg-bar-fill" style="width:${Math.round(100 * k.now / k.of)}%"></div></div>`
+      + `<div class="tp-kv"><span>Now</span><b>${escapeHtmlLite(k.level || '')}</b></div>`
+      + `<small>${k.advancedOn ? `Moved up on ${day(k.advancedOn)}. ` : ''}${ch ? `Up ${ch} level${ch === 1 ? '' : 's'} since ${day(k.since)}.` : k.maint ? 'Kept at this level on purpose.' : 'Each level comes when the one before is done for the full dose; the Skills tab says how close you are.'}</small>`);
+  });
+  // Body and recovery.
+  curGroup = 'body';
+  if(p.charge.now != null) add('body', 'charge', 'Morning Charge', `<b>${Math.round(p.charge.now)}${delta(p.charge.then != null ? p.charge.now - p.charge.then : null, '', true, 1.5, x=> Math.round(x), 'Morning Charge')}</b>`,
+    `<small>What you woke with, on average over four weeks${p.charge.then != null ? `, against ${Math.round(p.charge.then)} the four weeks before` : ''}. It rises as recovery, sleep and fitness do.</small>`);
+  if(p.rhr.now != null) add('body', 'heart', 'Resting heart rate', `<b>${Math.round(p.rhr.now)}${delta(p.rhr.then != null ? p.rhr.now - p.rhr.then : null, '', false, 0.8, x=> Math.round(x), 'Resting heart rate')}</b>`,
+    `<small>Beats a minute, four-week average${p.rhr.then != null ? `, against ${Math.round(p.rhr.then)}` : ''}. Lower usually means fitter and better recovered.</small>`);
+  if(p.sleep.now != null) add('body', 'sleep', 'Sleep', `<b>${hm(p.sleep.now)}${delta(p.sleep.then != null ? (p.sleep.now - p.sleep.then) * 60 : null, 'm', true, 8, x=> Math.round(x), 'Sleep')}</b>`,
+    (f.sleep ? f.sleep.last.parts.map(q=> `<div class="tp-kv"><span>${q.k}</span><b>${q.say}</b></div>`).join('') + `<div class="tp-kv"><span>Last night’s sleep score</span><b>${f.sleep.last.score}</b></div>` : '')
+    + `<small>Time asleep a night, four-week average${p.sleep.then != null ? `, against ${hm(p.sleep.then)}` : ''}.</small>`);
+  if(p.bw) add('body', 'weight', 'Bodyweight', `<b>${p.bw.now.toFixed(1)} kg${p.bw.then != null ? ` <small class="tp-delta flat">${p.bw.now > p.bw.then ? '↑' : '↓'}${Math.abs(p.bw.now - p.bw.then).toFixed(1)}</small>` : ''}</b>`,
+    '<small>Against four weeks ago. Whether that is the right way depends on the block: Set-up says what this one wants.</small>');
+  p.injuries.forEach(j=> add('body', 'injury', j.part, `<b>${Math.round(j.now * 10) / 10}/10${j.rated ? delta(j.now - j.first, '', false, 1, x=> Math.round(x * 10) / 10, j.part) : ' <small class="tp-delta flat">est.</small>'}</b>`,
+    `<div class="tp-kv"><span>When it started, ${day(j.since)}</span><b>${j.first}/10</b></div>`
+    + `<small>${j.rated ? `Your rating from the morning check-in on ${day(j.ratedOn)}, against how it started.` : 'An estimate from how injuries like this settle; rate it in the morning check-in to make it yours.'} Mark it healed on the Skills tab when it is.</small>`));
+  // Habits.
+  curGroup = 'habits';
+  add('habits', 'streak', 'Sessions a week', `<b>${(Math.round(p.freq.now * 10) / 10)}${delta(p.freq.then != null ? p.freq.now - p.freq.then : null, '', true, 0.3, null, 'Sessions a week')}</b>`,
+    `<small>Lifts and runs a week over the last four weeks${p.freq.then != null ? `, against ${Math.round(p.freq.then * 10) / 10} the four before` : ''}.</small>`);
+  if(p.yearAgo.length) add('habits', 'trends', 'A year ago', `<b>${p.yearAgo[0].name.split(' ').slice(-1)[0].toLowerCase()} ${kg(p.yearAgo[0].then)} → ${kg(p.yearAgo[0].now)}</b>`,
+    p.yearAgo.map(y=> `<div class="tp-kv"><span>${escapeHtmlLite(y.name)}</span><b>${kg(y.then)} → ${kg(y.now)} kg</b></div>`).join('') + '<small>Estimated max a year ago against now.</small>');
 
   const est = document.getElementById('planFitEst');
   if(est) est.textContent = measured ? `${up} of ${measured} improving` : '';
   host.closest('.group').hidden = !rows.length;
-  host.innerHTML = `<div class="tp-rows">` + rows.map((r, i)=>
-    `<button type="button" class="tp-line" aria-expanded="false" aria-controls="fitMore${i}">${dfIcon(r.icon, 20)}<span class="tp-k">${escapeHtmlLite(r.label)}</span><span class="tp-v">${r.value}</span><span class="tp-chev" aria-hidden="true">\u203a</span></button>`
-    + `<div class="tp-more" id="fitMore${i}" hidden>${r.detail}</div>`).join('') + `</div>`;
+  // The best move from each area, then the three areas that moved most: a spread of what got
+  // better rather than three lifts.
+  const bestBy = {};
+  wins.forEach(w=>{ if(!bestBy[w.group] || w.k > bestBy[w.group].k) bestBy[w.group] = w; });
+  const top = Object.values(bestBy).sort((a, b)=> b.k - a.k).slice(0, 3);
+  let i = 0;
+  const html = GROUPS.map(([key, name])=>{
+    const these = rows.filter(r=> r.group === key);
+    if(!these.length) return '';
+    return `<div class="tp-group">${name}</div>` + these.map(r=>{ const n = i++;
+      return `<button type="button" class="tp-line" aria-expanded="false" aria-controls="fitMore${n}">${dfIcon(r.icon, 20)}<span class="tp-k">${escapeHtmlLite(r.label)}</span><span class="tp-v">${r.value}</span><span class="tp-chev" aria-hidden="true">›</span></button>`
+        + `<div class="tp-more" id="fitMore${n}" hidden>${r.detail}</div>`; }).join('');
+  }).join('');
+  host.innerHTML = (top.length ? `<div class="tp-wins">${dfIcon('trends', 18)}<span><b>Biggest moves</b> ${top.map(w=> escapeHtmlLite(w.text)).join(' · ')}</span></div>` : '')
+    + `<div class="tp-rows">${html}</div>`;
 }
 /* One handler for every line list (Training and Set-up on Build): a tap opens that line's
    detail and closes any other open in the same list; a second tap closes it. */
@@ -34821,6 +34957,9 @@ function assessmentAgeDays(assessment){
 
 async function saveMobilityAssessment(scores){
   const r = await window.storage.set('settings:mobilityAssessment', JSON.stringify({ scores, lastUpdated: todayStr, scaleVersion: MOBILITY_SCALE_VERSION }));
+  // A dated copy, so Progress can show how each area has moved between tests. The record
+  // above is overwritten every time; this is the history it never kept.
+  try{ await window.storage.set(`mobilityAssessHist:${todayStr}`, JSON.stringify({ scores, date: todayStr, scaleVersion: MOBILITY_SCALE_VERSION })); } catch(e){}
   // The picker reads a cached copy; without this the note would still say "not assessed"
   // on the screen you just came from.
   await refreshMobilityScoresForPicker();
