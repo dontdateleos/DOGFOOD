@@ -50,6 +50,13 @@ Peer-reviewed evidence on these movements is thin. One RCT of a commercial quadr
 | **Floreio-style transitions** (underswitch, overswitch, side kick-through, scorpion reach) | Coord, rotational core, Sh, Hip | W-Move (general days, light); Rest flows; Snack | 3–5/side slow | L1 beast → hip rotation to seated → L2 side kick-through, slow → L3 underswitch → L4 overswitch/scorpion reach → L5 linked flow 30–60 s. Pass: quiet hand and foot placements, no wrist or shoulder pain, smooth weight transfer |
 | **Other common moves** (bird dog, gorilla/"Sasquatch" shuffle, kangaroo hop, low lunge rock, 90/90 hip switches, scorpion reach, loaded beast) | Mixed | Bird dog/90-90: W-Move, CD, Rest. Gorilla/kangaroo: Cond or Prime only | 5–8/side | Follow the same logic: static → stationary limb lift → travelling → linked/loaded |
 
+- **[SYNTHESIS]** The EMG finding that limb-lift and travelling bear variants beat the static bear hold supports the "static → stationary limb lift → travelling" order used throughout the table.
+
+### Gaps
+- No source I could reach gives validated doses (sets × seconds/metres) or objective level-pass criteria for any of these movements. All table values are coaching-convention synthesis.
+- The official Animal Flow Level 1/2 progressions (Beast/Crab/Ape activations, switches, flows) exist in the AF manuals, but the full text could not be fetched. GMB, Squat University and Barbell Medicine pages were not reachable or not surfaced.
+- No peer-reviewed data on ape, frogger, lizard crawl, duck walk, rolling patterns or floreio transitions specifically.
+
 ## 2. Specific prep before squats, deadlifts, bench/OH press, pull-ups and running (and what to avoid pre-lift)
 
 ### Takeaway
