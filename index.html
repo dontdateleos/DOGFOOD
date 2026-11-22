@@ -9581,10 +9581,8 @@ const MC_PINATA = true;
    tools/art/pinata-turnaround.png by tools/build-mascot-turn.mjs), and a turn shows the side
    you'd really see. His rest is the three-quarter view with the snout to your left; turning
    his way (ry below 0) brings him side-on, then round past his back; the other way faces you.
-   The ring is eight views 45 degrees apart, the far side mirrored. Between two views the next
-   one fades in over the last few degrees and his outline narrows a touch towards the change, so
-   a turn reads as a turn; the fades are short because two shots never line up exactly and a
-   long blend shows two eyes.
+   The ring is eight views 45 degrees apart, the far side mirrored; between them each shot is
+   turned the rest of the way by mcPinataWarp, and past halfway the next shot takes over.
    Looking down or up (rx) swaps in the shots from above and below; a flip passes through his
    top and his underside. Every frame shares one canvas with the middle of his bottom fringe
    at the bottom centre, so he turns on the spot. Each frame knows where its eye is, so lids,
@@ -9593,23 +9591,60 @@ const PINATA = { dir: 'mascot/turn/', w: 247, h: 240, lid: '#f47b2f',
   ring: ['front', 'fl34', 'left', 'bl34', 'back', 'bl34', 'left', 'fl34'],
   frames: { fl34: { eye: [0.496, 0.4536, 0.0875, 0.1029] }, front: {}, left: { eye: [0.3804, 0.4793, 0.0929, 0.0956] },
     bl34: {}, back: {}, top: {}, bottom: {}, low: { eye: [0.6646, 0.3727, 0.0804, 0.0882], k: 0.84 }, high: { eye: [0.5573, 0.5638, 0.0875, 0.1066] } } };
-let _pnPreloaded = false;
-/* Which view or two to show for this pose: a (underneath, nearly always full) and b over it
-   at w, plus any roll a flip adds and a squash for pitch no view covers. */
+let _pnPreloaded = false, _pnRing = null;
+/* Which shot or two to show for this pose: a underneath, b over it at w. Each comes with d,
+   how many degrees the pose is turned past that shot's own angle, which the warp below makes
+   up; a flip adds its roll; pitch no shot covers is a squash. */
 function mcPinataPick(){
   const sm = x=> x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x);
   let p = ((((mcState.rx || 0) % 360) + 540) % 360) - 180;
   let phi = 45 - (mcState.ry || 0), roll = 0;
   if(Math.abs(p) > 90){ p = Math.sign(p) * (180 - Math.abs(p)); phi += 180; roll = 180; }
   phi = ((phi % 360) + 360) % 360;
-  const near = Math.round(phi / 45), i = near % 8, off = phi - near * 45;
-  const view = k=> ({ name: PINATA.ring[k], mirror: k >= 5 });
+  /* The shot he's on holds until the pose is 26 degrees past it, a little beyond halfway to
+     the next, so a sway that hovers at the halfway point doesn't flicker between two. */
+  const dist = k=> ((phi - k * 45) % 360 + 540) % 360 - 180;
+  let i = Math.round(phi / 45) % 8;
+  if(_pnRing != null && Math.abs(dist(_pnRing)) <= 26) i = _pnRing;
+  _pnRing = i;
+  const off = dist(i);
+  const view = (k, d)=> ({ name: PINATA.ring[k], mirror: k >= 5, d });
   const side = i === 1 || i === 2 || i === 6 || i === 7;
-  const ap = Math.abs(p), lean = { name: p > 0 ? 'high' : 'low', mirror: i >= 5 };
-  if(ap > 48) return { a: side ? lean : view(i), b: { name: p > 0 ? 'top' : 'bottom', mirror: false }, w: sm((ap - 50) / 14), roll, sx: 1, sy: 1 };
-  if(side && ap > 9) return { a: view(i), b: lean, w: sm((ap - 12) / 6), roll, sx: 1, sy: 1 };
-  return { a: view(i), b: view((i + (off >= 0 ? 1 : 7)) % 8), w: 0.55 * sm((Math.abs(off) - 16) / 6.5), roll,
-    sx: 1 - 0.07 * Math.abs(off) / 22.5, sy: side ? 1 : 1 - 0.3 * (1 - Math.cos(p * Math.PI / 180)) };
+  const ap = Math.abs(p), lean = { name: p > 0 ? 'high' : 'low', mirror: i >= 5, d: off };
+  if(ap > 48) return { a: side ? lean : view(i, off), b: { name: p > 0 ? 'top' : 'bottom', mirror: false, d: 0 }, w: sm((ap - 50) / 14), roll, sy: 1 };
+  if(side && ap > 9) return { a: view(i, off), b: lean, w: sm((ap - 12) / 6), roll, sy: 1 };
+  /* Round the ring it's a clean cut from one shot to the next, no fade: the shots come from
+     one sheet but not one model, so faded together they show two heads. */
+  return { a: view(i, off), b: view(i, off), w: 0, roll,
+    sy: side ? 1 : 1 - 0.3 * (1 - Math.cos(p * Math.PI / 180)) };
+}
+/* THE WARP. Between two shots he would sit still and then jump, which is a photo, not a
+   head. So each shot is turned the rest of the way: the picture is cut into thin upright
+   strips and each goes where that part of him would be after the turn. His middle bulges
+   towards you (a rounded front, about a quarter of the picture wide either side of his
+   axis), so it swings across further than his edges, which only foreshorten; the snout and
+   ears beyond that bulge turn like flat card. That is enough depth for a sway to read as a
+   solid thing turning, and little enough that the cut to the next shot is a small step. */
+const PN_STRIPS = 16, PN_BULGE = 0.25;
+function mcPinataWarp(L, d, ax, x0, W){
+  const key = d.toFixed(2);
+  if(L.dataset.d === key) return; L.dataset.d = key;
+  const R = W * PN_BULGE, dl = d * Math.PI / 180, cs = Math.cos(dl), sn = Math.sin(dl);
+  const at = x=>{ const u = (x - ax) / R, z = Math.abs(u) < 1 ? 0.9 * R * (1 - u * u) : 0;
+    return [ax + (x - ax) * cs + z * sn, Math.abs(u) < 1 ? cs - 1.8 * u * sn : cs]; };
+  const flat = Math.abs(d) < 0.05;
+  L.querySelectorAll('g.pns').forEach((g, i)=>{
+    if(flat){ g.removeAttribute('transform'); return; }
+    const xa = x0 + W * i / PN_STRIPS, xb = x0 + W * (i + 1) / PN_STRIPS;
+    const pa = at(xa)[0], pb = at(xb)[0], sx = Math.max(0.02, (pb - pa) / (xb - xa));
+    g.setAttribute('transform', `matrix(${sx.toFixed(4)} 0 0 1 ${(pa - sx * xa).toFixed(2)} 0)`);
+  });
+  // The lids ride with the eye.
+  const lid = L.querySelector('g.pnlid'), ex = +(lid && lid.dataset.ex);
+  if(lid && ex){
+    const [pe, k] = at(ex);
+    lid.setAttribute('transform', flat ? '' : `matrix(${Math.max(0.02, k).toFixed(4)} 0 0 1 ${(pe - k * ex).toFixed(2)} 0)`);
+  }
 }
 function mcPinataPaint(svg, s, B, c){
   const H = s * 1.12, W = H * PINATA.w / PINATA.h;
@@ -9617,9 +9652,16 @@ function mcPinataPaint(svg, s, B, c){
   const id = (svg.id || 'mc') + 'Pn';
   if(!_pnPreloaded){ _pnPreloaded = true; for(const n of Object.keys(PINATA.frames)){ const im = new Image(); im.src = PINATA.dir + n + '.webp'; } }
   if(svg.dataset.pnB !== String(B) || !svg.querySelector('g.pn')){
-    const layer = k=> `<g class="pnl" data-k="${k}"><g class="pnm"><image href="" x="${x0.toFixed(2)}" y="${y0.toFixed(2)}" width="${W.toFixed(2)}" height="${H.toFixed(2)}" preserveAspectRatio="xMidYMid meet"/>`
-      + `<g clip-path="url(#${id}E${k})"><rect class="pn-lid" fill="${PINATA.lid}" height="0"/><rect class="pn-low" fill="${PINATA.lid}" height="0"/></g></g></g>`;
-    svg.innerHTML = `<defs><clipPath id="${id}E0"><ellipse/></clipPath><clipPath id="${id}E1"><ellipse/></clipPath></defs><g class="pn">${layer(0)}${layer(1)}</g>`;
+    let clips = '';
+    for(let i = 0; i < PN_STRIPS; i++)
+      clips += `<clipPath id="${id}S${i}"><rect x="${(x0 + W * i / PN_STRIPS - 0.4).toFixed(2)}" y="${(y0 - 2).toFixed(2)}" width="${(W / PN_STRIPS + 0.8).toFixed(2)}" height="${(H + 4).toFixed(2)}"/></clipPath>`;
+    const layer = k=>{
+      let strips = '';
+      for(let i = 0; i < PN_STRIPS; i++) strips += `<g class="pns" clip-path="url(#${id}S${i})"><use href="#${id}I${k}"/></g>`;
+      return `<g class="pnl" data-k="${k}"><g class="pnm"><defs><image id="${id}I${k}" href="" x="${x0.toFixed(2)}" y="${y0.toFixed(2)}" width="${W.toFixed(2)}" height="${H.toFixed(2)}" preserveAspectRatio="xMidYMid meet"/></defs>${strips}`
+        + `<g class="pnlid"><g clip-path="url(#${id}E${k})"><rect class="pn-lid" fill="${PINATA.lid}" height="0"/><rect class="pn-low" fill="${PINATA.lid}" height="0"/></g></g></g></g>`;
+    };
+    svg.innerHTML = `<defs>${clips}<clipPath id="${id}E0"><ellipse/></clipPath><clipPath id="${id}E1"><ellipse/></clipPath></defs><g class="pn">${layer(0)}${layer(1)}</g>`;
     svg.dataset.pnB = String(B);
     svg.setAttribute('width', B); svg.setAttribute('height', B); svg.setAttribute('viewBox', `0 0 ${B} ${B}`);
   }
@@ -9633,24 +9675,25 @@ function mcPinataPaint(svg, s, B, c){
     L.style.opacity = op > 0.003 ? op.toFixed(3) : '0';
     if(!(op > 0.003)) return;
     const key = f.name + (f.mirror ? '~' : '');
-    const m = L.firstElementChild, img = m.querySelector('image');
+    const m = L.firstElementChild, lid = m.querySelector('g.pnlid'), g = lid.firstElementChild;
     if(L.dataset.f !== key){
-      L.dataset.f = key;
-      img.setAttribute('href', PINATA.dir + f.name + '.webp');
+      L.dataset.f = key; L.dataset.d = '';
+      m.querySelector('image').setAttribute('href', PINATA.dir + f.name + '.webp');
       /* Mirrored about his middle; k shrinks a shot drawn bigger than the rest, about his base. */
       const fk = PINATA.frames[f.name].k || 1, yb = y0 + H;
       m.setAttribute('transform', f.mirror || fk !== 1 ? `translate(${ax.toFixed(2)} ${yb.toFixed(2)}) scale(${(f.mirror ? -fk : fk)} ${fk}) translate(${(-ax).toFixed(2)} ${(-yb).toFixed(2)})` : '');
-      const e = PINATA.frames[f.name].eye, el = svg.querySelector(`#${id}E${k} ellipse`), g = m.lastElementChild;
-      g.style.display = e ? '' : 'none';
+      const e = PINATA.frames[f.name].eye, el = svg.querySelector(`#${id}E${k} ellipse`);
+      lid.style.display = e ? '' : 'none'; lid.dataset.ex = '';
       if(e && el){
         const ex = x0 + e[0] * W, ey = y0 + e[1] * H, rx = e[2] * W, ry = e[3] * H;
         el.setAttribute('cx', ex.toFixed(2)); el.setAttribute('cy', ey.toFixed(2)); el.setAttribute('rx', rx.toFixed(2)); el.setAttribute('ry', ry.toFixed(2));
         for(const r of g.children){ r.setAttribute('x', (ex - rx - 1).toFixed(2)); r.setAttribute('width', (2 * rx + 2).toFixed(2)); }
-        g.dataset.ey = ey; g.dataset.ry = ry;
+        g.dataset.ey = ey; g.dataset.ry = ry; lid.dataset.ex = ex;
       }
     }
-    const g = m.lastElementChild;
-    if(g.style.display === 'none') return;
+    // Warped in the shot's own frame: a mirrored shot's left is the screen's right.
+    mcPinataWarp(L, f.mirror ? f.d : -f.d, ax, x0, W);
+    if(lid.style.display === 'none') return;
     const ey = +g.dataset.ey, ry = +g.dataset.ry, top = g.firstElementChild, low = g.lastElementChild;
     top.setAttribute('y', (ey - ry - 1).toFixed(2)); top.setAttribute('height', ((2 * ry + 2) * shut).toFixed(2));
     const hh = (2 * ry + 2) * 0.55 * happy; low.setAttribute('height', hh.toFixed(2)); low.setAttribute('y', (ey + ry + 1 - hh).toFixed(2));
@@ -9658,7 +9701,7 @@ function mcPinataPaint(svg, s, B, c){
   const g = svg.querySelector('g.pn');
   const lx = (mcState.gx || 0) * s * 0.05, ly = (mcState.gy || 0) * s * 0.03;
   const rot = (mcState.rz || 0) + pick.roll;
-  g.setAttribute('transform', `translate(${(c + lx).toFixed(2)} ${(c + ly).toFixed(2)}) rotate(${rot.toFixed(2)}) scale(${pick.sx.toFixed(3)} ${pick.sy.toFixed(3)}) translate(${(-c).toFixed(2)} ${(-c).toFixed(2)})`);
+  g.setAttribute('transform', `translate(${(c + lx).toFixed(2)} ${(c + ly).toFixed(2)}) rotate(${rot.toFixed(2)}) scale(1 ${pick.sy.toFixed(3)}) translate(${(-c).toFixed(2)} ${(-c).toFixed(2)})`);
   g.style.filter = mcState.sleepy ? 'saturate(.7) brightness(.86)' : '';
 }
 /* LIT BY THE SUN (.11.10.001). The two-tone light on him comes from a light in the world, not
@@ -10318,7 +10361,10 @@ function startMarkCube(){
       // Between moves it is not frozen, just quiet.
       // Livelier between moves (was 2.5 / 3.5 and no lean): it sways, turns and leans a little.
       mcState.rx += ((6 * Math.sin(t * 0.37)) - mcState.rx) * 0.05;
-      mcState.ry += ((9 * Math.sin(t * 0.29 + 1.1)) - mcState.ry) * 0.05;
+      /* The piñata turns further at rest (was 9 either way): he's a solid thing now, and a
+         turn you can see is how you know. Two slow waves, so it never repeats on a beat. */
+      const swayY = MC_PINATA ? 15 * Math.sin(t * 0.23 + 1.1) + 6 * Math.sin(t * 0.57 + 0.4) : 9 * Math.sin(t * 0.29 + 1.1);
+      mcState.ry += (swayY - mcState.ry) * 0.05;
       mcState.rz += ((3 * Math.sin(t * 0.21 + 2.3)) - mcState.rz) * 0.05;
     }
     /* Advanced beside the queue, not inside it, so a bounce can play over a drift. */
@@ -13833,7 +13879,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.22.004';
+const APP_VERSION = '2026.11.22.005';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14229,6 +14275,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.22.005': 'He turns like a solid thing now, not a flipbook. Between angles he rotates smoothly, his snout and eye sliding round, and he sways side to side while he waits so you can see it.',
   '2026.11.22.004': 'The piñata is 3D now. He turns for real: tilt your head with him and you see his side, his back, the top of his head, all of it, instead of one picture stretched. Spins go all the way round, nods look down at you, flips show his underside.',
   '2026.11.22.003': 'Progress covers everything now, grouped: goals, strength, running, mobility (your mobility test, areas getting their ten minutes a week, minutes stretching), skills, body and recovery (including injuries you rate in the morning check-in) and habits. Your three biggest moves sit at the top. A stretching session\'s card shows each area\'s week against its target.',
   '2026.11.22.002': 'A new icon to go with him: the piñata on peach. The app opens on the same picture.',

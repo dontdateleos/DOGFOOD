@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.11.22.004",
+ "generatedFrom": "2026.11.22.005",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -654,6 +654,7 @@
     }
    }
   },
+  "PN_STRIPS": 16,
   "MC_SHADING": true,
   "MC_SUN_K": 0.28,
   "MC_JELLY": [
@@ -1564,7 +1565,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.11.22.004",
+  "APP_VERSION": "2026.11.22.005",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1942,6 +1943,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.11.22.005": "He turns like a solid thing now, not a flipbook. Between angles he rotates smoothly, his snout and eye sliding round, and he sways side to side while he waits so you can see it.",
    "2026.11.22.004": "The piñata is 3D now. He turns for real: tilt your head with him and you see his side, his back, the top of his head, all of it, instead of one picture stretched. Spins go all the way round, nods look down at you, flips show his underside.",
    "2026.11.22.003": "Progress covers everything now, grouped: goals, strength, running, mobility (your mobility test, areas getting their ten minutes a week, minutes stretching), skills, body and recovery (including injuries you rate in the morning check-in) and habits. Your three biggest moves sit at the top. A stretching session's card shows each area's week against its target.",
    "2026.11.22.002": "A new icon to go with him: the piñata on peach. The app opens on the same picture.",
