@@ -1911,6 +1911,26 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
   .session-complete .perf-line, .session-complete .perf-note{ font-size:var(--fs-tag); color:var(--dim); }
   .session-complete .perf-line b{ color:inherit; display:inline; text-transform:none; font-size:inherit; letter-spacing:0; margin:0; }
   .charge-note{ margin-top:var(--sp-2); }
+  .daily-practice .dp-row{ display:flex; flex-direction:column; gap:6px; padding:8px 0; border-top:1px solid var(--hair); }
+  .daily-practice .dp-row:first-of-type{ border-top:0; }
+  .daily-practice .dp-head{ display:flex; align-items:baseline; gap:8px; font-size:var(--fs-md); }
+  .daily-practice .dp-name{ flex:1; font-weight:var(--fw-bold); }
+  .daily-practice .dp-num{ font-variant-numeric:tabular-nums; }
+  .daily-practice .dp-bar{ height:8px; border-radius:4px; background:var(--hair); overflow:hidden; }
+  .daily-practice .dp-bar i{ display:block; height:8px; border-radius:4px; background:var(--accent); }
+  .daily-practice .dp-acts{ display:flex; gap:6px; flex-wrap:wrap; }
+  .daily-practice .dp-acts button{ min-height:36px; }
+  .today-score-plate .score-note b, .score-drivers .score-note b{ font-weight:var(--fw-bold); }
+  .score-drivers .drv-label{ font-size:var(--fs-tag); text-transform:uppercase; letter-spacing:var(--track-ui); opacity:.75; margin-top:var(--sp-2); }
+  .score-drivers .drv-row{ display:flex; flex-direction:column; gap:2px; padding:6px 0; border-top:1px solid var(--hair); }
+  .score-drivers .drv-head{ display:flex; align-items:center; gap:8px; font-size:var(--fs-md); }
+  .score-drivers .drv-name{ flex:0 0 42%; }
+  .score-drivers .drv-bar{ flex:1; height:6px; border-radius:3px; background:var(--hair); overflow:hidden; }
+  .score-drivers .drv-bar i{ display:block; height:6px; border-radius:3px; }
+  .score-drivers .drv-bar i.neg{ background:var(--ink-bad); }
+  .score-drivers .drv-bar i.pos{ background:var(--accent); }
+  .score-drivers .drv-pts{ flex:0 0 34px; text-align:right; font-variant-numeric:tabular-nums; font-weight:var(--fw-bold); }
+  .score-drivers .drv-sub{ font-size:var(--fs-sm); opacity:.7; }
   .bedtime-note{ margin-bottom:var(--sp-3); }
   .bedtime-note[hidden]{ display:none; }
   .bedtime-note .bt-remind{ margin-top:8px; }
@@ -6084,6 +6104,9 @@ if(!window.__pnHold)window.__curtain();
          here too; see the relocated #weeklyTrainingView further down this panel, past the
          warm-up and cooldown. The same black band the mobility assessment takes on the Body
          tab, same as it was on Weekly. -->
+    <!-- TODAY'S SCORE, IN WORDS: what the number means for the session, the input costing the
+         most, and the way to the breakdown and to Trends. renderTodayScorePlate. -->
+    <div class="group today-score-plate" id="todayScorePlate" hidden></div>
     <div class="group form-panel week-panel">
       <div class="group-head"><div class="group-title">Week</div><span class="head-est" id="weekBlockPos"></span><div class="group-sub">tap a day, tap a workout, change it</div></div>
       <div class="fields">
@@ -6974,6 +6997,8 @@ if(!window.__pnHold)window.__curtain();
   </div>
 
   <div class="panel" id="panel-injuries">
+    <!-- DAILY PRACTICE: the resting squat and the hang, built up a few minutes a day. renderDailyPractice. -->
+    <div class="group daily-practice" id="dailyPractice"></div>
       <!-- The two skill ladders are one system and always were: same skillGoals array, same
            picker, same levels. loadCurrentGoals already seeded both from whichever tab you
            were on — only the markup had them on separate tabs. -->
@@ -7086,6 +7111,8 @@ if(!window.__pnHold)window.__curtain();
          morning's data entry in front of them made the tab open on a chore. Two views left,
          and Trends leads. -->
     <div id="dataSnapshot"></div>
+    <!-- What has been dropping the score this week and how to move each input. renderScoreDrivers. -->
+    <div class="group score-drivers" id="scoreDriversPanel" hidden></div>
     <div class="session-type" id="dataViewPills">
       <div class="type-btn active" data-view="trends">Trends</div>
       <div class="type-btn" data-view="history">Workout History</div>
@@ -12775,7 +12802,8 @@ function activateTab(name, opts){
         .then(()=>withEyesBusy(generateMobility(), document.getElementById('mobilityCards')))
     );
   }
-  if(name==='data') renderDataSnapshot().catch(()=>{});
+  if(name==='data'){ renderDataSnapshot().catch(()=>{}); try{ renderScoreDrivers(); } catch(e){} }
+  if(name==='injuries') renderDailyPractice().catch(()=>{});
   if(name==='plan') renderPlanTab().catch(()=>{});
   if(name==='settings') renderSettingsQuickActions();
   // Both skill ladders and the progression live on Function; the goal list lives on Today now
@@ -13837,7 +13865,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.22.006';
+const APP_VERSION = '2026.11.22.007';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14233,6 +14261,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.22.007': 'Workouts now opens by saying what today’s Charge means for the session, what is pulling it down most and what is helping. Trends has a new card showing what has dropped your score over the last week and how to raise each one. Warm-ups and cool-downs pick up ground work: crawls, hovers, crab reaches, hangs and a resting squat, chosen for what you are lifting, gentler on a low-Charge day and changed around an injury. And Skills has a daily practice for the resting squat and the hang that builds up a few minutes at a time.',
   '2026.11.22.006': 'Fixed the piñata glitching and bending. He no longer warps between angles: every angle is loaded up front and he steps cleanly from one to the next.',
   '2026.11.22.005': 'He turns like a solid thing now, not a flipbook. Between angles he rotates smoothly, his snout and eye sliding round, and he sways side to side while he waits so you can see it.',
   '2026.11.22.004': 'The piñata is 3D now. He turns for real: tilt your head with him and you see his side, his back, the top of his head, all of it, instead of one picture stretched. Spins go all the way round, nods look down at you, flips show his underside.',
@@ -17579,6 +17608,178 @@ const SR_COMPONENT_LABELS = {
   localFatigue:'Muscles for today', nadir:'Overnight low, timing', bedtime:'Bedtime',
   jetLag:'Jet lag', hydration:'Morning weight vs trend'
 };
+/* WHAT EACH INPUT DID TO THE NUMBER, IN POINTS.
+   The score is 50 + 50·tanh(K·z), with z the weighted sum of the inputs over the budget,
+   shrunk by maturity. So an input's share of today's number is its term in z times the slope
+   of the curve where today sits (the linear share; the shares add to the gap from 50 when the
+   curve is near straight, and stay in proportion when it is not). Same weights the score used
+   (learned for today's kind where they exist), same budget, same gate. */
+function srWeightsFor(sr){
+  const L = sr && sr.learned, kind = sr && sr.kind;
+  return (L && kind && L.byKind && L.byKind[kind]) ? L.byKind[kind]
+       : (L && !kind) ? L.weights
+       : kind ? (L && L.byKind && L.byKind[kind]) || kindPriors(kind)
+       : SR_WEIGHTS;
+}
+function srDriverPoints(sr, parts){
+  if(!sr || !parts) return null;
+  const W = srWeightsFor(sr) || SR_WEIGHTS;
+  const B = sr.weightBudget > 0 ? sr.weightBudget : 1;
+  const M = sr.maturity == null ? 1 : sr.maturity;
+  const terms = {};
+  let z = 0;
+  Object.keys(SR_WEIGHTS).forEach(k=>{
+    if(!HRV_ENABLED && /^hrv/.test(k)) return;
+    const v = parts[k];
+    if(v == null || isNaN(v)) return;
+    const t = (W[k] != null ? W[k] : SR_WEIGHTS[k]) * v / B * M;
+    terms[k] = t; z += t;
+  });
+  const th = Math.tanh(SR_TANH_K * z);
+  const slope = 50 * SR_TANH_K * (1 - th * th) * (sr.gate == null ? 1 : sr.gate);
+  const out = {};
+  Object.keys(terms).forEach(k=>{ out[k] = terms[k] * slope; });
+  return out;
+}
+/* How to move each input, said for the case where it is costing you. Plain actions, nothing
+   the app cannot see coming back in the next reading. */
+const SR_DRIVER_FIX = {
+  sleep:        'Last night was short or broken. Tonight, in bed at your usual time with nothing to wake for.',
+  sleepDebt:    'Several short nights are adding up. An extra 30 to 45 minutes a night for four nights pays back most of it.',
+  regularity:   'Your wake time is moving around. Getting up within half an hour of the same time each day helps on its own.',
+  bedtime:      'You went to bed later than usual. Your usual bedtime counts as much as the hours.',
+  fitFatigue:   'Recent training is heavier than you have adapted to. That is normal in a hard block; an easier day or the deload brings it back.',
+  localFatigue: 'The muscles today uses are still recovering. Go lighter on them today or train something else.',
+  form:         'Recent sessions came in under your trend. A lighter week usually turns this around.',
+  rhrTrend:     'Resting heart rate has been above your normal. Common after hard weeks, late meals, alcohol, or before a cold; keep intensity easy.',
+  rhrAcute:     'Resting heart rate was high last night. Often a drink, a late meal, heat or stress.',
+  hrvTrend:     'HRV has been under your normal. Easy training and good sleep bring it back.',
+  hrvAcute:     'HRV was low last night. Often a drink, a late meal or stress.',
+  illnessCh:    'Breathing rate or skin temperature is up. You may be getting ill: rest is the fast way back.',
+  activity:     'Yesterday was much busier on your feet than usual. Keep today’s extra walking easy.',
+  circadian:    'You are training soon after waking. A few hours later in the day reads higher.',
+  nadir:        'Your heart rate bottomed out late in the night. Late meals, alcohol and late hard sessions do this.',
+  jetLag:       'Your body clock is still catching up with the time zone. Morning light and a normal bedtime speed it up.',
+  hydration:    'This morning’s weight is under your trend. Drink before you train.'
+};
+const SR_DRIVER_GOOD = {
+  sleep:'Good sleep last night', sleepDebt:'No sleep debt', regularity:'Steady wake time', bedtime:'Usual bedtime',
+  fitFatigue:'Fitness ahead of fatigue', localFatigue:'Today’s muscles are fresh', form:'Training is going well',
+  rhrTrend:'Resting HR below normal', rhrAcute:'Low resting HR last night', hrvTrend:'HRV above normal', hrvAcute:'Good HRV last night',
+  illnessCh:'No sign of illness', activity:'A normal day on your feet', circadian:'Good time of day to train',
+  nadir:'Heart rate settled early', jetLag:'No jet lag', hydration:'Well hydrated'
+};
+/* Today's drivers, sorted, and the last week's average for the same inputs, read off the
+   window the score was already built from rather than seven more readiness runs. */
+function srDriversToday(sr){
+  const pts = srDriverPoints(sr, sr && sr.parts);
+  if(!pts) return [];
+  return Object.keys(pts).map(k=> ({ k, label: SR_COMPONENT_LABELS[k] || k, pts: pts[k] }))
+    .sort((a, b)=> a.pts - b.pts);
+}
+function srDriversWeek(sr, days){
+  const win = sr && sr.win;
+  if(!win || !win.dates) return [];
+  const n = win.dates.length, sum = {}, cnt = {};
+  for(let i = Math.max(0, n - (days || 7)); i < n; i++){
+    if(!win.entries[i]) continue;
+    let parts = null;
+    try{ parts = srComponentsAt(win, i, sleepDebtZ(win, i)); } catch(e){}
+    const pts = srDriverPoints(sr, parts);
+    if(!pts) continue;
+    Object.keys(pts).forEach(k=>{ sum[k] = (sum[k] || 0) + pts[k]; cnt[k] = (cnt[k] || 0) + 1; });
+  }
+  return Object.keys(sum).map(k=> ({ k, label: SR_COMPONENT_LABELS[k] || k, pts: sum[k] / cnt[k], days: cnt[k] }))
+    .sort((a, b)=> a.pts - b.pts);
+}
+function fmtPts(p){ const r = Math.round(p); return r > 0 ? `+${r}` : r < 0 ? `−${-r}` : '0'; }
+
+/* WHAT TODAY'S NUMBER MEANS FOR TODAY, at the top of Workouts. The ring says how much is left;
+   this says what the plan does with it, in words, and names the one thing costing the most. */
+function scoreDayMeaning(C, kind){
+  const band = C >= 70 ? 'high' : C >= 40 ? 'mid' : C >= 20 ? 'low' : 'vlow';
+  const title = { high:'Ready to train', mid:'On track', low:'Ease into it', vlow:'Back off today' }[band];
+  let say;
+  if(kind === 'lift'){
+    const a = chargeAdjustFor('lift', C), pct = a && !a.cal.flat ? Math.round(Math.abs(a.adj) * 1000) / 10 : 0;
+    const w = pct >= 1 ? ` Weights are set ${pct}% ${a.adj > 0 ? 'up' : 'down'}.` : ' Weights as planned.';
+    say = band === 'high' ? `The session runs as written and it is a good day to push your top sets.${w}`
+        : band === 'mid'  ? `Train as planned.${w}`
+        : band === 'low'  ? 'Keep the main lifts and drop the rest, or swap the session for a 15-minute recovery flow.'
+        : 'Skip the lifting. Rest, walk, or do the 15-minute recovery flow; tomorrow reads higher after a good night.';
+  } else if(kind === 'run'){
+    say = band === 'high' ? 'Fresh. Run it as planned and finish with 4 × 20 s strides.'
+        : band === 'mid'  ? 'Run it as planned.'
+        : band === 'low'  ? 'Keep the run easy and cut it short if it feels heavy.'
+        : 'Swap the run for a walk or the recovery flow.';
+  } else {
+    say = band === 'high' || band === 'mid' ? 'Nothing planned. A good day for a walk, a skill or the mobility work.'
+        : 'Nothing planned, and that is the right call. Sleep is what brings this back up.';
+  }
+  const pred = kind === 'lift' || kind === 'run' ? predictedScore(kind, C) : null;
+  if(pred != null && band !== 'vlow') say += ` Charge says you will score about ${pred}.`;
+  return { band, title, say };
+}
+async function renderTodayScorePlate(sr){
+  const el = document.getElementById('todayScorePlate');
+  if(!el) return;
+  const s = sr || lastSrResult;
+  if(!s || !s.available){
+    const learning = s && s.refused;
+    el.innerHTML = `<div class="group-head"><div class="group-title">Today’s score</div></div>
+      <div class="fields"><div class="score-note df-title">${dfIcon('charge', 16)}<span>${learning
+        ? `Still learning your normal (${s.observedNights || 0} of about 14 nights). Until then the plan runs as written.`
+        : 'Check in this morning and this says what today’s score means for the session.'}</span></div>
+      ${learning ? '' : '<div class="charge-acts"><button type="button" class="small outline" id="todayScoreCheckIn">Check in</button></div>'}</div>`;
+    el.hidden = false;
+    document.getElementById('todayScoreCheckIn')?.addEventListener('click', ()=> maybeAskMorning(true));
+    return;
+  }
+  const C = s.charge && s.charge.charge != null ? s.charge.charge : s.shown;
+  const m = scoreDayMeaning(C, s.kind);
+  const drivers = srDriversToday(s);
+  const worst = drivers.find(d=> d.pts <= -1.5);
+  const best = drivers.slice().reverse().find(d=> d.pts >= 1.5);
+  const woke = s.charge && s.charge.spent > 0 ? ` · woke with ${s.shown}` : '';
+  el.innerHTML = `<div class="group-head"><div class="group-title">Today · ${m.title}</div><span class="head-est">Charge ${C}${woke}</span></div>
+    <div class="fields">
+      <div class="score-note df-title">${dfIcon(m.band === 'high' || m.band === 'mid' ? 'charge' : 'drain', 16)}<span>${m.say}</span></div>
+      ${worst ? `<div class="score-note"><b>Pulling it down most:</b> ${worst.label} (${fmtPts(worst.pts)}). ${SR_DRIVER_FIX[worst.k] || ''}</div>` : ''}
+      ${best ? `<div class="score-note"><b>Helping most:</b> ${SR_DRIVER_GOOD[best.k] || best.label} (${fmtPts(best.pts)}).</div>` : ''}
+      <div class="charge-acts"><button type="button" class="small outline" id="todayScoreDetail">The breakdown</button><button type="button" class="small outline" id="todayScoreTrends">What’s been dropping it</button></div>
+    </div>`;
+  el.hidden = false;
+  document.getElementById('todayScoreDetail')?.addEventListener('click', ()=> document.getElementById('chargeA11yBtn')?.click());
+  document.getElementById('todayScoreTrends')?.addEventListener('click', ()=>{
+    try{ const tb = document.querySelector('.tab[data-tab="data"]'); if(tb) activateTabViaUi(tb); setTimeout(()=> document.getElementById('scoreDriversPanel')?.scrollIntoView({ behavior:'smooth', block:'start' }), 120); } catch(e){}
+  });
+}
+/* TRENDS: WHAT HAS BEEN DROPPING IT, AND WHAT TO DO. The last seven mornings, each input's
+   average share of the score, the costs first with the action that moves each, then what has
+   been holding it up. */
+function renderScoreDrivers(){
+  const el = document.getElementById('scoreDriversPanel');
+  if(!el) return;
+  const s = lastSrResult;
+  if(!s || !s.available){ el.hidden = true; return; }
+  const week = srDriversWeek(s, 7);
+  if(!week.length){ el.hidden = true; return; }
+  const today = {}; srDriversToday(s).forEach(d=>{ today[d.k] = d.pts; });
+  const costs = week.filter(d=> d.pts <= -0.75).slice(0, 4);
+  const helps = week.filter(d=> d.pts >= 0.75).reverse().slice(0, 3);
+  const max = Math.max(4, ...week.map(d=> Math.abs(d.pts)));
+  const bar = (p)=> `<span class="drv-bar" aria-hidden="true"><i class="${p < 0 ? 'neg' : 'pos'}" style="width:${Math.max(4, Math.round(Math.abs(p) / max * 100))}%"></i></span>`;
+  const row = (d, fix)=> `<div class="drv-row"><div class="drv-head"><span class="drv-name">${d.label}</span>${bar(d.pts)}<span class="drv-pts">${fmtPts(d.pts)}</span></div>${
+    today[d.k] != null ? `<div class="drv-sub">today ${fmtPts(today[d.k])} · ${d.days} of 7 mornings</div>` : ''}${fix ? `<div class="score-note">${fix}</div>` : ''}</div>`;
+  el.innerHTML = `<div class="group-head"><div class="group-title">What’s moving your score</div><span class="head-est">last 7 mornings, in points</span></div>
+    <div class="fields">
+      ${costs.length ? `<div class="drv-label">Dropping it · how to improve</div>${costs.map(d=> row(d, SR_DRIVER_FIX[d.k])).join('')}`
+                     : '<div class="score-note">Nothing has been costing you more than a point this week.</div>'}
+      ${helps.length ? `<div class="drv-label">Holding it up</div>${helps.map(d=> row(Object.assign({}, d, { label: SR_DRIVER_GOOD[d.k] || d.label }), '')).join('')}` : ''}
+      <div class="score-note">Points are each input’s share of the morning score against an average morning (50). The breakdown sheet shows today’s.</div>
+    </div>`;
+  el.hidden = false;
+}
 async function renderLearnedWeights(){
   const el = document.getElementById('learnedWeights');
   if(!el) return;
@@ -42917,6 +43118,8 @@ async function generateRecommendations(){
   const srResult = await computeSystemicReadiness(todayStr);
   try{ if(srResult && srResult.available) srResult.charge = await computeCharge(srResult); } catch(e){}
   lastSrResult = srResult;
+  renderTodayScorePlate(srResult).catch(()=>{});
+  try{ renderScoreDrivers(); } catch(e){}
   renderReadinessConfidence(srResult);
   const overallShown = updateOverallScore(targetScore, adaptiveScore, capacityResult, goalT, entry, srResult);
   renderBedtimeNote().catch(()=>{});
@@ -44275,6 +44478,252 @@ async function refreshPrepChecks(){
     });
   });
 })();
+/* GROUND MOVEMENT: crawls, holds and floor work in the warm-up and cool-down.
+   From the movement-practice research (reports/Animal movement practice integration.md).
+   The evidence is small: three controlled trials, moderate intensity, better movement-screen
+   scores and some hip and shoulder range. So this rides the slots the app already has rather
+   than claiming anything of its own, and the doses are coaching convention, kept short enough
+   that the warm-up does not tire the lifter (3-6 minutes of ground work, nothing held past
+   30 s before lifting, no crawl conditioning before a session).
+   Generic names only: the systems these come from are trademarks; the movements are not.
+   Every move carries load tags so an injury removes or changes it, and Charge turns the
+   travelling and jumping versions into positions on a low day instead of deleting them. */
+const GROUND_MOVES = {
+  wristPrep:   { name:'Wrist prep: rocks, palm lifts, fist rolls', dose:'30-45s', tags:[] },
+  rockBack:    { name:'Quadruped rock-back', dose:'×8', tags:['deepKnee'], area:'hips' },
+  hover:       { name:'Quadruped hover, knees an inch up', dose:'2×15s', tags:['hand'] },
+  hoverTaps:   { name:'Hover with shoulder taps', dose:'×6/side', tags:['hand'], positional:'hover' },
+  birdDog:     { name:'Bird dog', dose:'×5/side', tags:[] },
+  hollow:      { name:'Hollow hold', dose:'15s', tags:['supine'] },
+  hip9090:     { name:'90/90 hip switch', dose:'×6/side', tags:[], area:'hips' },
+  bearCrawl:   { name:'Bear crawl, forward then back', dose:'2×5m', tags:['hand', 'crawl'], positional:'hover' },
+  sideBear:    { name:'Side bear crawl', dose:'2×4m/side', tags:['hand', 'crawl'], positional:'hover' },
+  crabReach:   { name:'Crab bridge reach', dose:'×4/side', tags:['hand', 'shoulderEnd'], area:'shoulders' },
+  frogHop:     { name:'Frog hop, soft landings', dose:'×4', tags:['hand', 'deepKnee', 'jump'], positional:'squatPry', highOnly:true },
+  cossack:     { name:'Cossack squat', dose:'×5/side', tags:['deepKnee'], area:'adductors', kneeAlt:'Cossack squat, half depth, holding on' },
+  walkOut:     { name:'Walk-out to plank', dose:'×5', tags:['hand', 'headDown'], area:'hamstrings' },
+  spiderman:   { name:'Spiderman lunge with reach', dose:'×4/side', tags:[], area:'hips' },
+  squatPry:    { name:'Deep squat hold, gentle pry', dose:'30s', tags:['deepKnee'], area:'hips', kneeAlt:'Squat to a box, hold' },
+  scapPull:    { name:'Scapular pulls on the bar', dose:'×8', tags:['hang'], area:'shoulders' },
+  activeHang:  { name:'Active hang', dose:'2×10s', tags:['hang'], area:'shoulders' },
+  passiveHang: { name:'Passive hang, shoulders relaxed', dose:'30s', tags:['hang'], area:'shoulders' },
+  squatRest:   { name:'Resting deep squat', dose:'60s', tags:['deepKnee'], area:'hips', kneeAlt:'Squat rest on a low box' },
+  rolls:       { name:'Segmental rolls', dose:'×3/side', tags:[] }
+};
+/* By what the session opens with. Move is a mobility drill, Prime rehearses the bracing or
+   the hang right before the work. A quality run gets one hip opener and no crawling. */
+const GROUND_MENUS = {
+  squat:      { move:['rockBack', 'squatPry', 'cossack'], prime:['hover'] },
+  hinge:      { move:['walkOut', 'rockBack'], prime:['bearCrawl', 'hollow'] },
+  press:      { move:['crabReach', 'hip9090'], prime:['sideBear', 'hoverTaps'] },
+  pull:       { move:['crabReach', 'hollow'], prime:['scapPull', 'activeHang'] },
+  runEasy:    { move:['spiderman', 'walkOut', 'cossack'], prime:['bearCrawl', 'frogHop'] },
+  runQuality: { move:['spiderman'], prime:[] }
+};
+function groundDayType(names, runKey, areas){
+  if(runKey) return ['tempo', 'interval', 'fartlek', 'hills', 'sprint', 'race'].includes(runKey) ? 'runQuality' : 'runEasy';
+  const tally = { squat:0, hinge:0, press:0, pull:0 };
+  (names || []).forEach((n, i)=>{
+    const s = String(n || '').toLowerCase(), w = i === 0 ? 3 : 1;   // the opener decides most
+    if(/deadlift|rdl|romanian|good morning|hip thrust|swing|hinge/.test(s)) tally.hinge += w;
+    else if(/squat|lunge|leg press|split|step-up|pistol/.test(s)) tally.squat += w;
+    else if(/pull-up|pullup|chin|row|pulldown|lat /.test(s)) tally.pull += w;
+    else if(/bench|press|push-up|pushup|dip|handstand/.test(s)) tally.press += w;
+  });
+  /* No named lifts (a plan built by area): read it off the areas the warm-up chose instead. */
+  if(!Object.values(tally).some(v=> v > 0)) (areas || []).forEach((a, i)=>{
+    const w = i === 0 ? 2 : 1;
+    if(a === 'hinge' || a === 'hamstrings') tally.hinge += w;
+    else if(a === 'squat_legs' || a === 'quads_knees' || a === 'ankles' || a === 'calves' || a === 'adductors') tally.squat += w;
+    else if(a === 'upper_pull' || a === 'biceps') tally.pull += w;
+    else if(a === 'upper_push' || a === 'chest' || a === 'triceps' || a === 'shoulders') tally.press += w;
+  });
+  const best = Object.keys(tally).sort((a, b)=> tally[b] - tally[a])[0];
+  return tally[best] > 0 ? best : null;
+}
+/* Injury rules, by the area the injury is logged against (report: injury flags table).
+   Wrist: hand-loaded work goes, the hover moves to the forearms. Shoulder: no hanging, no
+   end-range crab reach. Knee: no jumping; deep knee bends take their supported version or
+   go. Low back: no crawling, bird dog instead. */
+function groundAdapt(key, injured){
+  const m = GROUND_MOVES[key];
+  if(!m) return null;
+  const has = t => m.tags.includes(t);
+  const wrist = injured.has('forearms') || injured.has('wrists');
+  const shoulder = injured.has('shoulders');
+  const knee = injured.has('quads_knees') || injured.has('knees');
+  const back = injured.has('lower_back');
+  if(wrist && key === 'hover') return { key, name:'Forearm hover, knees an inch up', dose:m.dose, area:m.area };
+  if(wrist && has('hand')) return null;
+  if(shoulder && (has('hang') || has('shoulderEnd'))) return null;
+  if(knee && has('jump')) return null;
+  if(knee && has('deepKnee')) return m.kneeAlt ? { key, name:m.kneeAlt, dose:m.dose, area:m.area } : null;
+  if(back && has('crawl')) return groundAdapt('birdDog', injured);
+  return { key, name:m.name, dose:m.dose, area:m.area };
+}
+function groundChargeBand(){
+  const s = typeof lastSrResult !== 'undefined' ? lastSrResult : null;
+  const C = s && s.available ? (s.charge && s.charge.charge != null ? s.charge.charge : s.shown) : null;
+  return C == null ? 'mid' : C >= 70 ? 'high' : C >= 40 ? 'mid' : C >= 20 ? 'low' : 'vlow';
+}
+/* The warm-up's ground work: one Move drill and one Prime, rotated by date through the day's
+   menu, with wrist prep in front of anything that loads the hands. Low Charge swaps the
+   travelling and jumping versions for their positions; very low keeps only a gentle Move. */
+function groundWarmupFor(names, runKey, injuredAreas, dayIndex, already, areas){
+  const type = groundDayType(names, runKey, areas);
+  if(!type) return { type:null, move:[], prime:[] };
+  const menu = GROUND_MENUS[type];
+  const band = groundChargeBand();
+  const injured = new Set(injuredAreas || []);
+  const seen = new Set((already || []).map(s=> String(s).toLowerCase()));
+  const pick = (list, offset)=>{
+    for(let i = 0; i < list.length; i++){
+      let key = list[(dayIndex + offset + i) % list.length];
+      const m = GROUND_MOVES[key];
+      if(m.highOnly && band !== 'high') key = m.positional || null;
+      if(key && (band === 'low' || band === 'vlow') && GROUND_MOVES[key].positional) key = GROUND_MOVES[key].positional;
+      // An injury that rules the move out still leaves its positional version, if that is safe.
+      const a = key ? (groundAdapt(key, injured) || (GROUND_MOVES[key].positional ? groundAdapt(GROUND_MOVES[key].positional, injured) : null)) : null;
+      if(!a) continue;
+      const first = a.name.split(/[ ,]/)[0].toLowerCase();
+      if([...seen].some(s=> s.includes(a.name.toLowerCase()) || (first.length > 5 && s.includes(first)))) continue;
+      return a;
+    }
+    return null;
+  };
+  let move = band === 'vlow' ? groundAdapt('rockBack', injured) || groundAdapt('hip9090', injured) : pick(menu.move, 0);
+  const prime = band === 'vlow' ? null : pick(menu.prime, 1);
+  const out = { type, move:[], prime:[] };
+  const handLoaded = [move, prime].some(x=> x && GROUND_MOVES[x.key] && GROUND_MOVES[x.key].tags.includes('hand'));
+  if(handLoaded) out.move.push({ key:'wristPrep', name:GROUND_MOVES.wristPrep.name, dose:GROUND_MOVES.wristPrep.dose, area:'forearms' });
+  if(move) out.move.push(move);
+  if(prime) out.prime.push(prime);
+  return out;
+}
+/* The cool-down's: a Move for the joints the session loaded and, where it is safe, a Hold the
+   research says belongs after the work rather than before it (passive hangs past 30 s, the
+   squat rest). Nothing on a very low day but the gentle Move. */
+function groundCooldownFor(type, injuredAreas){
+  const injured = new Set(injuredAreas || []);
+  const band = groundChargeBand();
+  const upper = type === 'press' || type === 'pull';
+  const move = groundAdapt(upper ? 'crabReach' : 'rockBack', injured) || groundAdapt('rolls', injured);
+  const hold = band === 'vlow' ? null
+    : type === 'pull' ? groundAdapt('passiveHang', injured)
+    : (type === 'squat' || type === 'hinge' || type === 'runEasy') ? groundAdapt('squatRest', injured)
+    : null;
+  return { move: move ? [move] : [], hold: hold ? [hold] : [] };
+}
+const groundLine = g => `${g.name} ${g.dose}`;
+
+/* DAILY PRACTICE: THE RESTING SQUAT AND THE HANG, IN SHORT GOES THROUGH THE DAY.
+   Two coaches' challenges sit behind these (30 minutes of squatting a day for 30 days; 7 of
+   hanging), and neither is the default here. Squatting two hours or more a day is linked to
+   about twice the odds of knee osteoarthritis, and no trial gives a dose for either, so the
+   default ramps slowly (squat 2, then 5, then 10 minutes; hang 1, 2, then 3.5) and the full
+   challenge is something you switch on after a fortnight at the top step.
+   A step goes up when the target was met on 5 of the last 7 days. A low-Charge day counts
+   at half its target, so a tired day keeps the run going instead of asking you to grind it
+   out. A knee injury caps the squat at 5 minutes, to a box; a shoulder injury pauses the
+   hang. Pain is the stop signal: stand up, or let go. */
+const PRACTICE = {
+  squat: { name:'Resting squat', steps:[120, 300, 600], challenge:1800, adds:[30, 60, 120],
+           how:'Sit in a deep squat, heels down if you can (a book under them is fine), in short goes through the day. Stand up if your knees complain.',
+           kneeCap:300, kneeHow:'Knee flagged: squat to a low box and keep it under 5 minutes a day.' },
+  hang:  { name:'Hang', steps:[60, 120, 210], challenge:420, adds:[10, 20, 30],
+           how:'From a bar, in sets of 10 to 30 seconds. Shoulders pulled down to start; relaxed hangs once that is easy. Let go if the front of the shoulder hurts.',
+           shoulderPause:'Paused while a shoulder injury is open. Scapular pulls in the warm-up still count as prep.' }
+};
+const fmtMinSec = s => s >= 60 ? `${Math.floor(s / 60)}${s % 60 ? `:${String(s % 60).padStart(2, '0')}` : ''} min` : `${s} s`;
+async function practiceSettings(){
+  let s = null;
+  try{ s = JSON.parse((await window.storage.get('practice:settings')).value); } catch(e){}
+  s = s || {};
+  ['squat', 'hang'].forEach(k=>{ s[k] = Object.assign({ on:true, step:0, challenge:false, topSince:null }, s[k] || {}); });
+  return s;
+}
+async function practiceDay(date){
+  try{ return JSON.parse((await window.storage.get(`practice:${date}`)).value) || {}; } catch(e){ return {}; }
+}
+function practiceTarget(k, st, flags){
+  const P = PRACTICE[k];
+  let t = st.challenge ? P.challenge : P.steps[Math.min(st.step, P.steps.length - 1)];
+  if(k === 'squat' && flags.knee) t = Math.min(t, P.kneeCap);
+  if(flags.lowCharge) t = Math.round(t / 2);
+  return t;
+}
+/* Advance a step when 5 of the last 7 days met their target; note when the top step began,
+   which is what unlocks the opt-in challenge two weeks later. */
+async function practiceMaybeAdvance(k, st, flags){
+  const P = PRACTICE[k];
+  if(st.challenge) return st;
+  let met = 0;
+  for(let i = 1; i <= 7; i++){
+    const d = await practiceDay(shiftDateStr(todayStr, -i));
+    if((d[k] || 0) >= practiceTarget(k, st, Object.assign({}, flags, { lowCharge:false })) * (d[k + 'Half'] ? 0.5 : 1)) met++;
+  }
+  if(met >= 5 && st.step < P.steps.length - 1 && !(k === 'squat' && flags.knee)){ st.step++; st.advancedOn = todayStr; }
+  if(st.step >= P.steps.length - 1 && !st.topSince) st.topSince = todayStr;
+  return st;
+}
+async function renderDailyPractice(){
+  const el = document.getElementById('dailyPractice');
+  if(!el) return;
+  let inj = {};
+  try{ inj = matchInjuryToArea(await getActiveInjuries()) || {}; } catch(e){}
+  const band = groundChargeBand();
+  const flags = { knee: !!inj.quads_knees, shoulder: !!inj.shoulders, lowCharge: band === 'low' || band === 'vlow' };
+  const s = await practiceSettings();
+  const today = await practiceDay(todayStr);
+  // Advancement is checked once a day, on the first look.
+  if(s.checkedOn !== todayStr){
+    for(const k of ['squat', 'hang']) s[k] = await practiceMaybeAdvance(k, s[k], flags);
+    s.checkedOn = todayStr;
+    try{ await window.storage.set('practice:settings', JSON.stringify(s)); } catch(e){}
+  }
+  let streak = 0;
+  for(let i = 0; i < 60; i++){
+    const d = i === 0 ? today : await practiceDay(shiftDateStr(todayStr, -i));
+    // Days in a row with any practice in them. The targets have their own bar; the run is for showing up.
+    const any = ['squat', 'hang'].some(k=> s[k].on && (d[k] || 0) > 0);
+    if(any) streak++; else if(i > 0) break;
+  }
+  const row = k=>{
+    const P = PRACTICE[k], st = s[k];
+    if(!st.on) return `<div class="dp-row"><div class="dp-head"><span class="dp-name">${P.name}</span><button type="button" class="small outline" data-dp-on="${k}">Turn on</button></div></div>`;
+    if(k === 'hang' && flags.shoulder) return `<div class="dp-row"><div class="dp-head"><span class="dp-name">${P.name}</span><span class="dp-num">paused</span></div><div class="score-note">${P.shoulderPause}</div></div>`;
+    const target = practiceTarget(k, st, flags), done = today[k] || 0;
+    const pct = Math.min(100, Math.round(done / Math.max(1, target) * 100));
+    const stepTxt = st.challenge ? 'full challenge' : `step ${Math.min(st.step, P.steps.length - 1) + 1} of ${P.steps.length}`;
+    const canChallenge = !st.challenge && st.topSince && st.topSince <= shiftDateStr(todayStr, -14) && !(k === 'squat' && flags.knee);
+    return `<div class="dp-row">
+      <div class="dp-head"><span class="dp-name">${P.name}</span><span class="dp-num">${fmtMinSec(done)} of ${fmtMinSec(target)}</span></div>
+      <div class="dp-bar" role="img" aria-label="${pct}% of today’s ${P.name.toLowerCase()}"><i style="width:${pct}%"></i></div>
+      <div class="score-note">${k === 'squat' && flags.knee ? P.kneeHow : P.how} <span class="dp-num">${stepTxt}${flags.lowCharge ? ' · half target on a low-Charge day' : ''}</span></div>
+      <div class="dp-acts">${P.adds.map(a=> `<button type="button" class="small outline" data-dp-add="${k}:${a}">+${fmtMinSec(a)}</button>`).join('')}${done ? `<button type="button" class="small outline" data-dp-add="${k}:-${P.adds[0]}">Undo ${fmtMinSec(P.adds[0])}</button>` : ''}${canChallenge ? `<button type="button" class="small outline" data-dp-challenge="${k}">Try the ${fmtMinSec(P.challenge)} challenge</button>` : ''}${st.challenge ? `<button type="button" class="small outline" data-dp-challenge="${k}">Back to ${fmtMinSec(P.steps[P.steps.length - 1])}</button>` : ''}</div>
+    </div>`;
+  };
+  el.innerHTML = `<div class="group-head"><div class="group-title">Daily practice</div><span class="head-est">${streak ? `${streak} day${streak === 1 ? '' : 's'} running` : 'a few minutes a day'}</span></div>
+    <div class="fields">${row('squat')}${row('hang')}</div>`;
+  el.querySelectorAll('[data-dp-add]').forEach(b=> b.addEventListener('click', async ()=>{
+    const [k, v] = b.dataset.dpAdd.split(':');
+    const d = await practiceDay(todayStr);
+    d[k] = Math.max(0, (d[k] || 0) + parseInt(v, 10));
+    if(flags.lowCharge) d[k + 'Half'] = true;
+    await window.storage.set(`practice:${todayStr}`, JSON.stringify(d));
+    renderDailyPractice();
+  }));
+  el.querySelectorAll('[data-dp-on]').forEach(b=> b.addEventListener('click', async ()=>{
+    const st = await practiceSettings(); st[b.dataset.dpOn].on = true;
+    await window.storage.set('practice:settings', JSON.stringify(st)); renderDailyPractice();
+  }));
+  el.querySelectorAll('[data-dp-challenge]').forEach(b=> b.addEventListener('click', async ()=>{
+    const st = await practiceSettings(); const k = b.dataset.dpChallenge; st[k].challenge = !st[k].challenge;
+    await window.storage.set('practice:settings', JSON.stringify(st)); renderDailyPractice();
+    showToast(st[k].challenge ? `${PRACTICE[k].name}: full challenge on. Stop if anything hurts.` : `${PRACTICE[k].name}: back to the daily step`);
+  }));
+}
+
 async function generateWarmup(){
   // A dedicated mobility session opens with its own Access work and finishes with
   // Integrate — bracketing it with a separate warm-up would prescribe the same tissue
@@ -44573,6 +45022,17 @@ async function generateWarmup(){
       drillAreas.push(area);
     });
   });
+  /* GROUND WORK (see GROUND_MOVES): one Move drill after the area drills, and one Prime that
+     goes in front of the ramp-up sets. On a run the 220-second trim below still decides. */
+  let groundPrime = [];
+  if(todaySessionType !== 'mobility'){
+    try{
+      const names = [opener, ...Object.values(exercisesByArea || {}).flat()].filter(Boolean).map(x=> typeof x === 'string' ? x : (x && x.name) || '');
+      const g = groundWarmupFor(names, runKey, Object.keys(injuryByArea || {}), dayIndex, drillParts, selected);
+      g.move.forEach(m=>{ drillParts.push(groundLine(m)); drillAreas.push(m.area || null); });
+      groundPrime = g.prime;
+    } catch(e){}
+  }
   /* THE 220-SECOND CEILING, on a run only. The budget above decided which areas got picked;
      this decides when the list stops. Pooled across studies, dynamic stretching improved
      running performance by 9.8% at 217-220 seconds total and IMPAIRED it at 900, so the
@@ -44641,6 +45101,7 @@ async function generateWarmup(){
   // weight — 3 min" — and the notation rules are for prescriptions: left alone they turn its
   // comma into a separator between two halves of a clause. DRILL_DOSE_TAIL already had to
   // know about "the two that carry prose"; now they say so themselves.
+  groundPrime.forEach(g=> warmItems.push({ group:'PRIME', html: groundLine(g), area: g.area || null }));
   if(prime) warmItems.push({ group:'PRIME', html: prime, prose:true });
   const warmDeferred = deferredAreasNote(deferred, 'warm-up');
   if(warmDeferred) warmItems.push(warmDeferred);
@@ -45201,6 +45662,18 @@ async function generateMobility(){
     // the hold list rather than adding an "optional" entry to it.
     if(!skipNote) push('Hold', tighten(trim('static', proto.static)), r.cls, area);
   });
+  /* GROUND WORK, after the session (see groundCooldownFor): a Move for the joints it loaded,
+     and the hang or squat rest where they are safe, which belong here rather than before. */
+  try{
+    let names = [];
+    try{ names = (await getPlannedExercisesToday()).map(ex=> ex && ex.name).filter(Boolean); } catch(e){}
+    const gType = groundDayType(names, coolRunKey, selected);
+    if(gType){
+      const g = groundCooldownFor(gType, Object.keys(injuryByArea || {}));
+      g.move.forEach(m=> push('Move', groundLine(m), 'planned', m.area || null));
+      g.hold.forEach(h=> push('Hold', groundLine(h), 'planned', h.area || null));
+    }
+  } catch(e){}
   /* One area, not all of them. A PNF cycle is four rounds of contract-and-relax and costs
      the better part of a minute; doing it everywhere would double a cool-down that is
      already budgeted per area. So it goes where range is actually the point — an area your

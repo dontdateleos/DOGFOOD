@@ -1,5 +1,5 @@
 {
- "generatedFrom": "2026.11.22.006",
+ "generatedFrom": "2026.11.22.007",
  "generatedBy": "tools/spec-dump.mjs",
  "constants": {
   "EYE_ANIM": {
@@ -1564,7 +1564,7 @@
    "DEC"
   ],
   "EPOCH_SANE": 946684800000,
-  "APP_VERSION": "2026.11.22.006",
+  "APP_VERSION": "2026.11.22.007",
   "APP_NOTES": {
    "2026.08.31.229": "A chart with nothing in it says why, and names the tab to log it on.",
    "2026.08.31.232": "Recent entries moved next to the form it fills, and repaints when you open it.",
@@ -1942,6 +1942,7 @@
    "2026.10.20.001": "New tab: Plan, between Today and Body. Three rows, one line each — which block you are in and what comes next, your goals, and your sport — and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.",
    "2026.10.20.002": "Icons. The week calendar shows each session as a shape instead of a letter — a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.",
    "2026.10.20.003": "Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport — a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks — and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today’s weight. When you are off target, Today says so under the block line.",
+   "2026.11.22.007": "Workouts now opens by saying what today’s Charge means for the session, what is pulling it down most and what is helping. Trends has a new card showing what has dropped your score over the last week and how to raise each one. Warm-ups and cool-downs pick up ground work: crawls, hovers, crab reaches, hangs and a resting squat, chosen for what you are lifting, gentler on a low-Charge day and changed around an injury. And Skills has a daily practice for the resting squat and the hang that builds up a few minutes at a time.",
    "2026.11.22.006": "Fixed the piñata glitching and bending. He no longer warps between angles: every angle is loaded up front and he steps cleanly from one to the next.",
    "2026.11.22.005": "He turns like a solid thing now, not a flipbook. Between angles he rotates smoothly, his snout and eye sliding round, and he sways side to side while he waits so you can see it.",
    "2026.11.22.004": "The piñata is 3D now. He turns for real: tilt your head with him and you see his side, his back, the top of his head, all of it, instead of one picture stretched. Spins go all the way round, nods look down at you, flips show his underside.",
@@ -2181,6 +2182,44 @@
    "bedtime": "Bedtime",
    "jetLag": "Jet lag",
    "hydration": "Morning weight vs trend"
+  },
+  "SR_DRIVER_FIX": {
+   "sleep": "Last night was short or broken. Tonight, in bed at your usual time with nothing to wake for.",
+   "sleepDebt": "Several short nights are adding up. An extra 30 to 45 minutes a night for four nights pays back most of it.",
+   "regularity": "Your wake time is moving around. Getting up within half an hour of the same time each day helps on its own.",
+   "bedtime": "You went to bed later than usual. Your usual bedtime counts as much as the hours.",
+   "fitFatigue": "Recent training is heavier than you have adapted to. That is normal in a hard block; an easier day or the deload brings it back.",
+   "localFatigue": "The muscles today uses are still recovering. Go lighter on them today or train something else.",
+   "form": "Recent sessions came in under your trend. A lighter week usually turns this around.",
+   "rhrTrend": "Resting heart rate has been above your normal. Common after hard weeks, late meals, alcohol, or before a cold; keep intensity easy.",
+   "rhrAcute": "Resting heart rate was high last night. Often a drink, a late meal, heat or stress.",
+   "hrvTrend": "HRV has been under your normal. Easy training and good sleep bring it back.",
+   "hrvAcute": "HRV was low last night. Often a drink, a late meal or stress.",
+   "illnessCh": "Breathing rate or skin temperature is up. You may be getting ill: rest is the fast way back.",
+   "activity": "Yesterday was much busier on your feet than usual. Keep today’s extra walking easy.",
+   "circadian": "You are training soon after waking. A few hours later in the day reads higher.",
+   "nadir": "Your heart rate bottomed out late in the night. Late meals, alcohol and late hard sessions do this.",
+   "jetLag": "Your body clock is still catching up with the time zone. Morning light and a normal bedtime speed it up.",
+   "hydration": "This morning’s weight is under your trend. Drink before you train."
+  },
+  "SR_DRIVER_GOOD": {
+   "sleep": "Good sleep last night",
+   "sleepDebt": "No sleep debt",
+   "regularity": "Steady wake time",
+   "bedtime": "Usual bedtime",
+   "fitFatigue": "Fitness ahead of fatigue",
+   "localFatigue": "Today’s muscles are fresh",
+   "form": "Training is going well",
+   "rhrTrend": "Resting HR below normal",
+   "rhrAcute": "Low resting HR last night",
+   "hrvTrend": "HRV above normal",
+   "hrvAcute": "Good HRV last night",
+   "illnessCh": "No sign of illness",
+   "activity": "A normal day on your feet",
+   "circadian": "Good time of day to train",
+   "nadir": "Heart rate settled early",
+   "jetLag": "No jet lag",
+   "hydration": "Well hydrated"
   },
   "LOAD_TAU_ACUTE": 7,
   "RUN_INTENSITY": {
@@ -6650,6 +6689,257 @@
    "sprint": 14,
    "race": 14,
    "race_long": 7
+  },
+  "GROUND_MOVES": {
+   "wristPrep": {
+    "name": "Wrist prep: rocks, palm lifts, fist rolls",
+    "dose": "30-45s",
+    "tags": []
+   },
+   "rockBack": {
+    "name": "Quadruped rock-back",
+    "dose": "×8",
+    "tags": [
+     "deepKnee"
+    ],
+    "area": "hips"
+   },
+   "hover": {
+    "name": "Quadruped hover, knees an inch up",
+    "dose": "2×15s",
+    "tags": [
+     "hand"
+    ]
+   },
+   "hoverTaps": {
+    "name": "Hover with shoulder taps",
+    "dose": "×6/side",
+    "tags": [
+     "hand"
+    ],
+    "positional": "hover"
+   },
+   "birdDog": {
+    "name": "Bird dog",
+    "dose": "×5/side",
+    "tags": []
+   },
+   "hollow": {
+    "name": "Hollow hold",
+    "dose": "15s",
+    "tags": [
+     "supine"
+    ]
+   },
+   "hip9090": {
+    "name": "90/90 hip switch",
+    "dose": "×6/side",
+    "tags": [],
+    "area": "hips"
+   },
+   "bearCrawl": {
+    "name": "Bear crawl, forward then back",
+    "dose": "2×5m",
+    "tags": [
+     "hand",
+     "crawl"
+    ],
+    "positional": "hover"
+   },
+   "sideBear": {
+    "name": "Side bear crawl",
+    "dose": "2×4m/side",
+    "tags": [
+     "hand",
+     "crawl"
+    ],
+    "positional": "hover"
+   },
+   "crabReach": {
+    "name": "Crab bridge reach",
+    "dose": "×4/side",
+    "tags": [
+     "hand",
+     "shoulderEnd"
+    ],
+    "area": "shoulders"
+   },
+   "frogHop": {
+    "name": "Frog hop, soft landings",
+    "dose": "×4",
+    "tags": [
+     "hand",
+     "deepKnee",
+     "jump"
+    ],
+    "positional": "squatPry",
+    "highOnly": true
+   },
+   "cossack": {
+    "name": "Cossack squat",
+    "dose": "×5/side",
+    "tags": [
+     "deepKnee"
+    ],
+    "area": "adductors",
+    "kneeAlt": "Cossack squat, half depth, holding on"
+   },
+   "walkOut": {
+    "name": "Walk-out to plank",
+    "dose": "×5",
+    "tags": [
+     "hand",
+     "headDown"
+    ],
+    "area": "hamstrings"
+   },
+   "spiderman": {
+    "name": "Spiderman lunge with reach",
+    "dose": "×4/side",
+    "tags": [],
+    "area": "hips"
+   },
+   "squatPry": {
+    "name": "Deep squat hold, gentle pry",
+    "dose": "30s",
+    "tags": [
+     "deepKnee"
+    ],
+    "area": "hips",
+    "kneeAlt": "Squat to a box, hold"
+   },
+   "scapPull": {
+    "name": "Scapular pulls on the bar",
+    "dose": "×8",
+    "tags": [
+     "hang"
+    ],
+    "area": "shoulders"
+   },
+   "activeHang": {
+    "name": "Active hang",
+    "dose": "2×10s",
+    "tags": [
+     "hang"
+    ],
+    "area": "shoulders"
+   },
+   "passiveHang": {
+    "name": "Passive hang, shoulders relaxed",
+    "dose": "30s",
+    "tags": [
+     "hang"
+    ],
+    "area": "shoulders"
+   },
+   "squatRest": {
+    "name": "Resting deep squat",
+    "dose": "60s",
+    "tags": [
+     "deepKnee"
+    ],
+    "area": "hips",
+    "kneeAlt": "Squat rest on a low box"
+   },
+   "rolls": {
+    "name": "Segmental rolls",
+    "dose": "×3/side",
+    "tags": []
+   }
+  },
+  "GROUND_MENUS": {
+   "squat": {
+    "move": [
+     "rockBack",
+     "squatPry",
+     "cossack"
+    ],
+    "prime": [
+     "hover"
+    ]
+   },
+   "hinge": {
+    "move": [
+     "walkOut",
+     "rockBack"
+    ],
+    "prime": [
+     "bearCrawl",
+     "hollow"
+    ]
+   },
+   "press": {
+    "move": [
+     "crabReach",
+     "hip9090"
+    ],
+    "prime": [
+     "sideBear",
+     "hoverTaps"
+    ]
+   },
+   "pull": {
+    "move": [
+     "crabReach",
+     "hollow"
+    ],
+    "prime": [
+     "scapPull",
+     "activeHang"
+    ]
+   },
+   "runEasy": {
+    "move": [
+     "spiderman",
+     "walkOut",
+     "cossack"
+    ],
+    "prime": [
+     "bearCrawl",
+     "frogHop"
+    ]
+   },
+   "runQuality": {
+    "move": [
+     "spiderman"
+    ],
+    "prime": []
+   }
+  },
+  "PRACTICE": {
+   "squat": {
+    "name": "Resting squat",
+    "steps": [
+     120,
+     300,
+     600
+    ],
+    "challenge": 1800,
+    "adds": [
+     30,
+     60,
+     120
+    ],
+    "how": "Sit in a deep squat, heels down if you can (a book under them is fine), in short goes through the day. Stand up if your knees complain.",
+    "kneeCap": 300,
+    "kneeHow": "Knee flagged: squat to a low box and keep it under 5 minutes a day."
+   },
+   "hang": {
+    "name": "Hang",
+    "steps": [
+     60,
+     120,
+     210
+    ],
+    "challenge": 420,
+    "adds": [
+     10,
+     20,
+     30
+    ],
+    "how": "From a bar, in sets of 10 to 30 seconds. Shoulders pulled down to start; relaxed hangs once that is easy. Let go if the front of the shoulder hurts.",
+    "shoulderPause": "Paused while a shoulder injury is open. Scapular pulls in the warm-up still count as prep."
+   }
   },
   "DRILL_TRANSITION_S": 18,
   "DRILL_DOSE_TAIL": {},
