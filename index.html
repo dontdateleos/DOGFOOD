@@ -14909,7 +14909,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.073';
+const APP_VERSION = '2026.11.23.074';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15305,6 +15305,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.074': 'Sleep, fuel and hydration scores on the Fuel and Recover tabs. Running well behind on food or water now takes a few points off Charge.',
   '2026.11.23.073': 'A new, cleaner zebra on Settings, with its own build-in and blink.',
   '2026.11.23.072': 'Piñatas hang a little less below the banner edge.',
   '2026.11.23.071': 'Each piñata now hangs a little below the banner edge.',
@@ -20330,8 +20331,82 @@ async function computeCharge(sr, opts){
     const longPts = Math.round(Math.min(CHARGE_LONG_DAY_MAX, Math.max(0, awakeH - CHARGE_LONG_DAY_H)));
     if(longPts > 0) parts.push({ label: 'long day', pts: longPts });
   }
+  if(o.before == null){ try{ (await pillarDrains(day, o.at)).forEach(p=> parts.push(p)); } catch(e){} }
   const spent = parts.reduce((a, p)=> a + p.pts, 0);
   return { charge: Math.max(0, Math.min(100, start - spent)), start, spent, parts, drainFactor: k };
+}
+
+/* ================= THE PILLARS =================
+   Sleep, fuel and water as scores of their own, 0 to 100, read the same way everywhere (the
+   Fuel and Recover tabs, and Charge).
+
+     sleep      hours slept last night: 4 h or less is 0, 7.5 h or more is 100.
+     energy     calories logged against what you need BY NOW (your weight times 31, spread over
+                7:00 to 21:00). 90 to 115% of that is 100. Under it falls away quickly, over
+                it slowly.
+     protein    grams logged against 1.6 g a kg, by now. 95% of that is 100. Only counted when
+                you enter grams.
+     fuel       65% energy and 35% protein, or energy alone when there are no grams.
+     hydration  litres against 37 ml a kg, by now. 90% of that is 100.
+
+   HOW THEY FEED CHARGE. Charge only ever goes down through the day, so these are drains and
+   never a boost: running well under on fuel takes up to 8 points, and well under on water up
+   to 5. Nothing is taken for a day you did not log at all (not logging is not the same as not
+   eating), nor before about 10:00, when "by now" is still a sliver of the day. The two caps
+   are starting figures, in the same spirit as the other drains: small until the app has days
+   to learn from. */
+const PILLAR_FUEL_MAX = 8, PILLAR_WATER_MAX = 5;
+function pillarClamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+async function pillarFuelTargets(day){
+  const t = { cal: 2450, water: 3000, protein: 130, meals: 3, weight: null };
+  try{
+    const bw = await bodyweightTimeline(); const w = bodyweightOn(bw, day || todayStr);
+    if(w > 0){ t.weight = w; t.cal = Math.round(w * 31 / 50) * 50; t.water = Math.round(Math.max(2, w * 0.037) * 2) / 2 * 1000; t.protein = Math.round(w * 1.6); }
+  } catch(e){}
+  try{ const s = JSON.parse((await window.storage.get('settings:fuelTarget')).value); if(s && s.cal > 0) t.cal = s.cal; } catch(e){}
+  return t;
+}
+async function pillarScoresFor(day, atMs){
+  const d = day || todayStr, t = await pillarFuelTargets(d);
+  const out = { day: d, t, frac: 1, early: false, cal: 0, protein: 0, meals: 0, water: 0, hasProtein: false, logged: false,
+                calR: null, proteinR: null, waterR: null, energy: null, protScore: null, fuel: null, hydration: null, sleep: null, sleepHrs: null };
+  let rec = null; try{ rec = JSON.parse((await window.storage.get('fuel:' + d)).value); } catch(e){}
+  rec = rec || { meals: [], water: 0 };
+  const meals = Array.isArray(rec.meals) ? rec.meals : [];
+  out.meals = meals.length; out.cal = meals.reduce((s, m)=> s + (+m.cal || 0), 0);
+  out.hasProtein = meals.some(m=> m.p != null && m.p !== ''); out.protein = meals.reduce((s, m)=> s + (+m.p || 0), 0);
+  out.water = +rec.water || 0; out.logged = meals.length > 0 || out.water > 0;
+  if(d === todayStr){
+    const now = new Date(atMs || Date.now()); const h = now.getHours() + now.getMinutes() / 60;
+    out.frac = pillarClamp((h - 7) / 14, 0, 1); out.early = out.frac < 0.25;
+  }
+  const f = Math.max(out.frac, 0.05);
+  out.calR = out.cal / (t.cal * f); out.proteinR = out.protein / (t.protein * f); out.waterR = out.water / (t.water * f);
+  if(!out.early){
+    const e = out.calR;
+    out.energy = Math.round(pillarClamp(e < 0.9 ? 100 - (0.9 - e) * 200 : (e > 1.15 ? 100 - (e - 1.15) * 100 : 100), 0, 100));
+    if(out.hasProtein) out.protScore = Math.round(pillarClamp(100 * out.proteinR / 0.95, 0, 100));
+    out.fuel = out.hasProtein ? Math.round(out.energy * 0.65 + out.protScore * 0.35) : out.energy;
+    out.hydration = Math.round(pillarClamp(100 * out.waterR / 0.9, 0, 100));
+  }
+  let en = null; try{ en = JSON.parse((await window.storage.get(keyFor(d))).value); } catch(e){}
+  const hrs = en ? parseFloat(en.durationHrs) : NaN;
+  if(isFinite(hrs) && hrs > 0){ out.sleepHrs = hrs; out.sleep = Math.round(pillarClamp(100 * (hrs - 4) / 3.5, 0, 100)); }
+  return out;
+}
+async function pillarDrains(day, atMs){
+  const parts = [];
+  let used = false;
+  try{ const r = await window.storage.list('fuel:'); const from = shiftDateStr(day, -14);
+    used = ((r && r.keys) || []).some(k=>{ const dd = k.replace('fuel:', ''); return dd >= from && dd <= day; }); } catch(e){}
+  if(!used) return parts;
+  const p = await pillarScoresFor(day, atMs);
+  if(p.early || !p.logged) return parts;
+  const fs = Math.max(0, 1 - p.calR);
+  if(fs > 0.1) parts.push({ label: 'low fuel', pts: Math.round(Math.min(PILLAR_FUEL_MAX, (fs - 0.1) * 16)) });
+  const ws = Math.max(0, 1 - p.waterR);
+  if(ws > 0.15) parts.push({ label: 'low water', pts: Math.round(Math.min(PILLAR_WATER_MAX, (ws - 0.15) * 10)) });
+  return parts.filter(x=> x.pts > 0);
 }
 
 /* ================= SESSION PERFORMANCE =================
@@ -29796,11 +29871,13 @@ function paintScoreRing(value, ch){
     const why = p=>{
       if(p.label === 'day') return 'more steps than you usually have by now';
       if(p.label === 'long day') return 'awake more than 12 hours';
+      if(p.label === 'low fuel') return 'eaten less than you need by now';
+      if(p.label === 'low water') return 'drunk less than you need by now';
       const size = p.size == null ? 'priced as a typical session' : p.size > 1.15 ? 'bigger than your usual' : p.size < 0.85 ? 'lighter than your usual' : 'about your usual';
       return (p.health ? 'from Apple Health, ' : '') + size;
     };
-    const name = { lift: 'Lift', run: 'Run', day: 'Busy day', 'long day': 'Long day' };
-    const sym = { lift: 'strength', run: 'run', day: 'steps', 'long day': 'longday' };
+    const name = { lift: 'Lift', run: 'Run', day: 'Busy day', 'long day': 'Long day', 'low fuel': 'Low fuel', 'low water': 'Low water' };
+    const sym = { lift: 'strength', run: 'run', day: 'steps', 'long day': 'longday', 'low fuel': 'drain', 'low water': 'drain' };
     const ic = k=> `<i class="cr-ic">${dfIcon(k, 18)}</i>`;
     const rows = [`<div class="cr-row">${ic('sleep')}<span>Woke with</span><b>${ch.start}</b></div>`]
       .concat(ch.parts.map(p=> `<div class="cr-row">${ic(sym[p.label] || 'drain')}<span>${name[p.label] || p.label}${p.at ? ' \u00b7 ' + clock(p.at) : ''}<small>${why(p)}</small></span><b>\u2212${p.pts}</b></div>`))
@@ -49098,23 +49175,17 @@ loadGoalProfile().then(async ()=>{
 
     /* =========================== FUEL =========================== */
     var fp=mk('panel-fuel','fuel',[['nutrition','Nutrition',IC.fork],['hydration','Hydration',IC.drop],['energy','Energy',IC.bolt]]);
-    var F={d:{meals:[],water:0,energy:null},t:{cal:2450,water:3000,meals:3},wk:[],busy:false};
+    var F={d:{meals:[],water:0,energy:null},t:{cal:2450,water:3000,protein:130,meals:3},wk:[],p:null,busy:false};
     function fkey(d){ return 'fuel:'+d; }
     function fsave(){ return window.storage.set(fkey(todayStr),JSON.stringify(F.d)).catch(function(){}); }
-    async function fuelTargets(){
-      try{
-        var br=await window.storage.list('bodymetrics:'), ds=((br&&br.keys)||[]).map(function(k){ return k.replace('bodymetrics:',''); }).sort(), w=null;
-        for(var i=ds.length-1;i>=0&&w==null;i--){ var b=await jget('bodymetrics:'+ds[i],null); if(b&&b.weight>0) w=+b.weight; }
-        if(w){ F.t.cal=Math.round(w*31/50)*50; F.t.water=Math.round(Math.max(2,w*.037)*2)/2*1000; }
-      }catch(e){}
-      var set=await jget('settings:fuelTarget',null); if(set&&set.cal>0) F.t.cal=set.cal;
-    }
+    async function fuelTargets(){ try{ var t=await pillarFuelTargets(todayStr); F.t.cal=t.cal; F.t.water=t.water; F.t.protein=t.protein; }catch(e){} }
     async function fuelLoad(){
       if(F.busy) return; F.busy=true;
       try{
         await fuelTargets();
         F.d=await jget(fkey(todayStr),{meals:[],water:0,energy:null}); if(!F.d.meals) F.d.meals=[];
         var days=weekDays(); F.wk=[]; for(var i=0;i<days.length;i++){ F.wk.push(days[i]===todayStr?F.d:await jget(fkey(days[i]),{meals:[],water:0,energy:null})); }
+        try{ F.p=await pillarScoresFor(todayStr); }catch(e){}
       }finally{ F.busy=false; }
       fuelPaint();
     }
@@ -49133,8 +49204,12 @@ loadGoalProfile().then(async ()=>{
       else status={t:'A little behind',p:'Have a meal and some water to catch up.',k:'warn',ic:IC.bolt};
       var e=d.energy?EN[d.energy]:null;
       var bar='<span class="en" aria-hidden="true">'+[1,2,3].map(function(n){ return '<i class="'+(e&&n<=e[1]?'on':'')+'" style="height:'+(8+n*7)+'px"></i>'; }).join('')+'</span>';
-      var rows=rowHTML(IC.fork,'Meals logged',meals+' of '+F.t.meals+' meals'+(cal?' · '+num(cal)+' cal':''),'<span class="rm">'+meals+'/'+F.t.meals+'</span>',' data-r="meal"')
-        +rowHTML(IC.drop,'Hydration',(water/1000).toFixed(1)+' of '+(F.t.water/1000).toFixed(1)+' L','<span class="rm">'+(water/1000).toFixed(1)+' L</span>',' data-r="water"')
+      var P=F.p, sc=(P&&P.fuel!=null)?P.fuel:null, hy=(P&&P.hydration!=null)?P.hydration:null;
+      var scSub=sc!=null?('Calories '+Math.round(P.calR*100)+'% of what you need by now'+(P.hasProtein?' · Protein '+Math.round(P.proteinR*100)+'%':'')):(P&&P.early?'Fills in as the day goes on':'Log a meal and it shows here');
+      var rows=rowHTML(IC.bolt,'Fuel score',scSub,'<span class="rm">'+(sc==null?'-':sc)+'</span>',' data-r="score"')
+        +rowHTML(IC.fork,'Meals logged',meals+' of '+F.t.meals+' meals'+(cal?' · '+num(cal)+' cal':''),'<span class="rm">'+meals+'/'+F.t.meals+'</span>',' data-r="meal"')
+        +rowHTML(IC.fork,'Protein',(P&&P.hasProtein)?(Math.round(P.protein)+' of '+F.t.protein+' g'):'Add grams when you log a meal','<span class="rm">'+((P&&P.hasProtein)?Math.round(P.proteinR*100)+'%':'-')+'</span>',' data-r="meal"')
+        +rowHTML(IC.drop,'Hydration',(water/1000).toFixed(1)+' of '+(F.t.water/1000).toFixed(1)+' L','<span class="rm">'+(hy!=null?hy:(water/1000).toFixed(1)+' L')+'</span>',' data-r="water"')
         +rowHTML(IC.bolt,'Energy',e?e[0]:'Tap to log',bar,' data-r="energy"');
       var days=weekDays(), labels=days.map(dayLetter), cals=F.wk.map(fcal), ws=F.wk.map(function(x){ return (x.water||0)/1000; });
       var logged=cals.filter(function(v){ return v>0; }), avg=logged.length?logged.reduce(function(a,b){ return a+b; },0)/logged.length:0;
@@ -49142,25 +49217,34 @@ loadGoalProfile().then(async ()=>{
         +bars(cals,labels,F.t.cal,num)+'<div class="wk-h"><b>Water</b><span>Litres per day</span></div>'+bars(ws,labels,F.t.water/1000,function(v){ return v.toFixed(1); },'w');
       paintShared(fp,fp.__st,hero,status,rows,week);
     }
+    function scoreSheet(kind){
+      var T={
+        fuel:['Fuel score','<p class="s3-p">Calories and protein against what you need by this time of day. Your target is about 31 calories per kg of bodyweight, and 1.6 g of protein per kg.</p><p class="s3-p">Right on track for the day so far is 100. Falling well behind drops it quickly. Going over drops it slowly.</p><p class="s3-p"><b>In Charge:</b> if you are well behind on food, Charge loses up to 8 points. Days you have not logged are never counted against you.</p>'],
+        water:['Hydration score','<p class="s3-p">Water logged against about 37 ml per kg of bodyweight, by this time of day.</p><p class="s3-p"><b>In Charge:</b> being well behind on water takes up to 5 points off. Days you have not logged are never counted against you.</p>'],
+        sleep:['Sleep score','<p class="s3-p">Hours slept last night. 4 hours or less scores 0 and 7.5 hours or more scores 100.</p><p class="s3-p"><b>In Charge:</b> sleep already sets where Charge starts each morning, along with sleep debt and how regular your sleep is, so it is not counted twice.</p>']
+      }[kind];
+      openSheet(T[0],T[1]);
+    }
     function mealSheet(){
       var hr=new Date().getHours(), nm=hr<11?'Breakfast':(hr<15?'Lunch':(hr<21?'Dinner':'Snack'));
-      function list(){ return F.d.meals.length?'<ul class="s3-list">'+F.d.meals.map(function(m,i){ return '<li><span><b>'+esc(m.n||'Meal')+'</b><i>'+num(m.cal)+' cal</i></span><button type="button" class="s3-del" data-i="'+i+'" aria-label="Remove '+esc(m.n||'meal')+'">'+svg('<path d="M6 6l12 12M18 6 6 18"/>')+'</button></li>'; }).join('')+'</ul>':''; }
+      function list(){ return F.d.meals.length?'<ul class="s3-list">'+F.d.meals.map(function(m,i){ return '<li><span><b>'+esc(m.n||'Meal')+'</b><i>'+num(m.cal)+' cal'+(m.p!=null&&m.p!==''?' \u00b7 '+m.p+' g protein':'')+'</i></span><button type="button" class="s3-del" data-i="'+i+'" aria-label="Remove '+esc(m.n||'meal')+'">'+svg('<path d="M6 6l12 12M18 6 6 18"/>')+'</button></li>'; }).join('')+'</ul>':''; }
       openSheet('Log a meal','<div class="s3-ls"></div><label class="s3-f"><span>What was it?</span><input id="s3Name" type="text" maxlength="40" placeholder="'+nm+'" autocomplete="off"></label>'
         +'<label class="s3-f"><span>Calories</span><input id="s3Cal" type="number" inputmode="numeric" min="0" max="5000" placeholder="600"></label>'
+        +'<label class="s3-f"><span>Protein in grams (optional)</span><input id="s3Pro" type="number" inputmode="numeric" min="0" max="300" placeholder="35"></label>'
         +'<div class="s3-picks" role="group" aria-label="Quick sizes"><button type="button" class="s3-pick" data-v="350">Light<small>350</small></button><button type="button" class="s3-pick" data-v="600">Normal<small>600</small></button><button type="button" class="s3-pick" data-v="900">Big<small>900</small></button></div>'
         +'<button type="button" class="s3-save">Save meal</button>',function(s){
           var ls=s.querySelector('.s3-ls'); ls.innerHTML=list();
           s.addEventListener('click',function(e){
             var p=e.target.closest('.s3-pick'); if(p){ s.querySelector('#s3Cal').value=p.dataset.v; return; }
-            var dl=e.target.closest('.s3-del'); if(dl){ F.d.meals.splice(+dl.dataset.i,1); fsave(); ls.innerHTML=list(); fuelPaint(); return; }
+            var dl=e.target.closest('.s3-del'); if(dl){ F.d.meals.splice(+dl.dataset.i,1); fsave(); ls.innerHTML=list(); fuelLoad(); return; }
             if(e.target.closest('.s3-save')){ var v=parseInt(s.querySelector('#s3Cal').value,10); if(!(v>=0)||isNaN(v)){ s.querySelector('#s3Cal').focus(); return; }
-              F.d.meals.push({n:(s.querySelector('#s3Name').value||'').trim()||nm,cal:v,t:Date.now()}); fsave(); fuelPaint(); closeSheet(); try{ showToast('Meal saved.'); }catch(x){} }
+              var pv=parseInt(s.querySelector('#s3Pro').value,10); F.d.meals.push({n:(s.querySelector('#s3Name').value||'').trim()||nm,cal:v,p:(pv>=0?pv:null),t:Date.now()}); fsave(); fuelLoad(); closeSheet(); try{ showToast('Meal saved.'); }catch(x){} }
           });
         });
     }
     function waterSheet(){
       openSheet('Add water','<p class="s3-p">'+(F.d.water/1000).toFixed(2)+' L so far today.</p><div class="s3-picks"><button type="button" class="s3-pick" data-a="250">+250<small>ml</small></button><button type="button" class="s3-pick" data-a="500">+500<small>ml</small></button><button type="button" class="s3-pick" data-a="750">+750<small>ml</small></button></div><button type="button" class="s3-save ghost" data-a="-250">Undo 250 ml</button>',function(s){
-        s.addEventListener('click',function(e){ var b=e.target.closest('[data-a]'); if(!b) return; F.d.water=Math.max(0,(F.d.water||0)+(+b.dataset.a)); fsave(); fuelPaint(); closeSheet(); });
+        s.addEventListener('click',function(e){ var b=e.target.closest('[data-a]'); if(!b) return; F.d.water=Math.max(0,(F.d.water||0)+(+b.dataset.a)); fsave(); fuelLoad(); closeSheet(); });
       });
     }
     function energySheet(){
@@ -49170,18 +49254,19 @@ loadGoalProfile().then(async ()=>{
     }
     if(fp){
       fp.__st=wire(fp,function(){ fuelPaint(); }); clickHero(fp);
-      fp.querySelector('.s3-rows').addEventListener('click',function(e){ var b=e.target.closest('.s3-row'); if(!b) return; var r=b.dataset.r; if(r==='meal') mealSheet(); else if(r==='water') waterSheet(); else energySheet(); });
+      fp.querySelector('.s3-rows').addEventListener('click',function(e){ var b=e.target.closest('.s3-row'); if(!b) return; var r=b.dataset.r; if(r==='meal') mealSheet(); else if(r==='water') waterSheet(); else if(r==='score') scoreSheet('fuel'); else energySheet(); });
     }
 
     /* =========================== RECOVER =========================== */
     var rp=mk('panel-recover','recover',[['charge','Charge',IC.bolt],['sleep','Sleep',IC.moon],['streak','Streak',IC.flame]]);
-    var R={charge:null,sleep:[],streak:0,todayDone:false,week:[],rhr:null,busy:false};
+    var R={charge:null,sleep:[],streak:0,todayDone:false,week:[],rhr:null,p:null,busy:false};
     async function recLoad(){
       if(R.busy) return; R.busy=true;
       try{
         var out=document.getElementById('headerScoreOut'), n=out?parseInt(out.textContent,10):NaN; R.charge=isFinite(n)?n:null;
         var days=weekDays(); R.sleep=[]; R.rhr=null;
         for(var i=0;i<days.length;i++){ var e=await jget('entry:'+days[i],null); R.sleep.push(e&&e.durationHrs!=null?+e.durationHrs:0); if(e&&e.restingHR!=null) R.rhr=+e.restingHR; }
+        try{ R.p=await pillarScoresFor(todayStr); }catch(e){}
         if(window.__s2streak){ try{ var s=await window.__s2streak(); R.streak=s.n; R.todayDone=s.todayDone; R.week=s.week; }catch(e){} }
       }finally{ R.busy=false; }
       recPaint();
@@ -49197,8 +49282,11 @@ loadGoalProfile().then(async ()=>{
       else if(ch>=70) status={t:'Ready to push',p:'You are well recovered. A hard session is fine today.',k:'good',ic:IC.bolt};
       else if(ch>=40) status={t:'Take it steady',p:'Train as planned, but keep it controlled.',k:'warn',ic:IC.bolt};
       else status={t:'Rest up',p:'Go light today. Sleep and food will help most.',k:'low',ic:IC.moon};
-      var rows=rowHTML(IC.bolt,'Charge',ch!=null?'Sleep, training load and how you feel':'Not set yet','<span class="rm">'+(ch!=null?ch:'-')+'</span>',' data-r="charge"')
-        +rowHTML(IC.moon,'Sleep',last?last.toFixed(1)+' h last night':'Not logged for today','<span class="rm">'+(last?last.toFixed(1)+' h':'-')+'</span>',' data-r="sleep"')
+      var P=R.p, slS=(P&&P.sleep!=null)?P.sleep:null, fuS=(P&&P.fuel!=null)?P.fuel:null, hyS=(P&&P.hydration!=null)?P.hydration:null;
+      var rows=rowHTML(IC.bolt,'Charge',ch!=null?'Sleep, training, food and water':'Not set yet','<span class="rm">'+(ch!=null?ch:'-')+'</span>',' data-r="charge"')
+        +rowHTML(IC.moon,'Sleep score',last?last.toFixed(1)+' h last night, 7.5 h or more is full marks':'Not logged for today','<span class="rm">'+(slS!=null?slS:'-')+'</span>',' data-r="sleep"')
+        +rowHTML(IC.fork,'Fuel score',fuS!=null?'Calories '+Math.round(P.calR*100)+'% of what you need by now':(P&&P.early?'Fills in as the day goes on':'Log a meal on the Fuel tab'),'<span class="rm">'+(fuS!=null?fuS:'-')+'</span>',' data-r="fuel"')
+        +rowHTML(IC.drop,'Hydration score',hyS!=null?'Water '+Math.round(P.waterR*100)+'% of what you need by now':(P&&P.early?'Fills in as the day goes on':'Log water on the Fuel tab'),'<span class="rm">'+(hyS!=null?hyS:'-')+'</span>',' data-r="fuel"')
         +rowHTML(IC.flame,'Check-in streak',R.todayDone?'Done for today':'Not done yet today','<span class="rm">'+R.streak+' day'+(R.streak===1?'':'s')+'</span>',' data-r="streak"')
         +(R.rhr!=null?rowHTML('<path d="M12 20s-7-4.500-7-10a4 4 0 0 1 7-2.500A4 4 0 0 1 19 10c0 5.500-7 10-7 10Z"/>','Resting heart rate','From your latest check-in','<span class="rm">'+R.rhr+' bpm</span>',' data-r="rhr"'):'');
       var days=weekDays(), labels=days.map(dayLetter), dots='<div class="dots">'+days.map(function(d,i){ var on=R.week.length===7&&(R.week[i]); var td=d===todayStr; return '<div class="dy"><span class="dt'+(on?' on':'')+(td&&!on?' td':'')+'">'+svg('<path d="M5 12l5 5 9-10"/>')+'</span>'+labels[i]+'</div>'; }).join('')+'</div>';
@@ -49209,7 +49297,7 @@ loadGoalProfile().then(async ()=>{
     if(rp){
       rp.__st=wire(rp,function(){ recPaint(); }); clickHero(rp);
       rp.querySelector('.s3-rows').addEventListener('click',function(e){ var b=e.target.closest('.s3-row'); if(!b) return; var r=b.dataset.r;
-        if(r==='charge'){ var sb=document.getElementById('headerScoreBtn'); if(sb) sb.click(); } else if(r==='streak'||r==='sleep') checkin(); else go('data'); });
+        if(r==='charge'){ var sb=document.getElementById('headerScoreBtn'); if(sb) sb.click(); } else if(r==='sleep') scoreSheet('sleep'); else if(r==='streak') checkin(); else if(r==='fuel') go('fuel'); else go('data'); });
     }
     window.__s3on=function(name){ if(name==='fuel') fuelLoad(); else if(name==='recover') recLoad(); };
   })();
