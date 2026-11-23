@@ -5772,7 +5772,7 @@ html.s2 main{ padding-top:0; padding-bottom:calc(128px + env(safe-area-inset-bot
 html.s2 #s2banner{ display:block; position:relative; z-index:10; isolation:isolate; overflow:hidden;
   height:calc(230px + env(safe-area-inset-top, 0px)); background:var(--s2-tone,#FF8A00);
   transition:background-color 320ms ease; color:#151515; --s2-top:env(safe-area-inset-top, 0px); }
-#s2banner[data-light="1"]{ color:#fff; }
+html.s2 #s2banner[data-light="1"]{ color:#fff; }
 #s2banner [hidden]{ display:none !important; }
 #s2banner .s2-deco{ position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
 #s2banner .s2-deco .cf{ position:absolute; top:-24px; will-change:transform; animation:s2fall var(--d) linear var(--del) infinite; }
@@ -6602,6 +6602,27 @@ html.s2 #logSheet .lift-sheet-panel[data-kind="mobility"] .mobility-row select{ 
 html.s2 #logSheet .lift-sheet-panel[data-kind="mobility"] .mobility-row .remove-row{ margin-left:auto; }
 html.s2 #logSheet .lift-sheet-panel .log-run-row input::placeholder{ color:#B9B3A5; }
 html.s2 #logSheet .lift-sheet-panel select{ height:44px !important; min-height:44px; line-height:1.2 !important; padding-top:0 !important; padding-bottom:0 !important; }
+
+/* BUILD pages: a big white title in the pink banner, no piñata */
+#s2banner.is-sub .s2-pin{ display:none; }
+#s2banner.is-sub .s2-title{ top:calc(var(--s2-top) + 72px); font-size:56px; }
+.s2-block{ display:none; }
+html.s2 .panel.s2-m.s2-open.s2-blk > .s2-block{ display:block; padding:6px 20px 0; }
+.s2-block .bh{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin:14px 0 12px; }
+html.s2 .s2-block .bh h3{ margin:0; font:italic 800 25px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+.s2-block .bh button{ all:unset; cursor:pointer; font:700 14px 'Barlow',sans-serif; text-decoration:underline; text-underline-offset:3px; }
+.s2-block .bh button::after{ display:none; }
+.s2-block .wks{ display:flex; gap:6px; margin-bottom:10px; }
+.s2-block .wk{ flex:1; text-align:center; padding:10px 0; border-radius:12px; font:italic 800 18px/1 'Barlow Condensed','Arial Narrow',sans-serif; background:#fff; border:1.5px solid #E4DCCB; color:#151515; }
+.s2-block .wk.past{ background:#E9E3D6; border-color:#E9E3D6; }
+.s2-block .wk.now{ background:#C8F031; border-color:#C8F031; }
+.s2-block .wk.dl{ border-style:dashed; }
+.s2-block .br{ all:unset; box-sizing:border-box; display:flex; align-items:center; gap:14px; width:100%; padding:14px 2px; border-bottom:1.5px solid #E4DCCB; color:#151515; }
+.s2-block button.br{ cursor:pointer; }
+.s2-block button.br::after{ display:none; }
+.s2-block .br svg{ flex:none; width:30px; height:30px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.s2-block .br b{ display:block; font:italic 800 26px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+.s2-block .br i{ display:block; margin-top:2px; font:500 15px/1.3 'Barlow',sans-serif; font-style:normal; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14716,7 +14737,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.051';
+const APP_VERSION = '2026.11.23.052';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15112,6 +15133,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.052': 'Build matches the design: Block, Program, Goals, Skills and Injuries & tests, each with a big title; Block shows the week chips, focus and what is next.',
   '2026.11.23.051': 'Run and mobility logs work like strength: a card, big numbers, a tick for every set of a stretch, and the pinned bar to log or save.',
   '2026.11.23.050': 'The run and mobility logs get their own colour (blue, lilac), a title that fits, readable fields and proper step names.',
   '2026.11.23.049': 'Training: run and mobility days get their own rows and icons, the Week view tidied up, and day tiles show the right icon for runs and mobility.',
@@ -47957,9 +47979,9 @@ loadGoalProfile().then(async ()=>{
   };
   var MENUS={
     plan:{panel:'panel-plan',rows:[
-      {t:'Block',s:'Where this block starts and ends',ic:'dumb',g:['block']},
-      {t:'Training',s:'How your training is going',ic:'chart',g:['training']},
-      {t:'Set-up',s:'Goals, split and program',ic:'target',g:['set-up']},
+      {t:'Block',s:'Where this block starts and ends',ic:'dumb',custom:'block'},
+      {t:'Program',s:'Days, session length and split',ic:'chart',act:'planweek'},
+      {t:'Goals',s:'What you are building towards',ic:'target',act:'goals'},
       {t:'Skills',s:'Levels and daily practice',ic:'layers',go:'injuries'},
       {t:'Injuries & tests',s:'What to work around',ic:'pill',go:'injuries'}]},
     injuries:{panel:'panel-injuries',rows:[
@@ -47984,7 +48006,10 @@ loadGoalProfile().then(async ()=>{
       return (r.grp?'<div class="s2-glab">'+r.grp+'</div>':'')+'<button type="button" class="row" data-i="'+i+'"><span class="ri"><svg viewBox="0 0 24 24" aria-hidden="true">'+IC[r.ic]+'</svg></span><span class="rt"><b>'+r.t+'</b><i>'+r.s+'</i></span><span class="rc">'+CHEV+'</span></button>'; }).join('');
     pn.insertBefore(menu,pn.firstChild); pn.classList.add('s2-m');
     menu.addEventListener('click',function(e){ var b=e.target.closest('button.row'); if(!b) return; var r=m.rows[+b.dataset.i];
-      if(r.go){ go(r.go); return; } openSub(pn,r); });
+      if(r.go){ go(r.go); return; }
+      if(r.act==='planweek'){ var b1=document.getElementById('planWeekOpenBtn'); if(b1) b1.click(); return; }
+      if(r.act==='goals'){ var b2=document.getElementById('planGoalsRow'); if(b2) b2.click(); return; }
+      openSub(pn,r); });
   });
   function buildSubs(){
     var pn=document.getElementById('panel-plan'); if(!pn) return; var rows=pn.querySelectorAll('.s2-menu .row .rt i'); if(rows.length<3) return;
@@ -47993,24 +48018,41 @@ loadGoalProfile().then(async ()=>{
     if(pos.trim()) rows[0].textContent='Week '+pos.trim().replace(/^(\d+) of (\d+)/,'$1 of $2');
     if(setup) rows[2].textContent=setup.replace(/\s+/g,' ');
   }
+  function buildBlockPage(pn){
+    var host=pn.querySelector('.s2-block'); if(!host){ host=document.createElement('div'); host.className='s2-block'; pn.appendChild(host); host.addEventListener('click',function(e){ var b=e.target.closest('[data-a]'); if(!b) return; var a=b.dataset.a; var el=document.getElementById(a==='all'?'planBlockRow':'planWeekOpenBtn'); if(el) el.click(); }); }
+    host.innerHTML='';
+    (async function(){
+      try{
+        var pos=await getBlockPosition(todayStr), ty=(await getBlockTypeFor(todayStr)).type, info=(typeof BLOCK_TYPES!=='undefined'&&BLOCK_TYPES[ty])||{label:ty||'Block',weeks:pos.length,note:''};
+        var note=(info.note||'').replace(/^[^—-]*[—-]\s*/,'').replace(/^./,function(c){ return c.toUpperCase(); });
+        var chips=''; for(var w=1;w<=pos.length;w++){ var cls=w<pos.weekInBlock?'past':(w===pos.weekInBlock?'now':'fut'); if(isDeloadPosition(w,pos.length)) cls+=' dl'; chips+='<span class="wk '+cls+'">W'+w+'</span>'; }
+        var next=pos.weekInBlock<pos.length?('Week '+(pos.weekInBlock+1)+(pos.weekInBlock+1===pos.length?' is the deload':' · then a deload in week '+pos.length)):'Deload week, then the next block';
+        var IC2={t:IC.target,c:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/>',p:'<path d="M12 5v14M5 12h14"/>'};
+        function row(ic,t,sub,a){ return '<'+(a?'button type="button" data-a="'+a+'"':'div')+' class="br"><svg viewBox="0 0 24 24" aria-hidden="true">'+ic+'</svg><span><b>'+t+'</b><i>'+sub+'</i></span></'+(a?'button':'div')+'>'; }
+        host.innerHTML='<div class="bh"><h3>'+info.label+' · '+pos.length+' weeks</h3><button type="button" data-a="all">All blocks</button></div><div class="wks">'+chips+'</div>'
+          +row(IC2.t,'Focus',note||'Follows the plan for this block.')+row(IC2.c,'Next',next)+row(IC2.p,'Plan the next weeks','Split, weeks to build, days away','plan');
+      }catch(e){ host.innerHTML='<p style="padding:16px">Nothing planned yet.</p>'; }
+    })();
+  }
   function openSub(pn,r){
     [].forEach.call(pn.children,function(c){ c.classList.remove('s2-show'); });
     [].forEach.call(pn.querySelectorAll(':scope > .group'),function(g){
       var t=((g.querySelector('.group-title')||{}).textContent||'').trim().toLowerCase();
-      if(r.g.some(function(x){ return t.indexOf(x)===0; })) g.classList.add('s2-show'); });
+      if((r.g||[]).some(function(x){ return t.indexOf(x)===0; })) g.classList.add('s2-show'); });
     (r.extra||[]).forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.add('s2-show'); });
     pn.classList.add('s2-open'); subOpen=pn;
     [].forEach.call(pn.querySelectorAll(':scope > .group.s2-show > .group-head.collapsible'),function(h){
       var body=h.parentNode.querySelector(':scope > .collapsible-body'); if(!body) return;
       if(getComputedStyle(body).display==='none'){ h.click(); if(getComputedStyle(body).display==='none') setTimeout(function(){ if(getComputedStyle(body).display==='none') h.click(); },60); } });
-    banner.classList.add('has-back'); backEl.hidden=false; actions.innerHTML=''; pEl.hidden=false; scoreEl.hidden=true; pEl.innerHTML=r.t;
-    if(!reduced()) pop([backEl,pEl],0);
+    banner.classList.add('has-back','is-sub'); backEl.hidden=false; actions.innerHTML=''; pEl.hidden=true; scoreEl.hidden=true; titleEl.textContent=r.t;
+    pn.classList.toggle('s2-blk',r.custom==='block'); if(r.custom==='block') buildBlockPage(pn);
+    if(!reduced()) pop([backEl,titleEl],0);
     if(window.scrollTo) window.scrollTo(0,0);
   }
   function closeSub(quiet){
     if(!subOpen) return; var pn=subOpen; subOpen=null; pn.classList.remove('s2-open');
     [].forEach.call(pn.children,function(c){ c.classList.remove('s2-show'); });
-    var t=TABS[cur]||TABS.insights; banner.classList.toggle('has-back',!!t.back); backEl.hidden=!t.back; pEl.innerHTML=t.line||'';
+    var t=TABS[cur]||TABS.insights; banner.classList.remove('is-sub'); pn.classList.remove('s2-blk'); titleEl.textContent=t.title; pEl.hidden=false; banner.classList.toggle('has-back',!!t.back); backEl.hidden=!t.back; pEl.innerHTML=t.line||'';
     actions.innerHTML=(t.actions||[]).map(function(a){ return '<button type="button" class="s2-chip" data-go="'+a+'">'+(a==='injuries'?'Skills':'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.600 5.600l2.100 2.100M16.300 16.300l2.100 2.100M18.400 5.600l-2.100 2.100M7.700 16.300l-2.100 2.100"/></svg>Settings')+'</button>'; }).join('');
     if(!quiet){ if(!reduced()) pop([pEl,actions],0); if(window.scrollTo) window.scrollTo(0,0); }
   }
@@ -48460,6 +48502,7 @@ loadGoalProfile().then(async ()=>{
         if(pos&&pos.weekInBlock) rows[0].textContent=(ty?(ty.charAt(0).toUpperCase()+ty.slice(1)+' · '):'')+'Week '+pos.weekInBlock+' of '+pos.length;
         var p=await progressSummary(); if(!p) return;
         var gl=(p.goals||[]).map(function(g){ return g.label; }).slice(0,3).join(' · '); if(gl) rows[2].textContent=gl;
+        rows[1].textContent='Days, session length and split';
         var sk=(p.skills||[]).map(function(k){ return k.label+' L'+k.now; }).slice(0,2).join(' · '); if(sk) rows[3].textContent=sk;
         var ip=document.getElementById('panel-injuries'), bigs=ip&&ip.querySelectorAll('.s2-menu .row.big');
         if(bigs&&bigs.length===2){ var ex=(p.skills||[]).filter(function(k){ return k.category==='exercise'; }), mo=(p.skills||[]).filter(function(k){ return k.category!=='exercise'; });
