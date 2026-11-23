@@ -6427,6 +6427,30 @@ html.s2 body.tab-insights .s2-hero.on{ background:var(--hb); }
 .s2-hero[data-type="run"] .art{ width:106px; left:14px; bottom:-12px; }
 .s2-hero[data-type="mobility"] .art{ width:132px; left:6px; bottom:-2px; }
 .s2-hero .go{ z-index:3; }
+
+/* PROGRESS DETAIL: tapping a measure opens its own page, as in the design; the chart no longer sits under the list */
+html.s2 body.tab-data #trendsDataView .s2-chartgrp, html.s2 body.tab-data #trendsDataView #trendFlags, html.s2 body.tab-data #trendsDataView #chartMetricNote, html.s2 body.tab-data #trendsDataView #s2head{ display:none !important; }
+html.s2 body.tab-data #trendsDataView > .score-note{ display:none; }
+#s2detail{ display:none; }
+html.s2 #s2detail.on{ display:block; position:fixed; inset:0; z-index:90; overflow-y:auto; background:#F6F1E7; color:#151515; padding-bottom:calc(40px + env(safe-area-inset-bottom, 0px)); }
+#s2detail .bn{ position:relative; height:calc(190px + env(safe-area-inset-top, 0px)); background:#B7F02A url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 390 54' preserveAspectRatio='none'%3E%3Cpath d='M0 22 C60 0 130 0 200 18 S330 42 390 14 V54 H0Z' fill='%23F6F1E7'/%3E%3C/svg%3E") bottom/100% 46px no-repeat; }
+#s2detail .bk{ all:unset; position:absolute; left:14px; top:calc(12px + env(safe-area-inset-top, 0px)); width:44px; height:44px; border-radius:50%; background:#F6F1E7; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+#s2detail .bk::after{ display:none; }
+#s2detail .bk svg{ width:20px; height:20px; fill:none; stroke:#151515; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+#s2detail h2{ position:absolute; left:20px; top:calc(78px + env(safe-area-inset-top, 0px)); margin:0; font:italic 800 54px/.92 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+#s2detail .per{ display:flex; margin:6px 16px 0; padding:4px; border:1.5px solid #DED6C6; border-radius:999px; background:#FBF8F2; }
+#s2detail .per button{ all:unset; box-sizing:border-box; flex:1; text-align:center; padding:9px 0 8px; border-radius:999px; cursor:pointer; font:italic 800 17px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+#s2detail .per button::after{ display:none; }
+#s2detail .per button.on{ background:#151515; color:#fff; }
+#s2detail #s2head{ display:flex !important; margin:18px 16px 4px; }
+#s2detail .s2-chartgrp{ margin:6px 16px 0; border:1.5px solid #E4DCCB; border-radius:18px; background:#FBF8F2; padding:6px 4px 2px; }
+#s2detail .s2-chartgrp .fields, #s2detail .s2-chartgrp .dot-field{ background:transparent !important; padding:0; border:0; }
+#s2detail #trendFlags, #s2detail #chartMetricNote{ margin:10px 16px 0; padding:12px 14px 12px 14px; border:1.5px solid #E4DCCB; border-radius:18px; background:#FBF8F2; color:#151515; }
+#s2detail #trendFlags *{ color:#151515; }
+#s2detail #trendFlags:empty, #s2detail #chartMetricNote[style*="none"]{ display:none; }
+#s2detail #trendFlags .score-note, #s2detail #trendFlags > *{ border:0 !important; padding:0 !important; margin:0; background:none !important; font:500 16px/1.4 'Barlow',sans-serif; text-transform:none; letter-spacing:0; }
+#s2detail .s2-chartgrp.group{ box-shadow:none; }
+#s2detail .s2-chartgrp .fields{ border:0 !important; box-shadow:none !important; background:none !important; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14541,7 +14565,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.044';
+const APP_VERSION = '2026.11.23.045';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14937,6 +14961,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.045': 'Tapping a measure on Progress opens its own page with the big number, a Daily / Weekly / Monthly switch and the chart, instead of drawing the chart under the list.',
   '2026.11.23.044': 'Each block picks two priority mobility areas and gives them a little more time (15 minutes a week); the next block picks different ones. The deload week has none.',
   '2026.11.23.043': 'Mobility nights have a focus that rotates — lower body, upper body, whole body — named on the card; every area still gets its weekly time.',
   '2026.11.23.042': 'Mobility sessions are named for what they work on (Mobility · Hips); an empty Strength, Running or Mobility card still shows the length.',
@@ -48264,6 +48289,29 @@ loadGoalProfile().then(async ()=>{
       rv.querySelector('.go').addEventListener('click',function(){ rv.classList.remove('on'); var b=document.getElementById('planWeekOpenBtn'); if(b) b.click(); });
     }
     window.__s2openReview=async function(){ try{ await build(); }catch(e){} rv.classList.add('on'); rv.scrollTop=0; };
+  })();
+
+  /* ---------- Progress detail page ---------- */
+  (function(){
+    var host=document.getElementById('trendMetricPills'); if(!host) return;
+    var chart=document.getElementById('trendChart'); if(!chart) return;
+    var grp=chart.closest('.group'); if(grp) grp.classList.add('s2-chartgrp');
+    var ov=document.createElement('div'); ov.id='s2detail'; ov.setAttribute('role','dialog'); document.body.appendChild(ov);
+    ov.innerHTML='<div class="bn"><button type="button" class="bk" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button><h2></h2></div><div class="per"><button type="button" data-p="daily">Daily</button><button type="button" data-p="weekly">Weekly</button><button type="button" data-p="monthly">Monthly</button></div><div class="body"></div>';
+    var body=ov.querySelector('.body'), home=[], moved=false;
+    function parts(){ return [document.getElementById('s2head'), grp, document.getElementById('trendFlags'), document.getElementById('chartMetricNote')].filter(Boolean); }
+    function open(metric){
+      var t=(MET[metric]||[metric])[0]; ov.querySelector('h2').textContent=t;
+      if(!moved){ home=parts().map(function(el){ var m=document.createComment('s2h'); el.parentNode.insertBefore(m,el); return [el,m]; }); parts().forEach(function(el){ body.appendChild(el); }); moved=true; }
+      sync(); ov.classList.add('on'); ov.scrollTop=0;
+      if(typeof renderTrendChart==='function') setTimeout(function(){ renderTrendChart(); setTimeout(headline,120); },30);
+    }
+    function close(){ ov.classList.remove('on'); if(moved){ home.forEach(function(h){ if(h[1].parentNode){ h[1].parentNode.insertBefore(h[0],h[1]); h[1].remove(); } }); moved=false; } }
+    function sync(){ var per=(typeof selectedTrendPeriod==='string')?selectedTrendPeriod:'daily'; [].forEach.call(ov.querySelectorAll('.per button'),function(b){ b.classList.toggle('on',b.dataset.p===per); }); }
+    ov.querySelector('.bk').addEventListener('click',close);
+    ov.querySelector('.per').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; var o=document.querySelector('#trendPeriodPills .type-btn[data-period="'+b.dataset.p+'"]'); if(o) o.click(); setTimeout(function(){ sync(); headline(); },120); });
+    host.addEventListener('click',function(e){ var b=e.target.closest('.type-btn'); if(!b||!b.dataset.metric) return; var m=b.dataset.metric; setTimeout(function(){ open(m); },40); });
+    new MutationObserver(function(){ if(cur!=='data' && ov.classList.contains('on')) close(); }).observe(document.body,{attributes:true,attributeFilter:['class']});
   })();
   sync(tabFromBody(),true);
 })();
