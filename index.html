@@ -6025,6 +6025,25 @@ html.s2 #s2rest.on, html.s2 #s2start.on{ display:flex; position:fixed; inset:0; 
 #s2start .go::before{ content:''; border-left:13px solid #C8F031; border-top:8px solid transparent; border-bottom:8px solid transparent; }
 #s2start .go::after{ display:none; }
 @media (prefers-reduced-motion: reduce){ #s2rest .pin, #s2start .pin{ animation:none; } }
+
+/* TRAINING: warm-up, the session and cooldown as rows; a tap opens that part under its row */
+.s2-row{ display:none; }
+html.s2 body.tab-insights:not(.s2-wk) .s2-row{ display:flex; align-items:center; gap:14px; width:calc(100% - 32px); margin:8px 16px 0; padding:14px 16px; box-sizing:border-box; border:1px solid rgba(var(--ink-rgb),.12); border-radius:18px; background:#fff; color:#151515; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; height:auto; min-height:68px; flex:none; text-transform:none; letter-spacing:0; font-weight:400; }
+.s2-row::after{ display:none; }
+.s2-row .ri{ flex:none; width:30px; height:30px; }
+.s2-row .ri svg{ width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+.s2-row .rt{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.s2-row .rt b{ font:italic 800 24px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; letter-spacing:0; }
+.s2-row .rt i{ font:500 14px/1.25 var(--sans); font-style:normal; color:#55554f; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.s2-row .rm{ flex:none; text-transform:none; letter-spacing:0; padding:5px 11px; border-radius:999px; background:rgba(var(--ink-rgb),.08); font:700 13px var(--sans); white-space:nowrap; }
+.s2-row .rc{ flex:none; width:20px; height:20px; transition:transform .2s; }
+.s2-row .rc svg{ width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
+.s2-row[aria-expanded="true"] .rc{ transform:rotate(90deg); }
+html.s2 body.tab-insights .s2-row[aria-expanded="true"]{ background:#FFF1E6; border-color:#FF6A00; }
+html.s2 body.tab-insights:not(.s2-wk) #warmupSection:not(.s2-open),
+html.s2 body.tab-insights:not(.s2-wk) #mobilitySection:not(.s2-open),
+html.s2 body.tab-insights:not(.s2-wk) #todayWorkoutSummary > .today-session:not(.s2-open){ display:none !important; }
+html.s2 body.tab-insights #warmupSection.s2-open, html.s2 body.tab-insights #mobilitySection.s2-open{ display:block !important; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14139,7 +14158,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.020';
+const APP_VERSION = '2026.11.23.021';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14535,6 +14554,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.021': 'Training lists the warm-up, the session and the cooldown as three rows; tap one to open it.',
   '2026.11.23.020': 'Rest is a full screen: a countdown ring, the croc, +30s and Skip, and what is next. Opening a fresh session starts with the horse.',
   '2026.11.23.019': 'The log says which lift you are on and lists the next few, tap one to jump to it.',
   '2026.11.23.018': 'The workout log is a full page: a timer in the band, each set as a big number with a tick that turns lime, and a bar at the bottom that logs the next set.',
@@ -47417,6 +47437,45 @@ loadGoalProfile().then(async ()=>{
       st.classList.add('on'); st.animate([{opacity:0,transform:'scale(.96)'},{opacity:1,transform:'none'}],{duration:280,easing:'ease-out'});
       clearTimeout(timer); timer=setTimeout(end,2800);
     }).observe(ls,{attributes:true,attributeFilter:['class']});
+  })();
+
+  /* ---------- Training: sections as rows ---------- */
+  (function(){
+    var rich=document.getElementById('todayRichArea'); if(!rich) return;
+    var CH='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>';
+    var wu=document.getElementById('warmupSection'), wa=document.getElementById('todayWorkoutArea'), cd=document.getElementById('mobilitySection');
+    if(!wu||!wa||!cd) return;
+    function mk(ic,anchor){
+      var b=document.createElement('button'); b.type='button'; b.className='s2-row'; b.setAttribute('aria-expanded','false'); b.hidden=true;
+      b.innerHTML='<span class="ri"><svg viewBox="0 0 24 24" aria-hidden="true">'+IC[ic]+'</svg></span><span class="rt"><b></b><i></i></span><span class="rm"></span><span class="rc">'+CH+'</span>';
+      anchor.parentNode.insertBefore(b,anchor); return b; }
+    var rW=mk('bolt',wu), rS=mk('dumb',wa), rC=mk('heart',cd);
+    function names(list){ var a=[].map.call(list,function(e){ return e.textContent.replace(/\s+/g,' ').trim(); }).filter(Boolean); return a; }
+    function preview(a){ if(!a.length) return ''; var p=a.slice(0,2).join(', '); return p+(a.length>2?' and '+(a.length-2)+' more':''); }
+    function fill(r,title,sub,meta){ r.querySelector('b').textContent=title; r.querySelector('i').textContent=sub; r.querySelector('.rm').textContent=meta||''; r.querySelector('.rm').style.display=meta?'':'none'; }
+    function estOf(el){ var e=el&&el.querySelector('.head-est'); return e?e.textContent.replace(/\s+/g,' ').trim():''; }
+    function drills(box){ return [].map.call(box.querySelectorAll('.drill-text'),function(e){ var c=e.cloneNode(true); [].forEach.call(c.querySelectorAll('.drill-dose,.drill-strike'),function(x){ x.remove(); }); return c; }); }
+    function paint(){
+      var sec=wa.querySelector('.today-session');
+      var wuOn=wu.style.display!=='none', cdOn=cd.style.display!=='none';
+      rW.hidden=!wuOn; rC.hidden=!cdOn; rS.hidden=!sec;
+      if(wuOn){ var a=names(drills(document.getElementById('warmupCards')||wu)); fill(rW,'Warm-up',preview(a)||'Get ready to lift',estOf(wu).replace(/\s*\d+\/\d+.*$/,'')); }
+      if(cdOn){ var b=names(drills(document.getElementById('mobilityCards')||cd)); fill(rC,'Cooldown',preview(b)||'Wind down',estOf(cd).replace(/\s*\d+\/\d+.*$/,'')); }
+      if(sec){
+        var items=[].slice.call(sec.querySelectorAll('.plan-list:first-of-type .plan-item')), nm=names(items.map(function(it){ var st=it.querySelector('strong'); return st||it; })), sets=0;
+        items.forEach(function(it){ var d=it.querySelector('.plan-dose'), m=d&&/^(\d+)\s*[×x]/.exec(d.textContent.trim()); if(m) sets+=+m[1]; });
+        var t=(sec.querySelector('.group-title')||{}).textContent||'Session', est=estOf(sec);
+        var lead=(sets&&nm.length)?(nm.length+' lift'+(nm.length>1?'s':'')+' · '+sets+' sets'):'';
+        fill(rS,t.trim(),(lead?lead+' · ':'')+preview(nm),est);
+      }
+    }
+    function toggle(row,el){ var on=!el.classList.contains('s2-open'); el.classList.toggle('s2-open',on); row.setAttribute('aria-expanded',on?'true':'false'); }
+    rW.addEventListener('click',function(){ toggle(rW,wu); });
+    rC.addEventListener('click',function(){ toggle(rC,cd); });
+    rS.addEventListener('click',function(){ var sec=wa.querySelector('.today-session'); if(sec) toggle(rS,sec); });
+    var t=0; function sched(){ clearTimeout(t); t=setTimeout(function(){ paint(); var sec=wa.querySelector('.today-session'); if(sec&&rS.getAttribute('aria-expanded')==='true') sec.classList.add('s2-open'); },80); }
+    [wu,wa,cd].forEach(function(el){ new MutationObserver(sched).observe(el,{childList:true,subtree:true,attributes:true,attributeFilter:['style']}); });
+    paint();
   })();
   sync(tabFromBody(),true);
 })();
