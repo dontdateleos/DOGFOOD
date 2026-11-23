@@ -6165,6 +6165,32 @@ html.s2 body.tab-insights:not(.s2-wk) .s2-weekbtn{ all:unset; box-sizing:border-
 .s2-weekbtn .wt b{ font:italic 800 24px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
 .s2-weekbtn .wt i{ font:500 13px 'Barlow',sans-serif; font-style:normal; opacity:.8; }
 .s2-weekbtn .rc svg{ width:16px; height:16px; fill:none; stroke:#fff; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+
+/* THE LOG, COPIED FROM THE DESIGN: one lift at a time, the explaining text gone */
+html.s2 #logSheet .lift-sheet-panel:not([data-phase="warm"]):not([data-phase="cool"]) #blockEditPanel > :is(.charge-plan-note, .log-step, .log-hint, .score-note, .ask-q){ display:none !important; }
+html.s2 #logSheet .lift-sheet-panel[data-lifts] #weekExerciseRows > .edit-row:not(.s2-cur){ display:none !important; }
+html.s2 #logSheet #weekExerciseRows > .edit-row{ border:1.5px solid #E4DCCB; background:#FBF8F2; border-radius:18px; }
+.s2-plan{ margin:2px 0 8px; font:500 15px/1.3 'Barlow',sans-serif; color:#2A2620; }
+html.s2 #logSheet .s2-upnext.on{ border:1.5px solid #E4DCCB; background:#FBF8F2; }
+html.s2 #logSheet .lift-sheet-panel{ background:#F6F1E7; }
+
+/* log header as a banner: back arrow, big title, timer under it, soft wave */
+html.s2 #logSheet .lift-sheet-panel > .lift-sheet-head{ position:relative; display:block; height:176px; margin-bottom:6px; padding:0 var(--gutter); background:#FF6A00 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 390 54' preserveAspectRatio='none'%3E%3Cpath d='M0 22 C60 0 130 0 200 18 S330 42 390 14 V54 H0Z' fill='%23F6F1E7'/%3E%3C/svg%3E") bottom/100% 46px no-repeat; }
+html.s2 #logSheet .lift-sheet-head > span:first-child{ position:absolute; left:20px; top:70px; right:20px; font-size:46px !important; line-height:.95 !important; }
+html.s2 #logSheet .lift-sheet-head > .lift-sheet-x{ position:absolute; left:14px; top:calc(12px + env(safe-area-inset-top, 0px)); font-size:0 !important; }
+html.s2 #logSheet .lift-sheet-head > .lift-sheet-x::before{ content:''; width:20px; height:20px; background:#151515; -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 5-7 7 7 7'/%3E%3C/svg%3E") center/contain no-repeat; mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 5-7 7 7 7'/%3E%3C/svg%3E") center/contain no-repeat; display:block; }
+html.s2 #logSheet .lift-sheet-head > .s2-timer{ position:absolute; left:20px; top:128px; }
+html.s2 #logSheet .lift-sheet-panel > .s2-steps{ margin-top:2px; }
+/* the set table */
+html.s2 #logSheet .set-ticks .st-row{ position:relative; display:grid; grid-template-columns:30px 1fr 1fr 44px; align-items:center; gap:6px; padding:8px 6px; }
+html.s2 #logSheet .set-ticks .st-row .st-v{ grid-column:2 / 4; grid-row:1; opacity:0; height:44px; position:relative; z-index:2; }
+html.s2 #logSheet .set-ticks .st-row .s2c{ grid-row:1; pointer-events:none; font:italic 800 30px/1 'Barlow Condensed','Arial Narrow',sans-serif; color:#151515; }
+html.s2 #logSheet .set-ticks .st-row .s2c.k{ grid-column:2; } html.s2 #logSheet .set-ticks .st-row .s2c.r{ grid-column:3; }
+html.s2 #logSheet .set-ticks .st-row .st-ok{ grid-column:4; grid-row:1; }
+.s2-th{ display:grid; grid-template-columns:30px 1fr 1fr 44px; gap:6px; padding:4px 6px 0; font:700 12px 'Barlow',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#5E574C; }
+html.s2 #logSheet .log-notes-row input, html.s2 #logSheet .log-notes-row textarea{ background:#fff !important; color:#151515 !important; border:1.5px solid #DED6C6 !important; border-radius:14px !important; }
+html.s2 #logSheet .lift-sheet-panel > .lift-sheet-head{ background-color:#FF6A00 !important; }
+html.s2 #logSheet .lift-sheet-head > span:first-child{ color:#151515 !important; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14279,7 +14305,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.027';
+const APP_VERSION = '2026.11.23.028';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14675,6 +14701,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.028': 'The workout log follows the design: a banner with the session name and timer, one lift at a time as a Set / Kg / Reps table, and Up next.',
   '2026.11.23.027': 'Training now follows the design: warm paper, Today / Week, the three bubbles, the session card, one list of rows, and a Your week button.',
   '2026.11.23.026': 'Training no longer shows Last week and Why this week.',
   '2026.11.23.025': 'Strength, Run and Mobility are always there under today’s card, each with its own icon. Pick one and the card and its Start follow; if nothing is planned it says so and lets you log one.',
@@ -47493,7 +47520,7 @@ loadGoalProfile().then(async ()=>{
       var card=nextBtn.closest('.edit-row'), nm=card&&card.querySelector('.week-ex-name'), n=row&&row.querySelector('.st-n');
       var done=all.filter(function(b){ return b.getAttribute('aria-pressed')==='true'; }).length;
       lbar.querySelector('b').textContent=((nm&&nm.value)||'Next')+' · set '+(n?n.textContent.trim():'');
-      lbar.querySelector('i').textContent=done+' of '+all.length+' sets';
+      lbar.querySelector('i').textContent=timer.textContent+' · '+done+' of '+all.length+' sets';
       lbar.classList.add('on');
     }
     var steps=document.createElement('div'); steps.className='s2-steps'; var upn=document.createElement('div'); upn.className='s2-upnext';
@@ -47504,7 +47531,7 @@ loadGoalProfile().then(async ()=>{
     function more(){
       var L=lifts(); chips();
       if(!L.length){ upn.classList.remove('on'); return; }
-      var card=nextBtn&&nextBtn.closest('.edit-row'), at=card?L.indexOf(card):L.length;
+      var at=L.indexOf(curCard); if(at<0) at=0;
       var rest=L.slice(at+1,at+4);
       if(!rest.length){ upn.classList.remove('on'); return; }
       upn.innerHTML='<h3>Up next</h3>'+rest.map(function(c,k){ var n=c.querySelector('.week-ex-name'); return '<button type="button" data-k="'+(at+1+k)+'">'+((n&&n.value)||'Lift')+'<span>'+fmt(c)+'</span></button>'; }).join('');
@@ -47518,7 +47545,7 @@ loadGoalProfile().then(async ()=>{
     function doneOf(el){ var e=el&&el.querySelector('.head-est'); var m=e&&/(\d+)\/(\d+)/.exec(e.textContent); return !!m && +m[1]>0 && m[1]===m[2]; }
     function chip(p,t){ return '<button type="button" data-p="'+p+'" class="'+(phase===p?'cur':'')+'">'+t+'</button>'; }
     function chips(){
-      var L=lifts(), card=nextBtn&&nextBtn.closest('.edit-row'), at=card?L.indexOf(card):L.length, w=has(wuEl), c=has(cdEl);
+      var L=lifts(), at=Math.max(0,L.indexOf(curCard)), w=has(wuEl), c=has(cdEl);
       var mid=L.length?('Lifts '+Math.min(at+1,L.length)+' of '+L.length):(((document.getElementById('logSheetTitle')||{}).textContent||'Session').trim());
       steps.innerHTML=(w?chip('warm','Warm-up'+(doneOf(wuEl)?' ✓':'')):'')+chip('lift',mid)+(c?chip('cool','Cooldown'+(doneOf(cdEl)?' ✓':'')):''); steps.classList.add('on');
     }
@@ -47536,17 +47563,40 @@ loadGoalProfile().then(async ()=>{
       pnl.removeAttribute('data-phase');
     }
     function startPhase(){
-      bring(); var want=window.__s2phase; window.__s2phase=null;
+      bring(); var tt=document.querySelector('.s2-hero .ttl'), ht=hd.querySelector('span'); if(tt&&ht&&tt.textContent.trim()&&!document.querySelector('.s2-hero[data-empty]')) setTimeout(function(){ ht.textContent=tt.textContent.trim(); },80);
+      var want=window.__s2phase; window.__s2phase=null;
       if(!want) want=(has(wuEl)&&!doneOf(wuEl))?'warm':'lift';
       if(want==='warm'&&!has(wuEl)) want='lift'; if(want==='cool'&&!has(cdEl)) want='lift';
       setPhase(want);
     }
     var _wd=false; if(wuEl) new MutationObserver(function(){ var d=doneOf(wuEl); if(d&&!_wd&&phase==='warm'&&moved) setTimeout(function(){ if(phase==='warm') setPhase('lift'); },500); _wd=d; chips(); }).observe(wuEl,{childList:true,subtree:true,characterData:true});
     window.__s2phaseStart=startPhase; window.__s2phaseEnd=sendBack;
-    upn.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; var c=lifts()[+b.dataset.k]; if(c&&c.scrollIntoView) c.scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'}); });
+    upn.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; var c=lifts()[+b.dataset.k]; if(c){ userPick=c; refresh(); pnl.scrollTop=0; } });
     window.__s2next=function(){ if(!nextBtn) return null; var row=nextBtn.closest('.st-row'), card=nextBtn.closest('.edit-row'), nm=card&&card.querySelector('.week-ex-name'), n=row&&row.querySelector('.st-n'), v=row&&row.querySelector('.st-v'), all=card?card.querySelectorAll('.st-ok').length:0;
       return { name:(nm&&nm.value)||'Next set', set:n?n.textContent.trim():'', of:all, detail:v?v.textContent.replace(/\s+/g,' ').replace('×',' × ').replace(/\s+/g,' ').trim():'' }; };
-    var _r0=refresh; refresh=function(){ _r0(); more(); };
+    var curCard=null, userPick=null;
+    function pickCurrent(){
+      var L=lifts(); if(!L.length){ curCard=null; pnl.removeAttribute('data-lifts'); return; }
+      if(userPick && (L.indexOf(userPick)<0 || !userPick.querySelector('.st-ok[aria-pressed="false"]'))) userPick=null;
+      var auto=nextBtn?nextBtn.closest('.edit-row'):L[L.length-1];
+      curCard=userPick||auto||L[0];
+      L.forEach(function(c){ c.classList.toggle('s2-cur',c===curCard); });
+      pnl.setAttribute('data-lifts','1');
+      if(!curCard.querySelector('.s2-plan')){ var nm=curCard.querySelector('.week-ex-name'), g=function(k){ var e=curCard.querySelector(k); return e?e.value:''; }, sets=g('.week-ex-sets'), reps=g('.week-ex-reps'), w=g('.week-ex-weight');
+        if(nm&&(sets||reps)){ var d=document.createElement('div'); d.className='s2-plan'; d.textContent=(sets&&reps?sets+' × '+reps:'')+(w?' at '+w+' kg':''); nm.insertAdjacentElement('afterend',d); } }
+    }
+    function columns(){
+      [].forEach.call(ls.querySelectorAll('.set-ticks'),function(tb){
+        if(!tb.querySelector('.s2-th')){ var th=document.createElement('div'); th.className='s2-th'; th.innerHTML='<span>Set</span><span>Kg</span><span>Reps</span><span></span>'; tb.insertBefore(th,tb.firstChild); }
+        [].forEach.call(tb.querySelectorAll('.st-row'),function(r){
+          var v=r.querySelector('.st-v'); if(!v) return;
+          var m=/(-?[\d.,]+)\s*×\s*(-?[\d.,]+)?/.exec(v.textContent.replace(/\s+/g,' ')); var reps=m?m[1]:'', kg=m&&m[2]?m[2]:'–';
+          var k=r.querySelector('.s2c.k'), rp=r.querySelector('.s2c.r');
+          if(!k){ k=document.createElement('span'); k.className='s2c k'; rp=document.createElement('span'); rp.className='s2c r'; v.insertAdjacentElement('afterend',k); k.insertAdjacentElement('afterend',rp); }
+          if(k.textContent!==kg) k.textContent=kg; if(rp.textContent!==reps) rp.textContent=reps; });
+      });
+    }
+    var _r0=refresh; refresh=function(){ _r0(); pickCurrent(); columns(); more(); };
     lbar.querySelector('.s2-logset').addEventListener('click',function(){ if(nextBtn) nextBtn.click(); });
     new MutationObserver(refresh).observe(lbody,{subtree:true,attributes:true,attributeFilter:['aria-pressed'],childList:true});
     new MutationObserver(function(){
