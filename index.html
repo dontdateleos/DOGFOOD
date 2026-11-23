@@ -14541,7 +14541,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.041';
+const APP_VERSION = '2026.11.23.042';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14937,6 +14937,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.042': 'Mobility sessions are named for what they work on (Mobility · Hips); an empty Strength, Running or Mobility card still shows the length.',
   '2026.11.23.041': 'Session cards by kind: orange with a dumbbell for strength, blue with a stopwatch for running, lilac with a foam roller for mobility.',
   '2026.11.23.040': 'Suggestions (like one more set on bench press) show on Training as a card with Accept and Dismiss. The Start button is gone from the Week view again.',
   '2026.11.23.039': 'The Start button is back on the Week view.',
@@ -42903,7 +42904,23 @@ function sessionTitle(block){
     // are already a noun ("Fartlek run", "Race run") read wrong with "run" appended.
     return RUN_TYPE_LABELS[d.runType] || 'Run';
   }
-  if(block.type === 'mobility') return isGolfRound(block) ? sportDayTitle(block) : 'Mobility';
+  if(block.type === 'mobility'){
+    if(isGolfRound(block)) return sportDayTitle(block);
+    /* NAMED BY WHAT IT WORKS ON. Every session was just "Mobility". The plan already builds each one
+       around different areas, so the name takes the area with the most stretch time (the second one
+       too when it is close) -- "Mobility · Hips", "Mobility · Shoulders and spine". */
+    try{
+      const secs = {};
+      (d.stretches || []).forEach(st=>{ const a = st && st.area; if(!a) return; let t = 0; try{ t = romSecondsFor(st) || 60; } catch(e){ t = 60; } secs[a] = (secs[a] || 0) + t; });
+      const top = Object.keys(secs).sort((x, y)=> secs[y] - secs[x]);
+      if(top.length){
+        const nm = a=> (typeof BODY_AREAS !== 'undefined' && BODY_AREAS[a]) || String(a).replace(/_/g, ' ');
+        const two = top.length > 1 && secs[top[1]] >= 0.7 * secs[top[0]];
+        return 'Mobility \u00b7 ' + nm(top[0]) + (two ? ' and ' + nm(top[1]).toLowerCase() : '');
+      }
+    } catch(e){}
+    return 'Mobility';
+  }
   return "Today's plan";
 }
 
@@ -47572,6 +47589,7 @@ loadGoalProfile().then(async ()=>{
 
   /* ---------- Training: today's session as a card ---------- */
   var panel=document.getElementById('panel-insights'), hero=null;
+  var slCache=60; function loadSl(){ try{ window.storage.get('settings:trainingSetup').then(function(r){ var n=parseInt(JSON.parse(r.value).sessionLength,10); if(n>0) slCache=n; }).catch(function(){}); }catch(e){} } loadSl(); setInterval(loadSl,20000);
   function goLabel(t){ hero.querySelector('.go').innerHTML='<span class="br">[</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>'+t+'<span class="br">]</span>'; }
   function paintHero(){
     if(!panel) return;
@@ -47607,8 +47625,9 @@ loadGoalProfile().then(async ()=>{
       hero.dataset.empty=ty;
       hero.querySelector('.eyebrow').style.display='';
       hero.querySelector('.eyebrow').textContent='Nothing planned';
-      hero.querySelector('.ttl').textContent=({strength:'Strength',run:'Run',mobility:'Mobility'}[ty]||'Workout');
-      hero.querySelector('.mins').textContent='';
+      hero.querySelector('.ttl').textContent=({strength:'Strength',run:'Running',mobility:'Mobility'}[ty]||'Workout');
+      var sl=slCache;
+      var dl={strength:sl,run:Math.min(sl,45),mobility:Math.min(sl,20)}[ty]||sl; hero.querySelector('.mins').textContent='~'+dl+' MIN';
       goLabel(({strength:'Log lift',run:'Log run',mobility:'Log it'}[ty]||'Log it'));
       return;
     }
