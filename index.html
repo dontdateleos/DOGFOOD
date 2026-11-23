@@ -6684,7 +6684,7 @@ html.s2 #goalSheet .lift-sheet-panel button:not(.primary):not(.lift-sheet-x){ bo
 .s2-streak .fx{ position:absolute; right:4%; bottom:6%; height:92%; z-index:2; transform-origin:50% 0; animation:s2sway 4.2s ease-in-out infinite; }
 .s2-streak .gl{ position:absolute; right:-4%; bottom:-10%; width:60%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.7),rgba(255,255,255,0) 68%); opacity:var(--gl,0); z-index:1; }
 .s2-streak .cb{ position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:2; }
-.s2-streak .cb i{ position:absolute; top:-12px; border-radius:2px; height:10px; animation:s2fall var(--t) linear infinite; }
+.s2-streak .cb i{ position:absolute; top:-12px; border-radius:2px; height:10px; animation:s2sfall var(--t) linear infinite; }
 .s2-streak .ms{ position:absolute; right:10px; top:10px; z-index:5; display:none; align-items:center; gap:6px; padding:5px 11px; border-radius:999px; background:#151515; color:#fff; font:italic 800 15px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
 .s2-streak .ms i{ width:9px; height:9px; border-radius:50%; background:#C8F031; }
 .s2-streak.m .ms{ display:flex; }
@@ -6701,7 +6701,7 @@ html.s2 #goalSheet .lift-sheet-panel button:not(.primary):not(.lift-sheet-x){ bo
 .s2-streak .dt.td{ border-style:dashed; border-color:#151515; }
 .s2-streak .pl{ align-self:flex-start; padding:7px 13px; border-radius:11px; background:#FF8A00; color:#151515; font:italic 800 17px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; transform:rotate(-1.5deg); }
 @keyframes s2sway{ 0%,100%{ transform:rotate(-2.6deg) } 50%{ transform:rotate(2.6deg) } }
-@keyframes s2fall{ to{ transform:translateY(200px) rotate(var(--r)); } }
+@keyframes s2sfall{ to{ transform:translateY(200px) rotate(var(--r)); } }
 @media (prefers-reduced-motion: reduce){ .s2-streak .fx, .s2-streak .cb i{ animation:none; } }
 /* ---- Fuel and Recover: the same bones as Training, on their own panels ---- */
 html.s2 #s2nav button{ width:auto; flex:1 1 0; min-width:0; font-size:11.500px; }
@@ -6719,8 +6719,8 @@ html.s2 #s2nav .ic img{ max-width:42px; }
 .s3-seg button{ all:unset; box-sizing:border-box; flex:1; text-align:center; padding:8px 0 7px; border-radius:999px; cursor:pointer; color:#151515;
   font:italic 800 17px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; -webkit-tap-highlight-color:transparent; }
 .s3-seg button.on{ background:#151515; color:#fff; }
-.s3-chips{ display:flex; gap:5px; margin:14px 16px 0; flex-wrap:wrap; }
-.s3-chips button{ all:unset; box-sizing:border-box; display:inline-flex; align-items:center; gap:6px; min-height:40px; padding:8px 11px; border:1.5px solid #DED6C6; border-radius:999px;
+.s3-chips{ display:flex; gap:8px; margin:14px 16px 0; flex-wrap:nowrap; }
+.s3-chips button{ all:unset; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; flex:1 1 0; min-width:0; gap:6px; min-height:40px; padding:8px 6px; border:1.5px solid #DED6C6; border-radius:999px;
   background:#FBF8F2; color:#151515; font:700 14px 'Barlow',sans-serif; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .s3-chips button.on{ background:#151515; border-color:#151515; color:#fff; }
 .s3-chips svg{ width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
@@ -6733,9 +6733,9 @@ html.s2 #s2nav .ic img{ max-width:42px; }
 .s3-hero .cdeco .cf{ position:absolute; top:-24px; animation:s2fall var(--d) linear var(--del) infinite; }
 .s3-hero .ttl{ position:absolute; left:16px; top:14px; right:110px; margin:0; z-index:2; font:italic 800 30px/.95 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
 .s3-hero .mins{ position:absolute; right:16px; top:18px; z-index:2; font:italic 800 20px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
-.s3-hero .art{ position:absolute; left:12px; bottom:12px; z-index:1; display:block; height:84px; }
-.s3-hero .art img{ display:block; height:84px; width:auto; }
-.s3-hero .art svg.big{ height:96px; width:96px; fill:none; stroke:#151515; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; opacity:.85; }
+.s3-hero .art{ position:absolute; left:12px; bottom:14px; z-index:1; display:block; height:76px; }
+.s3-hero .art img{ display:block; height:76px; width:auto; }
+.s3-hero .art svg.big{ height:80px; width:80px; fill:none; stroke:#151515; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; opacity:.85; }
 .s3-hero .go{ all:unset; box-sizing:border-box; position:absolute; z-index:2; right:14px; bottom:16px; cursor:pointer; display:flex; align-items:center; gap:8px; padding:0 14px; height:52px; border-radius:16px;
   background:#151515; color:#fff; font:italic 800 24px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
 .s3-hero .go .br{ color:#C8F031; font:800 30px/1 'Barlow Condensed','Arial Narrow',sans-serif; }
@@ -14907,7 +14907,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.067';
+const APP_VERSION = '2026.11.23.068';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15303,6 +15303,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.068': 'Confetti falls again, tags are spread out and nothing overlaps.',
   '2026.11.23.067': 'New Fuel and Recover tabs, and the bar is now Train, Fuel, Recover, Build, Track. Settings moved to the gear in the corner.',
   '2026.11.23.066': 'Fixed the donkey’s eye: no ring around it and a better blink.',
   '2026.11.23.065': 'The morning check-in starts with your streak. It grows when you press Done, and gets bigger at one week, two weeks, a month and beyond.',
@@ -47863,8 +47864,9 @@ loadGoalProfile().then(async ()=>{
     for(var i=0;i<20;i++){
       var size=7+rnd()*8, round=i%3===0, d=(5+rnd()*5).toFixed(2), del=(-rnd()*10).toFixed(2), x=(rnd()*100).toFixed(1);
       var dx=Math.round((rnd()-.5)*70), rot=Math.round((rnd()<.5?-1:1)*(240+rnd()*420)), col=c[i%4]; if(+x<58 && col===clash) col=c[2];
+      var y0=(+x<58)?(150+Math.round(rnd()*30)):Math.round(rnd()*200);
       o+='<i class="cf" style="left:'+x+'%;width:'+size.toFixed(1)+'px;height:'+(round?size:size*1.6).toFixed(1)+'px;border-radius:'+(round?'50%':'2px')+';background:'+col
-        +';--d:'+d+'s;--del:'+del+'s;--dx:'+dx+'px;--rot:'+rot+'deg;--y0:'+Math.round(rnd()*200)+'px"></i>';
+        +';--d:'+d+'s;--del:'+del+'s;--dx:'+dx+'px;--rot:'+rot+'deg;--y0:'+y0+'px"></i>';
     }
     deco.innerHTML=o+'<svg class="wv" viewBox="0 0 390 54" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22 C60 0 130 0 200 18 S330 42 390 14 V54 H0Z"/></svg>';
   }
