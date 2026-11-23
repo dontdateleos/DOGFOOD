@@ -6535,6 +6535,19 @@ html.s2 #s2done.on{ display:block; position:fixed; inset:0; z-index:95; overflow
 #s2done .btns button::after{ display:none; }
 #s2done .btns .dn{ background:#151515; color:#fff; }
 @media (prefers-reduced-motion: reduce){ #s2done .bn .cf{ animation:none; transform:translate(0,var(--y0)); } }
+
+.s2-cnote{ display:flex; gap:12px; align-items:flex-start; margin:0 0 10px; padding:12px 14px; border:1.5px solid #F5C6DB; border-radius:16px; background:#FFF0F6; font:500 16px/1.4 'Barlow',sans-serif; color:#151515; }
+.s2-cnote svg{ flex:none; margin-top:2px; }
+.s2-drows{ background:#FBF8F2; border:1.5px solid #E4DCCB; border-radius:18px; overflow:hidden; }
+.s2-dr{ all:unset; box-sizing:border-box; width:100%; display:flex; align-items:center; gap:14px; padding:13px 14px; cursor:pointer; color:#151515; }
+.s2-dr::after{ display:none; }
+.s2-dr + .s2-dr{ border-top:1.5px solid #E4DCCB; }
+.s2-dr .tx{ flex:1; display:flex; flex-direction:column; gap:2px; }
+.s2-dr .tx b{ font:700 17px 'Barlow',sans-serif; }
+.s2-dr .tx .sg{ margin-left:8px; padding:3px 10px; border-radius:999px; background:#C8F031; font:700 12px 'Barlow',sans-serif; font-style:normal; }
+.s2-dr .tx span{ font:500 14px 'Barlow',sans-serif; color:#2A2620; }
+.s2-startplan{ all:unset; box-sizing:border-box; display:flex; align-items:center; justify-content:center; width:100%; margin-top:14px; height:56px; border-radius:16px; background:#151515; color:#C8F031; cursor:pointer; font:italic 800 22px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+.s2-startplan::after{ display:none; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14649,7 +14662,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.047';
+const APP_VERSION = '2026.11.23.048';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15045,6 +15058,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.048': 'Today’s options: when Charge calls for it, Trim it, Move it or Swap it as rows, the rest as pills, and Start as planned.',
   '2026.11.23.047': 'Tap a day (or Change today’s plan) for its options sheet; the morning check-in is a page; saving a workout opens a Session done page.',
   '2026.11.23.046': 'More pages on Progress: tap a lift, a goal, Strength score, VO2 max, a skill, the mobility test or a recent workout to open its own page.',
   '2026.11.23.045': 'Tapping a measure on Progress opens its own page with the big number, a Daily / Weekly / Monthly switch and the chart, instead of drawing the chart under the list.',
@@ -48472,9 +48486,29 @@ loadGoalProfile().then(async ()=>{
       var r=await orig.apply(this,arguments);
       try{
         var body=document.getElementById('dayActBody'); if(!body||body.querySelector('.day-act-pills')) return r;
-        if(date===todayStr){
+        if(date===todayStr && !body.querySelector('.day-act-locked') && body.querySelector('.day-act-list')){
+          var sh0=document.getElementById('dayActionSheet'); var closeSh=function(then){ var x=sh0&&sh0.querySelector('.lift-sheet-x'); if(x) x.click(); setTimeout(then,250); };
+          var noteEl=document.querySelector('#todayWorkoutSummary .charge-note .score-note span'), tb=document.getElementById('chargeTrimBtn'), mb=document.getElementById('chargeMoveBtn'), sb=document.getElementById('chargeSwapBtn');
+          var hasPlan=!!document.querySelector('#todayWorkoutSummary .today-session');
+          var CH='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg>';
+          var IT={trim:'<circle cx="6" cy="7" r="2.5"/><circle cx="6" cy="17" r="2.5"/><path d="M8 8.5 20 18M8 15.5 20 6"/>',move:'<path d="M5 12h14M13 6l6 6-6 6"/>',swap:'<path d="M7 7h11l-3-3M17 17H6l3 3"/>'};
+          var rowH=function(k,t,sub,tag){ return '<button type="button" class="s2-dr" data-k="'+k+'"><svg class="ic" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+IT[k]+'</svg><span class="tx"><b>'+t+(tag?'<i class="sg">'+tag+'</i>':'')+'</b><span>'+sub+'</span></span>'+CH+'</button>'; };
+          var lead=body.querySelector('.day-act-now');
+          var wrap=document.createElement('div'); wrap.className='s2-today-opts';
+          var rowsH=(tb?rowH('trim','Trim it','Main lifts only, same weights','Suggested'):'')+rowH('move','Move it','Pick another day this week','')+(sb?rowH('swap','Swap it','Lift first, run after',''):'');
+          wrap.innerHTML=(noteEl?'<div class="s2-cnote"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg><span>'+noteEl.textContent+'</span></div>':'')+(hasPlan?'<div class="s2-drows">'+rowsH+'</div>':'');
+          if(lead) lead.insertAdjacentElement('afterend',wrap);
+          var strip=[body.querySelector('.day-act-label'),body.querySelector('.day-act-days')];
+          strip.forEach(function(e){ if(e) e.style.display='none'; });
+          var lst=body.querySelector('.day-act-list'); lst.style.display='none'; var tip=body.querySelector('.day-act-tip'); if(tip) tip.style.display='none';
+          wrap.addEventListener('click',function(e){ var b=e.target.closest('.s2-dr'); if(!b) return; var k=b.dataset.k;
+            if(k==='trim'&&tb) closeSh(function(){ tb.click(); });
+            else if(k==='swap'&&sb) closeSh(function(){ sb.click(); });
+            else if(k==='move'){ strip.forEach(function(e2){ if(e2) e2.style.display=''; }); if(strip[0]&&strip[0].scrollIntoView) strip[0].scrollIntoView({behavior:'smooth',block:'center'}); } });
           var src=[].slice.call(document.querySelectorAll('#todayTopActions button, #todayPlanActions button')); var seen={};
-          var box=document.createElement('div'); box.innerHTML='<div class="day-act-or">Or</div><div class="day-act-pills"></div>'; var pills=box.querySelector('.day-act-pills');
+          var box=document.createElement('div'); box.innerHTML='<div class="day-act-or">Or</div><div class="day-act-pills"></div>'+(hasPlan?'<button type="button" class="s2-startplan">[ &gt; Start as planned ]</button>':''); var pills=box.querySelector('.day-act-pills');
+          [].forEach.call(lst.querySelectorAll('.day-act'),function(a){ var t=a.textContent.replace(/\s+/g,' ').trim().replace(/^[+×✓–]\s*/,''); if(!t||seen[t]) return; seen[t]=1; var c=document.createElement('button'); c.type='button'; c.textContent=t; c.addEventListener('click',function(){ a.click(); }); pills.appendChild(c); });
+          var sp0=box.querySelector('.s2-startplan'); if(sp0) sp0.addEventListener('click',function(){ closeSh(function(){ var f=document.getElementById('logFab'); if(f) f.click(); }); });
           src.forEach(function(b){ var t=b.textContent.replace(/\s+/g,' ').trim(); if(!t||seen[t]) return; seen[t]=1; var c=document.createElement('button'); c.type='button'; c.textContent=t; c.addEventListener('click',function(){ var sh=document.getElementById('dayActionSheet'); var x=sh&&sh.querySelector('.lift-sheet-x'); if(x) x.click(); setTimeout(function(){ b.click(); },250); }); pills.appendChild(c); });
           if(pills.children.length) body.appendChild(box);
         }
