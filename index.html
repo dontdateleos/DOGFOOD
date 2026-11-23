@@ -14541,7 +14541,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.043';
+const APP_VERSION = '2026.11.23.044';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14937,6 +14937,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.044': 'Each block picks two priority mobility areas and gives them a little more time (15 minutes a week); the next block picks different ones. The deload week has none.',
   '2026.11.23.043': 'Mobility nights have a focus that rotates — lower body, upper body, whole body — named on the card; every area still gets its weekly time.',
   '2026.11.23.042': 'Mobility sessions are named for what they work on (Mobility · Hips); an empty Strength, Running or Mobility card still shows the length.',
   '2026.11.23.041': 'Session cards by kind: orange with a dumbbell for strength, blue with a stopwatch for running, lilac with a foam roller for mobility.',
@@ -36233,15 +36234,20 @@ const MOBILITY_FOCUS_DOMAINS = {
   upper: ['shoulders', 'scapula', 'chest', 'spine', 'wrists']
 };
 const MOBILITY_FOCUS_LABEL = { lower: 'Lower body', upper: 'Upper body', full: 'Full body' };
-function buildMobilitySession({ focus, neededDomains, mobilityGoals, loadedROMCoverage, sessionType, dayIdx, budget, integrateIndex, domainFilter, coveredSoFar, bodyweightOnly, weekSecondsByArea, blocksThisWeek, noEccentric }){
+function buildMobilitySession({ priorityAreas, focus, neededDomains, mobilityGoals, loadedROMCoverage, sessionType, dayIdx, budget, integrateIndex, domainFilter, coveredSoFar, bodyweightOnly, weekSecondsByArea, blocksThisWeek, noEccentric }){
   weekSecondsByArea = weekSecondsByArea || {};
   // Areas already at the weekly ceiling from goal-skill work don't need more access work
   // stacked on top. Charged before the access pass so the goal skill always wins the
   // budget — it's the thing being progressed.
-  const areaAtCeiling = a => (weekSecondsByArea[a]||0) >= MOBILITY_WEEKLY_TARGET_SECONDS;
+  /* THIS BLOCK'S PRIORITY AREAS get half as much again (15 minutes a week against 10); everything else
+     keeps the 10. The next block picks different areas. The research on whether more than about 10
+     minutes helps is split, so this is a modest step up, not a big one. */
+  const prio = new Set(priorityAreas || []);
+  const weekTarget = a => prio.has(a) ? Math.round(MOBILITY_WEEKLY_TARGET_SECONDS * 1.5) : MOBILITY_WEEKLY_TARGET_SECONDS;
+  const areaAtCeiling = a => (weekSecondsByArea[a]||0) >= weekTarget(a);
   const chargeArea = (a, secs) => { if(a) weekSecondsByArea[a] = (weekSecondsByArea[a]||0) + secs; };
   // Room left this week on an area, against the same 10-minute target the ceiling uses.
-  const weekRoom = a => a ? MOBILITY_WEEKLY_TARGET_SECONDS - (weekSecondsByArea[a]||0) : Infinity;
+  const weekRoom = a => a ? weekTarget(a) - (weekSecondsByArea[a]||0) : Infinity;
   /* ~4 MINUTES PER AREA PER SESSION. Gains from one session level off around 4 minutes per
      muscle (Ingram 2024), so the goal skill, the access rung and the load rung on one area
      used to stack to 6 or 7 minutes of which the last few did nothing. This session's time
@@ -36581,8 +36587,18 @@ async function generateMobilityProgram(numSessions, forcedDates, sessionType){
     const budget = Math.min(sessionLength, MOBILITY_SESSION_TIME_CAP);
     const weekIdx = Math.floor(new Date(placedDates[0] + 'T12:00:00').getTime() / (7 * 86400000));
     const focus = MOBILITY_FOCUS_CYCLE[(dayIdx + weekIdx) % MOBILITY_FOCUS_CYCLE.length];
+    // The block's two priority areas: down the list of areas that need work, two further each block.
+    let priorityAreas = [];
+    try{
+      const pos = await getBlockPosition(placedDates[0]);
+      if(!isDeloadPosition(pos.weekInBlock, pos.length)){
+        const blockNo = Math.floor((weekIdx - (pos.weekInBlock - 1)) / Math.max(1, pos.length));
+        const doms = [...new Set((neededDomains || []).map(n=> n.domain))];
+        if(doms.length){ const i0 = ((blockNo * 2) % doms.length + doms.length) % doms.length; priorityAreas = [doms[i0], doms[(i0 + 1) % doms.length]].map(d=> MOBILITY_DOMAIN_TO_AREA[d] || d); }
+      }
+    } catch(e){}
     const { stretches, trimNote, focus: usedFocus } = buildMobilitySession({
-      focus, neededDomains, mobilityGoals, loadedROMCoverage, sessionType,
+      priorityAreas, focus, neededDomains, mobilityGoals, loadedROMCoverage, sessionType,
       dayIdx, budget, integrateIndex: integrateCursor, coveredSoFar, weekSecondsByArea,
       bodyweightOnly: mobilityEquipmentPrefs.bodyweightMobility,
       // Without this every session carried the goal, 12-15 minutes a week on its muscles
