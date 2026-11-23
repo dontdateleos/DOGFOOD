@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'www');
 const FILES = ['index.html', 'sw.js', 'manifest.webmanifest', 'icon-512.png', 'icon-512-maskable.png', 'apple-touch-icon.png'];
-const DIRS = ['splash', 'mascot'];
+const DIRS = ['splash', 'mascot', 'shell'];
 
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
