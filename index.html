@@ -14786,7 +14786,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.058';
+const APP_VERSION = '2026.11.23.059';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15182,6 +15182,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.059': 'Start on the Run and Mobility cards now opens that kind of session, not whatever is first today.',
   '2026.11.23.058': 'New motion: pages rise in row by row, opened pages slide in, ticks pop with confetti, numbers count up, charts draw, and a personal best shakes and throws confetti on the Session done page.',
   '2026.11.23.057': 'Suggestion cards on Training use plain words: no more cut-offs, capacity or corroborated signals.',
   '2026.11.23.056': 'Simpler wording for the longest notes in Settings, the glossary and daily practice.',
@@ -47901,9 +47902,18 @@ loadGoalProfile().then(async ()=>{
       var anchor=document.getElementById('todayScorePlate'); panel.insertBefore(hero,anchor||panel.firstChild);
       var pl=document.getElementById('todaySessionTypePills'); if(pl) hero.insertAdjacentElement('beforebegin',pl);
       hero.querySelector('.go').addEventListener('click',function(){
-        var ety=hero.dataset.empty;
-        if(ety){ (async function(){ try{ await openBlockEditor(todayStr, await freeSlotOn(todayStr), { type:ety, details:{} }); }catch(e){ var f0=document.getElementById('logFab'); if(f0) f0.click(); } })(); return; }
-        var f=document.getElementById('logFab'); if(f) f.click(); });
+        var ety=hero.dataset.empty, shown=hero.dataset.type||'strength';
+        (async function(){
+          try{
+            // The card says which kind it is, so Start opens that kind: its own planned session if there is one,
+            // otherwise a fresh one in a free slot (the evening slot if both are taken).
+            var found=null; try{ found=await getTodaysBlockAndSlotForType(shown); }catch(e){}
+            if(found && !ety){ todaySessionType=shown; await openBlockEditor(todayStr,found.slot,found.block); return; }
+            var free=null; for(var q=0;q<2;q++){ var sl=q?'pm':'am'; var taken=false; try{ await window.storage.get('weekplan:'+todayStr+':'+sl); taken=true; }catch(e){} if(!taken){ free=sl; break; } }
+            if(!free){ free='pm'; try{ showToast('Both sessions today are planned. Saving this replaces the evening one.'); }catch(e){} }
+            todaySessionType=shown; await openBlockEditor(todayStr,free,{ type:shown, details:{} });
+          }catch(e){ var f0=document.getElementById('logFab'); if(f0) f0.click(); }
+        })(); });
       var o='', c=['#ffffff','#151515','#FFC24D','#FF3E9E']; seed=23;
       for(var i=0;i<12;i++){ var sz=6+rnd()*6, rd=i%3===0;
         o+='<i class="cf" style="left:'+(rnd()*100).toFixed(1)+'%;width:'+sz.toFixed(1)+'px;height:'+(rd?sz:sz*1.6).toFixed(1)+'px;border-radius:'+(rd?'50%':'2px')+';background:'+c[i%4]
@@ -48196,7 +48206,7 @@ loadGoalProfile().then(async ()=>{
     if(cdEl) new MutationObserver(deco).observe(cdEl,{childList:true,subtree:true,characterData:true});
     function startPhase(){
       var kd=(typeof todaySessionType==='string')?todaySessionType:'strength'; try{ var hh=window.__s2hero; if(hh&&hh.dataset.type) kd=hh.dataset.type; }catch(e){} pnl.setAttribute('data-kind',kd);
-      bring(); deco(); var tt=document.querySelector('.s2-hero .ttl'), ht=hd.querySelector('span'); if(tt&&ht&&tt.textContent.trim()&&!document.querySelector('.s2-hero[data-empty]')) setTimeout(function(){ ht.textContent=tt.textContent.trim(); },80);
+      bring(); deco(); var tt=document.querySelector('.s2-hero .ttl'), ht=hd.querySelector('span'); if(tt&&ht&&tt.textContent.trim()) setTimeout(function(){ ht.textContent=tt.textContent.trim(); },80);
       var want=window.__s2phase; window.__s2phase=null;
       if(!want) want=(has(wuEl)&&!doneOf(wuEl))?'warm':'lift';
       if(want==='warm'&&!has(wuEl)) want='lift'; if(want==='cool'&&!has(cdEl)) want='lift';
