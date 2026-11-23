@@ -5993,6 +5993,38 @@ html.s2 #logSheet .s2-upnext.on{ display:block; margin:6px 0 0; padding:6px 16px
 .s2-upnext h3 + button{ border-top:0; }
 .s2-upnext button::after{ display:none; }
 .s2-upnext button span{ font:500 14px var(--sans); color:#55554f; white-space:nowrap; }
+
+/* REST and START: two full-screen moments */
+#s2rest, #s2start{ display:none; }
+html.s2 #s2rest.on, html.s2 #s2start.on{ display:flex; position:fixed; inset:0; z-index:90; flex-direction:column; align-items:center; overflow:hidden; }
+#s2rest{ background:#0c0d0b; color:#fff; padding:calc(18px + env(safe-area-inset-top, 0px)) 18px calc(18px + env(safe-area-inset-bottom, 0px)); }
+#s2rest .x{ all:unset; position:absolute; left:16px; top:calc(16px + env(safe-area-inset-top, 0px)); width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.12); display:flex; align-items:center; justify-content:center; cursor:pointer; color:#fff; }
+#s2rest .x::after, #s2rest button::after{ display:none; }
+#s2rest .x svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round; }
+#s2rest .lbl{ margin:10px 0 0; font:italic 800 30px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; }
+#s2rest .ringwrap{ position:relative; width:min(78vw,320px); aspect-ratio:1; margin-top:14px; }
+#s2rest .ringwrap svg{ position:absolute; inset:0; width:100%; height:100%; }
+#s2rest .ringwrap line{ stroke:#C8F031; stroke-width:9; stroke-linecap:round; transition:opacity .25s; }
+#s2rest .clock{ position:absolute; left:0; right:0; top:15%; text-align:center; font:italic 800 clamp(84px,24vw,116px)/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; font-variant-numeric:tabular-nums; }
+#s2rest .pin{ position:absolute; left:50%; bottom:9%; width:48%; transform:translateX(-50%); transform-origin:50% 0; animation:s2sway 4.2s ease-in-out infinite; }
+#s2rest .pin img{ display:block; width:100%; height:auto; }
+#s2rest .btns{ display:flex; gap:12px; width:100%; max-width:420px; margin-top:14px; }
+#s2rest .btns button{ all:unset; box-sizing:border-box; flex:1; text-align:center; padding:16px 0; border:2px solid #fff; border-radius:18px; cursor:pointer; color:#fff; font:italic 800 26px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; }
+#s2rest .next{ margin-top:auto; width:100%; max-width:460px; box-sizing:border-box; padding:16px 18px; border-radius:22px; background:#fbfaf6; color:#151515; }
+#s2rest .next small{ display:block; font:700 13px var(--sans); letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px; }
+#s2rest .next b{ display:block; font:italic 800 28px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; }
+#s2rest .next span{ display:block; margin-top:4px; font:500 16px var(--sans); color:#55554f; }
+#s2start{ background:#FF6A00; color:#151515; justify-content:flex-end; padding:0 0 calc(28px + env(safe-area-inset-bottom, 0px)); }
+#s2start .cf{ position:absolute; top:-24px; animation:s2fall var(--d) linear var(--del) infinite; }
+#s2start .pin{ position:absolute; right:-6%; top:calc(8% + env(safe-area-inset-top, 0px)); width:92%; transform-origin:50% 0; animation:s2sway 4.2s ease-in-out infinite; }
+#s2start .pin img{ display:block; width:100%; height:auto; }
+#s2start .txt{ position:relative; z-index:2; width:100%; box-sizing:border-box; padding:0 24px; }
+#s2start .sm{ font:700 14px var(--sans); letter-spacing:.1em; text-transform:uppercase; }
+#s2start h2{ margin:4px 0 6px; font:italic 800 clamp(58px,17vw,80px)/.9 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; max-width:78%; }
+#s2start .go{ all:unset; box-sizing:border-box; margin-top:14px; display:inline-flex; align-items:center; gap:12px; padding:0 26px; height:60px; border-radius:18px; background:#151515; color:#fff; cursor:pointer; font:italic 800 30px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; }
+#s2start .go::before{ content:''; border-left:13px solid #C8F031; border-top:8px solid transparent; border-bottom:8px solid transparent; }
+#s2start .go::after{ display:none; }
+@media (prefers-reduced-motion: reduce){ #s2rest .pin, #s2start .pin{ animation:none; } }
 /* SHELL2:END */
 </style>
 </head>
@@ -14107,7 +14139,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.019';
+const APP_VERSION = '2026.11.23.020';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14503,6 +14535,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.020': 'Rest is a full screen: a countdown ring, the croc, +30s and Skip, and what is next. Opening a fresh session starts with the horse.',
   '2026.11.23.019': 'The log says which lift you are on and lists the next few, tap one to jump to it.',
   '2026.11.23.018': 'The workout log is a full page: a timer in the band, each set as a big number with a tick that turns lime, and a bar at the bottom that logs the next set.',
   '2026.11.23.017': 'Pop-ups size to their content, pink section labels read clearly, and Settings sections open on their own.',
@@ -47309,6 +47342,8 @@ loadGoalProfile().then(async ()=>{
       upn.classList.add('on');
     }
     upn.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; var c=lifts()[+b.dataset.k]; if(c&&c.scrollIntoView) c.scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'}); });
+    window.__s2next=function(){ if(!nextBtn) return null; var row=nextBtn.closest('.st-row'), card=nextBtn.closest('.edit-row'), nm=card&&card.querySelector('.week-ex-name'), n=row&&row.querySelector('.st-n'), v=row&&row.querySelector('.st-v'), all=card?card.querySelectorAll('.st-ok').length:0;
+      return { name:(nm&&nm.value)||'Next set', set:n?n.textContent.trim():'', of:all, detail:v?v.textContent.replace(/\s+/g,' ').replace('×',' × ').replace(/\s+/g,' ').trim():'' }; };
     var _r0=refresh; refresh=function(){ _r0(); more(); };
     lbar.querySelector('.s2-logset').addEventListener('click',function(){ if(nextBtn) nextBtn.click(); });
     new MutationObserver(refresh).observe(lbody,{subtree:true,attributes:true,attributeFilter:['aria-pressed'],childList:true});
@@ -47318,6 +47353,70 @@ loadGoalProfile().then(async ()=>{
       if(!open && iv){ clearInterval(iv); iv=null; }
     }).observe(ls,{attributes:true,attributeFilter:['class']});
     refresh();
+  })();
+
+  /* ---------- Rest: a full-screen countdown with the croc ---------- */
+  (function(){
+    var ov=document.createElement('div'); ov.id='s2rest'; ov.setAttribute('role','dialog'); ov.setAttribute('aria-label','Rest');
+    ov.innerHTML='<button type="button" class="x" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><p class="lbl">Rest</p>'
+      +'<div class="ringwrap"><svg viewBox="0 0 260 260" aria-hidden="true"></svg><div class="clock">0:00</div><div class="pin" aria-hidden="true"><img alt="" src="shell/m_croc.webp"></div></div>'
+      +'<div class="btns"><button type="button" class="p30">+30s</button><button type="button" class="skip">Skip</button></div>'
+      +'<div class="next" hidden><small>Next</small><b></b><span></span></div>';
+    document.body.appendChild(ov);
+    var ring=ov.querySelector('.ringwrap svg'), clock=ov.querySelector('.clock'), segs=[], N=40, i;
+    for(i=0;i<N;i++){ var a=(i/N)*Math.PI*2-Math.PI/2, x1=130+Math.cos(a)*112, y1=130+Math.sin(a)*112, x2=130+Math.cos(a)*122, y2=130+Math.sin(a)*122;
+      var l=document.createElementNS('http://www.w3.org/2000/svg','line'); l.setAttribute('x1',x1.toFixed(1)); l.setAttribute('y1',y1.toFixed(1)); l.setAttribute('x2',x2.toFixed(1)); l.setAttribute('y2',y2.toFixed(1)); ring.appendChild(l); segs.push(l); }
+    var total=0, closed=false, open=false;
+    function fmtT(ms){ var sec=Math.max(0,Math.ceil(ms/1000)); return pad2(Math.floor(sec/60))+':'+pad2(sec%60); }
+    function pad2(n){ return (n<10?'0':'')+n; }
+    function show(){
+      open=true; var left=restEndsAt-Date.now(); total=Math.max(left,1000);
+      var nx=window.__s2next&&window.__s2next(), box=ov.querySelector('.next');
+      if(nx){ box.hidden=false; box.querySelector('b').textContent=nx.name; box.querySelector('span').textContent='Set '+nx.set+(nx.of?' of '+nx.of:'')+(nx.detail?'  ·  '+nx.detail:''); } else box.hidden=true;
+      ov.classList.add('on');
+      if(!reduced()) ov.animate([{opacity:0,transform:'translateY(24px)'},{opacity:1,transform:'none'}],{duration:260,easing:'ease-out'});
+    }
+    function hide(){ open=false; ov.classList.remove('on'); }
+    function paint(){
+      var left=restEndsAt-Date.now(); clock.textContent=fmtT(left);
+      var f=Math.max(0,Math.min(1,left/total)), on=Math.round(f*N);
+      for(var k=0;k<N;k++) segs[k].style.opacity=(k<on)?1:.16;
+    }
+    ov.querySelector('.x').addEventListener('click',function(){ closed=true; hide(); });
+    ov.querySelector('.p30').addEventListener('click',function(){ restEndsAt+=30000; total+=30000; try{ tickRestTimer(); }catch(e){} paint(); });
+    ov.querySelector('.skip').addEventListener('click',function(){ try{ stopRestTimer(); liveSessionPush(); }catch(e){} hide(); });
+    setInterval(function(){
+      var running=false; try{ running=!!restTimerId && restEndsAt>Date.now(); }catch(e){}
+      if(running){ if(!open && !closed) show(); if(open) paint(); }
+      else { closed=false; if(open) hide(); }
+    },250);
+  })();
+
+  /* ---------- Start: the horse, once, when a session opens fresh ---------- */
+  (function(){
+    var ls=document.getElementById('logSheet'); if(!ls) return;
+    var st=document.createElement('div'); st.id='s2start'; st.setAttribute('role','dialog'); st.setAttribute('aria-label','Starting the workout');
+    var o='', c=['#ffffff','#151515','#FFC24D','#FF3E9E'], j; seed=31;
+    for(j=0;j<16;j++){ var sz=7+rnd()*8, rd=j%3===0; o+='<i class="cf" style="left:'+(rnd()*100).toFixed(1)+'%;width:'+sz.toFixed(1)+'px;height:'+(rd?sz:sz*1.6).toFixed(1)+'px;border-radius:'+(rd?'50%':'2px')+';background:'+c[j%4]+';--d:'+(5+rnd()*5).toFixed(2)+'s;--del:'+(-rnd()*9).toFixed(2)+'s;--dx:'+Math.round((rnd()-.5)*70)+'px;--rot:'+Math.round((rnd()<.5?-1:1)*(240+rnd()*420))+'deg;--y0:'+Math.round(rnd()*300)+'px"></i>'; }
+    st.innerHTML=o+'<div class="pin" aria-hidden="true"><img alt="" src="shell/m_horse.webp"></div><div class="txt"><div class="sm">Let’s go</div><h2></h2><button type="button" class="go">Start</button></div>';
+    document.body.appendChild(st);
+    var timer=null;
+    function end(){ clearTimeout(timer); if(!st.classList.contains('on')) return; if(!reduced()){ st.animate([{opacity:1},{opacity:0}],{duration:240}); setTimeout(function(){ st.classList.remove('on'); },250); } else st.classList.remove('on'); }
+    st.addEventListener('click',end);
+    var lastAt=0;
+    new MutationObserver(function(){
+      if(!ls.classList.contains('sheet-open')) return;
+      if(Date.now()-lastAt<15000) return;
+      var oks=ls.querySelectorAll('.st-ok'); if(!oks.length) return;
+      if(ls.querySelector('.st-ok[aria-pressed="true"]')) return;
+      var today=false; try{ today=(blockEditDate===todayStr); }catch(e){}
+      if(!today||reduced()) return;
+      lastAt=Date.now();
+      var hero=document.querySelector('.s2-hero .ttl'), tt=(hero&&hero.textContent.trim())||((document.getElementById('logSheetTitle')||{}).textContent||'Workout');
+      st.querySelector('h2').textContent=tt;
+      st.classList.add('on'); st.animate([{opacity:0,transform:'scale(.96)'},{opacity:1,transform:'none'}],{duration:280,easing:'ease-out'});
+      clearTimeout(timer); timer=setTimeout(end,2800);
+    }).observe(ls,{attributes:true,attributeFilter:['class']});
   })();
   sync(tabFromBody(),true);
 })();
