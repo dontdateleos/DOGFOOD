@@ -6636,6 +6636,39 @@ html.s2 .panel.s2-open .group.s2-show .score-note{ font:500 14px/1.4 'Barlow',sa
 html.s2 .panel.s2-open .group.s2-show .field-label{ font:700 12px 'Barlow',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#5E574C; }
 html.s2 .panel.s2-open .group.s2-show input[type="number"], html.s2 .panel.s2-open .group.s2-show input[type="text"], html.s2 .panel.s2-open .group.s2-show input[type="date"], html.s2 .panel.s2-open .group.s2-show select{ background:#fff; color:#151515; border:1.5px solid #DED6C6; border-radius:12px; font:600 16px 'Barlow',sans-serif; min-height:44px; }
 html.s2 .panel.s2-open .group.s2-show button:not(.collapse-chevron):not(.s2-mt){ border-radius:999px; }
+
+/* PAGE SHEETS (Program, Goals, Block, Weight, Sport): full pages with the same banner as every other page */
+html.s2 :is(#planWeekSheet,#goalSheet,#planBlockSheet,#blockWeekSheet,#planWeightSheet,#planSportSheet,#mobilityAssessmentSheet) .lift-sheet-panel{ height:100vh; height:100dvh; max-height:none; border-radius:0; padding-top:0; background:#F6F1E7; }
+html.s2 :is(#planWeekSheet,#goalSheet,#planBlockSheet,#blockWeekSheet,#planWeightSheet,#planSportSheet,#mobilityAssessmentSheet) .lift-sheet-panel > .lift-sheet-head{ position:relative; display:block; height:150px; margin:0 calc(var(--gutter) * -1) 10px; padding:0 var(--gutter); border-radius:0; background:#FF3E9E url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 390 54' preserveAspectRatio='none'%3E%3Cpath d='M0 22 C60 0 130 0 200 18 S330 42 390 14 V54 H0Z' fill='%23F6F1E7'/%3E%3C/svg%3E") bottom/100% 46px no-repeat; }
+html.s2 :is(#planWeekSheet,#goalSheet,#planBlockSheet,#blockWeekSheet,#planWeightSheet,#planSportSheet,#mobilityAssessmentSheet) .lift-sheet-head > span:first-child{ position:absolute; left:20px; top:62px; right:20px; font:italic 800 44px/.95 'Barlow Condensed','Arial Narrow',sans-serif !important; text-transform:uppercase; letter-spacing:0 !important; color:#fff !important; }
+html.s2 :is(#planWeekSheet,#goalSheet,#planBlockSheet,#blockWeekSheet,#planWeightSheet,#planSportSheet,#mobilityAssessmentSheet) .lift-sheet-head > .lift-sheet-x{ position:absolute; left:14px; top:calc(12px + env(safe-area-inset-top, 0px)); font-size:0 !important; }
+html.s2 :is(#planWeekSheet,#goalSheet,#planBlockSheet,#blockWeekSheet,#planWeightSheet,#planSportSheet,#mobilityAssessmentSheet) .lift-sheet-head > .lift-sheet-x::before{ content:''; width:20px; height:20px; background:#151515; -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 5-7 7 7 7'/%3E%3C/svg%3E") center/contain no-repeat; mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 5-7 7 7 7'/%3E%3C/svg%3E") center/contain no-repeat; display:block; }
+/* Program: the settings as a list of cards */
+html.s2 #planWeekSheet .fields > .field-row, html.s2 #planWeekSheet .fields > div:not(.week-actions){ background:#FBF8F2; border:1.5px solid #E4DCCB; border-radius:16px; padding:10px 14px; margin:0 0 8px; min-height:52px; }
+html.s2 #planWeekSheet .field-label{ font:700 12px 'Barlow',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#5E574C; }
+html.s2 #planWeekSheet select, html.s2 #planWeekSheet input[type="date"]{ border:0; background:transparent; font:700 16px 'Barlow',sans-serif; color:#151515; }
+html.s2 #planWeekSheet .week-actions, html.s2 #planWeekSheet [class*="actions"]{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+html.s2 #planWeekSheet button{ border-radius:999px; min-height:48px; font:italic 800 18px/1.05 'Barlow Condensed','Arial Narrow',sans-serif; letter-spacing:0; text-transform:uppercase; height:auto; padding:8px 12px; }
+html.s2 #planWeekSheet button.primary, html.s2 #planWeekSheet #generateWeekBtn{ background:#151515; color:#fff; grid-column:1 / -1; }
+/* Goals */
+html.s2 #goalSheet .score-note{ font:500 14px/1.4 'Barlow',sans-serif; text-transform:none; letter-spacing:0; color:#2A2620; border-left:0; padding:0; margin:0 0 8px; }
+html.s2 #goalSheet .goal-row, html.s2 #goalSheet [class*="goal-row"]{ background:#FBF8F2; border:1.5px solid #E4DCCB; border-radius:16px; padding:12px 14px; margin:0 0 8px; }
+html.s2 #goalSheet button{ border-radius:999px; min-height:48px; font:italic 800 20px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; letter-spacing:0; }
+html.s2 #goalSheet button.primary{ background:#151515; color:#fff; }
+html.s2 :is(#goalSheet,#planBlockSheet,#planWeightSheet,#planSportSheet) input, html.s2 :is(#goalSheet,#planBlockSheet,#planWeightSheet,#planSportSheet) select{ background:#fff !important; color:#151515 !important; border:1.5px solid #DED6C6 !important; border-radius:12px !important; }
+/* Settings: dense paragraphs fold behind a "Read more" line */
+.s2-more{ margin:6px 0; }
+.s2-more > summary{ cursor:pointer; list-style:none; font:700 14px 'Barlow',sans-serif; text-decoration:underline; text-underline-offset:3px; color:#151515; }
+.s2-more > summary::-webkit-details-marker{ display:none; }
+.s2-more[open] > summary{ margin-bottom:6px; }
+html.s2 :is(#goalSheet,#planWeekSheet) .lift-sheet-panel .fields, html.s2 :is(#goalSheet,#planWeekSheet) .lift-sheet-panel > div:not(.lift-sheet-head){ background:transparent !important; }
+html.s2 :is(#goalSheet,#planWeekSheet) .lift-sheet-panel .fields{ padding:0 4px; }
+html.s2 #goalSheet .lift-sheet-panel .fields > *{ margin-left:0; margin-right:0; }
+html.s2 #goalSheet .lift-sheet-panel *{ text-transform:none; }
+html.s2 #goalSheet .lift-sheet-panel button{ text-transform:uppercase; }
+html.s2 #goalSheet .lift-sheet-panel .goal-row *, html.s2 #goalSheet .lift-sheet-panel [class*="goal-"] span{ font:600 15px 'Barlow',sans-serif; letter-spacing:0; color:#151515; }
+html.s2 #planWeekSheet .week-actions button, html.s2 #planWeekSheet .fields button{ width:100%; }
+html.s2 #goalSheet .lift-sheet-panel button:not(.primary):not(.lift-sheet-x){ border-radius:999px !important; border:1.5px solid #DED6C6 !important; background:#fff !important; color:#151515 !important; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14750,7 +14783,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.053';
+const APP_VERSION = '2026.11.23.054';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15146,6 +15179,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.054': 'Program, Goals, Block, Weight and Sport open as full pages with the same banner; long notes in Settings fold behind Read more.',
   '2026.11.23.053': 'Every opened page in Build, Skills and Settings follows one standard: the banner names it, the title fits, and the content is plain cards on paper.',
   '2026.11.23.052': 'Build matches the design: Block, Program, Goals, Skills and Injuries & tests, each with a big title; Block shows the week chips, focus and what is next.',
   '2026.11.23.051': 'Run and mobility logs work like strength: a card, big numbers, a tick for every set of a stretch, and the pinned bar to log or save.',
@@ -48700,6 +48734,18 @@ loadGoalProfile().then(async ()=>{
       had=has;
     }).observe(host,{childList:true,subtree:true});
     had=!!host.querySelector('.session-complete');
+  })();
+
+  /* Settings: any note longer than a few lines folds behind "Read more" */
+  (function(){
+    function fold(root){
+      [].forEach.call(root.querySelectorAll('.panel#panel-settings.s2-open .score-note:not(.s2-folded), #panel-settings.s2-open .collapsible-body > p:not(.s2-folded)'),function(n){
+        n.classList.add('s2-folded'); var t=(n.textContent||'').trim(); if(t.length<170||n.querySelector('button,input,a,select')) return;
+        var d=document.createElement('details'); d.className='s2-more'; var sm=document.createElement('summary'); sm.textContent='Read more'; n.parentNode.insertBefore(d,n); d.appendChild(sm); d.appendChild(n);
+      });
+    }
+    var pn=document.getElementById('panel-settings'); if(!pn) return;
+    new MutationObserver(function(){ clearTimeout(window.__s2f); window.__s2f=setTimeout(function(){ fold(document); },150); }).observe(pn,{attributes:true,attributeFilter:['class'],childList:true,subtree:true});
   })();
   sync(tabFromBody(),true);
 })();
