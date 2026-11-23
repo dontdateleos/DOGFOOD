@@ -6451,6 +6451,52 @@ html.s2 #s2detail.on{ display:block; position:fixed; inset:0; z-index:90; overfl
 #s2detail #trendFlags .score-note, #s2detail #trendFlags > *{ border:0 !important; padding:0 !important; margin:0; background:none !important; font:500 16px/1.4 'Barlow',sans-serif; text-transform:none; letter-spacing:0; }
 #s2detail .s2-chartgrp.group{ box-shadow:none; }
 #s2detail .s2-chartgrp .fields{ border:0 !important; box-shadow:none !important; background:none !important; }
+#s2page{ display:none; }
+html.s2 #s2page.on{ display:block; position:fixed; inset:0; z-index:90; overflow-y:auto; background:#F6F1E7; color:#151515; padding-bottom:calc(40px + env(safe-area-inset-bottom, 0px)); }
+#s2page .bn{ position:relative; height:calc(190px + env(safe-area-inset-top, 0px)); background:#B7F02A url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 390 54' preserveAspectRatio='none'%3E%3Cpath d='M0 22 C60 0 130 0 200 18 S330 42 390 14 V54 H0Z' fill='%23F6F1E7'/%3E%3C/svg%3E") bottom/100% 46px no-repeat; }
+#s2page .bk{ all:unset; position:absolute; left:14px; top:calc(12px + env(safe-area-inset-top, 0px)); width:44px; height:44px; border-radius:50%; background:#F6F1E7; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+#s2page .bk::after{ display:none; }
+#s2page .bk svg{ width:20px; height:20px; fill:none; stroke:#151515; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+#s2page h2{ position:absolute; left:20px; top:calc(78px + env(safe-area-inset-top, 0px)); margin:0; font:italic 800 54px/.92 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+#s2page .per{ display:flex; margin:6px 16px 0; padding:4px; border:1.5px solid #DED6C6; border-radius:999px; background:#FBF8F2; }
+#s2page .per button{ all:unset; box-sizing:border-box; flex:1; text-align:center; padding:9px 0 8px; border-radius:999px; cursor:pointer; font:italic 800 17px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+#s2page .per button::after{ display:none; }
+#s2page .per button.on{ background:#151515; color:#fff; }
+#s2page #s2head{ display:flex !important; margin:18px 16px 4px; }
+#s2page .s2-chartgrp{ margin:6px 16px 0; border:1.5px solid #E4DCCB; border-radius:18px; background:#FBF8F2; padding:6px 4px 2px; }
+#s2page .s2-chartgrp .fields, #s2page .s2-chartgrp .dot-field{ background:transparent !important; padding:0; border:0; }
+#s2page #trendFlags, #s2page #chartMetricNote{ margin:10px 16px 0; padding:12px 14px 12px 14px; border:1.5px solid #E4DCCB; border-radius:18px; background:#FBF8F2; color:#151515; }
+
+#s2page .sub{ margin:4px 20px 0; font:700 13px 'Barlow',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#5E574C; }
+#s2page .big{ display:flex; align-items:center; gap:12px; margin:16px 16px 4px; flex-wrap:wrap; }
+#s2page .big .n{ font:italic 800 76px/.9 'Barlow Condensed','Arial Narrow',sans-serif; }
+#s2page .big .n small{ font-size:.5em; margin-left:4px; }
+#s2page .big .md{ padding:4px 10px; border-radius:999px; background:rgba(21,21,21,.08); font:700 13px 'Barlow',sans-serif; }
+#s2page .big .md.good{ background:#B7F02A; }
+#s2page .big .cap{ font:700 13px 'Barlow',sans-serif; text-transform:uppercase; letter-spacing:.05em; color:#2A2620; }
+#s2page .chartc{ margin:8px 16px 0; padding:10px 8px 6px; border:1.5px solid #E4DCCB; border-radius:18px; background:#FBF8F2; }
+#s2page .chartc svg{ display:block; width:100%; height:auto; }
+#s2page .chartc .ln{ fill:none; stroke:#151515; stroke-width:2.4; stroke-linejoin:round; stroke-linecap:round; }
+#s2page .chartc .ar{ fill:#C8F031; opacity:.4; }
+#s2page .chartc .dt{ fill:#C8F031; stroke:#151515; stroke-width:2; }
+#s2page .chartc text{ font:600 11px 'Barlow',sans-serif; fill:#5E574C; }
+#s2page .chartc .gl{ stroke:#E4DCCB; stroke-width:1; }
+#s2page .sec{ margin:12px 16px 0; border:1.5px solid #E4DCCB; border-radius:18px; background:#FBF8F2; padding:12px 14px; }
+#s2page .sec h4{ margin:0 0 6px; font:700 12px 'Barlow',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#5E574C; }
+#s2page .sec .r{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-top:1.5px solid #E4DCCB; }
+#s2page .sec h4 + .r{ border-top:0; }
+#s2page .sec .r b{ font:700 16px 'Barlow',sans-serif; }
+#s2page .sec .r span{ font:500 14px 'Barlow',sans-serif; color:#2A2620; text-align:right; }
+#s2page .sec .r em{ font:italic 800 20px/1 'Barlow Condensed','Arial Narrow',sans-serif; font-style:italic; }
+#s2page .sec .tag{ padding:3px 10px; border-radius:999px; background:#C8F031; font:700 13px 'Barlow',sans-serif; margin-right:8px; }
+#s2page .sec .tag.old{ background:#E9E3D6; }
+#s2page .sec p{ margin:6px 0 0; font:500 14px/1.4 'Barlow',sans-serif; color:#2A2620; }
+#s2page .stats3{ display:flex; margin:12px 16px 0; border:1.5px solid #E4DCCB; border-radius:18px; background:#FBF8F2; }
+#s2page .stats3 div{ flex:1; padding:10px 6px; text-align:center; border-left:1.5px solid #E4DCCB; }
+#s2page .stats3 div:first-child{ border-left:0; }
+#s2page .stats3 b{ display:block; font:italic 800 26px/1 'Barlow Condensed','Arial Narrow',sans-serif; }
+#s2page .stats3 span{ font:700 10.5px 'Barlow',sans-serif; text-transform:uppercase; letter-spacing:.05em; color:#5E574C; }
+.s2-prow, .s2-sumcard .ln, .s2-recent .wr{ cursor:pointer; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14565,7 +14611,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.045';
+const APP_VERSION = '2026.11.23.046';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14961,6 +15007,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.046': 'More pages on Progress: tap a lift, a goal, Strength score, VO2 max, a skill, the mobility test or a recent workout to open its own page.',
   '2026.11.23.045': 'Tapping a measure on Progress opens its own page with the big number, a Daily / Weekly / Monthly switch and the chart, instead of drawing the chart under the list.',
   '2026.11.23.044': 'Each block picks two priority mobility areas and gives them a little more time (15 minutes a week); the next block picks different ones. The deload week has none.',
   '2026.11.23.043': 'Mobility nights have a focus that rotates — lower body, upper body, whole body — named on the card; every area still gets its weekly time.',
@@ -48204,6 +48251,7 @@ loadGoalProfile().then(async ()=>{
     box.addEventListener('click',function(e){
       var b=e.target.closest('button'); if(!b) return;
       if(b.hasAttribute('data-see')){ var r=document.getElementById('prevWorkoutsResults'); if(r&&r.scrollIntoView) r.scrollIntoView({behavior:'smooth',block:'start'}); return; }
+      if(b.dataset.d&&window.__s2workout){ window.__s2workout(b.dataset.d); return; }
       if(b.dataset.d){ var inp=document.getElementById('prevWorkoutsDate'); if(inp){ inp.value=b.dataset.d; inp.dispatchEvent(new Event('change',{bubbles:true})); inp.dispatchEvent(new Event('input',{bubbles:true})); var r2=document.getElementById('prevWorkoutsResults'); setTimeout(function(){ if(r2&&r2.scrollIntoView) r2.scrollIntoView({behavior:'smooth',block:'start'}); },300); } }
     });
     new MutationObserver(function(){ clearTimeout(window.__s2h); window.__s2h=setTimeout(paint,200); }).observe(hv,{attributes:true,attributeFilter:['style']});
@@ -48218,31 +48266,34 @@ loadGoalProfile().then(async ()=>{
     var perf=document.createElement('div'); perf.className='s2-perf'; var mp=document.getElementById('trendMetricPills'); mp.insertAdjacentElement('afterend',perf);
     var PI={strength:IC.dumb,vo2:'<circle cx="12" cy="13" r="7"/><path d="M12 13V9M9.500 3h5"/>',skill:'<path d="m12 3 9 5-9 5-9-5 9-5ZM3 13l9 5 9-5"/>',mob:'<circle cx="12" cy="5" r="2"/><path d="M5 9h14M12 9v6M9 21l3-6 3 6"/>'};
     function chip(d,goodUp,fmt){ if(d==null||isNaN(d)) return ''; if(Math.abs(d)<0.05) return '<span class="md">–</span>'; var good=(goodUp?d>0:d<0); return '<span class="md'+(good?' good':'')+'">'+(d>0?'↑ ':'↓ ')+(fmt?fmt(Math.abs(d)):Math.round(Math.abs(d)*10)/10)+'</span>'; }
-    function row(ic,name,val,unit,d){ return '<div class="s2-prow"><span class="mi"><svg viewBox="0 0 24 24" aria-hidden="true">'+ic+'</svg></span><span class="ml"><b>'+name+'</b><span class="mv2">'+val+(unit?'<small>'+unit+'</small>':'')+'</span></span>'+(d||'')+'</div>'; }
+    function row(ic,name,val,unit,d,key){ return '<div class="s2-prow" data-k="'+(key||'')+'"><span class="mi"><svg viewBox="0 0 24 24" aria-hidden="true">'+ic+'</svg></span><span class="ml"><b>'+name+'</b><span class="mv2">'+val+(unit?'<small>'+unit+'</small>':'')+'</span></span>'+(d||'')+'</div>'; }
     var busy=false;
     async function paint(){
       if(busy) return; busy=true;
       try{
-        var p=await progressSummary(); if(!p){ card.classList.remove('on'); perf.classList.remove('on'); return; }
+        var p=await progressSummary(); if(!p){ card.classList.remove('on'); perf.classList.remove('on'); return; } window.__s2prog=p;
         var f=p.fit||{}, kgf=function(v){ return Math.round(v*10)/10; };
         // goals card
         var ch='', lines='';
         var ls=(p.lifts||[]).filter(function(l){ return l.change!=null; });
         if(p.lifts&&p.lifts.length){ var avg=ls.length?ls.reduce(function(a,l){ return a+l.change; },0)/ls.length:0; ch+='<span>Lifting · '+(avg>0.5?'productive':(avg<-0.5?'slipping':'maintaining'))+'</span>'; }
         if(p.run5){ var rd=p.run5.then!=null?p.run5.now-p.run5.then:0; ch+='<span>Running · '+(rd<-0.1?'improving':(rd>0.1?'slipping':'maintaining'))+'</span>'; }
-        (p.goals||[]).slice(0,3).forEach(function(g){ var r=g.done?'reached':(g.time?(fmtRaceTime(g.toGo)+' to go'):(kgf(g.toGo)+' kg to go')); if(g.eta){ try{ r+=' · '+g.eta.toLocaleDateString(undefined,{month:'short'}); }catch(e){} } lines+='<div class="ln">'+escapeHtmlLite(g.label)+'<span>'+r+'</span></div>'; });
+        (p.goals||[]).slice(0,3).forEach(function(g,gi){ var r=g.done?'reached':(g.time?(fmtRaceTime(g.toGo)+' to go'):(kgf(g.toGo)+' kg to go')); if(g.eta){ try{ r+=' · '+g.eta.toLocaleDateString(undefined,{month:'short'}); }catch(e){} } lines+='<div class="ln" data-g="'+gi+'">'+escapeHtmlLite(g.label)+'<span>'+r+'</span></div>'; });
         if(p.bw) lines+='<div class="ln">Bodyweight '+kgf(p.bw.now)+' kg<span>'+(p.bw.then!=null?((p.bw.now-p.bw.then>0?'+':'−')+kgf(Math.abs(p.bw.now-p.bw.then))+' kg in 4 weeks'):'')+'</span></div>';
         if(ch||lines){ card.innerHTML='<div class="chs">'+ch+'</div>'+lines; card.classList.add('on'); } else card.classList.remove('on');
         // performance
         var rows='';
-        if(f.strength) rows+=row(PI.strength,'Strength score',f.strength.score,'',chip(f.strengthThen?f.strength.score-f.strengthThen.score:null,true));
-        if(f.vo2) rows+=row(PI.vo2,'VO2 max',f.vo2.value,'',chip(f.vo2.change,true));
-        (p.skills||[]).slice(0,2).forEach(function(k){ rows+=row(PI.skill,escapeHtmlLite(k.label),'L'+k.now+' / '+k.of,'',chip(k.then!=null?k.now-k.then:null,true)); });
-        if(p.mobTest) rows+=row(PI.mob,'Mobility test',p.mobTest.now+' of '+p.mobTest.max,'',chip(p.mobTest.then!=null?p.mobTest.now-p.mobTest.then:null,true));
+        if(f.strength) rows+=row(PI.strength,'Strength score',f.strength.score,'',chip(f.strengthThen?f.strength.score-f.strengthThen.score:null,true),'strength');
+        if(f.vo2) rows+=row(PI.vo2,'VO2 max',f.vo2.value,'',chip(f.vo2.change,true),'vo2');
+        (p.skills||[]).slice(0,2).forEach(function(k,ki){ rows+=row(PI.skill,escapeHtmlLite(k.label),'L'+k.now+' / '+k.of,'',chip(k.then!=null?k.now-k.then:null,true),'skill'+ki); });
+        (p.lifts||[]).slice(0,4).forEach(function(l){ rows+=row(PI.strength,escapeHtmlLite(l.name),Math.round(l.now*10)/10,' kg',chip(l.change,true),'lift:'+l.key); });
+        if(p.mobTest) rows+=row(PI.mob,'Mobility test',p.mobTest.now+' of '+p.mobTest.max,'',chip(p.mobTest.then!=null?p.mobTest.now-p.mobTest.then:null,true),'mob');
         if(rows){ perf.innerHTML='<div class="s2-glab">Performance</div>'+rows; perf.classList.add('on'); } else perf.classList.remove('on');
       }catch(e){} finally{ busy=false; }
     }
     window.__s2progress=paint;
+    card.addEventListener('click',function(e){ var l=e.target.closest('.ln'); if(l&&l.dataset.g!=null&&window.__s2goal) window.__s2goal(+l.dataset.g); });
+    perf.addEventListener('click',function(e){ var r=e.target.closest('.s2-prow'); if(!r) return; var k=r.dataset.k; if(k&&k.indexOf('lift:')===0){ if(window.__s2lift) window.__s2lift(k.slice(5)); } else if(k&&window.__s2perf) window.__s2perf(k); });
     new MutationObserver(function(){ if(cur==='data'){ clearTimeout(window.__s2pp); window.__s2pp=setTimeout(paint,700); } }).observe(document.body,{attributes:true,attributeFilter:['class']});
     paint();
   })();
@@ -48312,6 +48363,67 @@ loadGoalProfile().then(async ()=>{
     ov.querySelector('.per').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; var o=document.querySelector('#trendPeriodPills .type-btn[data-period="'+b.dataset.p+'"]'); if(o) o.click(); setTimeout(function(){ sync(); headline(); },120); });
     host.addEventListener('click',function(e){ var b=e.target.closest('.type-btn'); if(!b||!b.dataset.metric) return; var m=b.dataset.metric; setTimeout(function(){ open(m); },40); });
     new MutationObserver(function(){ if(cur!=='data' && ov.classList.contains('on')) close(); }).observe(document.body,{attributes:true,attributeFilter:['class']});
+  })();
+
+  /* ---------- Detail pages for lifts, goals, performance rows and workouts ---------- */
+  (function(){
+    var pg=document.createElement('div'); pg.id='s2page'; pg.setAttribute('role','dialog'); document.body.appendChild(pg);
+    pg.innerHTML='<div class="bn"><button type="button" class="bk" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button><h2></h2></div><div class="sub"></div><div class="body"></div>';
+    var body=pg.querySelector('.body'), h2=pg.querySelector('h2'), sub=pg.querySelector('.sub');
+    function esc(t){ return (typeof escapeHtmlLite==='function')?escapeHtmlLite(String(t)):String(t).replace(/[&<>]/g,''); }
+    function r1(v){ return Math.round(v*10)/10; }
+    function chartSvg(pts,labels){
+      if(!pts||pts.length<2) return '';
+      var W=340,H=170,pl=30,pr=10,pt=10,pb=24, lo=Math.min.apply(null,pts), hi=Math.max.apply(null,pts), sp=(hi-lo)||1; lo-=sp*.1; hi+=sp*.1;
+      var X=function(i){ return pl+(W-pl-pr)*i/(pts.length-1); }, Y=function(v){ return pt+(H-pt-pb)*(1-(v-lo)/(hi-lo)); };
+      var d=pts.map(function(v,i){ return (i?'L':'M')+X(i).toFixed(1)+','+Y(v).toFixed(1); }).join('');
+      var gl='', k; for(k=0;k<3;k++){ var gv=lo+(hi-lo)*k/2, gy=Y(gv); gl+='<line class="gl" x1="'+pl+'" x2="'+(W-pr)+'" y1="'+gy.toFixed(1)+'" y2="'+gy.toFixed(1)+'"/><text x="2" y="'+(gy+4).toFixed(1)+'">'+Math.round(gv)+'</text>'; }
+      var lab=''; (labels||[]).forEach(function(l,i){ var x=l[0]===0?pl:(l[0]===1?W-pr-20:(pl+(W-pl-pr)*l[0])); lab+='<text x="'+x.toFixed(1)+'" y="'+(H-6)+'">'+l[1]+'</text>'; });
+      return '<div class="chartc"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-hidden="true">'+gl+'<path class="ar" d="'+d+'L'+X(pts.length-1).toFixed(1)+','+(H-pb)+'L'+pl+','+(H-pb)+'Z"/><path class="ln" d="'+d+'"/><circle class="dt" cx="'+X(pts.length-1).toFixed(1)+'" cy="'+Y(pts[pts.length-1]).toFixed(1)+'" r="5"/>'+lab+'</svg></div>';
+    }
+    function chip(d,goodUp,unit){ if(d==null||isNaN(d)) return ''; if(Math.abs(d)<0.05) return ''; return '<span class="md'+((goodUp?d>0:d<0)?' good':'')+'">'+(d>0?'+':'−')+r1(Math.abs(d))+(unit||'')+'</span>'; }
+    function secs(list){ return list.filter(function(x){ return x&&x.rows&&x.rows.length; }).map(function(x){ return '<div class="sec"><h4>'+x.h+'</h4>'+x.rows.map(function(r){ return '<div class="r"><b>'+(r[2]?'<span class="tag '+r[2]+'">'+r[2].toUpperCase()+'</span>':'')+r[0]+'</b><span>'+r[1]+'</span></div>'; }).join('')+(x.note?'<p>'+x.note+'</p>':'')+'</div>'; }).join(''); }
+    function show(o){
+      h2.textContent=o.title; h2.style.fontSize=o.title.length>12?'40px':''; sub.textContent=o.sub||'';
+      body.innerHTML=(o.big!=null?'<div class="big"><span class="n">'+o.big+(o.unit?'<small>'+o.unit+'</small>':'')+'</span>'+(o.chip||'')+(o.cap?'<span class="cap">'+o.cap+'</span>':'')+'</div>':'')+(o.stats||'')+(o.chart||'')+secs(o.sections||[]);
+      pg.classList.add('on'); pg.scrollTop=0;
+    }
+    pg.querySelector('.bk').addEventListener('click',function(){ pg.classList.remove('on'); });
+    new MutationObserver(function(){ if(cur!==pg.__tab) pg.classList.remove('on'); }).observe(document.body,{attributes:true,attributeFilter:['class']});
+    function dstr(d){ try{ return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}).replace(',',''); }catch(e){ return d; } }
+    function mdate(d){ try{ return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{month:'short'}).toUpperCase(); }catch(e){ return ''; } }
+    window.__s2lift=async function(key){
+      var p=window.__s2prog; if(!p) return; var L=(p.lifts||[]).filter(function(l){ return l.key===key; })[0]; if(!L) return; pg.__tab=cur;
+      var all=(await getAllTrainingSessions())||[], last=null;
+      all.forEach(function(sn){ if(!sn||sn.type!=='strength') return; (sn.exercises||[]).forEach(function(e){ if(e&&e.name&&e.name.toLowerCase()===String(L.name).toLowerCase()&&(!last||sn.date>=last.date)) last={date:sn.date,ex:e}; }); });
+      var prs=(p.bests||[]).filter(function(b){ return String(b.name).toLowerCase()===String(L.name).toLowerCase(); }).slice(0,4);
+      var rows=prs.map(function(b,i){ return [b.w+' kg × '+b.n,dstr(b.date),i===0?'new':'pr']; });
+      var lastRow=last?[[ (last.ex.weight!=null?last.ex.weight+' kg × ':'')+(Array.isArray(last.ex.repsPerSet)&&last.ex.repsPerSet.length?last.ex.repsPerSet.join(', '):last.ex.reps), dstr(last.date) ]]:[];
+      show({title:L.name,big:r1(L.now),unit:' kg',chip:chip(L.change,true,' kg'),cap:'Best estimated max',chart:chartSvg(L.spark),sections:[{h:'Personal records',rows:rows},{h:'Last session',rows:lastRow}]});
+    };
+    window.__s2goal=function(i){
+      var p=window.__s2prog; if(!p) return; var g=(p.goals||[])[i]; if(!g) return; pg.__tab=cur;
+      var fmt=function(v){ return g.time?fmtRaceTime(v):(r1(v)+' kg'); };
+      var eta=''; try{ if(g.eta) eta=g.eta.toLocaleDateString('en-GB',{month:'long',year:'numeric'}); }catch(e){}
+      show({title:g.label,big:g.done?'Reached':(g.time?fmtRaceTime(g.toGo):r1(g.toGo)),unit:g.done?'':(g.time?'':' kg'),cap:g.done?'Goal':'To go',chart:chartSvg(g.spark),sections:[{h:'Where you are',rows:[['Now',fmt(g.now)],['Goal',fmt(g.target)]].concat(eta?[['At this rate',eta]]:[])}]});
+    };
+    window.__s2perf=function(k){
+      var p=window.__s2prog; if(!p) return; var f=p.fit||{}; pg.__tab=cur;
+      if(k==='strength'&&f.strength){ var ch=f.strengthThen?f.strength.score-f.strengthThen.score:null;
+        show({title:'Strength score',big:f.strength.score,chip:chip(ch,true),cap:'vs 8 weeks ago',sections:[{h:'Your main lifts',rows:f.strength.parts.map(function(q){ return [esc(q.name),Math.round(q.kg)+' kg · '+q.ratio.toFixed(2)+'×']; }),note:'Your main lifts against your '+f.strength.bw.toFixed(1)+' kg bodyweight. 100 is a strong lifter’s standard on every lift you do.'}]}); }
+      else if(k==='vo2'&&f.vo2){ show({title:'VO2 max',big:f.vo2.value,unit:' ml/kg/min',chip:chip(f.vo2.change,true),cap:f.vo2.measured?'From '+esc(f.vo2.source):'Estimated',sections:[{h:'About this number',rows:[],note:f.vo2.measured?'Measured by your watch, against three months ago.':'Estimated from your best run in the last sixty days. A watch that writes VO2 max to Health will replace the estimate.'}]}); }
+      else if(k.indexOf('skill')===0){ var sk=(p.skills||[])[+k.slice(5)]; if(!sk) return; show({title:sk.label,big:'L'+sk.now,unit:' of '+sk.of,chip:chip(sk.then!=null?sk.now-sk.then:null,true),cap:'Level',sections:[{h:'Now',rows:[['Level',esc(sk.level||'')]],note:sk.advancedOn?'Moved up on '+dstr(sk.advancedOn)+'.':(sk.maint?'Kept at this level on purpose.':'Each level is earned by doing the work at it.')}]}); }
+      else if(k==='mob'&&p.mobTest){ var mt=p.mobTest; show({title:'Mobility test',big:mt.now,unit:' of '+mt.max,chip:chip(mt.then!=null?mt.now-mt.then:null,true),cap:'Levels passed',sections:[{h:'By area',rows:(mt.domains||[]).map(function(x){ return [x.d.charAt(0).toUpperCase()+x.d.slice(1),x.now+' of '+x.of]; }),note:mt.lastUpdated?'Last taken '+dstr(mt.lastUpdated)+'.':''}]}); }
+    };
+    window.__s2workout=async function(date){
+      pg.__tab=cur; var all=(await getAllTrainingSessions())||[]; var list=all.filter(function(x){ return x&&x.date===date; }); if(!list.length) return;
+      var sn=list[list.length-1], ty=sn.type||'strength', ttl=ty==='strength'&&sn.workoutTag?String(sn.workoutTag).replace(/_/g,' '):(ty==='run'?'Run':(ty==='mobility'?'Mobility':'Workout')); ttl=ttl.charAt(0).toUpperCase()+ttl.slice(1);
+      var sets=(sn.exercises||[]).reduce(function(a,e){ return a+(+e.sets||0); },0), vol=Math.round(sn.totalVolume||0);
+      var st=ty==='strength'?[Math.round(sn.durationMin||0)+' min','Duration',sets,'Sets',vol.toLocaleString(),'kg moved']:(ty==='run'?[(sn.distanceKm||'–')+' km','Distance',(sn.durationMin||'–')+' min','Time',(sn.distanceKm&&sn.durationMin?(Math.floor(sn.durationMin/sn.distanceKm)+':'+String(Math.round((sn.durationMin/sn.distanceKm%1)*60)).padStart(2,'0')):'–'),'Pace /km']:[(sn.stretches||[]).length,'Movements',Math.round((sn.totalHoldSeconds||0)/60)+' min','Held','','']);
+      var rows=(sn.exercises||[]).map(function(e){ var rp=Array.isArray(e.repsPerSet)&&e.repsPerSet.length?e.repsPerSet.join(', '):e.reps; return [esc(e.name),(e.sets||0)+' × '+rp+(e.weight!=null?' · '+e.weight+' kg':'')]; });
+      if(ty==='mobility') rows=(sn.stretches||[]).map(function(x){ return [esc(x.name||'Stretch'),x.holdSeconds?x.holdSeconds+'s':(x.reps?'×'+x.reps:'')]; });
+      show({title:ttl,sub:dstr(date),stats:'<div class="stats3"><div><b>'+st[0]+'</b><span>'+st[1]+'</span></div><div><b>'+st[2]+'</b><span>'+st[3]+'</span></div><div><b>'+st[4]+'</b><span>'+st[5]+'</span></div></div>',sections:[{h:ty==='strength'?'Lifts':(ty==='run'?'Run':'Stretches'),rows:rows},{h:'Notes',rows:sn.notes?[[esc(sn.notes),'']]:[]}]});
+    };
   })();
   sync(tabFromBody(),true);
 })();
