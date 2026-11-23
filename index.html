@@ -6193,7 +6193,7 @@ html.s2 #logSheet .lift-sheet-panel > .lift-sheet-head{ background-color:#FF6A00
 html.s2 #logSheet .lift-sheet-head > span:first-child{ color:#151515 !important; }
 
 /* PROGRESS, COPIED FROM THE DESIGN */
-html.s2 body.tab-data #dataSnapshot, html.s2 body.tab-data #trendsDataView > .group:first-child{ display:none !important; }
+html.s2 body.tab-data #dataSnapshot, html.s2 body.tab-data #scoreDriversPanel, html.s2 body.tab-data #trendsDataView > .group:first-child{ display:none !important; }
 html.s2 body.tab-data #dataViewPills{ display:flex; gap:6px; padding:0 16px; margin:16px 0 0; flex-wrap:nowrap; }
 html.s2 body.tab-data #dataViewPills .type-btn{ flex:none; border:1.5px solid #DED6C6; background:#FBF8F2; border-radius:999px; min-height:40px; padding:8px 16px; font:700 15px 'Barlow',sans-serif; text-transform:none; letter-spacing:0; color:#151515; display:inline-flex; align-items:center; }
 html.s2 body.tab-data #dataViewPills .type-btn.active{ background:#151515; border-color:#151515; color:#fff; }
@@ -6224,6 +6224,26 @@ html.s2 .panel.s2-m > .s2-menu{ padding:6px 16px 0; }
 .s2-menu:not(.cards) .ri{ width:32px; height:32px; }
 #s2banner .s2-chip{ text-transform:none; letter-spacing:0; font:700 14px 'Barlow',sans-serif; gap:7px; }
 html.s2 .panel.s2-m > .s2-menu{ padding-left:12px; padding-right:12px; }
+
+/* PROGRESS: the goals card and the Performance group */
+.s2-sumcard{ display:none; }
+html.s2 body.tab-data .s2-sumcard.on{ display:block; margin:12px 16px 0; padding:12px 14px; border:1.5px solid #E4DCCB; border-radius:18px; background:#FBF8F2; color:#151515; }
+.s2-sumcard .chs{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+.s2-sumcard .chs span{ padding:5px 11px; border-radius:999px; background:#E9E3D6; font:700 14px 'Barlow',sans-serif; }
+.s2-sumcard .chs span:first-child{ background:#C8F031; }
+.s2-sumcard .ln{ display:flex; justify-content:space-between; gap:10px; padding:4px 0; font:700 16px 'Barlow',sans-serif; }
+.s2-sumcard .ln span{ font:500 13px 'Barlow',sans-serif; color:#2A2620; text-align:right; }
+.s2-perf{ display:none; }
+html.s2 body.tab-data .s2-perf.on{ display:block; padding:0 4px; }
+.s2-prow{ display:flex; align-items:center; gap:12px; min-height:70px; padding:6px 12px; border-bottom:1.5px solid #E4DCCB; color:#151515; }
+.s2-prow .mi{ flex:none; width:28px; display:flex; justify-content:center; }
+.s2-prow .mi svg{ width:26px; height:26px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+.s2-prow .ml{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.s2-prow .ml b{ font:700 12px 'Barlow',sans-serif; letter-spacing:.04em; text-transform:uppercase; }
+.s2-prow .ml .mv2{ font:italic 800 28px/1 'Barlow Condensed','Arial Narrow',sans-serif; }
+.s2-prow .ml .mv2 small{ font:600 14px 'Barlow',sans-serif; font-style:normal; margin-left:3px; }
+.s2-prow .md{ flex:none; min-width:46px; text-align:center; padding:4px 8px; border-radius:999px; background:#E9E3D6; font:700 12px 'Barlow',sans-serif; }
+.s2-prow .md.good{ background:#C8F031; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14338,7 +14358,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.029';
+const APP_VERSION = '2026.11.23.030';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14734,6 +14754,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.030': 'Progress shows your goals and how far to go, plus Strength score, VO2 max, skills and the mobility test; Build rows say what is in them.',
   '2026.11.23.029': 'Progress, Build and Settings follow the design: grouped rows with a sparkline and change, Build as a list with real details, Settings as grouped cards.',
   '2026.11.23.028': 'The workout log follows the design: a banner with the session name and timer, one lift at a time as a Set / Kg / Reps table, and Up next.',
   '2026.11.23.027': 'Training now follows the design: warm paper, Today / Week, the three bubbles, the session card, one list of rows, and a Your week button.',
@@ -47528,7 +47549,6 @@ loadGoalProfile().then(async ()=>{
     if(pos.trim()) rows[0].textContent='Week '+pos.trim().replace(/^(\d+) of (\d+)/,'$1 of $2');
     if(setup) rows[2].textContent=setup.replace(/\s+/g,' ');
   }
-  setInterval(buildSubs,2500);
   function openSub(pn,r){
     [].forEach.call(pn.children,function(c){ c.classList.remove('s2-show'); });
     [].forEach.call(pn.querySelectorAll(':scope > .group'),function(g){
@@ -47815,6 +47835,58 @@ loadGoalProfile().then(async ()=>{
     new MutationObserver(function(){ clearTimeout(window.__s2h); window.__s2h=setTimeout(paint,200); }).observe(hv,{attributes:true,attributeFilter:['style']});
     new MutationObserver(function(){ if(cur==='data'){ clearTimeout(window.__s2h); window.__s2h=setTimeout(paint,500); } }).observe(document.body,{attributes:true,attributeFilter:['class']});
     paint();
+  })();
+
+  /* ---------- Progress: goals card and Performance, from the app's own summary ---------- */
+  (function(){
+    var tv=document.getElementById('trendsDataView'), per=document.getElementById('trendPeriodPills'); if(!tv||!per) return;
+    var card=document.createElement('div'); card.className='s2-sumcard'; per.insertAdjacentElement('afterend',card);
+    var perf=document.createElement('div'); perf.className='s2-perf'; var mp=document.getElementById('trendMetricPills'); mp.insertAdjacentElement('afterend',perf);
+    var PI={strength:IC.dumb,vo2:'<circle cx="12" cy="13" r="7"/><path d="M12 13V9M9.500 3h5"/>',skill:'<path d="m12 3 9 5-9 5-9-5 9-5ZM3 13l9 5 9-5"/>',mob:'<circle cx="12" cy="5" r="2"/><path d="M5 9h14M12 9v6M9 21l3-6 3 6"/>'};
+    function chip(d,goodUp,fmt){ if(d==null||isNaN(d)) return ''; if(Math.abs(d)<0.05) return '<span class="md">–</span>'; var good=(goodUp?d>0:d<0); return '<span class="md'+(good?' good':'')+'">'+(d>0?'↑ ':'↓ ')+(fmt?fmt(Math.abs(d)):Math.round(Math.abs(d)*10)/10)+'</span>'; }
+    function row(ic,name,val,unit,d){ return '<div class="s2-prow"><span class="mi"><svg viewBox="0 0 24 24" aria-hidden="true">'+ic+'</svg></span><span class="ml"><b>'+name+'</b><span class="mv2">'+val+(unit?'<small>'+unit+'</small>':'')+'</span></span>'+(d||'')+'</div>'; }
+    var busy=false;
+    async function paint(){
+      if(busy) return; busy=true;
+      try{
+        var p=await progressSummary(); if(!p){ card.classList.remove('on'); perf.classList.remove('on'); return; }
+        var f=p.fit||{}, kgf=function(v){ return Math.round(v*10)/10; };
+        // goals card
+        var ch='', lines='';
+        var ls=(p.lifts||[]).filter(function(l){ return l.change!=null; });
+        if(p.lifts&&p.lifts.length){ var avg=ls.length?ls.reduce(function(a,l){ return a+l.change; },0)/ls.length:0; ch+='<span>Lifting · '+(avg>0.5?'productive':(avg<-0.5?'slipping':'maintaining'))+'</span>'; }
+        if(p.run5){ var rd=p.run5.then!=null?p.run5.now-p.run5.then:0; ch+='<span>Running · '+(rd<-0.1?'improving':(rd>0.1?'slipping':'maintaining'))+'</span>'; }
+        (p.goals||[]).slice(0,3).forEach(function(g){ var r=g.done?'reached':(g.time?(fmtRaceTime(g.toGo)+' to go'):(kgf(g.toGo)+' kg to go')); if(g.eta){ try{ r+=' · '+g.eta.toLocaleDateString(undefined,{month:'short'}); }catch(e){} } lines+='<div class="ln">'+escapeHtmlLite(g.label)+'<span>'+r+'</span></div>'; });
+        if(p.bw) lines+='<div class="ln">Bodyweight '+kgf(p.bw.now)+' kg<span>'+(p.bw.then!=null?((p.bw.now-p.bw.then>0?'+':'−')+kgf(Math.abs(p.bw.now-p.bw.then))+' kg in 4 weeks'):'')+'</span></div>';
+        if(ch||lines){ card.innerHTML='<div class="chs">'+ch+'</div>'+lines; card.classList.add('on'); } else card.classList.remove('on');
+        // performance
+        var rows='';
+        if(f.strength) rows+=row(PI.strength,'Strength score',f.strength.score,'',chip(f.strengthThen?f.strength.score-f.strengthThen.score:null,true));
+        if(f.vo2) rows+=row(PI.vo2,'VO2 max',f.vo2.value,'',chip(f.vo2.change,true));
+        (p.skills||[]).slice(0,2).forEach(function(k){ rows+=row(PI.skill,escapeHtmlLite(k.label),'L'+k.now+' / '+k.of,'',chip(k.then!=null?k.now-k.then:null,true)); });
+        if(p.mobTest) rows+=row(PI.mob,'Mobility test',p.mobTest.now+' of '+p.mobTest.max,'',chip(p.mobTest.then!=null?p.mobTest.now-p.mobTest.then:null,true));
+        if(rows){ perf.innerHTML='<div class="s2-glab">Performance</div>'+rows; perf.classList.add('on'); } else perf.classList.remove('on');
+      }catch(e){} finally{ busy=false; }
+    }
+    window.__s2progress=paint;
+    new MutationObserver(function(){ if(cur==='data'){ clearTimeout(window.__s2pp); window.__s2pp=setTimeout(paint,700); } }).observe(document.body,{attributes:true,attributeFilter:['class']});
+    paint();
+  })();
+
+  /* ---------- Build: real details under each row ---------- */
+  (function(){
+    async function subs(){
+      try{
+        var pn=document.getElementById('panel-plan'); var rows=pn&&pn.querySelectorAll('.s2-menu .row .rt i'); if(!rows||rows.length<5) return;
+        var pos=await getBlockPosition(todayStr), ty=''; try{ ty=(await getBlockTypeFor(todayStr)).type||''; }catch(e){}
+        if(pos&&pos.weekInBlock) rows[0].textContent=(ty?(ty.charAt(0).toUpperCase()+ty.slice(1)+' · '):'')+'Week '+pos.weekInBlock+' of '+pos.length;
+        var p=await progressSummary(); if(!p) return;
+        var gl=(p.goals||[]).map(function(g){ return g.label; }).slice(0,3).join(' · '); if(gl) rows[2].textContent=gl;
+        var sk=(p.skills||[]).map(function(k){ return k.label+' L'+k.now; }).slice(0,2).join(' · '); if(sk) rows[3].textContent=sk;
+        var inj=(p.injuries||[]); rows[4].textContent=inj.length?(inj.length+' active · '+((inj[0].area||inj[0].name||inj[0].label)||'')).replace(/ · $/,''):'Nothing logged';
+      }catch(e){}
+    }
+    setInterval(subs,4000); setTimeout(subs,1500);
   })();
   sync(tabFromBody(),true);
 })();
