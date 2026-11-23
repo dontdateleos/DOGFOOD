@@ -5915,6 +5915,24 @@ html.s2 body.tab-data #s2head.on{ display:flex; align-items:center; gap:12px; ma
 #s2head .md{ padding:4px 10px; border-radius:999px; background:rgba(var(--ink-rgb),.08); font:700 13px var(--sans); }
 #s2head .md.good{ background:#B7F02A; color:#151515; }
 #s2head .cap{ font:700 13px var(--sans); text-transform:uppercase; letter-spacing:.05em; }
+
+/* BUILD and SETTINGS: a list of rows; a row opens that part of the page, and the banner's back arrow closes it */
+.s2-menu{ display:none; }
+html.s2 .panel.s2-m > .s2-menu{ display:block; padding:6px 16px 0; }
+html.s2 .panel.s2-m.s2-open > .s2-menu{ display:none; }
+html.s2 .panel.s2-m:not(.s2-open) > *:not(.s2-menu):not(.lift-sheet){ display:none !important; }
+html.s2 .panel.s2-m.s2-open > .group:not(.s2-show), html.s2 .panel.s2-m.s2-open > .set-band, html.s2 .panel.s2-m.s2-open > #settingsQuickActions{ display:none !important; }
+.s2-menu button.row{ all:unset; box-sizing:border-box; width:100%; display:flex; align-items:center; gap:16px; padding:16px 4px; cursor:pointer; border-bottom:1px solid rgba(var(--ink-rgb),.14); -webkit-tap-highlight-color:transparent; }
+.s2-menu button.row::after{ display:none; }
+.s2-menu button.row:last-child{ border-bottom:0; }
+.s2-menu button.row:focus-visible{ outline:3px solid #FF3E9E; outline-offset:2px; border-radius:12px; }
+.s2-menu .ri{ flex:none; width:34px; height:34px; color:rgb(var(--ink-rgb)); }
+.s2-menu .ri svg{ width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+.s2-menu .rt{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.s2-menu .rt b{ font:italic 800 30px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; color:rgb(var(--ink-rgb)); }
+.s2-menu .rt i{ font:500 15px/1.25 var(--sans); font-style:normal; color:rgb(var(--ink-rgb)); opacity:.75; }
+.s2-menu .rc{ flex:none; width:22px; height:22px; color:rgb(var(--ink-rgb)); }
+.s2-menu .rc svg{ width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14029,7 +14047,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.014';
+const APP_VERSION = '2026.11.23.015';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14425,6 +14443,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.015': 'Build and Settings are lists: tap a row to open that part, and the back arrow in the banner returns to the list.',
   '2026.11.23.014': 'Progress opens each chart with the big number and how it has moved, and the chart sits on a clean ground.',
   '2026.11.23.013': 'Progress shows each measure as a row — a sparkline, the latest number and how it has moved — with Daily / Weekly / Monthly as a switch.',
   '2026.11.23.012': 'Training has a Today / Week switch: Today is the session card and its warm-up and cooldown, Week is the calendar and its controls.',
@@ -46843,7 +46862,7 @@ loadGoalProfile().then(async ()=>{
   var TABS={
     insights:{bar:'insights',key:'t',tone:'#FF6A00',art:'horse',title:'Training',dir:'down'},
     data:{bar:'data',key:'p',tone:'#B7F02A',art:'croc',title:'Progress',line:'Your data,<br>over time.',dir:'left'},
-    plan:{bar:'plan',key:'b',tone:'#FF3E9E',art:'flamingo',title:'Build',line:'Your plan,<br>week by week.',dir:'right',light:1,actions:['injuries','settings']},
+    plan:{bar:'plan',key:'b',tone:'#FF3E9E',art:'flamingo',title:'Build',line:'Your plan,<br>week by week.',dir:'right',light:1,actions:['settings']},
     injuries:{bar:'plan',key:'b',tone:'#FF3E9E',art:'flamingo',title:'Skills',line:'Levels, injuries<br>and tests.',dir:'right',light:1,back:'plan'},
     settings:{bar:'plan',key:'s',tone:'#F4C99C',art:'zebra',title:'Settings',line:'Your setup,<br>your way.',dir:'up',back:'plan'}
   };
@@ -46866,7 +46885,7 @@ loadGoalProfile().then(async ()=>{
 
   function go(name){ var t=document.querySelector('.tab[data-tab="'+name+'"]'); if(t && typeof activateTabViaUi==='function') activateTabViaUi(t); }
   nav.addEventListener('click',function(e){ var b=e.target.closest('button'); if(b) go(b.dataset.t); });
-  backEl.addEventListener('click',function(){ var t=TABS[cur]; if(t&&t.back) go(t.back); });
+  backEl.addEventListener('click',function(){ if(subOpen){ closeSub(); return; } var t=TABS[cur]; if(t&&t.back) go(t.back); });
   actions.addEventListener('click',function(e){ var b=e.target.closest('button'); if(b) go(b.dataset.go); });
   scoreEl.addEventListener('click',function(){ var b=document.getElementById('headerScoreBtn'); if(b) b.click(); });
 
@@ -46996,6 +47015,7 @@ loadGoalProfile().then(async ()=>{
   function sync(name,first){
     var t=TABS[name]||TABS.insights; name=TABS[name]?name:'insights';
     var changed=(name!==cur); if(!changed && !first) return;
+    if(subOpen) closeSub(true);
     var sameBanner=(curKey===t.key); cur=name; curKey=t.key;
     banner.dataset.tab=name; banner.dataset.light=t.light?'1':'';
     banner.classList.toggle('has-back',!!t.back);
@@ -47134,6 +47154,57 @@ loadGoalProfile().then(async ()=>{
   document.addEventListener('visibilitychange',function(){ if(!document.hidden && cur==='data') paintRows(); });
   new MutationObserver(function(){ if(cur==='data'){ clearTimeout(window.__s2r); window.__s2r=setTimeout(paintRows,500); } }).observe(document.body,{attributes:true,attributeFilter:['class']});
   var _tv=document.getElementById('trendsDataView'); if(_tv) new MutationObserver(function(){ if(cur==='data'){ clearTimeout(window.__s2r); window.__s2r=setTimeout(paintRows,300); } }).observe(_tv,{attributes:true,attributeFilter:['style']});
+
+  /* ---------- Build and Settings as lists ---------- */
+  var subOpen=null;
+  var IC={
+    dumb:'<path d="M6 7v10M3 10v4M18 7v10M21 10v4M6 12h12"/>', chart:'<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>', target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
+    layers:'<path d="m12 3 9 5-9 5-9-5 9-5ZM3 13l9 5 9-5"/>', pill:'<path d="M10.5 20.5a5 5 0 0 1-7-7l9-9a5 5 0 0 1 7 7l-9 9ZM8.5 8.5l7 7"/>', heart:'<path d="M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11Z"/>',
+    gear:'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>', star:'<path d="m12 3 2.7 5.8 6.3.8-4.6 4.3 1.2 6.3L12 17.2 6.4 20.2l1.2-6.3L3 9.6l6.3-.8L12 3Z"/>',
+    cloud:'<path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9H7ZM12 10v6M9.5 14l2.5 2.5 2.5-2.5"/>', info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/>', bolt:'<path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/>', sliders:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6"/>'
+  };
+  var MENUS={
+    plan:{panel:'panel-plan',rows:[
+      {t:'Block',s:'Where this block starts and ends',ic:'dumb',g:['block']},
+      {t:'Training',s:'How your training is going',ic:'chart',g:['training']},
+      {t:'Set-up',s:'Goals, split and program',ic:'target',g:['set-up']},
+      {t:'Skills',s:'Levels and daily practice',ic:'layers',go:'injuries'},
+      {t:'Injuries & tests',s:'What to work around',ic:'pill',go:'injuries'}]},
+    settings:{panel:'panel-settings',rows:[
+      {t:'Devices & recovery',s:'Apple Health, how hard to push, body metrics',ic:'heart',g:['connect devices','how hard to push','body metrics']},
+      {t:'Training setup',s:'What the plan builds around',ic:'sliders',g:['training setup']},
+      {t:'The score',s:'Why it moves and what it is made of',ic:'bolt',g:['why the score moved','what the score is made']},
+      {t:'Appearance',s:'Paper, banner, motion and text size',ic:'star',g:['appearance']},
+      {t:'Backup & data',s:'Back up, restore, report a problem',ic:'cloud',g:['backup & restore','report a problem','where your data goes']},
+      {t:'Version & legal',s:'What changed and the small print',ic:'info',g:['version']}]}
+  };
+  var CHEV='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>';
+  Object.keys(MENUS).forEach(function(k){
+    var m=MENUS[k], pn=document.getElementById(m.panel); if(!pn) return;
+    var menu=document.createElement('div'); menu.className='s2-menu';
+    menu.innerHTML=m.rows.map(function(r,i){ return '<button type="button" class="row" data-i="'+i+'"><span class="ri"><svg viewBox="0 0 24 24" aria-hidden="true">'+IC[r.ic]+'</svg></span><span class="rt"><b>'+r.t+'</b><i>'+r.s+'</i></span><span class="rc">'+CHEV+'</span></button>'; }).join('');
+    pn.insertBefore(menu,pn.firstChild); pn.classList.add('s2-m');
+    menu.addEventListener('click',function(e){ var b=e.target.closest('button.row'); if(!b) return; var r=m.rows[+b.dataset.i];
+      if(r.go){ go(r.go); return; } openSub(pn,r); });
+  });
+  function openSub(pn,r){
+    [].forEach.call(pn.children,function(c){ c.classList.remove('s2-show'); });
+    [].forEach.call(pn.querySelectorAll(':scope > .group'),function(g){
+      var t=((g.querySelector('.group-title')||{}).textContent||'').trim().toLowerCase();
+      if(r.g.some(function(x){ return t.indexOf(x)===0; })) g.classList.add('s2-show'); });
+    pn.classList.add('s2-open'); subOpen=pn;
+    [].forEach.call(pn.querySelectorAll(':scope > .group.s2-show > .group-head.collapsible'),function(h){ var ch=h.querySelector('.collapse-chevron'); if(ch&&ch.classList.contains('collapsed')) h.click(); });
+    banner.classList.add('has-back'); backEl.hidden=false; actions.innerHTML=''; pEl.hidden=false; scoreEl.hidden=true; pEl.innerHTML=r.t;
+    if(!reduced()) pop([backEl,pEl],0);
+    if(window.scrollTo) window.scrollTo(0,0);
+  }
+  function closeSub(quiet){
+    if(!subOpen) return; var pn=subOpen; subOpen=null; pn.classList.remove('s2-open');
+    [].forEach.call(pn.children,function(c){ c.classList.remove('s2-show'); });
+    var t=TABS[cur]||TABS.insights; banner.classList.toggle('has-back',!!t.back); backEl.hidden=!t.back; pEl.innerHTML=t.line||'';
+    actions.innerHTML=(t.actions||[]).map(function(a){ return '<button type="button" class="s2-chip" data-go="'+a+'">'+(a==='injuries'?'Skills':'Settings')+'</button>'; }).join('');
+    if(!quiet){ if(!reduced()) pop([pEl,actions],0); if(window.scrollTo) window.scrollTo(0,0); }
+  }
   sync(tabFromBody(),true);
 })();
 /* SHELL2:END */
