@@ -5905,6 +5905,16 @@ html.s2 body.tab-data #trendMetricPills .type-btn.active{ background:#B7F02A; co
 #trendMetricPills .md{ flex:none; min-width:46px; text-align:center; padding:4px 8px; border-radius:999px; background:rgba(var(--ink-rgb),.08); font:700 12px var(--sans); }
 #trendMetricPills .md.good{ background:#B7F02A; color:#151515; }
 #trendMetricPills .type-btn.active .md{ background:#fff; }
+
+html.s2 body.tab-data .dot-field, html.s2 body.tab-data .dot-field::before, html.s2 body.tab-data .dot-field::after{ background-image:none !important; }
+html.s2 body.tab-data .dot-field{ animation:none !important; }
+#s2head{ display:none; }
+html.s2 body.tab-data #s2head.on{ display:flex; align-items:center; gap:12px; margin:18px 16px 4px; flex-wrap:wrap; }
+#s2head .big{ font:italic 800 76px/.9 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; letter-spacing:0; }
+#s2head .big small{ font-size:.6em; margin-left:3px; }
+#s2head .md{ padding:4px 10px; border-radius:999px; background:rgba(var(--ink-rgb),.08); font:700 13px var(--sans); }
+#s2head .md.good{ background:#B7F02A; color:#151515; }
+#s2head .cap{ font:700 13px var(--sans); text-transform:uppercase; letter-spacing:.05em; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14019,7 +14029,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.013';
+const APP_VERSION = '2026.11.23.014';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14415,6 +14425,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.014': 'Progress opens each chart with the big number and how it has moved, and the chart sits on a clean ground.',
   '2026.11.23.013': 'Progress shows each measure as a row — a sparkline, the latest number and how it has moved — with Daily / Weekly / Monthly as a switch.',
   '2026.11.23.012': 'Training has a Today / Week switch: Today is the session card and its warm-up and cooldown, Week is the calendar and its controls.',
   '2026.11.23.011': 'Training opens with today’s session as one orange card — week, name, minutes and Start.',
@@ -47087,11 +47098,25 @@ loadGoalProfile().then(async ()=>{
     v.forEach(function(y,i){ d+=(i?'L':'M')+(2+i*76/(v.length-1)).toFixed(1)+' '+(26-(y-lo)/r*24).toFixed(1); });
     return '<svg class="spark" viewBox="0 0 80 28" aria-hidden="true"><path d="'+d+'"/></svg>';
   }
+  var headEl=null;
+  function headline(){
+    var tv=document.getElementById('trendsDataView'); if(!tv) return; var chart=document.getElementById('trendChart'); if(!chart) return;
+    var grp=chart.closest('.group'); if(!grp) return;
+    if(!headEl){ headEl=document.createElement('div'); headEl.id='s2head'; grp.parentNode.insertBefore(headEl,grp); }
+    var k=(typeof selectedTrendMetric==='string')?selectedTrendMetric:'charge', m=MET[k], v=(window.__s2ser||{})[k]||[];
+    if(!m||!v.length){ headEl.classList.remove('on'); return; }
+    var last=v[v.length-1], ref=v[Math.max(0,v.length-8)], dd=last-ref, cls='md', dt='';
+    if(v.length>=2 && Math.abs(dd)>=0.05){ dt=(dd>0?'↑ ':'↓ ')+(Math.abs(dd)>=10?Math.round(Math.abs(dd)):(Math.round(Math.abs(dd)*10)/10)); if(m[2]!==0 && ((dd>0)===(m[2]>0))) cls+=' good'; }
+    var per=(typeof selectedTrendPeriod==='string')?selectedTrendPeriod:'daily';
+    headEl.innerHTML='<span class="big">'+(Math.round(last*10)/10)+(m[1]?'<small>'+m[1].trim()+'</small>':'')+'</span>'+(dt?'<span class="'+cls+'">'+dt+'</span>':'')+'<span class="cap">'+m[0]+(v.length>1?' · vs last week':'')+'</span>';
+    headEl.classList.add('on');
+  }
+  document.addEventListener('click',function(e){ if(e.target.closest&&e.target.closest('#trendMetricPills,#trendPeriodPills')) setTimeout(headline,80); });
   var rowsBusy=false;
   async function paintRows(){
     if(rowsBusy) return; rowsBusy=true;
     try{
-      var ser=await metricSeries();
+      var ser=await metricSeries(); window.__s2ser=ser; headline();
       [].forEach.call(document.querySelectorAll('#trendMetricPills .type-btn'),function(b){
         var k=b.dataset.metric, m=MET[k]; if(!m) return; var v=ser[k]||[], last=v.length?v[v.length-1]:null;
         var icon=(b.querySelector('.df-icon')||{}).outerHTML||''; var legend=(b.querySelector('.btn-legend')||{}).textContent||'';
