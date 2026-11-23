@@ -6674,6 +6674,35 @@ html.s2 #goalSheet .lift-sheet-panel button:not(.primary):not(.lift-sheet-x){ bo
 
 /* MOTION: tick bursts and the confetti bits they throw */
 .s2-bit{ position:absolute; width:7px; height:11px; border-radius:2px; pointer-events:none; z-index:80; }
+
+/* MORNING STREAK: a card at the top of the morning check-in */
+.s2-streak{ position:relative; margin:0 0 14px; border-radius:22px; overflow:hidden; background:#F6F1E7; border:1.5px solid #E4DCCB; color:#151515; }
+.s2-streak .sh{ position:relative; height:128px; background:#FF8A00; overflow:hidden; }
+.s2-streak .sh::after{ content:''; position:absolute; left:0; right:0; bottom:-1px; height:34%; background:#F6F1E7; clip-path:polygon(0 60%,16% 25%,36% 25%,58% 62%,80% 72%,100% 30%,100% 100%,0 100%); z-index:3; }
+.s2-streak .kd{ position:absolute; left:14px; top:12px; z-index:4; padding:4px 10px; border-radius:999px; background:rgba(246,241,231,.92); font:700 11px 'Barlow',sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#151515; }
+.s2-streak .tt{ position:absolute; left:14px; top:40px; z-index:4; max-width:58%; font:italic 800 34px/.92 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; color:#151515; }
+.s2-streak .fx{ position:absolute; right:4%; bottom:6%; height:92%; z-index:2; transform-origin:50% 0; animation:s2sway 4.2s ease-in-out infinite; }
+.s2-streak .gl{ position:absolute; right:-4%; bottom:-10%; width:60%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.7),rgba(255,255,255,0) 68%); opacity:var(--gl,0); z-index:1; }
+.s2-streak .cb{ position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:2; }
+.s2-streak .cb i{ position:absolute; top:-12px; border-radius:2px; height:10px; animation:s2fall var(--t) linear infinite; }
+.s2-streak .ms{ position:absolute; right:10px; top:10px; z-index:5; display:none; align-items:center; gap:6px; padding:5px 11px; border-radius:999px; background:#151515; color:#fff; font:italic 800 15px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+.s2-streak .ms i{ width:9px; height:9px; border-radius:50%; background:#C8F031; }
+.s2-streak.m .ms{ display:flex; }
+.s2-streak .sb{ padding:2px 14px 14px; display:flex; flex-direction:column; gap:9px; }
+.s2-streak .fl{ display:flex; align-items:flex-end; gap:8px; }
+.s2-streak .fl svg{ flex:none; height:var(--fh,40px); width:auto; fill:var(--fc,#FF8A00); stroke:#151515; stroke-width:1.6; stroke-linejoin:round; transition:height .3s; }
+.s2-streak .fl b{ font:italic 800 52px/.85 'Barlow Condensed','Arial Narrow',sans-serif; font-variant-numeric:tabular-nums; }
+.s2-streak .fl span{ font:700 12px 'Barlow',sans-serif; text-transform:uppercase; letter-spacing:.06em; color:#5E574C; padding-bottom:3px; }
+.s2-streak .dd{ display:flex; justify-content:space-between; gap:4px; background:#fff; border:1.5px solid #E4DCCB; border-radius:14px; padding:8px 10px; }
+.s2-streak .dy{ display:flex; flex-direction:column; align-items:center; gap:4px; font:700 10px 'Barlow',sans-serif; color:#5E574C; text-transform:uppercase; }
+.s2-streak .dt{ width:24px; height:24px; border-radius:50%; border:2px solid #CFC6B5; background:#fff; display:flex; align-items:center; justify-content:center; box-sizing:border-box; }
+.s2-streak .dt svg{ width:13px; height:13px; fill:none; stroke:#151515; stroke-width:3.4; stroke-linecap:round; stroke-linejoin:round; opacity:0; }
+.s2-streak .dt.on{ background:#FF8A00; border-color:#FF8A00; } .s2-streak .dt.on svg{ opacity:1; }
+.s2-streak .dt.td{ border-style:dashed; border-color:#151515; }
+.s2-streak .pl{ align-self:flex-start; padding:7px 13px; border-radius:11px; background:#FF8A00; color:#151515; font:italic 800 17px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; transform:rotate(-1.5deg); }
+@keyframes s2sway{ 0%,100%{ transform:rotate(-2.6deg) } 50%{ transform:rotate(2.6deg) } }
+@keyframes s2fall{ to{ transform:translateY(200px) rotate(var(--r)); } }
+@media (prefers-reduced-motion: reduce){ .s2-streak .fx, .s2-streak .cb i{ animation:none; } }
 /* SHELL2:END */
 </style>
 </head>
@@ -14788,7 +14817,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.064';
+const APP_VERSION = '2026.11.23.065';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15184,6 +15213,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.065': 'The morning check-in starts with your streak. It grows when you press Done, and gets bigger at one week, two weeks, a month and beyond.',
   '2026.11.23.064': 'Training is blue with a new donkey piñata holding a dumbbell, rebuilt with its own animation and confetti.',
   '2026.11.23.063': 'Log run and Log it open on the run or stretch page, not the warm-up.',
   '2026.11.23.062': 'Fixed the Your week button covering the other buttons on Training, which sent every tap to Week in review.',
@@ -48833,6 +48863,52 @@ loadGoalProfile().then(async ()=>{
           [].forEach.call(dn.querySelectorAll('.session-complete'),function(c){ var txt=c.firstChild; }); },380);
         var st=dn.querySelector('.session-complete'); if(st){ var tn=st.firstChild; while(tn&&tn.nodeType!==3) tn=tn.nextSibling; if(tn){ var mm=/^([\d,]+) sets · ([\d,]+) kg moved(?: · ([\d,]+) min)?/.exec(tn.nodeValue); if(mm){ var s0=+mm[1].replace(/,/g,''), k0=+mm[2].replace(/,/g,''), m0=mm[3]?+mm[3]:null, t0=null; (function f(ts){ if(t0===null) t0=ts; var k=Math.min(1,(ts-t0)/1100), e=1-Math.pow(1-k,3); tn.nodeValue=Math.round(s0*e)+' sets · '+Math.round(k0*e).toLocaleString()+' kg moved'+(m0!=null?' · '+Math.round(m0*e)+' min':'')+(tn.nodeValue.replace(/^[^]*?(\s*$)/,'$1')); if(k<1) requestAnimationFrame(f); }(0)); requestAnimationFrame(function(ts){}); } } }
       } wasD=on; }).observe(dn,{attributes:true,attributeFilter:['class']}); }
+  })();
+
+  /* ---------- the morning streak ---------- */
+  (function(){
+    var TIERS=[[1,'Starting','Day one',0,0,40],[7,'One week','1 week',.15,10,46],[14,'Two weeks','2 weeks',.3,14,52],[30,'A month','1 month',.5,20,58],[60,'Two months','2 months',.7,26,64],[100,'A hundred','100',.9,34,70]];
+    var WORDS=['Stronger each day.','Habit forming.','Consistency hits different.','Built by routine.','Still showing up.','Unstoppable.'];
+    function ix(n){ var k=0; TIERS.forEach(function(t,i){ if(n>=t[0]) k=i; }); return k; }
+    async function compute(){
+      var res=await window.storage.list('entry:'), have={}; ((res&&res.keys)||[]).forEach(function(k){ have[k.replace('entry:','')]=1; });
+      var done={};
+      for(var d in have){ try{ var e=JSON.parse((await window.storage.get('entry:'+d)).value); if(e&&((e.alcohol!=null&&e.alcohol!=='')||(e.unwell!=null&&e.unwell!==''))) done[d]=1; }catch(x){} }
+      var today=todayStr, todayDone=!!done[today], n=0, gap=0, d0=today;
+      if(!todayDone) d0=shiftDateStr(today,-1);
+      for(var i=0;i<400;i++){ var d1=shiftDateStr(d0,-i); if(done[d1]) n++; else { if(gap===0 && i>0 && n>0){ gap=1; continue; } break; } }
+      var wk=getWeekDates(); return { n:n, todayDone:todayDone, week:wk.map(function(d){ return !!done[d]; }), weekDates:wk };
+    }
+    function paint(card,st,count,todayOn){
+      var k=ix(Math.max(1,count)), tr=TIERS[k];
+      card.style.setProperty('--gl',tr[3]); card.style.setProperty('--fh',tr[5]+'px'); card.style.setProperty('--fc',count>=30?'#FF3E9E':(count>=7?'#FFC24D':'#FF8A00'));
+      card.classList.toggle('m',count>=7);
+      card.querySelector('.tt').textContent=count>=7?tr[1]:'Keep it going';
+      card.querySelector('.mst').textContent=tr[2]; card.querySelector('.fn').textContent=count; card.querySelector('.pl').textContent=WORDS[Math.min(5,k)];
+      var D=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], ti=st.weekDates.indexOf(todayStr);
+      card.querySelector('.dd').innerHTML=D.map(function(dn,i){ var on=st.week[i]||(i===ti&&todayOn); return '<div class="dy"><div class="dt'+(on?' on':'')+(i===ti&&!on?' td':'')+'"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></div>'+dn+'</div>'; }).join('');
+      var cb=card.querySelector('.cb'); cb.innerHTML=''; if(!reduced()){ var cols=['#ffffff','#151515','#FFC24D','#FF3E9E','#C8F031']; for(var i=0;i<tr[4];i++){ var e=document.createElement('i'); e.style.cssText='left:'+(Math.random()*100)+'%;background:'+cols[i%5]+';width:'+(5+Math.random()*5)+'px;--t:'+(3+Math.random()*3)+'s;--r:'+(Math.random()*720-360)+'deg;animation-delay:'+(-Math.random()*5)+'s'; cb.appendChild(e); } }
+    }
+    function mount(sheet){
+      var pn=sheet.querySelector('.morning-panel'); if(!pn||pn.querySelector('.s2-streak')) return;
+      var card=document.createElement('div'); card.className='s2-streak';
+      card.innerHTML='<div class="sh"><span class="kd">Morning check-in</span><div class="ms"><i></i><span class="mst"></span></div><div class="tt"></div><div class="cb"></div><div class="gl"></div><img class="fx" alt="" src="shell/animals_fox.webp"></div><div class="sb"><div class="fl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-4 3-6 1 2 2 3 3 3 0-4-1-6 0-9Z"/></svg><b class="fn">0</b><span>day streak</span></div><div class="dd"></div><div class="pl"></div></div>';
+      var head=pn.querySelector('.lift-sheet-head'); (head||pn).insertAdjacentElement(head?'afterend':'afterbegin',card);
+      compute().then(function(st){ card.__st=st; paint(card,st,st.todayDone?st.n:Math.max(st.n,0),st.todayDone); if(!st.n&&!st.todayDone){ card.querySelector('.fn').textContent='0'; card.querySelector('.tt').textContent='Day one'; } }).catch(function(){});
+    }
+    new MutationObserver(function(ms){ ms.forEach(function(m){ [].forEach.call(m.addedNodes,function(n){ if(n.nodeType===1&&n.classList&&n.classList.contains('morning-sheet')&&n.querySelector('[aria-label="This morning"]')) mount(n); }); }); }).observe(document.body,{childList:true});
+    [].forEach.call(document.querySelectorAll('.morning-sheet'),function(n){ if(n.querySelector('[aria-label="This morning"]')) mount(n); });
+    /* Done counts today first: the number rolls up and today's dot fills, then the check-in saves as it always did */
+    var busy=false, pass=false;
+    document.addEventListener('click',function(e){
+      var btn=e.target.closest&&e.target.closest('.morning-sheet .morning-done'); if(!btn||pass) return;
+      var card=btn.closest('.morning-sheet').querySelector('.s2-streak'); if(!card||!card.__st||card.__st.todayDone||reduced()){ return; }
+      e.stopImmediatePropagation(); e.preventDefault(); if(busy) return; busy=true;
+      var st=card.__st, from=st.n, to=from+1; paint(card,st,to,true);
+      var fn=card.querySelector('.fn'); fn.textContent=from; var t0=null; requestAnimationFrame(function f(ts){ if(t0===null) t0=ts; var k=Math.min(1,(ts-t0)/500); if(k>=.5) fn.textContent=to; if(k<1) requestAnimationFrame(f); });
+      try{ card.animate([{transform:'scale(1)'},{transform:'scale(1.03)',offset:.4},{transform:'scale(1)'}],{duration:520}); fn.animate([{transform:'scale(.7)'},{transform:'scale(1.25)',offset:.55},{transform:'scale(1)'}],{duration:520,delay:200,easing:'cubic-bezier(.3,1.5,.5,1)'}); }catch(x){}
+      setTimeout(function(){ busy=false; pass=true; try{ btn.click(); }finally{ pass=false; } },950);
+    },true);
   })();
   sync(tabFromBody(),true);
 })();
