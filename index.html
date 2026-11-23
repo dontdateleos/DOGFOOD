@@ -6416,6 +6416,17 @@ html.s2 body.tab-insights #todayCardStack .rec-actions{ display:flex; gap:10px; 
 html.s2 body.tab-insights #todayCardStack .rec-actions button{ flex:1; height:56px; border-radius:18px; font:italic 800 22px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; letter-spacing:0; }
 html.s2 body.tab-insights #todayCardStack .rec-actions .accept-btn{ background:#151515; color:#fff; border:2px solid #151515; }
 html.s2 body.tab-insights #todayCardStack .rec-actions .outline{ background:#fff; color:#151515; border:2px solid #151515; }
+
+/* SESSION CARDS BY KIND: strength orange with a dumbbell, running blue with a stopwatch, mobility lilac with a foam roller */
+.s2-hero{ --hb:#FF8A00; --w1:#FFA94D; --w2:#F07200; }
+.s2-hero[data-type="run"]{ --hb:#35B8FF; --w1:#7DD0FF; --w2:#1E9BE6; }
+.s2-hero[data-type="mobility"]{ --hb:#C9A4FF; --w1:#DCC2FF; --w2:#B58BFF; }
+html.s2 body.tab-insights .s2-hero.on{ background:var(--hb); }
+.s2-hero .cdeco svg .w1{ fill:var(--w1); } .s2-hero .cdeco svg .w2{ fill:var(--w2); }
+.s2-hero .art{ position:absolute; left:8px; bottom:-4px; z-index:1; width:122px; height:auto; pointer-events:none; filter:drop-shadow(0 6px 8px rgba(0,0,0,.25)); }
+.s2-hero[data-type="run"] .art{ width:106px; left:14px; bottom:-12px; }
+.s2-hero[data-type="mobility"] .art{ width:132px; left:6px; bottom:-2px; }
+.s2-hero .go{ z-index:3; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14530,7 +14541,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.040';
+const APP_VERSION = '2026.11.23.041';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14926,6 +14937,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.041': 'Session cards by kind: orange with a dumbbell for strength, blue with a stopwatch for running, lilac with a foam roller for mobility.',
   '2026.11.23.040': 'Suggestions (like one more set on bench press) show on Training as a card with Accept and Dismiss. The Start button is gone from the Week view again.',
   '2026.11.23.039': 'The Start button is back on the Week view.',
   '2026.11.23.038': 'Week: Move a day with ticks, crosses and scores, and a Weekly focus card, as in the design.',
@@ -47574,7 +47586,7 @@ loadGoalProfile().then(async ()=>{
     var ty=(typeof todaySessionType==='string')?todaySessionType:'strength';
     if(!hero){
       hero=document.createElement('div'); hero.className='s2-hero';
-      hero.innerHTML='<div class="cdeco" aria-hidden="true"></div><p class="eyebrow"></p><h2 class="ttl"></h2><span class="mins"></span><button type="button" class="go"></button>';
+      hero.innerHTML='<div class="cdeco" aria-hidden="true"></div><img class="art" alt="" src="shell/card_dumbbell.webp"><p class="eyebrow"></p><h2 class="ttl"></h2><span class="mins"></span><button type="button" class="go"></button>';
       var anchor=document.getElementById('todayScorePlate'); panel.insertBefore(hero,anchor||panel.firstChild);
       var pl=document.getElementById('todaySessionTypePills'); if(pl) hero.insertAdjacentElement('beforebegin',pl);
       hero.querySelector('.go').addEventListener('click',function(){
@@ -47585,24 +47597,29 @@ loadGoalProfile().then(async ()=>{
       for(var i=0;i<12;i++){ var sz=6+rnd()*6, rd=i%3===0;
         o+='<i class="cf" style="left:'+(rnd()*100).toFixed(1)+'%;width:'+sz.toFixed(1)+'px;height:'+(rd?sz:sz*1.6).toFixed(1)+'px;border-radius:'+(rd?'50%':'2px')+';background:'+c[i%4]
           +';--d:'+(5+rnd()*4).toFixed(2)+'s;--del:'+(-rnd()*8).toFixed(2)+'s;--dx:'+Math.round((rnd()-.5)*50)+'px;--rot:'+Math.round((rnd()<.5?-1:1)*(240+rnd()*360))+'deg;--y0:'+Math.round(rnd()*100)+'px"></i>'; }
-      hero.firstChild.innerHTML=o+'<svg viewBox="0 0 358 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 26 C60 4 130 6 200 26 S310 40 358 14 V70 H0Z" fill="#FFA94D"/><path d="M0 44 C70 24 140 28 210 44 S320 56 358 34 V70 H0Z" fill="#F07200"/></svg>';
+      hero.firstChild.innerHTML=o+'<svg viewBox="0 0 358 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 26 C60 4 130 6 200 26 S310 40 358 14 V70 H0Z" class="w1"/><path d="M0 44 C70 24 140 28 210 44 S320 56 358 34 V70 H0Z" class="w2"/></svg>';
     }
     hero.classList.toggle('on',show);
     if(!show) return;
     hero.dataset.type=ty;
+    var art=hero.querySelector('.art'), asrc='shell/'+({run:'card_stopwatch',mobility:'card_roller'}[ty]||'card_dumbbell')+'.webp'; if(art.getAttribute('src')!==asrc) art.setAttribute('src',asrc);
     if(empty){
       hero.dataset.empty=ty;
       hero.querySelector('.eyebrow').style.display='';
       hero.querySelector('.eyebrow').textContent='Nothing planned';
       hero.querySelector('.ttl').textContent=({strength:'Strength',run:'Run',mobility:'Mobility'}[ty]||'Workout');
       hero.querySelector('.mins').textContent='';
-      goLabel(({strength:'Log a lift',run:'Log a run',mobility:'Log it'}[ty]||'Log it'));
+      goLabel(({strength:'Log lift',run:'Log run',mobility:'Log it'}[ty]||'Log it'));
       return;
     }
     hero.removeAttribute('data-empty');
     var eb=hero.querySelector('.eyebrow'), aim=null;
     try{ var chv=(lastSrResult&&lastSrResult.available&&lastSrResult.charge)?lastSrResult.charge.charge:null; if(chv!=null&&(ty==='strength'||ty==='run')) aim=predictedScore(ty==='run'?'run':'lift',chv); }catch(e){}
-    if(aim!=null){ eb.textContent='Aim for a score of '+aim; eb.style.display=''; eb.classList.add('aim'); } else { eb.style.display='none'; eb.classList.remove('aim'); }
+    var aimTxt=null;
+    if(aim!=null) aimTxt=(ty==='run'?'Aim for a score of ':'Aim for a score of ')+aim;
+    else if(ty==='mobility') aimTxt='Improve range & recovery';
+    else if(ty==='run'){ var dk=/(\d+(?:\.\d+)?)\s*km/i.exec((area.querySelector('.today-session')||{}).textContent||''); aimTxt=dk?('Aim for '+dk[1]+' km'):'Keep it conversational'; }
+    if(aimTxt){ eb.textContent=aimTxt; eb.style.display=''; eb.classList.add('aim'); } else { eb.style.display='none'; eb.classList.remove('aim'); }
     var pos=(document.getElementById('weekBlockPos')||{}).textContent||'';
     var wn=(/^(\d+)/.exec(pos.trim())||[])[1];
     hero.querySelector('.eyebrow').textContent='';
