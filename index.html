@@ -6044,6 +6044,29 @@ html.s2 body.tab-insights:not(.s2-wk) #warmupSection:not(.s2-open),
 html.s2 body.tab-insights:not(.s2-wk) #mobilitySection:not(.s2-open),
 html.s2 body.tab-insights:not(.s2-wk) #todayWorkoutSummary > .today-session:not(.s2-open){ display:none !important; }
 html.s2 body.tab-insights #warmupSection.s2-open, html.s2 body.tab-insights #mobilitySection.s2-open{ display:block !important; }
+
+/* WORKOUT COMPLETE: the card as the artifact's Session done */
+html.s2 .session-complete{ margin:16px 16px 6px; padding:0 18px 16px; border:1px solid rgba(var(--ink-rgb),.12) !important; border-radius:22px; background:#fff !important; overflow:hidden; font:500 15px/1.4 var(--sans); color:#151515; letter-spacing:0; text-transform:none; }
+html.s2 .session-complete br{ display:none; }
+html.s2 .session-complete > b{ display:block; margin:0 -18px 14px; padding:22px 18px 18px; background:#FF6A00; font:italic 800 40px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; letter-spacing:0; color:#151515; }
+html.s2 .session-complete .perf-vs{ display:block; margin:10px 0 6px; padding:12px 14px; border-radius:16px; background:#151515; color:#C8F031; font:italic 800 24px/1.05 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; }
+html.s2 .session-complete .perf-vs.under{ color:#fff; }
+html.s2 .session-complete .perf-line{ display:block; margin:6px 0; font:500 15px/1.35 var(--sans); }
+html.s2 .session-complete .perf-line b{ font-weight:800; }
+html.s2 .session-complete .pr-line{ display:block; margin:8px 0; padding:12px 14px; border-radius:16px; background:#C8F031; color:#151515; font:700 15px/1.3 var(--sans); }
+html.s2 .session-complete .pr-line b{ font:italic 800 20px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; margin-right:4px; }
+html.s2 .session-complete .progress-strip{ border:0 !important; margin-top:12px; padding:0; }
+html.s2 .session-complete .ps-row{ display:flex; align-items:center; gap:12px; padding:11px 0; border-top:1px solid rgba(var(--ink-rgb),.1); }
+html.s2 .session-complete .ps-k{ flex:1; min-width:0; font:700 16px/1.2 var(--sans); }
+html.s2 .session-complete .ps-k small{ display:block; font:500 13px var(--sans); color:#55554f; }
+html.s2 .session-complete .ps-d{ flex:none; padding:5px 11px; border-radius:999px; background:rgba(var(--ink-rgb),.08); color:#151515; font:700 13px var(--sans); }
+html.s2 .session-complete .ps-d.up{ background:#C8F031; }
+
+/* REST DAY */
+html.s2 body.tab-insights .rest-plate{ margin:16px 16px 8px !important; padding:22px 18px 18px !important; border-radius:22px; background:#C9A4FF !important; color:#151515 !important; border:0 !important; }
+html.s2 body.tab-insights .rest-plate .rest-word{ font:italic 800 48px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif !important; text-transform:uppercase; letter-spacing:0 !important; color:#151515 !important; }
+html.s2 body.tab-insights .rest-plate .rest-note{ margin-top:6px; color:#151515 !important; font:600 15px/1.35 var(--sans) !important; text-transform:none !important; letter-spacing:0 !important; opacity:.85; }
+html.s2 body.tab-insights .rest-plate .rest-build{ background:#151515 !important; color:#fff !important; border-color:#151515 !important; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14158,7 +14181,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.021';
+const APP_VERSION = '2026.11.23.022';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14554,6 +14577,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.022': 'After a workout, the summary is a card — an orange header, beat-your-Charge, new best and what moved. A rest day is a purple card.',
   '2026.11.23.021': 'Training lists the warm-up, the session and the cooldown as three rows; tap one to open it.',
   '2026.11.23.020': 'Rest is a full screen: a countdown ring, the croc, +30s and Skip, and what is next. Opening a fresh session starts with the horse.',
   '2026.11.23.019': 'The log says which lift you are on and lists the next few, tap one to jump to it.',
