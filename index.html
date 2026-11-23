@@ -5954,6 +5954,34 @@ html.s2 .log-sheet .row-acts{ border-radius:999px; background:#fff; }
 html.s2 .log-sheet .evidence-badge{ border-radius:999px; }
 html.s2 .log-sheet #weekExerciseRows > .edit-row{ margin:0 0 16px; padding:14px 14px 6px; border:1px solid rgba(12,13,11,.12); border-radius:20px; background:#fff; }
 html.s2 .log-slot-sep, html.s2 .multi-wheel-col-label{ color:#55554f !important; }
+
+/* THE LOG, AS A PAGE: full height, a timer in the band, sets as big numbers with ticks that go lime, and a bar that logs the next one */
+html.s2 #logSheet .lift-sheet-panel{ height:100vh; height:100dvh; max-height:none; border-radius:0; display:block; }
+html.s2 #logSheet .lift-sheet-panel > .lift-sheet-head{ border-radius:0; padding-top:calc(22px + env(safe-area-inset-top, 0px)); display:flex; align-items:center; gap:10px; }
+html.s2 #logSheet .lift-sheet-head > span:first-child{ flex:1; min-width:0; }
+html.s2 #logSheet .lift-sheet-head > .s2-timer{ flex:none; }
+.s2-timer{ display:none; }
+html.s2 #logSheet .lift-sheet-head > .s2-timer{ color:#C8F031 !important; font:700 15px/1 var(--sans) !important; letter-spacing:0 !important; text-transform:none !important; display:inline-flex; align-items:center; padding:7px 12px; border-radius:999px; background:#151515; color:#C8F031; font:700 15px/1 var(--sans); font-variant-numeric:tabular-nums; }
+html.s2 #logSheet .set-ticks .st-row{ display:flex; align-items:center; gap:14px; padding:10px 8px; border-radius:16px; border:2px solid transparent; }
+html.s2 #logSheet .set-ticks .st-n{ width:22px; font:italic 800 22px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; color:#151515; opacity:.6; }
+html.s2 #logSheet .set-ticks .st-v{ all:unset; box-sizing:border-box; flex:1; cursor:pointer; font:italic 800 30px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; color:#151515; }
+html.s2 #logSheet .set-ticks .st-v i{ font-style:normal; margin:0 8px; opacity:.45; }
+html.s2 #logSheet .set-ticks .st-v small{ font:600 14px var(--sans); margin-left:4px; opacity:.6; }
+html.s2 #logSheet .set-ticks .st-ok{ all:unset; box-sizing:border-box; flex:none; width:44px; height:44px; border-radius:12px; border:2px solid rgba(12,13,11,.25); display:flex; align-items:center; justify-content:center; cursor:pointer; background:#fff; color:#151515; }
+html.s2 #logSheet .set-ticks .st-ok::after{ display:none; }
+html.s2 #logSheet .set-ticks .st-ok svg{ width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:3.2; stroke-linecap:round; stroke-linejoin:round; opacity:.35; }
+html.s2 #logSheet .set-ticks .st-ok[aria-pressed="true"]{ background:#C8F031; border-color:#C8F031; }
+html.s2 #logSheet .set-ticks .st-ok[aria-pressed="true"] svg{ opacity:1; }
+html.s2 #logSheet .set-ticks .st-row.s2-next{ border-color:#151515; background:#fff; }
+html.s2 #logSheet .set-ticks .st-acts button{ border-radius:999px; }
+.s2-logbar{ display:none; }
+html.s2 #logSheet .s2-logbar.on{ display:flex; position:sticky; bottom:calc(10px + env(safe-area-inset-bottom, 0px)); z-index:5; margin:18px 0 0; align-items:center; justify-content:space-between; gap:12px; padding:12px 12px 12px 18px; border-radius:22px; background:#151515; color:#fff; }
+.s2-logbar .t{ min-width:0; display:flex; flex-direction:column; gap:3px; }
+html.s2 .s2-logbar .t b, html.s2 .s2-logbar .t i{ color:#fff !important; }
+.s2-logbar .t b{ font:italic 800 22px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.s2-logbar .t i{ font:500 13px var(--sans); font-style:normal; opacity:.7; }
+.s2-logbar .s2-logset{ all:unset; box-sizing:border-box; flex:none; cursor:pointer; padding:0 22px; height:50px; display:flex; align-items:center; border-radius:14px; background:#C8F031; color:#151515; font:italic 800 24px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; }
+.s2-logbar .s2-logset::after{ display:none; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14068,7 +14096,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.017';
+const APP_VERSION = '2026.11.23.018';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14464,6 +14492,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.018': 'The workout log is a full page: a timer in the band, each set as a big number with a tick that turns lime, and a bar at the bottom that logs the next set.',
   '2026.11.23.017': 'Pop-ups size to their content, pink section labels read clearly, and Settings sections open on their own.',
   '2026.11.23.016': 'The workout log and the other pop-ups are on paper with a coloured band at the top; each lift is its own card.',
   '2026.11.23.015': 'Build and Settings are lists: tap a row to open that part, and the back arrow in the banner returns to the list.',
@@ -47230,6 +47259,38 @@ loadGoalProfile().then(async ()=>{
     actions.innerHTML=(t.actions||[]).map(function(a){ return '<button type="button" class="s2-chip" data-go="'+a+'">'+(a==='injuries'?'Skills':'Settings')+'</button>'; }).join('');
     if(!quiet){ if(!reduced()) pop([pEl,actions],0); if(window.scrollTo) window.scrollTo(0,0); }
   }
+
+  /* ---------- the log: timer, next set, and a bar that logs it ---------- */
+  (function(){
+    var ls=document.getElementById('logSheet'); if(!ls) return;
+    var pnl=ls.querySelector('.lift-sheet-panel'), hd=pnl&&pnl.querySelector('.lift-sheet-head'), lbody=document.getElementById('logSheetBody');
+    if(!pnl||!hd||!lbody) return;
+    var timer=document.createElement('span'); timer.className='s2-timer'; timer.textContent='0:00'; hd.insertBefore(timer,hd.querySelector('.lift-sheet-x'));
+    var lbar=document.createElement('div'); lbar.className='s2-logbar'; lbar.innerHTML='<div class="t"><b></b><i></i></div><button type="button" class="s2-logset">Log set</button>'; pnl.appendChild(lbar);
+    var t0=0, iv=null, nextBtn=null;
+    function pad(n){ return (n<10?'0':'')+n; }
+    function tk(){ var sec=Math.floor((Date.now()-t0)/1000), h=Math.floor(sec/3600), m=Math.floor(sec/60)%60; timer.textContent=(h?h+':'+pad(m):m)+':'+pad(sec%60); }
+    function refresh(){
+      [].forEach.call(ls.querySelectorAll('.st-row.s2-next'),function(r){ r.classList.remove('s2-next'); });
+      var all=[].slice.call(ls.querySelectorAll('.st-ok')); nextBtn=null;
+      for(var i=0;i<all.length;i++){ if(all[i].getAttribute('aria-pressed')!=='true'){ nextBtn=all[i]; break; } }
+      if(!nextBtn){ lbar.classList.remove('on'); return; }
+      var row=nextBtn.closest('.st-row'); if(row) row.classList.add('s2-next');
+      var card=nextBtn.closest('.edit-row'), nm=card&&card.querySelector('.week-ex-name'), n=row&&row.querySelector('.st-n');
+      var done=all.filter(function(b){ return b.getAttribute('aria-pressed')==='true'; }).length;
+      lbar.querySelector('b').textContent=((nm&&nm.value)||'Next')+' · set '+(n?n.textContent.trim():'');
+      lbar.querySelector('i').textContent=done+' of '+all.length+' sets';
+      lbar.classList.add('on');
+    }
+    lbar.querySelector('.s2-logset').addEventListener('click',function(){ if(nextBtn) nextBtn.click(); });
+    new MutationObserver(refresh).observe(lbody,{subtree:true,attributes:true,attributeFilter:['aria-pressed'],childList:true});
+    new MutationObserver(function(){
+      var open=ls.classList.contains('sheet-open');
+      if(open && !iv){ t0=Date.now(); tk(); iv=setInterval(tk,1000); refresh(); }
+      if(!open && iv){ clearInterval(iv); iv=null; }
+    }).observe(ls,{attributes:true,attributeFilter:['class']});
+    refresh();
+  })();
   sync(tabFromBody(),true);
 })();
 /* SHELL2:END */
