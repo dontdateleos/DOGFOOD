@@ -5766,7 +5766,7 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
    it off in Settings → Appearance ("New look") to get the old header and five tabs back. */
 html.s2 header{ position:fixed !important; top:-600px !important; left:0; right:0; visibility:hidden; pointer-events:none; }
 html.s2 body{ padding-bottom:0; }
-html.s2 main{ padding-top:0; padding-bottom:calc(128px + env(safe-area-inset-bottom, 0px)); }
+html.s2 main{ padding-top:0; padding-bottom:calc(140px + env(safe-area-inset-bottom, 0px)); }
 
 #s2banner{ display:none; }
 html.s2 #s2banner{ display:block; position:relative; z-index:10; isolation:isolate; overflow:hidden;
@@ -5818,8 +5818,8 @@ html.s2 #s2nav{ display:flex; position:fixed; z-index:60; left:10px; right:10px;
 #s2nav button.on .ic img{ filter:none; transform:translateY(-3px) scale(1.14); }
 
 /* things the app already puts at the bottom, lifted clear of the bar */
-html.s2 body.tab-insights #logFab{ bottom:calc(98px + var(--fab-lift, 0px) + env(safe-area-inset-bottom, 0px)); }
-html.s2 .log-bar, html.s2 .update-banner{ bottom:calc(92px + env(safe-area-inset-bottom, 0px)); padding-bottom:0; }
+html.s2 body.tab-insights #logFab{ bottom:calc(104px + var(--fab-lift, 0px) + env(safe-area-inset-bottom, 0px)); }
+html.s2 .log-bar, html.s2 .update-banner{ bottom:calc(98px + env(safe-area-inset-bottom, 0px)); padding-bottom:0; }
 html.s2 #toast{ bottom:calc(104px + env(safe-area-inset-bottom, 0px)); }
 @media (prefers-reduced-motion: reduce){
   #s2banner .s2-deco .cf{ animation:none; transform:translate(0,var(--y0)); }
@@ -6704,9 +6704,11 @@ html.s2 #goalSheet .lift-sheet-panel button:not(.primary):not(.lift-sheet-x){ bo
 @keyframes s2sfall{ to{ transform:translateY(200px) rotate(var(--r)); } }
 @media (prefers-reduced-motion: reduce){ .s2-streak .fx, .s2-streak .cb i{ animation:none; } }
 /* ---- Fuel and Recover: the same bones as Training, on their own panels ---- */
-html.s2 #s2nav button{ width:auto; flex:1 1 0; min-width:0; font-size:11.500px; }
-html.s2 #s2nav .ic{ width:44px; }
-html.s2 #s2nav .ic img{ max-width:42px; }
+html.s2 #s2nav{ height:80px; padding:0 6px; justify-content:space-between; }
+html.s2 #s2nav button{ width:auto; flex:1 1 0; min-width:0; font-size:11.500px; gap:5px; min-height:66px; }
+html.s2 #s2nav .ic{ width:38px; height:36px; }
+html.s2 #s2nav .ic img{ height:32px; max-width:36px; }
+html.s2 #s2nav button.on .ic img{ transform:scale(1.08); }
 #s2banner .s2-gear{ position:absolute; z-index:5; left:14px; top:calc(var(--s2-top) + 6px); width:34px; height:34px; border-radius:50%; border:0; cursor:pointer;
   background:rgba(21,21,21,.14); color:inherit; display:flex; align-items:center; justify-content:center; padding:0; }
 #s2banner[data-light="1"] .s2-gear{ background:rgba(255,255,255,.22); }
@@ -14907,7 +14909,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.068';
+const APP_VERSION = '2026.11.23.069';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15303,6 +15305,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.069': 'Bottom tabs spaced out, and the active icon no longer pokes over the bar.',
   '2026.11.23.068': 'Confetti falls again, tags are spread out and nothing overlaps.',
   '2026.11.23.067': 'New Fuel and Recover tabs, and the bar is now Train, Fuel, Recover, Build, Track. Settings moved to the gear in the corner.',
   '2026.11.23.066': 'Fixed the donkey’s eye: no ring around it and a better blink.',
@@ -48001,7 +48004,7 @@ loadGoalProfile().then(async ()=>{
     var barNow=t.bar, hopNav=(navOn!==null && navOn!==barNow); navOn=barNow;
     if(hopNav && !reduced()){
       var im=nav.querySelector('button.on img');
-      if(im) im.animate([{transform:'translateY(4px) scale(.8,1.1)'},{transform:'translateY(-14px) scale(1.1,.95)',offset:.4},{transform:'translateY(1px) scale(1.2,.9)',offset:.7},{transform:'translateY(-3px) scale(1.14)'}],{duration:480,easing:'cubic-bezier(.3,.9,.4,1)'});
+      if(im) im.animate([{transform:'translateY(4px) scale(.8,1.1)'},{transform:'translateY(-6px) scale(1.1,.95)',offset:.4},{transform:'translateY(1px) scale(1.2,.9)',offset:.7},{transform:'translateY(-3px) scale(1.14)'}],{duration:480,easing:'cubic-bezier(.3,.9,.4,1)'});
     }
     var animate=!reduced();
     if(sameBanner && !first){
