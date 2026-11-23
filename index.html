@@ -65,7 +65,7 @@ try{if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" media="print" onload="this.media='all'; this.onload=null;"
       href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;700&display=swap">
-<link rel="stylesheet" media="print" onload="this.media='all'; this.onload=null;" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800&display=swap">
+<link rel="stylesheet" media="print" onload="this.media='all'; this.onload=null;" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800&family=Barlow:wght@400;500;600;700&display=swap">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;700&display=swap"></noscript>
 <style>
 @property --mc-shell{ syntax:'<color>'; inherits:true; initial-value:transparent; }
@@ -5825,6 +5825,22 @@ html.s2 #toast{ bottom:calc(104px + env(safe-area-inset-bottom, 0px)); }
   #s2banner .s2-deco .cf{ animation:none; transform:translate(0,var(--y0)); }
   #s2banner .s2-pin .pin-in, #s2banner .pin-strip{ animation:none !important; }
 }
+
+/* THE BODY: the same screens, set in the new look's type and colours. Barlow instead of Azeret Mono,
+   the section pills in the tab's banner colour, round buttons. Nothing here moves a screen's contents. */
+html.s2{ --sans:'Barlow',system-ui,-apple-system,sans-serif; --mono:'Barlow',system-ui,-apple-system,sans-serif;
+  --fs-xs:11px; --fs-tag:12px; --fs-sm:13px; --fs-md:15px; --fs-control:16px; --fs-xl:21px; }
+html.s2 body.tab-insights{ --band:#FF6A00; }
+html.s2 body.tab-data{ --band:#B7F02A; }
+html.s2 body.tab-plan, html.s2 body.tab-injuries{ --band:#FF3E9E; }
+html.s2 body.tab-settings{ --band:#F4C99C; }
+html.s2 .group-title{ border-radius:999px; padding:4px 13px 3px; color:#151515;
+  font-family:'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; font-style:italic; font-weight:800; letter-spacing:0; line-height:1.05; }
+html.s2 body.tab-plan .group-title, html.s2 body.tab-injuries .group-title{ color:#fff; }
+html.s2 .set-band{ font-family:var(--sans); letter-spacing:.06em; }
+html.s2 button.primary, html.s2 button.outline{ border-radius:999px; font-family:'Barlow Condensed','Arial Narrow',var(--sans),sans-serif;
+  font-style:italic; font-weight:800; font-size:15px; letter-spacing:.02em; }
+html.s2 button.primary{ background:#151515; border-color:#151515; color:#fff; }
 /* SHELL2:END */
 </style>
 </head>
@@ -13939,7 +13955,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.009';
+const APP_VERSION = '2026.11.23.010';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14335,6 +14351,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.010': 'The new look reaches every page: Barlow type, section labels in each tab’s colour, round buttons.',
   '2026.11.23.009': 'A new look: a coloured banner with confetti and a piñata on each page, and three tabs on a bar of piñatas — Training, Progress and Build. Skills and Settings sit under Build. Settings → Appearance has a New look switch to get the old header back.',
   '2026.11.22.007': 'Workouts now opens by saying what today’s Charge means for the session, what is pulling it down most and what is helping. Trends has a new card showing what has dropped your score over the last week and how to raise each one. Warm-ups and cool-downs pick up ground work: crawls, hovers, crab reaches, hangs and a resting squat, chosen for what you are lifting, gentler on a low-Charge day and changed around an injury. And Skills has a daily practice for the resting squat and the hang that builds up a few minutes at a time.',
   '2026.11.22.006': 'Fixed the piñata glitching and bending. He no longer warps between angles: every angle is loaded up front and he steps cleanly from one to the next.',
