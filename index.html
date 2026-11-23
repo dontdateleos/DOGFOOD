@@ -6497,6 +6497,44 @@ html.s2 #s2page.on{ display:block; position:fixed; inset:0; z-index:90; overflow
 #s2page .stats3 b{ display:block; font:italic 800 26px/1 'Barlow Condensed','Arial Narrow',sans-serif; }
 #s2page .stats3 span{ font:700 10.5px 'Barlow',sans-serif; text-transform:uppercase; letter-spacing:.05em; color:#5E574C; }
 .s2-prow, .s2-sumcard .ln, .s2-recent .wr{ cursor:pointer; }
+
+/* DAY OPTIONS sheet, as the design: the date small, rows in a card, the rest as pills */
+html.s2 #dayActionSheet .lift-sheet-panel{ background:#F6F1E7; }
+html.s2 #dayActionSheet .day-act-now{ padding:4px 0 10px; font:700 22px 'Barlow',sans-serif; }
+html.s2 #dayActionSheet .day-act-now > div{ display:flex; align-items:center; gap:10px; font:italic 800 30px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+html.s2 #dayActionSheet .day-act-label{ margin:6px 2px; font:700 12px 'Barlow',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#5E574C; }
+html.s2 #dayActionSheet .day-act-days{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-bottom:10px; }
+html.s2 #dayActionSheet .day-act-day{ height:auto; padding:6px 0; border-radius:12px; background:#E9E3D6; border:2px solid transparent; color:#151515; display:flex; flex-direction:column; align-items:center; gap:2px; }
+html.s2 #dayActionSheet .day-act-day.self{ background:#FBF8F2; border-color:#151515; }
+html.s2 #dayActionSheet .day-act-day:disabled{ opacity:.45; }
+html.s2 #dayActionSheet .day-act-list{ background:#FBF8F2; border:1.5px solid #E4DCCB; border-radius:18px; overflow:hidden; }
+html.s2 #dayActionSheet .day-act{ background:transparent; border:0; border-radius:0; color:#151515; padding:13px 14px; min-height:48px; font:700 16px 'Barlow',sans-serif; text-transform:none; letter-spacing:0; text-align:left; }
+html.s2 #dayActionSheet .day-act + .day-act{ border-top:1.5px solid #E4DCCB; }
+html.s2 #dayActionSheet .day-act-tip{ margin:10px 2px 0; font:500 14px/1.4 'Barlow',sans-serif; color:#2A2620; text-transform:none; letter-spacing:0; }
+.day-act-or{ margin:14px 2px 6px; font:700 12px 'Barlow',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#5E574C; }
+.day-act-pills{ display:flex; flex-wrap:wrap; gap:8px; }
+.day-act-pills button{ all:unset; box-sizing:border-box; cursor:pointer; padding:9px 15px; min-height:40px; display:inline-flex; align-items:center; border-radius:999px; border:1.5px solid #DED6C6; background:#FBF8F2; font:700 15px 'Barlow',sans-serif; color:#151515; }
+.day-act-pills button::after{ display:none; }
+/* MORNING CHECK-IN as a page */
+html.s2 #morningLogSheet .morning-panel{ height:100vh; height:100dvh; max-height:none; border-radius:0; }
+html.s2 #morningLogSheet .morning-panel .lift-sheet-head, html.s2 #morningLogSheet .morning-panel > :first-child{ border-radius:0; }
+html.s2 #morningLogSheet .morning-panel input[type="number"], html.s2 #morningLogSheet .morning-panel input[type="time"], html.s2 #morningLogSheet .morning-panel input[type="date"]{ background:#fff; border:1.5px solid #DED6C6; border-radius:14px; color:#151515; padding:10px 12px; font:700 18px 'Barlow',sans-serif; }
+html.s2 #morningLogSheet .morning-panel .morning-night > *{ border-radius:14px; }
+html.s2 #morningLogSheet .morning-panel button.primary.morning-done{ background:#151515; color:#fff; border-radius:16px; height:54px; font:italic 800 22px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+/* SESSION DONE as a page */
+#s2done{ display:none; }
+html.s2 #s2done.on{ display:block; position:fixed; inset:0; z-index:95; overflow-y:auto; background:#F6F1E7; color:#151515; padding-bottom:calc(30px + env(safe-area-inset-bottom, 0px)); }
+#s2done .bn{ position:relative; height:calc(210px + env(safe-area-inset-top, 0px)); background:#FF8A00 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 390 54' preserveAspectRatio='none'%3E%3Cpath d='M0 22 C60 0 130 0 200 18 S330 42 390 14 V54 H0Z' fill='%23F6F1E7'/%3E%3C/svg%3E") bottom/100% 46px no-repeat; overflow:hidden; }
+#s2done .bn .cf{ position:absolute; top:-24px; animation:s2fall var(--d) linear var(--del) infinite; }
+#s2done h2{ position:absolute; left:0; right:0; top:calc(56px + env(safe-area-inset-top, 0px)); margin:0; text-align:center; font:italic 800 56px/.92 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+#s2done .body{ margin:14px 0 0; }
+#s2done .session-complete{ margin:0 16px !important; padding:0 !important; border:0 !important; background:transparent !important; }
+#s2done .session-complete > b{ display:none !important; }
+#s2done .btns{ display:flex; gap:10px; margin:16px 16px 0; }
+#s2done .btns button{ all:unset; box-sizing:border-box; flex:1; text-align:center; height:54px; display:flex; align-items:center; justify-content:center; border-radius:16px; cursor:pointer; font:italic 800 22px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; border:2px solid #151515; }
+#s2done .btns button::after{ display:none; }
+#s2done .btns .dn{ background:#151515; color:#fff; }
+@media (prefers-reduced-motion: reduce){ #s2done .bn .cf{ animation:none; transform:translate(0,var(--y0)); } }
 /* SHELL2:END */
 </style>
 </head>
@@ -14611,7 +14649,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.046';
+const APP_VERSION = '2026.11.23.047';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15007,6 +15045,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.047': 'Tap a day (or Change today’s plan) for its options sheet; the morning check-in is a page; saving a workout opens a Session done page.',
   '2026.11.23.046': 'More pages on Progress: tap a lift, a goal, Strength score, VO2 max, a skill, the mobility test or a recent workout to open its own page.',
   '2026.11.23.045': 'Tapping a measure on Progress opens its own page with the big number, a Daily / Weekly / Monthly switch and the chart, instead of drawing the chart under the list.',
   '2026.11.23.044': 'Each block picks two priority mobility areas and gives them a little more time (15 minutes a week); the next block picks different ones. The deload week has none.',
@@ -48424,6 +48463,52 @@ loadGoalProfile().then(async ()=>{
       if(ty==='mobility') rows=(sn.stretches||[]).map(function(x){ return [esc(x.name||'Stretch'),x.holdSeconds?x.holdSeconds+'s':(x.reps?'×'+x.reps:'')]; });
       show({title:ttl,sub:dstr(date),stats:'<div class="stats3"><div><b>'+st[0]+'</b><span>'+st[1]+'</span></div><div><b>'+st[2]+'</b><span>'+st[3]+'</span></div><div><b>'+st[4]+'</b><span>'+st[5]+'</span></div></div>',sections:[{h:ty==='strength'?'Lifts':(ty==='run'?'Run':'Stretches'),rows:rows},{h:'Notes',rows:sn.notes?[[esc(sn.notes),'']]:[]}]});
     };
+  })();
+
+  /* ---------- Day options: tapping a day opens the sheet; Change today's plan opens it for today ---------- */
+  (function(){
+    var orig=window.openDayActions; if(typeof orig!=='function') return;
+    window.openDayActions=async function(date){
+      var r=await orig.apply(this,arguments);
+      try{
+        var body=document.getElementById('dayActBody'); if(!body||body.querySelector('.day-act-pills')) return r;
+        if(date===todayStr){
+          var src=[].slice.call(document.querySelectorAll('#todayTopActions button, #todayPlanActions button')); var seen={};
+          var box=document.createElement('div'); box.innerHTML='<div class="day-act-or">Or</div><div class="day-act-pills"></div>'; var pills=box.querySelector('.day-act-pills');
+          src.forEach(function(b){ var t=b.textContent.replace(/\s+/g,' ').trim(); if(!t||seen[t]) return; seen[t]=1; var c=document.createElement('button'); c.type='button'; c.textContent=t; c.addEventListener('click',function(){ var sh=document.getElementById('dayActionSheet'); var x=sh&&sh.querySelector('.lift-sheet-x'); if(x) x.click(); setTimeout(function(){ b.click(); },250); }); pills.appendChild(c); });
+          if(pills.children.length) body.appendChild(box);
+        }
+      }catch(e){}
+      return r;
+    };
+    var md=document.querySelector('.s2-md');
+    if(md) md.addEventListener('click',function(e){ var b=e.target.closest('.tl'); if(!b) return; e.stopImmediatePropagation(); var d=getWeekDates()[+b.dataset.k]; if(d) window.openDayActions(d).catch(function(){}); },true);
+    var rO2=document.querySelector('.s2-rows .s2-row:last-of-type'); 
+    var rows=[].slice.call(document.querySelectorAll('.s2-rows .s2-row')); var chg=rows.filter(function(x){ return /Change today/.test(x.textContent); })[0];
+    if(chg) chg.addEventListener('click',function(e){ e.stopImmediatePropagation(); window.openDayActions(todayStr).catch(function(){}); },true);
+  })();
+
+  /* ---------- Session done: a page of its own right after saving ---------- */
+  (function(){
+    var host=document.getElementById('sessionCompleteCard'), ls=document.getElementById('logSheet'); if(!host||!ls) return;
+    var ov=document.createElement('div'); ov.id='s2done'; ov.setAttribute('role','dialog'); ov.setAttribute('aria-label','Session done'); document.body.appendChild(ov);
+    var lastOpen=0, had=false;
+    new MutationObserver(function(){ if(ls.classList.contains('sheet-open')) lastOpen=Date.now(); }).observe(ls,{attributes:true,attributeFilter:['class']});
+    function show(){
+      var card=host.querySelector('.session-complete'); if(!card) return;
+      var o='', c=['#ffffff','#151515','#FFC24D','#FF3E9E'], i; seed=41;
+      for(i=0;i<18;i++){ var sz=7+rnd()*8, rd=i%3===0; o+='<i class="cf" style="left:'+(rnd()*100).toFixed(1)+'%;width:'+sz.toFixed(1)+'px;height:'+(rd?sz:sz*1.6).toFixed(1)+'px;border-radius:'+(rd?'50%':'2px')+';background:'+c[i%4]+';--d:'+(5+rnd()*5).toFixed(2)+'s;--del:'+(-rnd()*9).toFixed(2)+'s;--dx:'+Math.round((rnd()-.5)*70)+'px;--rot:'+Math.round((rnd()<.5?-1:1)*(240+rnd()*420))+'deg;--y0:'+Math.round(rnd()*200)+'px"></i>'; }
+      ov.innerHTML='<div class="bn">'+o+'<h2>Session<br>done</h2></div><div class="body"></div><div class="btns"><button type="button" class="dn">Done</button></div>';
+      ov.querySelector('.body').appendChild(card.cloneNode(true));
+      ov.querySelector('.dn').addEventListener('click',function(){ ov.classList.remove('on'); });
+      ov.classList.add('on'); ov.scrollTop=0;
+    }
+    new MutationObserver(function(){
+      var has=!!host.querySelector('.session-complete');
+      if(has && !had && Date.now()-lastOpen<8000) setTimeout(show,500);
+      had=has;
+    }).observe(host,{childList:true,subtree:true});
+    had=!!host.querySelector('.session-complete');
   })();
   sync(tabFromBody(),true);
 })();
