@@ -5862,6 +5862,28 @@ html.s2 #todayWorkoutSummary .today-session > .group-head{ display:none; }
 html.s2 body.s2-herovis #logFab{ opacity:0; pointer-events:none; }
 html.s2 .week-controls-row button{ white-space:nowrap; font-size:14px; padding-left:12px; padding-right:12px; }
 html.s2 body.tab-insights .s2-hero.on ~ .week-panel{ margin-top:8px; }
+
+/* TRAINING: Today / Week toggle, discipline chips, sections as cards */
+.s2-seg{ display:none; }
+html.s2 body.tab-insights .s2-seg{ display:flex; margin:16px 16px 0; padding:4px; border-radius:999px; background:rgba(var(--ink-rgb),.06); border:1px solid rgba(var(--ink-rgb),.1); }
+.s2-seg button{ all:unset; box-sizing:border-box; flex:1; text-align:center; padding:11px 0; border-radius:999px; cursor:pointer; color:rgb(var(--ink-rgb));
+  font:italic 800 18px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; -webkit-tap-highlight-color:transparent; }
+.s2-seg button::after{ display:none; }
+.s2-seg button.on{ background:#151515; color:#fff; }
+.s2-seg button:focus-visible{ outline:3px solid #FF6A00; outline-offset:2px; }
+html.s2 body.tab-insights:not(.s2-wk) .week-panel #weekBoard,
+html.s2 body.tab-insights:not(.s2-wk) .week-panel > .group-head,
+html.s2 body.tab-insights:not(.s2-wk) #weekWheelDetailTitle,
+html.s2 body.tab-insights:not(.s2-wk) #weekWheelDetail{ display:none !important; }
+html.s2 body.s2-wk .s2-hero, html.s2 body.s2-wk #todayRichArea{ display:none !important; }
+html.s2 body.tab-insights .session-type{ display:flex; gap:8px; padding:0 16px; margin:12px 0 4px; flex-wrap:wrap; }
+html.s2 body.tab-insights .session-type .type-btn{ flex:none; display:inline-flex; align-items:center; gap:7px; padding:9px 16px; border-radius:999px; min-height:42px; box-sizing:border-box;
+  border:1px solid rgba(var(--ink-rgb),.18); background:transparent; color:rgb(var(--ink-rgb)); font:700 15px var(--sans); letter-spacing:0; text-transform:none; }
+html.s2 body.tab-insights .session-type .type-btn::before{ content:''; width:18px; height:18px; background:currentColor; -webkit-mask:var(--ti) center/contain no-repeat; mask:var(--ti) center/contain no-repeat; }
+html.s2 body.tab-insights .session-type .type-btn.active{ background:#151515; border-color:#151515; color:#fff; }
+.type-btn[data-type="strength"]{ --ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 7v10M3 10v4M18 7v10M21 10v4M6 12h12'/%3E%3C/svg%3E"); }
+.type-btn[data-type="run"]{ --ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='15' cy='5' r='2'/%3E%3Cpath d='M9 21l3-6-3-3 2-5 4 2 3 3M7 13l2-3'/%3E%3C/svg%3E"); }
+.type-btn[data-type="mobility"]{ --ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='5' r='2'/%3E%3Cpath d='M5 9h14M12 9v6M9 21l3-6 3 6'/%3E%3C/svg%3E"); }
 /* SHELL2:END */
 </style>
 </head>
@@ -13976,7 +13998,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.011';
+const APP_VERSION = '2026.11.23.012';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14372,6 +14394,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.012': 'Training has a Today / Week switch: Today is the session card and its warm-up and cooldown, Week is the calendar and its controls.',
   '2026.11.23.011': 'Training opens with today’s session as one orange card — week, name, minutes and Start.',
   '2026.11.23.010': 'The new look reaches every page: Barlow type, section labels in each tab’s colour, round buttons.',
   '2026.11.23.009': 'A new look: a coloured banner with confetti and a piñata on each page, and three tabs on a bar of piñatas — Training, Progress and Build. Skills and Settings sit under Build. Settings → Appearance has a New look switch to get the old header back.',
@@ -47008,6 +47031,18 @@ loadGoalProfile().then(async ()=>{
   var _fb=document.getElementById('logFab'); if(_fb) new MutationObserver(schedHero).observe(_fb,{childList:true,subtree:true,characterData:true});
   paintHero();
   if(window.IntersectionObserver && hero){ new IntersectionObserver(function(es){ es.forEach(function(e){ document.body.classList.toggle('s2-herovis',e.isIntersecting); }); }).observe(hero); }
+
+  /* ---------- Training: Today / Week ---------- */
+  (function(){
+    if(!panel) return;
+    var seg=document.createElement('div'); seg.className='s2-seg'; seg.setAttribute('role','tablist');
+    seg.innerHTML='<button type="button" role="tab" data-m="today" class="on" aria-selected="true">Today</button><button type="button" role="tab" data-m="week" aria-selected="false">Week</button>';
+    panel.insertBefore(seg,hero||panel.firstChild);
+    seg.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; var wk=b.dataset.m==='week';
+      document.body.classList.toggle('s2-wk',wk);
+      [].forEach.call(seg.querySelectorAll('button'),function(x){ var on=x===b; x.classList.toggle('on',on); x.setAttribute('aria-selected',on?'true':'false'); });
+      if(window.scrollTo) window.scrollTo(0,0); });
+  })();
   sync(tabFromBody(),true);
 })();
 /* SHELL2:END */
