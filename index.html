@@ -6244,6 +6244,23 @@ html.s2 body.tab-data .s2-perf.on{ display:block; padding:0 4px; }
 .s2-prow .ml .mv2 small{ font:600 14px 'Barlow',sans-serif; font-style:normal; margin-left:3px; }
 .s2-prow .md{ flex:none; min-width:46px; text-align:center; padding:4px 8px; border-radius:999px; background:#E9E3D6; font:700 12px 'Barlow',sans-serif; }
 .s2-prow .md.good{ background:#C8F031; }
+
+/* more of the design: the aim pill, the adjustment row, the skills row, last time, the load pill */
+.s2-hero .eyebrow.aim{ display:block !important; }
+.s2-alert{ display:flex; align-items:center; gap:14px; padding:11px 14px; background:#FFF0F6; min-height:44px; }
+.s2-alert[hidden]{ display:none !important; }
+.s2-alert .ri{ flex:none; width:22px; height:22px; color:#C2185B; }
+.s2-alert .ri svg{ width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+.s2-alert .rt{ flex:1; display:flex; flex-direction:column; gap:2px; }
+.s2-alert .rt b{ font:700 16px/1.2 'Barlow',sans-serif; }
+.s2-alert .rt i{ font:500 13px 'Barlow',sans-serif; font-style:normal; color:#2A2620; }
+.s2-last{ margin:0 0 8px; font:600 13px 'Barlow',sans-serif; color:#5E574C; }
+.s2-lpill{ position:absolute; right:14px; top:16px; display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:999px; background:#C8F031; color:#151515; font:700 13px 'Barlow',sans-serif; }
+.s2-lpill svg{ width:13px; height:13px; fill:currentColor; }
+html.s2 #logSheet #weekExerciseRows > .edit-row{ position:relative; }
+html.s2 #logSheet .log-foot{ padding:10px 4px 0; }
+html.s2 #logSheet .log-foot-a{ all:unset; cursor:pointer; font:700 15px 'Barlow',sans-serif; color:#151515; text-decoration:underline; text-underline-offset:3px; text-transform:none; letter-spacing:0; }
+html.s2 #logSheet .log-foot-a::after{ display:none; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14358,7 +14375,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.030';
+const APP_VERSION = '2026.11.23.031';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14754,6 +14771,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.031': 'Training says what score to aim for and shows an adjustment row and a Skills row when there is one; the log shows last time and how hard to go.',
   '2026.11.23.030': 'Progress shows your goals and how far to go, plus Strength score, VO2 max, skills and the mobility test; Build rows say what is in them.',
   '2026.11.23.029': 'Progress, Build and Settings follow the design: grouped rows with a sparkline and change, Build as a list with real details, Settings as grouped cards.',
   '2026.11.23.028': 'The workout log follows the design: a banner with the session name and timer, one lift at a time as a Set / Kg / Reps table, and Up next.',
@@ -47417,7 +47435,10 @@ loadGoalProfile().then(async ()=>{
       goLabel(({strength:'Log a lift',run:'Log a run',mobility:'Log it'}[ty]||'Log it'));
       return;
     }
-    hero.removeAttribute('data-empty'); hero.querySelector('.eyebrow').style.display='none';
+    hero.removeAttribute('data-empty');
+    var eb=hero.querySelector('.eyebrow'), aim=null;
+    try{ var chv=(lastSrResult&&lastSrResult.available&&lastSrResult.charge)?lastSrResult.charge.charge:null; if(chv!=null&&(ty==='strength'||ty==='run')) aim=predictedScore(ty==='run'?'run':'lift',chv); }catch(e){}
+    if(aim!=null){ eb.textContent='Aim for a score of '+aim; eb.style.display=''; eb.classList.add('aim'); } else { eb.style.display='none'; eb.classList.remove('aim'); }
     var pos=(document.getElementById('weekBlockPos')||{}).textContent||'';
     var wn=(/^(\d+)/.exec(pos.trim())||[])[1];
     hero.querySelector('.eyebrow').textContent='';
@@ -47652,7 +47673,11 @@ loadGoalProfile().then(async ()=>{
       L.forEach(function(c){ c.classList.toggle('s2-cur',c===curCard); });
       pnl.setAttribute('data-lifts','1');
       if(!curCard.querySelector('.s2-plan')){ var nm=curCard.querySelector('.week-ex-name'), g=function(k){ var e=curCard.querySelector(k); return e?e.value:''; }, sets=g('.week-ex-sets'), reps=g('.week-ex-reps'), w=g('.week-ex-weight');
-        if(nm&&(sets||reps)){ var d=document.createElement('div'); d.className='s2-plan'; d.textContent=(sets&&reps?sets+' × '+reps:'')+(w?' at '+w+' kg':''); nm.insertAdjacentElement('afterend',d); } }
+        if(nm&&(sets||reps)){ var d=document.createElement('div'); d.className='s2-plan'; d.textContent=(sets&&reps?sets+' × '+reps:'')+(w?' at '+w+' kg':''); nm.insertAdjacentElement('afterend',d);
+          var nmv=nm.value; getAllTrainingSessions().then(function(all){ var best=null; (all||[]).forEach(function(sn){ if(!sn||sn.date>=todayStr||sn.type!=='strength') return; (sn.exercises||[]).forEach(function(ex){ if(ex&&ex.name&&ex.name.toLowerCase()===String(nmv).toLowerCase()&&(!best||sn.date>best.date)) best={date:sn.date,ex:ex}; }); });
+            if(best&&!curCard.querySelector('.s2-last')){ var e=best.ex, lt=document.createElement('div'); lt.className='s2-last'; var rp=Array.isArray(e.repsPerSet)&&e.repsPerSet.length?e.repsPerSet.join(', '):e.reps; lt.textContent='Last time '+(e.weight!=null?e.weight+' × ':'')+rp; d.insertAdjacentElement('afterend',lt); } }).catch(function(){});
+          var chv=null; try{ chv=(lastSrResult&&lastSrResult.available&&lastSrResult.charge)?lastSrResult.charge.charge:null; }catch(e){}
+          if(chv!=null && !curCard.querySelector('.s2-lpill')){ var pl=document.createElement('span'); pl.className='s2-lpill'; pl.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg>'+(chv>=65?'Full load':(chv>=40?'Steady':'Easy')); curCard.appendChild(pl); } } }
     }
     function columns(){
       [].forEach.call(ls.querySelectorAll('.set-ticks'),function(tb){
@@ -47753,6 +47778,10 @@ loadGoalProfile().then(async ()=>{
     var rowsCard=document.createElement('section'); rowsCard.className='s2-rows'; wu.parentNode.insertBefore(rowsCard,wu);
     function mk2(ic){ var b=mk(ic,rowsCard); rowsCard.appendChild(b); return b; }
     var rS=mk2('dumb'), rW=mk2('bolt'), rC=mk2('heart');
+    var rA=document.createElement('div'); rA.className='s2-alert'; rA.hidden=true; rowsCard.insertBefore(rA,rowsCard.firstChild);
+    rA.innerHTML='<span class="ri"><svg viewBox="0 0 24 24" aria-hidden="true">'+IC.bolt+'</svg></span><span class="rt"><b></b><i></i></span>';
+    var rK=mk2('layers'); rK.querySelector('.ri svg').innerHTML=IC.layers;
+    rK.addEventListener('click',function(){ var t=document.querySelector('.tab[data-tab="injuries"]'); if(t&&typeof activateTabViaUi==='function') activateTabViaUi(t); });
     var rO=document.createElement('button'); rO.type='button'; rO.className='s2-row'; rO.innerHTML='<span class="ri"><svg viewBox="0 0 24 24" aria-hidden="true">'+IC.sliders+'</svg></span><span class="rt"><b>Change today’s plan</b><i>Move it, skip it, swap it or plan the week</i></span><span class="rc">'+CH+'</span>'; rowsCard.appendChild(rO);
     var opts=document.createElement('div'); opts.className='s2-opts'; rowsCard.appendChild(opts);
     function buildOpts(){
@@ -47786,6 +47815,18 @@ loadGoalProfile().then(async ()=>{
     }
     function weekLine(){ var sp=document.querySelector('.s2-weekcard .top span'), b=window.__s2weekbtn; if(!b||!sp) return; var m=/(\d+) of (\d+)/.exec(sp.textContent); b.querySelector('b').textContent='Your week'+(m?' · '+m[1]+' of '+m[2]:''); }
     setInterval(weekLine,1500);
+    function extra(){
+      // the adjustment the app made today, said as a row
+      var txt='', sub='';
+      var notes=[].slice.call(document.querySelectorAll('#todayWorkoutSummary .score-note'));
+      notes.forEach(function(n){ var t=n.textContent.replace(/\s+/g,' ').trim(); if(/deload|accepted recommendation|trim|swapp/i.test(t) && !txt){ var m=/^(.*?)(?: — | – )(.*)$/.exec(t); txt=m?m[1]:t; sub=m?m[2]:''; } });
+      rA.hidden=!txt; if(txt){ rA.querySelector('b').textContent=txt.charAt(0).toUpperCase()+txt.slice(1); rA.querySelector('i').textContent=sub.charAt(0).toUpperCase()+sub.slice(1); }
+      // daily practice, as the Skills row
+      var dp=[].slice.call(document.querySelectorAll('#dailyPractice .dp-row')), names=[], todo=false, mins=0;
+      dp.forEach(function(r){ var nm=(r.querySelector('.dp-name')||{}).textContent, nu=(r.querySelector('.dp-num')||{}).textContent||''; if(nm) names.push(nm.trim()); var m=/(.+?)\s+of\s+(\d+)\s*(s|min)/i.exec(nu); if(m){ var tgt=+m[2]*(/min/i.test(m[3])?1:1/60); mins+=tgt; if(!/^\s*(\d+)\s*(min|s)?\s*$/.test(m[1])||true){ var dn=/min/i.test(m[1])?parseFloat(m[1]):(parseFloat(m[1])||0)/60; if(dn+0.001<tgt) todo=true; } } });
+      rK.hidden=!names.length; if(names.length){ fill(rK,'Skills · '+Math.round(mins)+' min',names.join(', '),todo?'To do':'Done'); }
+    }
+    setInterval(extra,1500); setTimeout(extra,600);
     function toggle(row,el){ var on=!el.classList.contains('s2-open'); el.classList.toggle('s2-open',on); row.setAttribute('aria-expanded',on?'true':'false'); }
     function openAt(p){ window.__s2phase=p; var f=document.getElementById('logFab'); if(f) f.click(); }
     rW.addEventListener('click',function(){ openAt('warm'); });
