@@ -5982,6 +5982,17 @@ html.s2 .s2-logbar .t b, html.s2 .s2-logbar .t i{ color:#fff !important; }
 .s2-logbar .t i{ font:500 13px var(--sans); font-style:normal; opacity:.7; }
 .s2-logbar .s2-logset{ all:unset; box-sizing:border-box; flex:none; cursor:pointer; padding:0 22px; height:50px; display:flex; align-items:center; border-radius:14px; background:#C8F031; color:#151515; font:italic 800 24px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; }
 .s2-logbar .s2-logset::after{ display:none; }
+
+.s2-steps, .s2-upnext{ display:none; }
+html.s2 #logSheet .s2-steps.on{ display:flex; gap:8px; margin:14px 0 4px; flex-wrap:wrap; }
+.s2-steps span{ display:inline-flex; align-items:center; padding:8px 14px; border-radius:999px; border:1px solid rgba(12,13,11,.2); font:700 14px var(--sans); color:#151515; }
+.s2-steps span.cur{ background:#151515; color:#fff; border-color:#151515; }
+html.s2 #logSheet .s2-upnext.on{ display:block; margin:6px 0 0; padding:6px 16px; border:1px solid rgba(12,13,11,.12); border-radius:20px; background:#fff; }
+.s2-upnext h3{ margin:8px 0 2px; font:700 12px var(--sans); letter-spacing:.08em; text-transform:uppercase; color:#55554f; }
+.s2-upnext button{ all:unset; box-sizing:border-box; width:100%; display:flex; justify-content:space-between; align-items:center; gap:10px; padding:13px 0; cursor:pointer; font:600 16px var(--sans); color:#151515; border-top:1px solid rgba(12,13,11,.1); }
+.s2-upnext h3 + button{ border-top:0; }
+.s2-upnext button::after{ display:none; }
+.s2-upnext button span{ font:500 14px var(--sans); color:#55554f; white-space:nowrap; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14096,7 +14107,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.018';
+const APP_VERSION = '2026.11.23.019';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14492,6 +14503,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.019': 'The log says which lift you are on and lists the next few, tap one to jump to it.',
   '2026.11.23.018': 'The workout log is a full page: a timer in the band, each set as a big number with a tick that turns lime, and a bar at the bottom that logs the next set.',
   '2026.11.23.017': 'Pop-ups size to their content, pink section labels read clearly, and Settings sections open on their own.',
   '2026.11.23.016': 'The workout log and the other pop-ups are on paper with a coloured band at the top; each lift is its own card.',
@@ -47282,6 +47294,22 @@ loadGoalProfile().then(async ()=>{
       lbar.querySelector('i').textContent=done+' of '+all.length+' sets';
       lbar.classList.add('on');
     }
+    var steps=document.createElement('div'); steps.className='s2-steps'; var upn=document.createElement('div'); upn.className='s2-upnext';
+    hd.insertAdjacentElement('afterend',steps); pnl.insertBefore(upn,lbar);
+    function lifts(){ return [].slice.call(ls.querySelectorAll('#weekExerciseRows > .edit-row')); }
+    function fmt(c){ var g=function(k){ var e=c.querySelector(k); return e?e.value:''; }, sets=g('.week-ex-sets'), reps=g('.week-ex-reps'), w=g('.week-ex-weight');
+      return (sets&&reps?sets+' × '+reps:'')+(w?' · '+w+' kg':''); }
+    function more(){
+      var L=lifts(); if(!L.length){ steps.classList.remove('on'); upn.classList.remove('on'); return; }
+      var card=nextBtn&&nextBtn.closest('.edit-row'), at=card?L.indexOf(card):L.length;
+      steps.innerHTML='<span class="cur">Lift '+Math.min(at+1,L.length)+' of '+L.length+'</span>'+(nextBtn?'':'<span>All sets logged</span>'); steps.classList.add('on');
+      var rest=L.slice(at+1,at+4);
+      if(!rest.length){ upn.classList.remove('on'); return; }
+      upn.innerHTML='<h3>Up next</h3>'+rest.map(function(c,k){ var n=c.querySelector('.week-ex-name'); return '<button type="button" data-k="'+(at+1+k)+'">'+((n&&n.value)||'Lift')+'<span>'+fmt(c)+'</span></button>'; }).join('');
+      upn.classList.add('on');
+    }
+    upn.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; var c=lifts()[+b.dataset.k]; if(c&&c.scrollIntoView) c.scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'}); });
+    var _r0=refresh; refresh=function(){ _r0(); more(); };
     lbar.querySelector('.s2-logset').addEventListener('click',function(){ if(nextBtn) nextBtn.click(); });
     new MutationObserver(refresh).observe(lbody,{subtree:true,attributes:true,attributeFilter:['aria-pressed'],childList:true});
     new MutationObserver(function(){
