@@ -6298,6 +6298,22 @@ html.s2 #logSheet .s2-phase .drill .drill-strike{ display:none; }
 html.s2 #logSheet .s2-phase .glossary, html.s2 #logSheet .s2-phase details.glossary{ margin-top:10px; }
 html.s2 #logSheet .s2-phase .glossary summary{ cursor:pointer; font:700 15px 'Barlow',sans-serif; text-decoration:underline; text-underline-offset:3px; text-transform:none; letter-spacing:0; color:#151515; list-style:none; }
 html.s2 #logSheet .s2-phase .prep-done-btn{ display:none !important; }
+
+/* WEEK: stats row, "Move a day" */
+.s2-wkstats, .s2-mad{ display:none; }
+html.s2 body.tab-insights.s2-wk .s2-wkstats{ display:flex; margin:0 16px 4px; border:1.5px solid #E4DCCB; border-radius:18px; background:#FBF8F2; color:#151515; }
+.s2-wkstats div{ flex:1; min-width:0; display:flex; align-items:center; gap:6px; padding:12px 8px; border-left:1.5px solid #E4DCCB; }
+.s2-wkstats div:first-child{ border-left:0; }
+.s2-wkstats svg{ flex:none; width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+.s2-wkstats b{ display:block; font:italic 800 26px/1 'Barlow Condensed','Arial Narrow',sans-serif; }
+.s2-wkstats b{ white-space:nowrap; }
+.s2-wkstats span{ white-space:nowrap; font:700 10.5px 'Barlow',sans-serif; text-transform:uppercase; letter-spacing:.05em; color:#5E574C; }
+html.s2 body.tab-insights.s2-wk .s2-mad{ display:flex; align-items:baseline; justify-content:space-between; margin:16px 16px 4px; }
+.s2-mad h3{ margin:0; font:italic 800 30px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+.s2-mad span{ font:500 14px 'Barlow',sans-serif; color:#5E574C; }
+html.s2 body.tab-insights.s2-wk .week-panel > .group-head{ display:none !important; }
+html.s2 body.tab-insights.s2-wk #logFab{ display:none !important; }
+html.s2 body.tab-insights.s2-wk #weekControlsRow button{ border:1.5px solid #DED6C6; background:#FBF8F2; border-radius:999px; font:700 15px 'Barlow',sans-serif; text-transform:none; letter-spacing:0; color:#151515; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14412,7 +14428,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.034';
+const APP_VERSION = '2026.11.23.035';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14808,6 +14824,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.035': 'The Week view has workouts, total time and hard sets, and a Move a day heading, like the design.',
   '2026.11.23.034': 'Marking the warm-up or cooldown done updates its tick, bar and button.',
   '2026.11.23.033': 'Warm-up and Cooldown in the workout are tick lists with a progress bar and one Mark done button, like the design.',
   '2026.11.23.032': 'Skills is two big cards, Strength and Mobility, with your level and a bar, then Daily practice and Injuries; tap one to open it.',
@@ -47919,8 +47936,19 @@ loadGoalProfile().then(async ()=>{
         bars+='<div class="'+(dn?'done':(!none?'plan':''))+(l.classList.contains('here')?' now':'')+'"><i></i>'+nm+'</div>'; });
       card.innerHTML='<div class="top"><h3>Training week</h3><span>'+done+' of '+planned+' session'+(planned===1?'':'s')+'</span></div><div class="bars">'+bars+'</div>';
     }
-    new MutationObserver(function(){ clearTimeout(window.__s2w); window.__s2w=setTimeout(paint,120); }).observe(board,{childList:true,subtree:true,attributes:true});
-    paint();
+    var stats=document.createElement('div'); stats.className='s2-wkstats'; card.insertAdjacentElement('afterend',stats);
+    var mad=document.createElement('div'); mad.className='s2-mad'; mad.innerHTML='<h3>Move a day</h3><span>Tap a day for options</span>'; board.parentNode.insertBefore(mad,board);
+    var SI={w:'<path d="M6 7v10M3 10v4M18 7v10M21 10v4M6 12h12"/>',t:'<circle cx="12" cy="13" r="7"/><path d="M12 13V9M9.5 3h5"/>',h:'<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>'};
+    var sbusy=false;
+    async function paintStats(){
+      if(sbusy) return; sbusy=true;
+      try{ var dates=getWeekDates(), all=(await getAllTrainingSessions())||[], n=0, mins=0, sets=0;
+        all.forEach(function(sn){ if(!sn||dates.indexOf(sn.date)<0) return; n++; mins+=(+sn.durationMin||0); (sn.exercises||[]).forEach(function(e){ sets+=(+e.sets||0); }); });
+        stats.innerHTML='<div><svg viewBox="0 0 24 24">'+SI.w+'</svg><p style="margin:0"><b>'+n+'</b><span>Workouts</span></p></div><div><svg viewBox="0 0 24 24">'+SI.t+'</svg><p style="margin:0"><b>'+Math.round(mins)+' min</b><span>Total time</span></p></div><div><svg viewBox="0 0 24 24">'+SI.h+'</svg><p style="margin:0"><b>'+sets+'</b><span>Hard sets</span></p></div>';
+      }catch(e){} finally{ sbusy=false; }
+    }
+    new MutationObserver(function(){ clearTimeout(window.__s2w); window.__s2w=setTimeout(function(){ paint(); paintStats(); },120); }).observe(board,{childList:true,subtree:true,attributes:true});
+    paint(); paintStats(); setInterval(paintStats,15000);
   })();
 
   /* ---------- History: twelve weeks and three numbers ---------- */
