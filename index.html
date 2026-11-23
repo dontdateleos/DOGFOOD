@@ -6669,6 +6669,9 @@ html.s2 #goalSheet .lift-sheet-panel button{ text-transform:uppercase; }
 html.s2 #goalSheet .lift-sheet-panel .goal-row *, html.s2 #goalSheet .lift-sheet-panel [class*="goal-"] span{ font:600 15px 'Barlow',sans-serif; letter-spacing:0; color:#151515; }
 html.s2 #planWeekSheet .week-actions button, html.s2 #planWeekSheet .fields button{ width:100%; }
 html.s2 #goalSheet .lift-sheet-panel button:not(.primary):not(.lift-sheet-x){ border-radius:999px !important; border:1.5px solid #DED6C6 !important; background:#fff !important; color:#151515 !important; }
+
+/* MOTION: tick bursts and the confetti bits they throw */
+.s2-bit{ position:absolute; width:7px; height:11px; border-radius:2px; pointer-events:none; z-index:80; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14783,7 +14786,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.057';
+const APP_VERSION = '2026.11.23.058';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15179,6 +15182,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.058': 'New motion: pages rise in row by row, opened pages slide in, ticks pop with confetti, numbers count up, charts draw, and a personal best shakes and throws confetti on the Session done page.',
   '2026.11.23.057': 'Suggestion cards on Training use plain words: no more cut-offs, capacity or corroborated signals.',
   '2026.11.23.056': 'Simpler wording for the longest notes in Settings, the glossary and daily practice.',
   '2026.11.23.055': 'Plainer wording across Settings.',
@@ -48749,6 +48753,66 @@ loadGoalProfile().then(async ()=>{
     }
     var pn=document.getElementById('panel-settings'); if(!pn) return;
     new MutationObserver(function(){ clearTimeout(window.__s2f); window.__s2f=setTimeout(function(){ fold(document); },150); }).observe(pn,{attributes:true,attributeFilter:['class'],childList:true,subtree:true});
+  })();
+
+  /* ---------- MOTION: page rise, pages sliding in, tick pops, counting numbers, charts drawing, records ---------- */
+  (function(){
+    if(!Element.prototype.animate) return;
+    var EASE='cubic-bezier(.2,.8,.2,1)', COL=['#C8F031','#FF3E9E','#151515','#ffffff','#FFC24D'];
+    function ok(){ return !reduced(); }
+    /* 1. the page body rises, row by row */
+    function rise(root,delay){
+      if(!ok()||!root) return;
+      var kids=[].slice.call(root.children).filter(function(e){ var cs=getComputedStyle(e); return cs.display!=='none' && cs.position!=='fixed' && e.offsetHeight>0 && !e.classList.contains('lift-sheet') && !e.classList.contains('s2-hero'); }).slice(0,9);
+      kids.forEach(function(e,i){ e.animate([{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:480,delay:(delay||0)+i*40,easing:EASE,fill:'backwards'}); });
+    }
+    window.__s2rise=rise;
+    /* 4. numbers count up (the number at the start of the element's text) */
+    function countUp(el,ms){
+      if(!ok()||!el||el.__cu) return; var n=el.firstChild; while(n&&!(n.nodeType===3&&/\d/.test(n.nodeValue))) n=n.nextSibling; if(!n) return;
+      var m=/^(\D*?)(-?[\d,]*\.?\d+)(.*)$/.exec(n.nodeValue); if(!m) return;
+      var to=parseFloat(m[2].replace(/,/g,'')); if(!isFinite(to)||to===0) return; var dec=(m[2].split('.')[1]||'').length, comma=m[2].indexOf(',')>=0;
+      el.__cu=1; var t0=null; function f(ts){ if(t0===null) t0=ts; var k=Math.min(1,(ts-t0)/(ms||800)), e=1-Math.pow(1-k,3), v=to*e, txt=v.toFixed(dec); if(comma) txt=Number(txt).toLocaleString(undefined,{minimumFractionDigits:dec,maximumFractionDigits:dec}); n.nodeValue=m[1]+txt+m[3]; if(k<1) requestAnimationFrame(f); else { n.nodeValue=m[1]+m[2]+m[3]; setTimeout(function(){ el.__cu=0; },200); } }
+      n.nodeValue=m[1]+(0).toFixed(dec)+m[3]; requestAnimationFrame(f);
+    }
+    function countAll(root){ [].forEach.call((root||document).querySelectorAll('.s2-prow .mv2, #trendMetricPills .mv2, #s2page .big .n, #s2head .big, #s2review .tile b, #s2done .session-complete .ps-k small, .s2-hist .stats b'),function(e){ countUp(e,800); }); }
+    window.__s2count=countAll;
+    /* 5. a chart's line draws in */
+    function drawChart(svg){
+      if(!ok()||!svg) return; var best=null,bl=0; [].forEach.call(svg.querySelectorAll('path'),function(p){ var f=getComputedStyle(p).fill; var l=0; try{ l=p.getTotalLength(); }catch(e){} if((f==='none'||f==='rgba(0, 0, 0, 0)')&&l>bl){ best=p; bl=l; } });
+      if(!best) return; best.animate([{strokeDasharray:bl,strokeDashoffset:bl},{strokeDasharray:bl,strokeDashoffset:0}],{duration:900,easing:'ease-out',fill:'backwards'});
+      [].forEach.call(svg.querySelectorAll('circle'),function(c){ c.animate([{opacity:0,transform:'scale(0)'},{opacity:1,transform:'scale(1)'}],{duration:350,delay:850,easing:'cubic-bezier(.3,1.6,.5,1)',fill:'backwards'}); c.style.transformBox='fill-box'; c.style.transformOrigin='center'; });
+    }
+    window.__s2draw=drawChart;
+    /* 3. a tick pops and throws a little confetti */
+    function bits(host,n){
+      var r=host.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
+      for(var i=0;i<n;i++){ var b=document.createElement('i'); b.className='s2-bit'; b.style.position='fixed'; b.style.left=cx+'px'; b.style.top=cy+'px'; b.style.background=COL[i%5]; document.body.appendChild(b);
+        var a=Math.random()*6.28, d=30+Math.random()*46; var an=b.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:'translate('+(Math.cos(a)*d)+'px,'+(Math.sin(a)*d-12)+'px) rotate('+(Math.random()*540-270)+'deg)',opacity:0}],{duration:650,easing:'ease-out',fill:'forwards'}); an.onfinish=(function(x){ return function(){ x.remove(); }; }(b)); }
+    }
+    function pop(el){ el.animate([{transform:'scale(.82)'},{transform:'scale(1.18)',offset:.55},{transform:'scale(1)'}],{duration:380,easing:'cubic-bezier(.3,1.5,.5,1)'}); }
+    document.addEventListener('click',function(e){
+      if(!ok()) return; var t=e.target.closest('.st-ok, .s2-mt, #s2rest .skip'); var dr=e.target.closest('.drill'); var el=t||dr; if(!el) return;
+      setTimeout(function(){ if(el.getAttribute('aria-pressed')==='true'){ pop(el); if(t) bits(el,10); } },40);
+    },true);
+    /* 2. pages that open on top slide in from the right */
+    var SL=['s2page','s2detail','s2review','s2done'];
+    SL.forEach(function(id){ var el=document.getElementById(id); if(!el) return; var was=false;
+      new MutationObserver(function(){ var on=el.classList.contains('on'); if(on&&!was&&ok()){ el.animate([{transform:'translateX(100%)'},{transform:'none'}],{duration:400,easing:EASE}); setTimeout(function(){ countAll(el); },300); setTimeout(function(){ drawChart(el.querySelector('svg')); },200); if(id==='s2detail'){ setTimeout(function(){ drawChart(document.querySelector('#s2detail #trendChart svg')); },500); } } was=on; }).observe(el,{attributes:true,attributeFilter:['class']}); });
+    /* opened sections inside Build, Skills and Settings slide in too */
+    [['panel-plan'],['panel-injuries'],['panel-settings']].forEach(function(a){ var pn=document.getElementById(a[0]); if(!pn) return; var was=false;
+      new MutationObserver(function(){ var on=pn.classList.contains('s2-open'); if(on!==was&&ok()){ pn.animate([{opacity:0,transform:'translateX('+(on?'44':'-44')+'px)'},{opacity:1,transform:'none'}],{duration:340,easing:EASE}); } was=on; }).observe(pn,{attributes:true,attributeFilter:['class']}); });
+    /* page rise + counts when a tab is shown */
+    var lastTab=null;
+    new MutationObserver(function(){ var m=document.body.className.match(/\btab-(\w+)/), t=m?m[1]:''; if(t&&t!==lastTab){ lastTab=t; var pn=document.getElementById('panel-'+t); setTimeout(function(){ rise(pn,0); },430); if(t==='data') setTimeout(function(){ countAll(pn); },900); } }).observe(document.body,{attributes:true,attributeFilter:['class']});
+    /* 6 + 10. Session done: the numbers tick up, the best card shakes, confetti throws from the top */
+    var dn=document.getElementById('s2done');
+    if(dn){ var wasD=false; new MutationObserver(function(){ var on=dn.classList.contains('on'); if(on&&!wasD&&ok()){
+        setTimeout(function(){ var bd=dn.querySelector('.body'); if(bd){ rise(bd.querySelector('.session-complete')||bd,0); }
+          var pr=dn.querySelector('.pr-line'); if(pr){ setTimeout(function(){ pr.animate([{transform:'translateX(0)'},{transform:'translateX(-8px) rotate(-1.5deg)',offset:.2},{transform:'translateX(8px) rotate(1.5deg)',offset:.4},{transform:'translateX(-4px)',offset:.6},{transform:'translateX(3px)',offset:.8},{transform:'none'}],{duration:520}); bits(pr,22); bits(pr,14); },700); }
+          [].forEach.call(dn.querySelectorAll('.session-complete'),function(c){ var txt=c.firstChild; }); },380);
+        var st=dn.querySelector('.session-complete'); if(st){ var tn=st.firstChild; while(tn&&tn.nodeType!==3) tn=tn.nextSibling; if(tn){ var mm=/^([\d,]+) sets · ([\d,]+) kg moved(?: · ([\d,]+) min)?/.exec(tn.nodeValue); if(mm){ var s0=+mm[1].replace(/,/g,''), k0=+mm[2].replace(/,/g,''), m0=mm[3]?+mm[3]:null, t0=null; (function f(ts){ if(t0===null) t0=ts; var k=Math.min(1,(ts-t0)/1100), e=1-Math.pow(1-k,3); tn.nodeValue=Math.round(s0*e)+' sets · '+Math.round(k0*e).toLocaleString()+' kg moved'+(m0!=null?' · '+Math.round(m0*e)+' min':'')+(tn.nodeValue.replace(/^[^]*?(\s*$)/,'$1')); if(k<1) requestAnimationFrame(f); }(0)); requestAnimationFrame(function(ts){}); } } }
+      } wasD=on; }).observe(dn,{attributes:true,attributeFilter:['class']}); }
   })();
   sync(tabFromBody(),true);
 })();
