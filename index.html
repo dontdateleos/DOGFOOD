@@ -14541,7 +14541,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.042';
+const APP_VERSION = '2026.11.23.043';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14937,6 +14937,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.043': 'Mobility nights have a focus that rotates — lower body, upper body, whole body — named on the card; every area still gets its weekly time.',
   '2026.11.23.042': 'Mobility sessions are named for what they work on (Mobility · Hips); an empty Strength, Running or Mobility card still shows the length.',
   '2026.11.23.041': 'Session cards by kind: orange with a dumbbell for strength, blue with a stopwatch for running, lilac with a foam roller for mobility.',
   '2026.11.23.040': 'Suggestions (like one more set on bench press) show on Training as a card with Accept and Dismiss. The Start button is gone from the Week view again.',
@@ -36220,7 +36221,19 @@ async function getMobilityDomainsNeedingWork(activeGoalSkills){
 // with no category tag at all, which rendered as a single untagged GOAL line.
 // `domainFilter` lets the companion restrict to the complementary body area while
 // keeping identical structure and dosing.
-function buildMobilitySession({ neededDomains, mobilityGoals, loadedROMCoverage, sessionType, dayIdx, budget, integrateIndex, domainFilter, coveredSoFar, bodyweightOnly, weekSecondsByArea, blocksThisWeek, noEccentric }){
+/* A NIGHT'S FOCUS. Standalone mobility nights rotate between the lower body, the upper body and the
+   whole body, so each night has a point and every area still gets its weekly time. The week the
+   rotation starts on moves along each week, so the same night is not always the same focus. The
+   focus areas sort first; everything else fills the time that is left and still counts towards the
+   weekly 10 minutes per area. (The research on whether this beats an even spread is thin: it is a way
+   of organising the same weekly dose, not a proven gain.) */
+const MOBILITY_FOCUS_CYCLE = ['lower', 'upper', 'full'];
+const MOBILITY_FOCUS_DOMAINS = {
+  lower: ['ankles', 'calves', 'knees', 'hips', 'hamstrings', 'adductors'],
+  upper: ['shoulders', 'scapula', 'chest', 'spine', 'wrists']
+};
+const MOBILITY_FOCUS_LABEL = { lower: 'Lower body', upper: 'Upper body', full: 'Full body' };
+function buildMobilitySession({ focus, neededDomains, mobilityGoals, loadedROMCoverage, sessionType, dayIdx, budget, integrateIndex, domainFilter, coveredSoFar, bodyweightOnly, weekSecondsByArea, blocksThisWeek, noEccentric }){
   weekSecondsByArea = weekSecondsByArea || {};
   // Areas already at the weekly ceiling from goal-skill work don't need more access work
   // stacked on top. Charged before the access pass so the goal skill always wins the
@@ -36346,7 +36359,9 @@ function buildMobilitySession({ neededDomains, mobilityGoals, loadedROMCoverage,
   // order the caller already sorted into and which a stable sort preserves.
   const ladderTop = Math.max(...Object.keys(MOBILITY_LEVEL_TO_CATEGORY).map(Number));
   const buildingGoal = n => servesGoal(n.domain) && (n.level == null || n.level <= ladderTop);
+  const focusSet = focus && MOBILITY_FOCUS_DOMAINS[focus] ? MOBILITY_FOCUS_DOMAINS[focus] : null;
   const orderedNeeds = withinBudget.slice().sort((a,b)=>{
+    if(focusSet){ const af = focusSet.includes(a.domain) ? 0 : 1, bf = focusSet.includes(b.domain) ? 0 : 1; if(af !== bf) return af - bf; }
     const ac = covered[a.domain] ? 1 : 0, bc = covered[b.domain] ? 1 : 0;
     if(ac !== bc) return ac - bc;
     const ag = buildingGoal(a) ? 0 : 1, bg = buildingGoal(b) ? 0 : 1;
@@ -36514,7 +36529,7 @@ function buildMobilitySession({ neededDomains, mobilityGoals, loadedROMCoverage,
     }
   }
   const trimNote = trimmedNames.length ? ` — trimmed ${trimmedNames.join(', ')} to fit your ${budget}min session length` : '';
-  return { stretches, trimNote, estimate };
+  return { stretches, trimNote, estimate, focus: focus || null };
 }
 
 async function generateMobilityProgram(numSessions, forcedDates, sessionType){
@@ -36564,8 +36579,10 @@ async function generateMobilityProgram(numSessions, forcedDates, sessionType){
     try{ await window.storage.get(`weekplan:${date}:pm`); taken = true; } catch(e){}
     if(taken) continue;
     const budget = Math.min(sessionLength, MOBILITY_SESSION_TIME_CAP);
-    const { stretches, trimNote } = buildMobilitySession({
-      neededDomains, mobilityGoals, loadedROMCoverage, sessionType,
+    const weekIdx = Math.floor(new Date(placedDates[0] + 'T12:00:00').getTime() / (7 * 86400000));
+    const focus = MOBILITY_FOCUS_CYCLE[(dayIdx + weekIdx) % MOBILITY_FOCUS_CYCLE.length];
+    const { stretches, trimNote, focus: usedFocus } = buildMobilitySession({
+      focus, neededDomains, mobilityGoals, loadedROMCoverage, sessionType,
       dayIdx, budget, integrateIndex: integrateCursor, coveredSoFar, weekSecondsByArea,
       bodyweightOnly: mobilityEquipmentPrefs.bodyweightMobility,
       // Without this every session carried the goal, 12-15 minutes a week on its muscles
@@ -36588,7 +36605,7 @@ async function generateMobilityProgram(numSessions, forcedDates, sessionType){
     } catch(e){
       await window.storage.set(`weekplan:${date}:pm`, JSON.stringify({
         type:'mobility',
-        details: { stretches, notes: 'Auto-generated — Access/Control/Load/Integrate rotate through your domains, Goal tracks real progression' + trimNote }
+        details: { stretches, focus: usedFocus, notes: 'Auto-generated — a ' + (MOBILITY_FOCUS_LABEL[usedFocus] || 'full body').toLowerCase() + ' night; Access/Control/Load/Integrate rotate through your domains, Goal tracks real progression' + trimNote }
       }));
       // Record against the shared weekly ledger so warm-up and post-session selection can
       // see this block's contribution and steer toward areas it didn't cover.
@@ -42909,6 +42926,7 @@ function sessionTitle(block){
     /* NAMED BY WHAT IT WORKS ON. Every session was just "Mobility". The plan already builds each one
        around different areas, so the name takes the area with the most stretch time (the second one
        too when it is close) -- "Mobility · Hips", "Mobility · Shoulders and spine". */
+    if(d.focus && MOBILITY_FOCUS_LABEL[d.focus]) return 'Mobility \u00b7 ' + MOBILITY_FOCUS_LABEL[d.focus];
     try{
       const secs = {};
       (d.stretches || []).forEach(st=>{ const a = st && st.area; if(!a) return; let t = 0; try{ t = romSecondsFor(st) || 60; } catch(e){ t = 60; } secs[a] = (secs[a] || 0) + t; });
