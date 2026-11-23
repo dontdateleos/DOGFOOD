@@ -6030,6 +6030,7 @@ html.s2 #s2rest.on, html.s2 #s2start.on{ display:flex; position:fixed; inset:0; 
 .s2-row{ display:none; }
 html.s2 body.tab-insights:not(.s2-wk) .s2-row{ display:flex; align-items:center; gap:14px; width:calc(100% - 32px); margin:8px 16px 0; padding:14px 16px; box-sizing:border-box; border:1px solid rgba(var(--ink-rgb),.12); border-radius:18px; background:#fff; color:#151515; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; height:auto; min-height:68px; flex:none; text-transform:none; letter-spacing:0; font-weight:400; }
 .s2-row::after{ display:none; }
+html.s2 body.tab-insights .s2-row[hidden]{ display:none !important; }
 .s2-row .ri{ flex:none; width:30px; height:30px; }
 .s2-row .ri svg{ width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
 .s2-row .rt{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
@@ -6067,6 +6068,41 @@ html.s2 body.tab-insights .rest-plate{ margin:16px 16px 8px !important; padding:
 html.s2 body.tab-insights .rest-plate .rest-word{ font:italic 800 48px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif !important; text-transform:uppercase; letter-spacing:0 !important; color:#151515 !important; }
 html.s2 body.tab-insights .rest-plate .rest-note{ margin-top:6px; color:#151515 !important; font:600 15px/1.35 var(--sans) !important; text-transform:none !important; letter-spacing:0 !important; opacity:.85; }
 html.s2 body.tab-insights .rest-plate .rest-build{ background:#151515 !important; color:#fff !important; border-color:#151515 !important; }
+
+/* WEEK: the board as day tiles under a summary card; HISTORY: twelve weeks at a glance */
+.s2-weekcard, .s2-hist{ display:none; }
+html.s2 body.tab-insights.s2-wk .s2-weekcard{ display:block; margin:16px 16px 8px; padding:16px 16px 14px; border:1px solid rgba(var(--ink-rgb),.12); border-radius:22px; background:#fff; color:#151515; }
+html.s2 body.tab-insights.s2-wk #todayScorePlate{ display:none !important; }
+.s2-weekcard .top{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+.s2-weekcard h3, .s2-hist h3{ margin:0; font:italic 800 28px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; letter-spacing:0; }
+.s2-weekcard .top span, .s2-hist .top span{ font:italic 800 17px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; }
+.s2-weekcard .bars{ display:flex; justify-content:space-between; align-items:flex-end; height:96px; margin-top:14px; gap:6px; }
+.s2-weekcard .bars div{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:6px; height:100%; font:700 12px var(--sans); text-transform:uppercase; color:#55554f; }
+.s2-weekcard .bars i{ display:block; width:70%; max-width:38px; height:6px; border-radius:8px; background:rgba(var(--ink-rgb),.12); }
+.s2-weekcard .bars div.plan i{ height:56px; border:2px dashed rgba(var(--ink-rgb),.35); background:transparent; }
+.s2-weekcard .bars div.done i{ height:72px; border:0; background:#C8F031; }
+.s2-weekcard .bars div.now{ color:#151515; }
+html.s2 body.tab-insights.s2-wk .week-panel .week-board{ display:grid !important; grid-template-columns:repeat(7,1fr); gap:6px; padding:0 12px; }
+html.s2 body.tab-insights.s2-wk .week-board .week-lane{ border-radius:14px; background:rgba(var(--ink-rgb),.05); border:1px solid transparent; min-height:64px; }
+html.s2 body.tab-insights.s2-wk .week-board .week-lane.here{ background:#151515 !important; color:#fff !important; border-color:#151515 !important; }
+html.s2 body.tab-insights.s2-wk .week-board .week-lane.here *{ color:#fff !important; }
+html.s2 body.tab-insights .today-score-plate{ margin:12px 16px 0; padding:14px 16px; border-radius:20px; background:#FFE3EE; color:#151515; border:0; }
+html.s2 body.tab-insights .today-score-plate > .group-head, html.s2 body.tab-insights .today-score-plate > .fields{ border:0 !important; padding:0 0 6px; background:transparent !important; position:static; margin:0; }
+html.s2 body.tab-insights .today-score-plate > .group-head::before{ display:none; }
+html.s2 body.tab-insights .today-score-plate .score-note{ color:#151515; border-left:0; padding-left:0; }
+html.s2 body.tab-data .s2-hist{ display:block; margin:16px 16px 4px; }
+.s2-hist .card{ padding:16px 16px 12px; border:1px solid rgba(var(--ink-rgb),.12); border-radius:22px; background:#fff; color:#151515; }
+.s2-hist .top{ display:flex; justify-content:space-between; align-items:baseline; }
+.s2-hist .bars{ display:flex; align-items:flex-end; gap:5px; height:90px; margin-top:12px; }
+.s2-hist .bars i{ flex:1; min-height:4px; border-radius:5px 5px 0 0; background:#C8F031; }
+.s2-hist .bars i.z{ background:rgba(var(--ink-rgb),.12); }
+.s2-hist .bars i.cur{ background:#151515; }
+.s2-hist .stats{ display:flex; margin-top:10px; border:1px solid rgba(var(--ink-rgb),.12); border-radius:18px; background:#fff; color:#151515; }
+.s2-hist .stats div{ flex:1; padding:12px 6px; text-align:center; border-left:1px solid rgba(var(--ink-rgb),.1); }
+.s2-hist .stats div:first-child{ border-left:0; }
+.s2-hist .stats b{ display:block; font:italic 800 28px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; }
+.s2-hist .stats span{ font:700 11px var(--sans); text-transform:uppercase; letter-spacing:.06em; color:#55554f; }
+html.s2 body.tab-data #exSearchInput{ border-radius:999px; padding:12px 16px; border:1px solid rgba(var(--ink-rgb),.2); background:#fff; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14181,7 +14217,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.022';
+const APP_VERSION = '2026.11.23.023';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14577,6 +14613,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.023': 'Week has a summary card over day tiles, History opens with twelve weeks and three numbers, and today’s score is a pink card.',
   '2026.11.23.022': 'After a workout, the summary is a card — an orange header, beat-your-Charge, new best and what moved. A rest day is a purple card.',
   '2026.11.23.021': 'Training lists the warm-up, the session and the cooldown as three rows; tap one to open it.',
   '2026.11.23.020': 'Rest is a full screen: a countdown ring, the croc, +30s and Skip, and what is next. Opening a fresh session starts with the horse.',
@@ -47481,7 +47518,7 @@ loadGoalProfile().then(async ()=>{
     function drills(box){ return [].map.call(box.querySelectorAll('.drill-text'),function(e){ var c=e.cloneNode(true); [].forEach.call(c.querySelectorAll('.drill-dose,.drill-strike'),function(x){ x.remove(); }); return c; }); }
     function paint(){
       var sec=wa.querySelector('.today-session');
-      var wuOn=wu.style.display!=='none', cdOn=cd.style.display!=='none';
+      var wuOn=wu.style.display!=='none' && wu.querySelectorAll('.drill-text').length>0, cdOn=cd.style.display!=='none' && cd.querySelectorAll('.drill-text').length>0;
       rW.hidden=!wuOn; rC.hidden=!cdOn; rS.hidden=!sec;
       if(wuOn){ var a=names(drills(document.getElementById('warmupCards')||wu)); fill(rW,'Warm-up',preview(a)||'Get ready to lift',estOf(wu).replace(/\s*\d+\/\d+.*$/,'')); }
       if(cdOn){ var b=names(drills(document.getElementById('mobilityCards')||cd)); fill(rC,'Cooldown',preview(b)||'Wind down',estOf(cd).replace(/\s*\d+\/\d+.*$/,'')); }
@@ -47499,6 +47536,47 @@ loadGoalProfile().then(async ()=>{
     rS.addEventListener('click',function(){ var sec=wa.querySelector('.today-session'); if(sec) toggle(rS,sec); });
     var t=0; function sched(){ clearTimeout(t); t=setTimeout(function(){ paint(); var sec=wa.querySelector('.today-session'); if(sec&&rS.getAttribute('aria-expanded')==='true') sec.classList.add('s2-open'); },80); }
     [wu,wa,cd].forEach(function(el){ new MutationObserver(sched).observe(el,{childList:true,subtree:true,attributes:true,attributeFilter:['style']}); });
+    paint();
+  })();
+
+  /* ---------- Week: a summary card over the board ---------- */
+  (function(){
+    var board=document.getElementById('weekBoard'); if(!board) return;
+    var card=document.createElement('div'); card.className='s2-weekcard';
+    var anchor=document.getElementById('todayScorePlate'); anchor.parentNode.insertBefore(card,anchor);
+    function paint(){
+      var lanes=[].slice.call(board.querySelectorAll('.week-lane')); if(!lanes.length){ card.style.display='none'; return; } card.style.display='';
+      var planned=0, done=0, bars='';
+      lanes.forEach(function(l){ var a=(l.getAttribute('aria-label')||''), nm=(l.querySelector('.skill-lane-name')||{}).textContent||'';
+        var none=/nothing planned|rest/i.test(a), dn=/done|logged|complete|finished/i.test(a); if(!none||dn) planned++; if(dn) done++;
+        bars+='<div class="'+(dn?'done':(!none?'plan':''))+(l.classList.contains('here')?' now':'')+'"><i></i>'+nm+'</div>'; });
+      card.innerHTML='<div class="top"><h3>Training week</h3><span>'+done+' of '+planned+' session'+(planned===1?'':'s')+'</span></div><div class="bars">'+bars+'</div>';
+    }
+    new MutationObserver(function(){ clearTimeout(window.__s2w); window.__s2w=setTimeout(paint,120); }).observe(board,{childList:true,subtree:true,attributes:true});
+    paint();
+  })();
+
+  /* ---------- History: twelve weeks and three numbers ---------- */
+  (function(){
+    var hv=document.getElementById('historyDataView'); if(!hv) return;
+    var box=document.createElement('div'); box.className='s2-hist'; hv.insertBefore(box,hv.firstChild);
+    var busy=false;
+    async function paint(){
+      if(busy) return; busy=true;
+      try{
+        var all=await getAllTrainingSessions(); all=(all||[]).filter(function(x){ return x&&x.date; });
+        var thisWk=weekKey(todayStr), keys=[], k, d=new Date(thisWk+'T00:00:00Z');
+        for(var i=11;i>=0;i--){ var x=new Date(d.getTime()-i*7*864e5); keys.push(x.toISOString().slice(0,10)); }
+        var cnt={}; keys.forEach(function(q){ cnt[q]=0; }); var mins=0, n=0;
+        all.forEach(function(sn){ var q=weekKey(sn.date); if(q in cnt){ cnt[q]++; n++; mins+=(+sn.durationMin||0); } });
+        var mx=Math.max.apply(null,keys.map(function(q){ return cnt[q]; }).concat([1]));
+        var bars=keys.map(function(q){ var c=cnt[q]; return '<i class="'+(c?'':'z ')+(q===thisWk?'cur':'')+'" style="height:'+Math.max(5,Math.round(c/mx*100))+'%"></i>'; }).join('');
+        box.innerHTML='<div class="card"><div class="top"><h3>Last 12 weeks</h3><span>'+n+' session'+(n===1?'':'s')+'</span></div><div class="bars">'+bars+'</div></div>'
+          +'<div class="stats"><div><b>'+n+'</b><span>Workouts</span></div><div><b>'+(mins>=60?(Math.round(mins/6)/10)+' h':Math.round(mins)+' min')+'</b><span>Total time</span></div><div><b>'+(n?Math.round(n/12*10)/10:0)+'</b><span>Per week</span></div></div>';
+      }catch(e){} finally{ busy=false; }
+    }
+    new MutationObserver(function(){ clearTimeout(window.__s2h); window.__s2h=setTimeout(paint,200); }).observe(hv,{attributes:true,attributeFilter:['style']});
+    new MutationObserver(function(){ if(cur==='data'){ clearTimeout(window.__s2h); window.__s2h=setTimeout(paint,500); } }).observe(document.body,{attributes:true,attributeFilter:['class']});
     paint();
   })();
   sync(tabFromBody(),true);
