@@ -5998,9 +5998,9 @@ html.s2 #logSheet .s2-upnext.on{ display:block; margin:6px 0 0; padding:6px 16px
 html.s2 #logSheet .lift-sheet-panel[data-phase="warm"] > .s2-phase[data-p="warm"], html.s2 #logSheet .lift-sheet-panel[data-phase="cool"] > .s2-phase[data-p="cool"]{ display:block; padding:6px 0 90px; }
 html.s2 #logSheet .lift-sheet-panel[data-phase="warm"] > :is(#logDateRow, #logSheetBody, .log-foot, .s2-upnext, .s2-logbar),
 html.s2 #logSheet .lift-sheet-panel[data-phase="cool"] > :is(#logDateRow, #logSheetBody, .log-foot, .s2-upnext, .s2-logbar){ display:none !important; }
-.s2-steps button{ text-transform:capitalize; all:unset; box-sizing:border-box; display:inline-flex; align-items:center; padding:9px 15px; border-radius:999px; border:1px solid rgba(12,13,11,.2); font:700 14px var(--sans); color:#151515; cursor:pointer; }
+.s2-steps button{ all:unset; box-sizing:border-box; display:inline-flex; align-items:center; padding:9px 15px; border-radius:999px; border:1px solid rgba(12,13,11,.2); font:700 14px var(--sans); color:#151515; cursor:pointer; }
 .s2-steps button::after{ display:none; }
-.s2-steps button{ text-transform:capitalize; }
+.s2-steps button::first-letter{ text-transform:uppercase; }
 .s2-steps button.cur{ background:#151515; color:#fff; border-color:#151515; }
 .s2-phase .group{ margin-top:8px; }
 /* REST and START: two full-screen moments */
