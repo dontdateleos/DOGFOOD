@@ -6312,6 +6312,7 @@ html.s2 body.tab-insights.s2-wk .s2-mad{ display:flex; align-items:baseline; jus
 .s2-mad h3{ margin:0; font:italic 800 30px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
 .s2-mad span{ font:500 14px 'Barlow',sans-serif; color:#5E574C; }
 html.s2 body.tab-insights.s2-wk .week-panel > .group-head{ display:none !important; }
+html.s2 body.tab-insights.s2-wk #weekControlsRow #planWeekOpenBtn{ display:none; }
 html.s2 body.tab-insights.s2-wk #logFab{ display:none !important; }
 html.s2 body.tab-insights.s2-wk #weekControlsRow button{ border:1.5px solid #DED6C6; background:#FBF8F2; border-radius:999px; font:700 15px 'Barlow',sans-serif; text-transform:none; letter-spacing:0; color:#151515; }
 
@@ -6364,6 +6365,36 @@ html.s2 body.tab-insights.s2-wk .week-board .week-lane.s2-done .week-cal-marks{ 
 html.s2 body.tab-insights.s2-wk .week-board .week-lane.s2-done .week-cal-marks::after{ content:'✓'; font:800 18px/1 'Barlow',sans-serif; }
 html.s2 body.tab-insights.s2-wk .week-board .week-lane.s2-none .week-cal-marks{ opacity:.5; }
 html.s2 body.tab-insights.s2-wk .week-board .week-lane .week-cal-score.on{ visibility:visible; background:#fff; border-radius:8px; padding:1px 6px; }
+
+/* MOVE A DAY: tiles with a tick or a cross and the score under them; WEEKLY FOCUS card */
+.s2-md, .s2-focus{ display:none; }
+html.s2 body.tab-insights.s2-wk .week-panel #weekBoard{ display:none !important; }
+html.s2 body.tab-insights.s2-wk .s2-md{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin:0 12px 6px; }
+.s2-md .dy{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+.s2-md .dy > span{ font:700 13px 'Barlow',sans-serif; text-transform:uppercase; color:#151515; }
+.s2-md .tl{ all:unset; box-sizing:border-box; width:100%; max-width:50px; height:44px; border-radius:12px; background:#E9E3D6; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#5E574C; }
+.s2-md .tl::after{ display:none; }
+.s2-md .tl svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
+.s2-md .dy.done .tl{ background:#C8F031; color:#151515; }
+.s2-md .dy.now .tl{ background:#FBF8F2; border:2px solid #151515; color:#151515; }
+.s2-md .dy.plan .tl{ background:#E9E3D6; color:#151515; }
+.s2-md .sc{ min-height:22px; padding:1px 8px; border-radius:8px; background:#C8F031; font:italic 800 15px/1.4 'Barlow Condensed','Arial Narrow',sans-serif; color:#151515; }
+.s2-md .sc:empty{ visibility:hidden; }
+html.s2 body.tab-insights.s2-wk .s2-focus{ display:block; width:calc(100% - 32px); margin:14px 16px 0; padding:14px 16px; border:1.5px solid #E4DCCB; border-radius:18px; background:#FBF8F2; color:#151515; text-align:left; cursor:pointer; box-sizing:border-box; }
+.s2-focus .fh{ display:flex; justify-content:space-between; align-items:center; }
+.s2-focus h3{ margin:0; font:italic 800 28px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+.s2-focus .fh svg{ width:18px; height:18px; fill:none; stroke:#151515; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+.s2-focus .fb{ display:flex; align-items:center; gap:12px; margin-top:12px; }
+.s2-focus .fb > svg{ flex:none; width:34px; height:34px; fill:none; stroke:#151515; stroke-width:2; }
+.s2-focus .ft{ flex:1; min-width:0; }
+.s2-focus .ft b{ display:block; font:700 20px/1.2 'Barlow',sans-serif; }
+.s2-focus .segs{ display:flex; gap:6px; margin-top:8px; }
+.s2-focus .segs i{ flex:1; height:8px; border-radius:6px; background:#DED6C6; }
+.s2-focus .segs i.on{ background:#C8F031; }
+.s2-focus .fr{ font:italic 800 30px/1 'Barlow Condensed','Arial Narrow',sans-serif; }
+.s2-focus::after{ display:none; }
+html.s2 body.tab-insights.s2-wk #weekControlsRow{ display:flex !important; gap:8px; margin:6px 16px 0; padding:0; flex-wrap:wrap; }
+html.s2 body.tab-insights.s2-wk #weekControlsRow button{ flex:none; width:auto; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14478,7 +14509,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.037';
+const APP_VERSION = '2026.11.23.038';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14874,6 +14905,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.038': 'Week: Move a day with ticks, crosses and scores, and a Weekly focus card, as in the design.',
   '2026.11.23.037': 'The orange is brighter. The week shows finished days in lime with their score and a tick, and planned days dashed.',
   '2026.11.23.036': 'History opens with recent workouts and PRs set; Your week opens a Week in review page.',
   '2026.11.23.035': 'The Week view has workouts, total time and hard sets, and a Move a day heading, like the design.',
@@ -47989,6 +48021,23 @@ loadGoalProfile().then(async ()=>{
         bars+='<div class="'+(dn?'done':(!none?'plan':''))+(l.classList.contains('here')?' now':'')+'">'+(dn&&sc?'<b class="sc">'+sc.textContent.trim()+'</b>':'')+'<i></i>'+nm+'</div>'; });
       card.innerHTML='<div class="top"><h3>Training week</h3><span>'+done+' of '+planned+' session'+(planned===1?'':'s')+'</span></div><div class="bars">'+bars+'</div>';
     }
+    var md=document.createElement('div'); md.className='s2-md'; board.parentNode.insertBefore(md,board.nextSibling);
+    var focus=document.createElement('button'); focus.type='button'; focus.className='s2-focus'; var crow=document.getElementById('weekControlsRow'); (crow?crow:board).insertAdjacentElement('afterend',focus);
+    focus.addEventListener('click',function(){ var t=document.querySelector('.tab[data-tab="plan"]'); if(t&&typeof activateTabViaUi==='function') activateTabViaUi(t); });
+    var X='<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>', K='<svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>', D='<svg viewBox="0 0 24 24"><path d="M6 7v10M3 10v4M18 7v10M21 10v4M6 12h12"/></svg>';
+    function paintMD(){
+      var lanes=[].slice.call(board.querySelectorAll('.week-lane')); if(!lanes.length) return; var h='', pl=0, dn=0;
+      lanes.forEach(function(l,k){ var sc=l.querySelector('.week-cal-score.on'), done=!!sc||l.classList.contains('s2-done'), none=l.classList.contains('s2-none'), now=l.classList.contains('here');
+        if(!none||done) pl++; if(done) dn++;
+        var nm=(l.querySelector('.skill-lane-name')||{}).textContent||'';
+        h+='<div class="dy '+(done?'done':(now?'now':(none?'':'plan')))+'"><span>'+nm+'</span><button type="button" class="tl" data-k="'+k+'" aria-label="'+(l.getAttribute('aria-label')||nm)+'">'+(done?K:(none&&!now?X:D))+'</button><span class="sc">'+(done&&sc?sc.textContent.trim():'')+'</span></div>'; });
+      md.innerHTML=h; md.__lanes=lanes; md.__n=[dn,pl];
+      var segs=''; for(var q=0;q<Math.max(pl,1);q++) segs+='<i class="'+(q<dn?'on':'')+'"></i>';
+      (async function(){ var pos=null, ty=''; try{ pos=await getBlockPosition(todayStr); ty=(await getBlockTypeFor(todayStr)).type||''; }catch(e){}
+        var t=pos?((ty?ty.charAt(0).toUpperCase()+ty.slice(1)+' · ':'')+'Week '+pos.weekInBlock+' of '+pos.length):'This week';
+        focus.innerHTML='<div class="fh"><h3>Weekly focus</h3><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></div><div class="fb"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg><div class="ft"><b>'+t+'</b><div class="segs">'+segs+'</div></div><span class="fr">'+dn+'/'+pl+'</span></div>'; })();
+    }
+    md.addEventListener('click',function(e){ var b=e.target.closest('.tl'); if(!b||!md.__lanes) return; var l=md.__lanes[+b.dataset.k]; if(l) l.click(); });
     var stats=document.createElement('div'); stats.className='s2-wkstats'; card.insertAdjacentElement('afterend',stats);
     var mad=document.createElement('div'); mad.className='s2-mad'; mad.innerHTML='<h3>Move a day</h3><span>Tap a day for options</span>'; board.parentNode.insertBefore(mad,board);
     var SI={w:'<path d="M6 7v10M3 10v4M18 7v10M21 10v4M6 12h12"/>',t:'<circle cx="12" cy="13" r="7"/><path d="M12 13V9M9.5 3h5"/>',h:'<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>'};
@@ -48000,8 +48049,8 @@ loadGoalProfile().then(async ()=>{
         stats.innerHTML='<div><svg viewBox="0 0 24 24">'+SI.w+'</svg><p style="margin:0"><b>'+n+'</b><span>Workouts</span></p></div><div><svg viewBox="0 0 24 24">'+SI.t+'</svg><p style="margin:0"><b>'+Math.round(mins)+' min</b><span>Total time</span></p></div><div><svg viewBox="0 0 24 24">'+SI.h+'</svg><p style="margin:0"><b>'+sets+'</b><span>Hard sets</span></p></div>';
       }catch(e){} finally{ sbusy=false; }
     }
-    new MutationObserver(function(){ clearTimeout(window.__s2w); window.__s2w=setTimeout(function(){ paint(); paintStats(); },120); }).observe(board,{childList:true,subtree:true,attributes:true});
-    paint(); paintStats(); setInterval(paintStats,15000);
+    new MutationObserver(function(){ clearTimeout(window.__s2w); window.__s2w=setTimeout(function(){ paint(); paintMD(); paintStats(); },120); }).observe(board,{childList:true,subtree:true,attributes:true});
+    paint(); paintMD(); paintStats(); setInterval(paintStats,15000);
   })();
 
   /* ---------- History: twelve weeks and three numbers ---------- */
