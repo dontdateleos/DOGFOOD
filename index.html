@@ -5818,7 +5818,7 @@ html.s2 #s2nav{ display:flex; position:fixed; z-index:60; left:10px; right:10px;
 #s2nav button.on .ic img{ filter:none; transform:translateY(-3px) scale(1.14); }
 
 /* things the app already puts at the bottom, lifted clear of the bar */
-html.s2 body.tab-insights #logFab{ bottom:calc(104px + var(--fab-lift, 0px) + env(safe-area-inset-bottom, 0px)); }
+html.s2 body.tab-insights #logFab{ bottom:calc(132px + var(--fab-lift, 0px) + env(safe-area-inset-bottom, 0px)); }
 html.s2 .log-bar, html.s2 .update-banner{ bottom:calc(98px + env(safe-area-inset-bottom, 0px)); padding-bottom:0; }
 html.s2 #toast{ bottom:calc(104px + env(safe-area-inset-bottom, 0px)); }
 @media (prefers-reduced-motion: reduce){
@@ -14909,7 +14909,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.069';
+const APP_VERSION = '2026.11.23.070';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15305,6 +15305,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.070': 'Start button no longer sits on top of the line at the bottom of the page.',
   '2026.11.23.069': 'Bottom tabs spaced out, and the active icon no longer pokes over the bar.',
   '2026.11.23.068': 'Confetti falls again, tags are spread out and nothing overlaps.',
   '2026.11.23.067': 'New Fuel and Recover tabs, and the bar is now Train, Fuel, Recover, Build, Track. Settings moved to the gear in the corner.',
