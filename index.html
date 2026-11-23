@@ -6314,6 +6314,48 @@ html.s2 body.tab-insights.s2-wk .s2-mad{ display:flex; align-items:baseline; jus
 html.s2 body.tab-insights.s2-wk .week-panel > .group-head{ display:none !important; }
 html.s2 body.tab-insights.s2-wk #logFab{ display:none !important; }
 html.s2 body.tab-insights.s2-wk #weekControlsRow button{ border:1.5px solid #DED6C6; background:#FBF8F2; border-radius:999px; font:700 15px 'Barlow',sans-serif; text-transform:none; letter-spacing:0; color:#151515; }
+
+.s2-recent{ margin:16px 0 0; }
+.s2-recent .rh{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+.s2-recent h3{ margin:0; font:italic 800 28px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+.s2-recent .rh a, .s2-recent .rh button{ all:unset; cursor:pointer; font:700 14px 'Barlow',sans-serif; text-transform:uppercase; letter-spacing:.03em; }
+.s2-recent .rh button::after{ display:none; }
+.s2-recent .cardl{ border:1.5px solid #E4DCCB; border-radius:18px; background:#FBF8F2; overflow:hidden; }
+.s2-recent .wr{ all:unset; box-sizing:border-box; display:flex; align-items:center; gap:12px; width:100%; padding:10px 14px; cursor:pointer; color:#151515; }
+.s2-recent .wr + .wr{ border-top:1.5px solid #E4DCCB; }
+.s2-recent .wr::after{ display:none; }
+.s2-recent .wr .wi{ flex:none; width:40px; height:40px; border-radius:12px; background:#C8F031; display:flex; align-items:center; justify-content:center; }
+.s2-recent .wr .wi svg{ width:22px; height:22px; fill:none; stroke:#151515; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+.s2-recent .wr .wt{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.s2-recent .wr .wt b{ font:700 17px/1.2 'Barlow',sans-serif; }
+.s2-recent .wr .wt span{ font:500 13px 'Barlow',sans-serif; color:#2A2620; }
+.s2-recent .wr .wc{ flex:none; width:16px; height:16px; fill:none; stroke:#151515; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+
+/* WEEK IN REVIEW: a page of its own, opened from Your week */
+#s2review{ display:none; }
+html.s2 #s2review.on{ display:block; position:fixed; inset:0; z-index:90; overflow-y:auto; background:#F6F1E7; color:#151515; padding-bottom:calc(30px + env(safe-area-inset-bottom, 0px)); }
+#s2review .bn{ position:relative; height:calc(190px + env(safe-area-inset-top, 0px)); background:#B7F02A url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 390 54' preserveAspectRatio='none'%3E%3Cpath d='M0 22 C60 0 130 0 200 18 S330 42 390 14 V54 H0Z' fill='%23F6F1E7'/%3E%3C/svg%3E") bottom/100% 46px no-repeat; }
+#s2review .bk{ all:unset; position:absolute; left:14px; top:calc(12px + env(safe-area-inset-top, 0px)); width:44px; height:44px; border-radius:50%; background:#F6F1E7; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+#s2review .bk::after{ display:none; }
+#s2review .bk svg{ width:20px; height:20px; fill:none; stroke:#151515; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+#s2review h2{ position:absolute; left:20px; top:calc(64px + env(safe-area-inset-top, 0px)); margin:0; font:italic 800 46px/.92 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+#s2review .lab{ margin:6px 16px 10px; font:700 12px 'Barlow',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#5E574C; }
+#s2review .tiles{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:0 16px; }
+#s2review .tile{ padding:12px 14px; border:1.5px solid #E4DCCB; border-radius:16px; background:#FBF8F2; }
+#s2review .tile b{ display:block; font:italic 800 34px/1 'Barlow Condensed','Arial Narrow',sans-serif; }
+#s2review .tile span{ font:700 11px 'Barlow',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#5E574C; }
+#s2review .dark{ display:flex; align-items:center; gap:14px; margin:10px 16px 0; padding:14px 16px; border-radius:18px; background:#151515; color:#fff; }
+#s2review .dark .fl{ flex:none; width:44px; height:44px; border-radius:12px; background:#C8F031; display:flex; align-items:center; justify-content:center; color:#151515; }
+#s2review .dark .fl svg{ width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+#s2review .dark b, #s2review .dark span{ color:#fff; }
+#s2review .dark .fl{ color:#151515; }
+#s2review .dark b{ display:block; font:italic 800 24px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+#s2review .dark span{ font:500 14px/1.3 'Barlow',sans-serif; opacity:.85; }
+#s2review .nx{ margin:10px 16px 0; padding:12px 16px; border:1.5px solid #E4DCCB; border-radius:18px; background:#FBF8F2; }
+#s2review .nx small{ font:700 12px 'Barlow',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#5E574C; }
+#s2review .nx p{ margin:4px 0 0; font:500 16px/1.35 'Barlow',sans-serif; }
+#s2review .go{ all:unset; box-sizing:border-box; display:flex; align-items:center; justify-content:center; margin:12px 16px 0; width:calc(100% - 32px); height:54px; border-radius:16px; background:#151515; color:#fff; cursor:pointer; font:italic 800 22px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+#s2review .go::after{ display:none; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14428,7 +14470,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.035';
+const APP_VERSION = '2026.11.23.036';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14824,6 +14866,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.036': 'History opens with recent workouts and PRs set; Your week opens a Week in review page.',
   '2026.11.23.035': 'The Week view has workouts, total time and hard sets, and a Move a day heading, like the design.',
   '2026.11.23.034': 'Marking the warm-up or cooldown done updates its tick, bar and button.',
   '2026.11.23.033': 'Warm-up and Cooldown in the workout are tick lists with a progress bar and one Mark done button, like the design.',
@@ -47876,9 +47919,9 @@ loadGoalProfile().then(async ()=>{
     }
     rO.addEventListener('click',function(){ buildOpts(); opts.classList.toggle('on'); });
     var wk=document.createElement('button'); wk.type='button'; wk.className='s2-weekbtn';
-    wk.innerHTML='<span class="fl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9Z"/></svg></span><span class="wt"><b>Your week</b><i>Tap for the week</i></span><span class="rc">'+CH+'</span>';
+    wk.innerHTML='<span class="fl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9Z"/></svg></span><span class="wt"><b>Your week</b><i>Tap for the review</i></span><span class="rc">'+CH+'</span>';
     rowsCard.insertAdjacentElement('afterend',wk);
-    wk.addEventListener('click',function(){ var b=document.querySelector('.s2-seg button[data-m="week"]'); if(b) b.click(); });
+    wk.addEventListener('click',function(){ if(window.__s2openReview) window.__s2openReview(); });
     window.__s2weekbtn=wk;
     function names(list){ var a=[].map.call(list,function(e){ return e.textContent.replace(/\s+/g,' ').trim(); }).filter(Boolean); return a; }
     function preview(a){ if(!a.length) return ''; var p=a.slice(0,2).join(', '); return p+(a.length>2?' and '+(a.length-2)+' more':''); }
@@ -47966,10 +48009,24 @@ loadGoalProfile().then(async ()=>{
         all.forEach(function(sn){ var q=weekKey(sn.date); if(q in cnt){ cnt[q]++; n++; mins+=(+sn.durationMin||0); } });
         var mx=Math.max.apply(null,keys.map(function(q){ return cnt[q]; }).concat([1]));
         var bars=keys.map(function(q){ var c=cnt[q]; return '<i class="'+(c?'':'z ')+(q===thisWk?'cur':'')+'" style="height:'+Math.max(5,Math.round(c/mx*100))+'%"></i>'; }).join('');
+        var prs=0; try{ var ps=await progressSummary(); prs=(ps&&ps.bests)?ps.bests.length:0; }catch(e){}
+        var ICN={strength:'<path d="M6 7v10M3 10v4M18 7v10M21 10v4M6 12h12"/>',run:'<circle cx="15" cy="5" r="2"/><path d="M9 21l3-6-3-3 2-5 4 2 3 3M7 13l2-3"/>',mobility:'<circle cx="12" cy="5" r="2"/><path d="M5 9h14M12 9v6M9 21l3-6 3 6"/>'};
+        var rec=all.slice().sort(function(a,b){ return (b.date+String(b.timestamp||'')).localeCompare(a.date+String(a.timestamp||'')); }).slice(0,5);
+        var recent=rec.length?('<div class="s2-recent"><div class="rh"><h3>Recent workouts</h3><button type="button" data-see>See all ›</button></div><div class="cardl">'+rec.map(function(sn){
+          var ty=sn.type||'strength', nm=(sn.workoutTag?String(sn.workoutTag).replace(/_/g,' '):(ty==='run'?'Run':(ty==='mobility'?'Mobility':'Workout'))); nm=nm.charAt(0).toUpperCase()+nm.slice(1);
+          var d=new Date(sn.date+'T12:00:00'), ds=d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}).replace(',','');
+          var sets=(sn.exercises||[]).reduce(function(a,e){ return a+(+e.sets||0); },0);
+          var sub=ds+(sn.durationMin?' · '+Math.round(sn.durationMin)+' min':'')+(sets?' · '+sets+' sets':(sn.distanceKm?' · '+sn.distanceKm+' km':''));
+          return '<button type="button" class="wr" data-d="'+sn.date+'"><span class="wi"><svg viewBox="0 0 24 24" aria-hidden="true">'+(ICN[ty]||ICN.strength)+'</svg></span><span class="wt"><b>'+escapeHtmlLite(nm)+'</b><span>'+sub+'</span></span><svg class="wc" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>'; }).join('')+'</div></div>'):'';
         box.innerHTML='<div class="card"><div class="top"><h3>Last 12 weeks</h3><span>'+n+' session'+(n===1?'':'s')+'</span></div><div class="bars">'+bars+'</div></div>'
-          +'<div class="stats"><div><b>'+n+'</b><span>Workouts</span></div><div><b>'+(mins>=60?(Math.round(mins/6)/10)+' h':Math.round(mins)+' min')+'</b><span>Total time</span></div><div><b>'+(n?Math.round(n/12*10)/10:0)+'</b><span>Per week</span></div></div>';
+          +'<div class="stats"><div><b>'+n+'</b><span>Workouts</span></div><div><b>'+(mins>=60?(Math.round(mins/6)/10)+' h':Math.round(mins)+' min')+'</b><span>Total time</span></div><div><b>'+prs+'</b><span>PRs set</span></div></div>'+recent;
       }catch(e){} finally{ busy=false; }
     }
+    box.addEventListener('click',function(e){
+      var b=e.target.closest('button'); if(!b) return;
+      if(b.hasAttribute('data-see')){ var r=document.getElementById('prevWorkoutsResults'); if(r&&r.scrollIntoView) r.scrollIntoView({behavior:'smooth',block:'start'}); return; }
+      if(b.dataset.d){ var inp=document.getElementById('prevWorkoutsDate'); if(inp){ inp.value=b.dataset.d; inp.dispatchEvent(new Event('change',{bubbles:true})); inp.dispatchEvent(new Event('input',{bubbles:true})); var r2=document.getElementById('prevWorkoutsResults'); setTimeout(function(){ if(r2&&r2.scrollIntoView) r2.scrollIntoView({behavior:'smooth',block:'start'}); },300); } }
+    });
     new MutationObserver(function(){ clearTimeout(window.__s2h); window.__s2h=setTimeout(paint,200); }).observe(hv,{attributes:true,attributeFilter:['style']});
     new MutationObserver(function(){ if(cur==='data'){ clearTimeout(window.__s2h); window.__s2h=setTimeout(paint,500); } }).observe(document.body,{attributes:true,attributeFilter:['class']});
     paint();
@@ -48029,6 +48086,30 @@ loadGoalProfile().then(async ()=>{
       }catch(e){}
     }
     setInterval(subs,4000); setTimeout(subs,1500);
+  })();
+
+  /* ---------- Week in review ---------- */
+  (function(){
+    var rv=document.createElement('div'); rv.id='s2review'; rv.setAttribute('role','dialog'); rv.setAttribute('aria-label','Week in review'); document.body.appendChild(rv);
+    function pad2(n){ return (n<10?'0':'')+n; }
+    async function build(){
+      var dates=getWeekDates(), sess=0, planned=0, sp=document.querySelector('.s2-weekcard .top span'), m=sp&&/(\d+) of (\d+)/.exec(sp.textContent);
+      if(m){ sess=+m[1]; planned=+m[2]; } else { (await getAllTrainingSessions()||[]).forEach(function(sn){ if(sn&&dates.indexOf(sn.date)>=0) sess++; }); planned=sess; }
+      var prs=0, p=null; try{ p=await progressSummary(); prs=p&&p.bests?p.bests.length:0; }catch(e){}
+      var ch=null; try{ var sr=await computeSystemicReadiness(todayStr), ser=(sr&&sr.available&&sr.shownSeries)||{}, v=dates.filter(function(d){ return ser[d]!=null; }).map(function(d){ return ser[d]; }); if(v.length) ch=Math.round(v.reduce(function(a,b){ return a+b; },0)/v.length); }catch(e){}
+      var sl=null; try{ var hrs=[]; for(var i=0;i<dates.length;i++){ try{ var e=JSON.parse((await window.storage.get(keyFor(dates[i]))).value); if(e&&e.durationHrs!=null) hrs.push(+e.durationHrs); }catch(x){} } if(hrs.length){ var av=hrs.reduce(function(a,b){ return a+b; },0)/hrs.length; sl=Math.floor(av)+'h '+pad2(Math.round((av%1)*60))+'m'; } }catch(e){}
+      var nextTxt='Plan next week to see what changes.', nextLab='Next week'; try{ var pos=await getBlockPosition(shiftDateStr(dates[0],7)); nextLab='Next week · W'+pos.weekInBlock; nextTxt='Week '+pos.length+' is the deload.'; if(!isDeloadPosition(pos.weekInBlock,pos.length)) nextTxt='One more set on the main lifts if you keep recovering. Week '+pos.length+' is the deload.'; }catch(e){}
+      var good=ch!=null&&ch>=65;
+      rv.innerHTML='<div class="bn"><button type="button" class="bk" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button><h2>Week in<br>review</h2></div>'
+        +'<div class="lab">Week of '+new Date(dates[0]+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' to '+new Date(dates[6]+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})+'</div>'
+        +'<div class="tiles"><div class="tile"><b>'+sess+' of '+planned+'</b><span>Sessions</span></div><div class="tile"><b>'+prs+'</b><span>New PRs</span></div><div class="tile"><b>'+(ch!=null?ch+'%':'–')+'</b><span>Average Charge</span></div><div class="tile"><b>'+(sl||'–')+'</b><span>Average sleep</span></div></div>'
+        +'<div class="dark"><span class="fl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9Z"/></svg></span><div><b>'+(good?'You’re in form':'Keep it steady')+'</b><span>'+(ch!=null?(good?'Charge averaged '+ch+' this week.':'Charge averaged '+ch+' — recovery is the limit this week.'):'Check in each morning to see how recovery is moving.')+'</span></div></div>'
+        +'<div class="nx"><small>'+nextLab+'</small><p>'+nextTxt+'</p></div>'
+        +'<button type="button" class="go">Plan next week</button>';
+      rv.querySelector('.bk').addEventListener('click',function(){ rv.classList.remove('on'); });
+      rv.querySelector('.go').addEventListener('click',function(){ rv.classList.remove('on'); var b=document.getElementById('planWeekOpenBtn'); if(b) b.click(); });
+    }
+    window.__s2openReview=async function(){ try{ await build(); }catch(e){} rv.classList.add('on'); rv.scrollTop=0; };
   })();
   sync(tabFromBody(),true);
 })();
