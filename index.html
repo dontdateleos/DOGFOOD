@@ -6313,6 +6313,7 @@ html.s2 body.tab-insights.s2-wk .s2-mad{ display:flex; align-items:baseline; jus
 .s2-mad span{ font:500 14px 'Barlow',sans-serif; color:#5E574C; }
 html.s2 body.tab-insights.s2-wk .week-panel > .group-head{ display:none !important; }
 html.s2 body.tab-insights.s2-wk #weekControlsRow #planWeekOpenBtn{ display:none; }
+html.s2 body.tab-insights.s2-wk #logFab{ display:none !important; }
 html.s2 body.tab-insights.s2-wk #weekControlsRow button{ border:1.5px solid #DED6C6; background:#FBF8F2; border-radius:999px; font:700 15px 'Barlow',sans-serif; text-transform:none; letter-spacing:0; color:#151515; }
 
 .s2-recent{ margin:16px 0 0; }
@@ -6394,6 +6395,27 @@ html.s2 body.tab-insights.s2-wk .s2-focus{ display:block; width:calc(100% - 32px
 .s2-focus::after{ display:none; }
 html.s2 body.tab-insights.s2-wk #weekControlsRow{ display:flex !important; gap:8px; margin:6px 16px 0; padding:0; flex-wrap:wrap; }
 html.s2 body.tab-insights.s2-wk #weekControlsRow button{ flex:none; width:auto; }
+
+/* THE SUGGESTION CARD: a white card with the kind as a lime chip, the confidence bar, a big title, and Accept / Dismiss */
+html.s2 body.tab-insights #todayCardStack{ margin:14px 16px 0; }
+html.s2 body.tab-insights.s2-wk #todayCardStack{ display:none !important; }
+html.s2 body.tab-insights #cardStackHead{ display:none !important; }
+html.s2 body.tab-insights #todayCardStack .rec-card{ border:1.5px solid #E4DCCB; background:#fff; border-radius:22px; padding:14px 16px 16px; color:#151515; --tone:#C8F031; --tone-ink:#151515; --tone-field:transparent; }
+html.s2 body.tab-insights #todayCardStack .rec-card.tone-down{ --tone:#FFC6DF; }
+html.s2 body.tab-insights #todayCardStack .rec-head{ display:flex; align-items:center; gap:12px; padding:0; background:none; border:0; }
+html.s2 body.tab-insights #todayCardStack .rec-symbol{ display:none; }
+html.s2 body.tab-insights #todayCardStack .rec-type{ background:var(--tone); color:#151515; border-radius:999px; padding:6px 16px; font:700 17px 'Barlow',sans-serif; text-transform:capitalize; letter-spacing:0; }
+html.s2 body.tab-insights #todayCardStack .conf-ruler{ margin-left:0; flex:1; display:flex; gap:0; align-items:center; }
+html.s2 body.tab-insights #todayCardStack .conf-ruler i{ flex:1; height:8px; background:#E4DCCB; }
+html.s2 body.tab-insights #todayCardStack .conf-ruler i:first-child{ border-radius:6px 0 0 6px; } html.s2 body.tab-insights #todayCardStack .conf-ruler i:last-child{ border-radius:0 6px 6px 0; }
+html.s2 body.tab-insights #todayCardStack .conf-ruler i.on{ background:#151515; }
+html.s2 body.tab-insights #todayCardStack .rec-body{ background:none; padding:10px 0 0; margin:0; border:0; }
+html.s2 body.tab-insights #todayCardStack .rec-title{ font:italic 800 30px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; letter-spacing:0; color:#151515; }
+html.s2 body.tab-insights #todayCardStack .rec-signal{ margin-top:8px; font:500 17px/1.35 'Barlow',sans-serif; color:#151515; text-transform:none; letter-spacing:0; padding:0; border:0; }
+html.s2 body.tab-insights #todayCardStack .rec-actions{ display:flex; gap:10px; margin-top:12px; }
+html.s2 body.tab-insights #todayCardStack .rec-actions button{ flex:1; height:56px; border-radius:18px; font:italic 800 22px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; letter-spacing:0; }
+html.s2 body.tab-insights #todayCardStack .rec-actions .accept-btn{ background:#151515; color:#fff; border:2px solid #151515; }
+html.s2 body.tab-insights #todayCardStack .rec-actions .outline{ background:#fff; color:#151515; border:2px solid #151515; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14508,7 +14530,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.039';
+const APP_VERSION = '2026.11.23.040';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14904,6 +14926,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.040': 'Suggestions (like one more set on bench press) show on Training as a card with Accept and Dismiss. The Start button is gone from the Week view again.',
   '2026.11.23.039': 'The Start button is back on the Week view.',
   '2026.11.23.038': 'Week: Move a day with ticks, crosses and scores, and a Weekly focus card, as in the design.',
   '2026.11.23.037': 'The orange is brighter. The week shows finished days in lime with their score and a tick, and planned days dashed.',
@@ -47948,6 +47971,8 @@ loadGoalProfile().then(async ()=>{
     var rowsCard=document.createElement('section'); rowsCard.className='s2-rows'; wu.parentNode.insertBefore(rowsCard,wu);
     function mk2(ic){ var b=mk(ic,rowsCard); rowsCard.appendChild(b); return b; }
     var rS=mk2('dumb'), rW=mk2('bolt'), rC=mk2('heart');
+    (function(){ var cs=document.getElementById('todayCardStack'); if(cs) rowsCard.parentNode.insertBefore(cs,rowsCard);
+      try{ cardStackOpen=true; if(typeof showNextCard==='function') showNextCard(); }catch(e){} })();
     var rA=document.createElement('div'); rA.className='s2-alert'; rA.hidden=true; rowsCard.insertBefore(rA,rowsCard.firstChild);
     rA.innerHTML='<span class="ri"><svg viewBox="0 0 24 24" aria-hidden="true">'+IC.bolt+'</svg></span><span class="rt"><b></b><i></i></span>';
     var rK=mk2('layers'); rK.querySelector('.ri svg').innerHTML=IC.layers;
