@@ -6568,13 +6568,40 @@ html.s2 #logSheet .lift-sheet-panel .field-label, html.s2 #logSheet .lift-sheet-
 html.s2 #logSheet input.week-ex-name{ background:transparent !important; border:0 !important; }
 html.s2 #logSheet .log-date-row{ flex-wrap:wrap; row-gap:8px; }
 html.s2 #logSheet .log-slot-pair{ width:100%; display:flex; gap:6px; }
-html.s2 #logSheet .log-slot-pair .log-slot-btn{ flex:1 1 0; max-width:none; text-align:center; }
+html.s2 #logSheet .log-slot-pair .log-slot-btn{ flex:1 1 0; max-width:none; text-align:center; white-space:normal; font-size:12px; line-height:1.15; overflow:visible; text-overflow:clip; }
 html.s2 #logSheet .log-slot-sep{ display:none; }
 html.s2 #logSheet .log-foot, html.s2 #logSheet .log-foot *{ color:#151515 !important; }
 html.s2 #logSheet .lift-sheet-panel button.primary:not(.s2-logset){ background:#151515; color:#fff !important; }
 html.s2 #logSheet .log-act, html.s2 #logSheet .log-act.go{ color:#151515 !important; font-weight:800; }
 html.s2 #logSheet .log-act.go{ background:#C8F031 !important; border-radius:999px; padding:8px 18px; }
 html.s2 #logSheet .log-act:not(.go){ color:#5E574C !important; }
+
+/* RUN AND MOBILITY LOGS, THE SAME WAY AS STRENGTH: a card, big numbers, ticks, and the pinned bar */
+html.s2 #logSheet .lift-sheet-panel:is([data-kind="run"],[data-kind="mobility"]) #blockEditPanel > :is(.ask-q,.charge-plan-note,.log-hint,.score-note){ display:none !important; }
+html.s2 #logSheet .lift-sheet-panel:is([data-kind="run"],[data-kind="mobility"]) .log-acts #logWeekSessionBtn{ display:none; }
+html.s2 #logSheet .lift-sheet-panel[data-kind="run"] #blockEditPanel > .edit-row, html.s2 #logSheet .lift-sheet-panel[data-kind="run"] #blockEditPanel > .run-pace{ margin:0 0 10px; padding:14px 16px; border:1.5px solid #E4DCCB; border-radius:18px; background:#FBF8F2; }
+html.s2 #logSheet #weekRunType{ font:700 18px 'Barlow',sans-serif; border-radius:999px !important; padding:10px 16px; width:100%; }
+html.s2 #logSheet .log-run-row{ display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+html.s2 #logSheet .lift-sheet-panel .log-run-row input.wheel-field:not([type="zz"]):not([type="yy"]):not([type="xx"]){ width:100px; max-width:120px; text-align:left; border:0 !important; background:transparent !important; box-shadow:none !important; height:auto !important; font:italic 800 56px/1 'Barlow Condensed','Arial Narrow',sans-serif !important; padding:0 !important; color:#151515 !important; }
+html.s2 #logSheet .log-run-row .log-unit{ font:700 16px 'Barlow',sans-serif; color:#5E574C; text-transform:none; }
+html.s2 #logSheet .log-run-row .log-op{ font:600 16px 'Barlow',sans-serif; color:#5E574C; }
+html.s2 #logSheet .run-pace{ font:700 16px 'Barlow',sans-serif; }
+html.s2 #logSheet .lift-sheet-panel[data-kind="mobility"] .mobility-cat-label{ margin:14px 2px 6px; font:700 12px 'Barlow',sans-serif; letter-spacing:.06em; color:#5E574C; }
+html.s2 #logSheet .lift-sheet-panel[data-kind="mobility"] .mobility-row{ margin:0 0 10px; padding:14px 16px 12px; border:1.5px solid #E4DCCB; border-radius:18px; background:#FBF8F2; }
+html.s2 #logSheet .lift-sheet-panel[data-kind="mobility"] .mobility-row .edit-row{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+html.s2 #logSheet .lift-sheet-panel[data-kind="mobility"] .mobility-row input.week-st-name{ flex:1 1 100%; background:transparent !important; border:0 !important; padding:0 !important; font:italic 800 28px/1 'Barlow Condensed','Arial Narrow',sans-serif !important; text-transform:uppercase; color:#151515 !important; }
+html.s2 #logSheet .lift-sheet-panel[data-kind="mobility"] .mobility-row input.wheel-field{ width:60px !important; max-width:60px !important; text-align:center; font:italic 800 24px/1 'Barlow Condensed','Arial Narrow',sans-serif !important; }
+html.s2 #logSheet .lift-sheet-panel[data-kind="mobility"] .mobility-row select{ flex:1 1 auto; font:600 14px 'Barlow',sans-serif; }
+.s2-mticks{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+.s2-mt{ all:unset; box-sizing:border-box; width:44px; height:44px; border-radius:12px; border:2px solid rgba(12,13,11,.25); display:flex; align-items:center; justify-content:center; cursor:pointer; background:#fff; color:#151515; }
+.s2-mt::after{ display:none; }
+.s2-mt svg{ width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:3.2; stroke-linecap:round; stroke-linejoin:round; opacity:.35; }
+.s2-mt[aria-pressed="true"]{ background:#C8F031; border-color:#C8F031; }
+.s2-mt[aria-pressed="true"] svg{ opacity:1; }
+.s2-mt.nxt{ border-color:#151515; }
+html.s2 #logSheet .lift-sheet-panel[data-kind="mobility"] .mobility-row .remove-row{ margin-left:auto; }
+html.s2 #logSheet .lift-sheet-panel .log-run-row input::placeholder{ color:#B9B3A5; }
+html.s2 #logSheet .lift-sheet-panel select{ height:44px !important; min-height:44px; line-height:1.2 !important; padding-top:0 !important; padding-bottom:0 !important; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14689,7 +14716,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.050';
+const APP_VERSION = '2026.11.23.051';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15085,6 +15112,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.051': 'Run and mobility logs work like strength: a card, big numbers, a tick for every set of a stretch, and the pinned bar to log or save.',
   '2026.11.23.050': 'The run and mobility logs get their own colour (blue, lilac), a title that fits, readable fields and proper step names.',
   '2026.11.23.049': 'Training: run and mobility days get their own rows and icons, the Week view tidied up, and day tiles show the right icon for runs and mobility.',
   '2026.11.23.048': 'Today’s options: when Charge calls for it, Trim it, Move it or Swap it as rows, the rest as pills, and Start as planned.',
@@ -26459,9 +26487,9 @@ async function openBlockEditor(date, slot, block){
       </select></div>
       <div class="ask-q">How far, and how long?</div>
       <div class="edit-row log-fields-row log-run-row">
-        <input type="number" id="weekRunDistance" placeholder="" value="${block.details.distanceKm ?? ''}" step="any" inputmode="decimal"><span class="log-op log-unit">km</span>
+        <input type="number" id="weekRunDistance" placeholder="0" value="${block.details.distanceKm ?? ''}" step="any" inputmode="decimal"><span class="log-op log-unit">km</span>
         <span class="log-op">in</span>
-        <input type="number" id="weekRunActualDuration" placeholder="" step="0.1"><span class="log-op log-unit">min</span>
+        <input type="number" id="weekRunActualDuration" placeholder="0" step="0.1"><span class="log-op log-unit">min</span>
       </div>
       <div class="run-pace" id="weekRunPace"></div>
       <div class="ask-q">Anything worth noting?</div>
@@ -47996,7 +48024,7 @@ loadGoalProfile().then(async ()=>{
     var lbar=document.createElement('div'); lbar.className='s2-logbar'; lbar.innerHTML='<div class="t"><b></b><i></i></div><button type="button" class="s2-logset">Log set</button>'; pnl.appendChild(lbar);
     var t0=0, iv=null, nextBtn=null;
     function pad(n){ return (n<10?'0':'')+n; }
-    function tk(){ var sec=Math.floor((Date.now()-t0)/1000), h=Math.floor(sec/3600), m=Math.floor(sec/60)%60; timer.textContent=(h?h+':'+pad(m):m)+':'+pad(sec%60); }
+    function tk(){ if(window.__s2kind) window.__s2kind(); var sec=Math.floor((Date.now()-t0)/1000), h=Math.floor(sec/3600), m=Math.floor(sec/60)%60; timer.textContent=(h?h+':'+pad(m):m)+':'+pad(sec%60); }
     function refresh(){
       [].forEach.call(ls.querySelectorAll('.st-row.s2-next'),function(r){ r.classList.remove('s2-next'); });
       var all=[].slice.call(ls.querySelectorAll('.st-ok')); nextBtn=null;
@@ -48108,8 +48136,42 @@ loadGoalProfile().then(async ()=>{
           if(k.textContent!==kg) k.textContent=kg; if(rp.textContent!==reps) rp.textContent=reps; });
       });
     }
-    var _r0=refresh; refresh=function(){ _r0(); pickCurrent(); columns(); more(); };
-    lbar.querySelector('.s2-logset').addEventListener('click',function(){ if(nextBtn) nextBtn.click(); });
+    var TICK='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>';
+    function kindRefresh(){
+      var kd=pnl.getAttribute('data-kind')||'strength'; if(kd==='strength') return false;
+      var phs=pnl.getAttribute('data-phase'); if(phs==='warm'||phs==='cool'){ lbar.classList.remove('on'); return true; }
+      if(kd==='mobility'){
+        var rows=[].slice.call(ls.querySelectorAll('.mobility-row')), total=0, done=0, nextRow=null, nextIdx=0;
+        rows.forEach(function(r){
+          var n=Math.max(1,parseInt((r.querySelector('.week-st-sets')||{}).value,10)||1), box=r.querySelector('.s2-mticks');
+          if(!box||box.children.length!==n){ var prev=box?[].filter.call(box.children,function(b){ return b.getAttribute('aria-pressed')==='true'; }).length:0; if(box) box.remove(); box=document.createElement('div'); box.className='s2-mticks'; for(var k=0;k<n;k++){ var b=document.createElement('button'); b.type='button'; b.className='s2-mt'; b.setAttribute('aria-pressed',k<prev?'true':'false'); b.setAttribute('aria-label','Set '+(k+1)); b.innerHTML=TICK; box.appendChild(b); } r.appendChild(box);
+            box.addEventListener('click',function(e){ var bt=e.target.closest('.s2-mt'); if(!bt) return; bt.setAttribute('aria-pressed',bt.getAttribute('aria-pressed')==='true'?'false':'true'); kindRefresh(); }); }
+          var bs=[].slice.call(box.children); bs.forEach(function(x){ x.classList.remove('nxt'); });
+          total+=bs.length; var d=bs.filter(function(x){ return x.getAttribute('aria-pressed')==='true'; }).length; done+=d;
+          if(!nextRow){ var nb=bs.filter(function(x){ return x.getAttribute('aria-pressed')!=='true'; })[0]; if(nb){ nextRow=r; nextIdx=bs.indexOf(nb); nb.classList.add('nxt'); } }
+        });
+        if(!rows.length){ lbar.classList.remove('on'); return true; }
+        var nm=nextRow?(nextRow.querySelector('.week-st-name')||{}).value:'';
+        lbar.querySelector('b').textContent=nextRow?('Set '+(nextIdx+1)+' · '+(nm||'Stretch')):'All sets done';
+        lbar.querySelector('i').textContent=timer.textContent+' · '+done+' of '+total+' sets';
+        lbar.querySelector('.s2-logset').textContent=nextRow?'Log set':'Save';
+        lbar.classList.add('on'); return true;
+      }
+      if(kd==='run'){
+        var dist=(document.getElementById('weekRunDistance')||{}).value, mins=(document.getElementById('weekRunActualDuration')||{}).value;
+        lbar.querySelector('b').textContent='Run';
+        lbar.querySelector('i').textContent=timer.textContent+' · '+(dist?dist+' km':'– km')+' · '+(mins?mins+' min':'– min');
+        lbar.querySelector('.s2-logset').textContent='Save run'; lbar.classList.add('on'); return true;
+      }
+      return false;
+    }
+    window.__s2kind=kindRefresh;
+    var _r0=refresh; refresh=function(){ if(kindRefresh()) return; _r0(); pickCurrent(); columns(); more(); };
+    lbar.querySelector('.s2-logset').addEventListener('click',function(){
+      var kd=pnl.getAttribute('data-kind')||'strength';
+      if(kd==='run'){ var sv=document.getElementById('logWeekSessionBtn'); if(sv) sv.click(); return; }
+      if(kd==='mobility'){ var nb=ls.querySelector('.s2-mt[aria-pressed="false"]'); if(nb){ nb.click(); } else { var sv2=document.getElementById('logWeekSessionBtn'); if(sv2) sv2.click(); } return; }
+      if(nextBtn) nextBtn.click(); });
     new MutationObserver(refresh).observe(lbody,{subtree:true,attributes:true,attributeFilter:['aria-pressed'],childList:true});
     new MutationObserver(function(){
       var open=ls.classList.contains('sheet-open');
