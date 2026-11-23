@@ -5770,7 +5770,7 @@ html.s2 main{ padding-top:0; padding-bottom:calc(128px + env(safe-area-inset-bot
 
 #s2banner{ display:none; }
 html.s2 #s2banner{ display:block; position:relative; z-index:10; isolation:isolate; overflow:hidden;
-  height:calc(230px + env(safe-area-inset-top, 0px)); background:var(--s2-tone,#FF6A00);
+  height:calc(230px + env(safe-area-inset-top, 0px)); background:var(--s2-tone,#FF8A00);
   transition:background-color 320ms ease; color:#151515; --s2-top:env(safe-area-inset-top, 0px); }
 #s2banner[data-light="1"]{ color:#fff; }
 #s2banner [hidden]{ display:none !important; }
@@ -5830,7 +5830,7 @@ html.s2 #toast{ bottom:calc(104px + env(safe-area-inset-bottom, 0px)); }
    the section pills in the tab's banner colour, round buttons. Nothing here moves a screen's contents. */
 html.s2{ --sans:'Barlow',system-ui,-apple-system,sans-serif; --mono:'Barlow',system-ui,-apple-system,sans-serif;
   --fs-xs:11px; --fs-tag:12px; --fs-sm:13px; --fs-md:15px; --fs-control:16px; --fs-xl:21px; }
-html.s2 body.tab-insights{ --band:#FF6A00; }
+html.s2 body.tab-insights{ --band:#FF8A00; }
 html.s2 body.tab-data{ --band:#B7F02A; }
 html.s2 body.tab-plan, html.s2 body.tab-injuries{ --band:#FF3E9E; }
 html.s2 body.tab-settings{ --band:#F4C99C; }
@@ -5846,7 +5846,7 @@ html.s2 button.primary{ background:#151515; border-color:#151515; color:#fff; }
    Start is the same button as the floating one. */
 .s2-hero{ display:none; }
 html.s2 body.tab-insights .s2-hero.on{ display:block; position:relative; overflow:hidden; isolation:isolate; margin:16px 16px 4px; padding:18px 18px 74px; border-radius:22px;
-  background:#FF6A00; color:#151515; min-height:150px; }
+  background:#FF8A00; color:#151515; min-height:150px; }
 .s2-hero .cdeco{ position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
 .s2-hero .cdeco .cf{ position:absolute; top:-24px; animation:s2fall var(--d) linear var(--del) infinite; }
 .s2-hero .cdeco svg{ position:absolute; left:0; right:0; bottom:0; width:100%; height:62px; }
@@ -5870,7 +5870,7 @@ html.s2 body.tab-insights .s2-seg{ display:flex; margin:16px 16px 0; padding:4px
   font:italic 800 18px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; -webkit-tap-highlight-color:transparent; }
 .s2-seg button::after{ display:none; }
 .s2-seg button.on{ background:#151515; color:#fff; }
-.s2-seg button:focus-visible{ outline:3px solid #FF6A00; outline-offset:2px; }
+.s2-seg button:focus-visible{ outline:3px solid #FF8A00; outline-offset:2px; }
 html.s2 body.tab-insights:not(.s2-wk) .week-panel #weekBoard,
 html.s2 body.tab-insights:not(.s2-wk) .week-panel > .group-head,
 html.s2 body.tab-insights:not(.s2-wk) #weekWheelDetailTitle,
@@ -5939,7 +5939,7 @@ html.s2[data-ground="bone"] :is(.lift-sheet-panel, .morning-panel, .goal-row-pan
   color-scheme:light; --ground:#fbfaf6; --bg:#0c0d0b; --ink-rgb:12,13,11; --ground-rgb:251,250,246; --dim:#38332f; --text:#0c0d0b; --hue-faded:#0c0d0b; --label:#38332f;
   background:#fbfaf6; color:#0c0d0b; border-radius:26px 26px 0 0; }
 html.s2 .lift-sheet-panel, html.s2 .morning-panel{ height:auto; min-height:46vh; max-height:88vh; padding-top:0; }
-html.s2 .lift-sheet-panel > .lift-sheet-head, html.s2 .morning-panel > .lift-sheet-head{ margin:0 calc(var(--gutter) * -1) 14px; padding:22px var(--gutter) 16px; background:#FF6A00; color:#151515; border-radius:26px 26px 0 0; position:relative; z-index:2; }
+html.s2 .lift-sheet-panel > .lift-sheet-head, html.s2 .morning-panel > .lift-sheet-head{ margin:0 calc(var(--gutter) * -1) 14px; padding:22px var(--gutter) 16px; background:#FF8A00; color:#151515; border-radius:26px 26px 0 0; position:relative; z-index:2; }
 html.s2 .lift-sheet-head > span, html.s2 .lift-sheet-head .lift-sheet-title{ font:italic 800 34px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif !important; text-transform:uppercase; letter-spacing:0 !important; color:#151515 !important; }
 html.s2 .lift-sheet-x{ width:42px; height:42px; border-radius:50% !important; background:#fbfaf6 !important; color:#151515 !important; border:0 !important; font-size:20px; }
 html.s2 body.tab-data .lift-sheet-panel > .lift-sheet-head{ background:#B7F02A; }
@@ -6023,7 +6023,7 @@ html.s2 #s2rest.on, html.s2 #s2start.on{ display:flex; position:fixed; inset:0; 
 #s2rest .next small{ display:block; font:700 13px var(--sans); letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px; }
 #s2rest .next b{ display:block; font:italic 800 28px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; }
 #s2rest .next span{ display:block; margin-top:4px; font:500 16px var(--sans); color:#55554f; }
-#s2start{ background:#FF6A00; color:#151515; justify-content:flex-end; padding:0 0 calc(28px + env(safe-area-inset-bottom, 0px)); }
+#s2start{ background:#FF8A00; color:#151515; justify-content:flex-end; padding:0 0 calc(28px + env(safe-area-inset-bottom, 0px)); }
 #s2start .cf{ position:absolute; top:-24px; animation:s2fall var(--d) linear var(--del) infinite; }
 #s2start .pin{ position:absolute; right:-6%; top:calc(8% + env(safe-area-inset-top, 0px)); width:92%; transform-origin:50% 0; animation:s2sway 4.2s ease-in-out infinite; }
 #s2start .pin img{ display:block; width:100%; height:auto; }
@@ -6049,7 +6049,7 @@ html.s2 body.tab-insights .s2-row[hidden]{ display:none !important; }
 .s2-row .rc{ flex:none; width:20px; height:20px; transition:transform .2s; }
 .s2-row .rc svg{ width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
 .s2-row[aria-expanded="true"] .rc{ transform:rotate(90deg); }
-html.s2 body.tab-insights .s2-row[aria-expanded="true"]{ background:#FFF1E6; border-color:#FF6A00; }
+html.s2 body.tab-insights .s2-row[aria-expanded="true"]{ background:#FFF1E6; border-color:#FF8A00; }
 html.s2 body.tab-insights:not(.s2-wk) #warmupSection:not(.s2-open),
 html.s2 body.tab-insights:not(.s2-wk) #mobilitySection:not(.s2-open),
 html.s2 body.tab-insights:not(.s2-wk) #todayWorkoutSummary > .today-session:not(.s2-open){ display:none !important; }
@@ -6058,7 +6058,7 @@ html.s2 body.tab-insights #warmupSection.s2-open, html.s2 body.tab-insights #mob
 /* WORKOUT COMPLETE: the card as the artifact's Session done */
 html.s2 .session-complete{ margin:16px 16px 6px; padding:0 18px 16px; border:1px solid rgba(var(--ink-rgb),.12) !important; border-radius:22px; background:#fff !important; overflow:hidden; font:500 15px/1.4 var(--sans); color:#151515; letter-spacing:0; text-transform:none; }
 html.s2 .session-complete br{ display:none; }
-html.s2 .session-complete > b{ display:block; margin:0 -18px 14px; padding:22px 18px 18px; background:#FF6A00; font:italic 800 40px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; letter-spacing:0; color:#151515; }
+html.s2 .session-complete > b{ display:block; margin:0 -18px 14px; padding:22px 18px 18px; background:#FF8A00; font:italic 800 40px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; letter-spacing:0; color:#151515; }
 html.s2 .session-complete .perf-vs{ display:block; margin:10px 0 6px; padding:12px 14px; border-radius:16px; background:#151515; color:#C8F031; font:italic 800 24px/1.05 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; }
 html.s2 .session-complete .perf-vs.under{ color:#fff; }
 html.s2 .session-complete .perf-line{ display:block; margin:6px 0; font:500 15px/1.35 var(--sans); }
@@ -6175,7 +6175,7 @@ html.s2 #logSheet .s2-upnext.on{ border:1.5px solid #E4DCCB; background:#FBF8F2;
 html.s2 #logSheet .lift-sheet-panel{ background:#F6F1E7; }
 
 /* log header as a banner: back arrow, big title, timer under it, soft wave */
-html.s2 #logSheet .lift-sheet-panel > .lift-sheet-head{ position:relative; display:block; height:176px; margin-bottom:6px; padding:0 var(--gutter); background:#FF6A00 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 390 54' preserveAspectRatio='none'%3E%3Cpath d='M0 22 C60 0 130 0 200 18 S330 42 390 14 V54 H0Z' fill='%23F6F1E7'/%3E%3C/svg%3E") bottom/100% 46px no-repeat; }
+html.s2 #logSheet .lift-sheet-panel > .lift-sheet-head{ position:relative; display:block; height:176px; margin-bottom:6px; padding:0 var(--gutter); background:#FF8A00 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 390 54' preserveAspectRatio='none'%3E%3Cpath d='M0 22 C60 0 130 0 200 18 S330 42 390 14 V54 H0Z' fill='%23F6F1E7'/%3E%3C/svg%3E") bottom/100% 46px no-repeat; }
 html.s2 #logSheet .lift-sheet-head > span:first-child{ position:absolute; left:20px; top:70px; right:20px; font-size:46px !important; line-height:.95 !important; }
 html.s2 #logSheet .lift-sheet-head > .lift-sheet-x{ position:absolute; left:14px; top:calc(12px + env(safe-area-inset-top, 0px)); font-size:0 !important; }
 html.s2 #logSheet .lift-sheet-head > .lift-sheet-x::before{ content:''; width:20px; height:20px; background:#151515; -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 5-7 7 7 7'/%3E%3C/svg%3E") center/contain no-repeat; mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 5-7 7 7 7'/%3E%3C/svg%3E") center/contain no-repeat; display:block; }
@@ -6189,7 +6189,7 @@ html.s2 #logSheet .set-ticks .st-row .s2c.k{ grid-column:2; } html.s2 #logSheet 
 html.s2 #logSheet .set-ticks .st-row .st-ok{ grid-column:4; grid-row:1; }
 .s2-th{ display:grid; grid-template-columns:30px 1fr 1fr 44px; gap:6px; padding:4px 6px 0; font:700 12px 'Barlow',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#5E574C; }
 html.s2 #logSheet .log-notes-row input, html.s2 #logSheet .log-notes-row textarea{ background:#fff !important; color:#151515 !important; border:1.5px solid #DED6C6 !important; border-radius:14px !important; }
-html.s2 #logSheet .lift-sheet-panel > .lift-sheet-head{ background-color:#FF6A00 !important; }
+html.s2 #logSheet .lift-sheet-panel > .lift-sheet-head{ background-color:#FF8A00 !important; }
 html.s2 #logSheet .lift-sheet-head > span:first-child{ color:#151515 !important; }
 
 /* PROGRESS, COPIED FROM THE DESIGN */
@@ -6356,6 +6356,14 @@ html.s2 #s2review.on{ display:block; position:fixed; inset:0; z-index:90; overfl
 #s2review .nx p{ margin:4px 0 0; font:500 16px/1.35 'Barlow',sans-serif; }
 #s2review .go{ all:unset; box-sizing:border-box; display:flex; align-items:center; justify-content:center; margin:12px 16px 0; width:calc(100% - 32px); height:54px; border-radius:16px; background:#151515; color:#fff; cursor:pointer; font:italic 800 22px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
 #s2review .go::after{ display:none; }
+
+.s2-weekcard .bars .sc{ display:block; padding:1px 7px; border-radius:7px; background:#C8F031; font:italic 800 14px/1.3 'Barlow Condensed','Arial Narrow',sans-serif; color:#151515; }
+html.s2 body.tab-insights.s2-wk .week-board .week-lane.s2-done{ background:#C8F031 !important; color:#151515 !important; border-color:#C8F031 !important; }
+html.s2 body.tab-insights.s2-wk .week-board .week-lane.s2-done *{ color:#151515 !important; }
+html.s2 body.tab-insights.s2-wk .week-board .week-lane.s2-done .week-cal-marks{ font-size:0; }
+html.s2 body.tab-insights.s2-wk .week-board .week-lane.s2-done .week-cal-marks::after{ content:'✓'; font:800 18px/1 'Barlow',sans-serif; }
+html.s2 body.tab-insights.s2-wk .week-board .week-lane.s2-none .week-cal-marks{ opacity:.5; }
+html.s2 body.tab-insights.s2-wk .week-board .week-lane .week-cal-score.on{ visibility:visible; background:#fff; border-radius:8px; padding:1px 6px; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14470,7 +14478,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.036';
+const APP_VERSION = '2026.11.23.037';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14866,6 +14874,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.037': 'The orange is brighter. The week shows finished days in lime with their score and a tick, and planned days dashed.',
   '2026.11.23.036': 'History opens with recent workouts and PRs set; Your week opens a Week in review page.',
   '2026.11.23.035': 'The Week view has workouts, total time and hard sets, and a Move a day heading, like the design.',
   '2026.11.23.034': 'Marking the warm-up or cooldown done updates its tick, bar and button.',
@@ -47301,10 +47310,10 @@ loadGoalProfile().then(async ()=>{
     zebra:{m:'m_zebra',w:270,right:-6,top:12,iw:583,ih:521,eye:[394.1,168.3,35.7],lid:'#efe3cf'},
     flamingo:{m:'m_flamingo',w:176.7,right:-2.4,top:16.5,iw:495,ih:507,eye:[268.6,93.3,43],lid:'#f92980'}
   };
-  var CONF={'#FF6A00':['#ffffff','#151515','#FFC24D','#FF3E9E'],'#B7F02A':['#ffffff','#151515','#FF6A00','#FF3E9E'],
+  var CONF={'#FF8A00':['#ffffff','#151515','#FFC24D','#FF3E9E'],'#B7F02A':['#ffffff','#151515','#FF8A00','#FF3E9E'],
             '#FF3E9E':['#ffffff','#151515','#C8F031','#FFC24D'],'#F4C99C':['#ffffff','#151515','#C8F031','#FF3E9E'],'#C9A4FF':['#ffffff','#151515','#C8F031','#FF3E9E']};
   var TABS={
-    insights:{bar:'insights',key:'t',tone:'#FF6A00',art:'horse',title:'Training',dir:'down'},
+    insights:{bar:'insights',key:'t',tone:'#FF8A00',art:'horse',title:'Training',dir:'down'},
     data:{bar:'data',key:'p',tone:'#B7F02A',art:'croc',title:'Progress',line:'Your data,<br>over time.',dir:'left'},
     plan:{bar:'plan',key:'b',tone:'#FF3E9E',art:'flamingo',title:'Build',line:'Your plan,<br>week by week.',dir:'right',light:1,actions:['settings']},
     injuries:{bar:'plan',key:'b',tone:'#FF3E9E',art:'flamingo',title:'Skills',line:'Levels, injuries<br>and tests.',dir:'right',light:1,back:'plan'},
@@ -47335,7 +47344,7 @@ loadGoalProfile().then(async ()=>{
 
   /* ---------- confetti and wave ---------- */
   function paintDeco(tone){
-    var c=CONF[tone]||CONF['#FF6A00'], clash=(tone==='#FF3E9E')?'#ffffff':'#151515', o='';
+    var c=CONF[tone]||CONF['#FF8A00'], clash=(tone==='#FF3E9E')?'#ffffff':'#151515', o='';
     seed=11;
     for(var i=0;i<20;i++){
       var size=7+rnd()*8, round=i%3===0, d=(5+rnd()*5).toFixed(2), del=(-rnd()*10).toFixed(2), x=(rnd()*100).toFixed(1);
@@ -47521,7 +47530,7 @@ loadGoalProfile().then(async ()=>{
       for(var i=0;i<12;i++){ var sz=6+rnd()*6, rd=i%3===0;
         o+='<i class="cf" style="left:'+(rnd()*100).toFixed(1)+'%;width:'+sz.toFixed(1)+'px;height:'+(rd?sz:sz*1.6).toFixed(1)+'px;border-radius:'+(rd?'50%':'2px')+';background:'+c[i%4]
           +';--d:'+(5+rnd()*4).toFixed(2)+'s;--del:'+(-rnd()*8).toFixed(2)+'s;--dx:'+Math.round((rnd()-.5)*50)+'px;--rot:'+Math.round((rnd()<.5?-1:1)*(240+rnd()*360))+'deg;--y0:'+Math.round(rnd()*100)+'px"></i>'; }
-      hero.firstChild.innerHTML=o+'<svg viewBox="0 0 358 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 26 C60 4 130 6 200 26 S310 40 358 14 V70 H0Z" fill="#FF8A3D"/><path d="M0 44 C70 24 140 28 210 44 S320 56 358 34 V70 H0Z" fill="#E25400"/></svg>';
+      hero.firstChild.innerHTML=o+'<svg viewBox="0 0 358 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 26 C60 4 130 6 200 26 S310 40 358 14 V70 H0Z" fill="#FFA94D"/><path d="M0 44 C70 24 140 28 210 44 S320 56 358 34 V70 H0Z" fill="#F07200"/></svg>';
     }
     hero.classList.toggle('on',show);
     if(!show) return;
@@ -47975,8 +47984,9 @@ loadGoalProfile().then(async ()=>{
       var lanes=[].slice.call(board.querySelectorAll('.week-lane')); if(!lanes.length){ card.style.display='none'; return; } card.style.display='';
       var planned=0, done=0, bars='';
       lanes.forEach(function(l){ var a=(l.getAttribute('aria-label')||''), nm=(l.querySelector('.skill-lane-name')||{}).textContent||'';
-        var none=/nothing planned|rest/i.test(a), dn=/done|logged|complete|finished/i.test(a); if(!none||dn) planned++; if(dn) done++;
-        bars+='<div class="'+(dn?'done':(!none?'plan':''))+(l.classList.contains('here')?' now':'')+'"><i></i>'+nm+'</div>'; });
+        var sc=l.querySelector('.week-cal-score.on'), dn=!!sc || /done|logged|complete|finished/i.test(a), none=/nothing planned|rest/i.test(a)&&!dn; if(!none||dn) planned++; if(dn) done++;
+        l.classList.toggle('s2-done',dn); l.classList.toggle('s2-none',none);
+        bars+='<div class="'+(dn?'done':(!none?'plan':''))+(l.classList.contains('here')?' now':'')+'">'+(dn&&sc?'<b class="sc">'+sc.textContent.trim()+'</b>':'')+'<i></i>'+nm+'</div>'; });
       card.innerHTML='<div class="top"><h3>Training week</h3><span>'+done+' of '+planned+' session'+(planned===1?'':'s')+'</span></div><div class="bars">'+bars+'</div>';
     }
     var stats=document.createElement('div'); stats.className='s2-wkstats'; card.insertAdjacentElement('afterend',stats);
