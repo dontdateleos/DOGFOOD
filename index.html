@@ -6273,6 +6273,31 @@ html.s2 .panel.s2-m.s2-open > #saveFunctionBtn:not(.s2-show), html.s2 .panel.s2-
 .s2-menu button.row.big .bar{ width:120px; height:8px; border-radius:6px; background:rgba(21,21,21,.2); overflow:hidden; display:block; }
 .s2-menu button.row.big .bar[hidden]{ display:none; }
 .s2-menu button.row.big .bar u{ display:block; height:100%; background:#151515; border-radius:6px; }
+
+/* WARM-UP and COOLDOWN steps, copied from the design: a header line with a bar, rows with a tick box, stage headings, one big button */
+html.s2 #logSheet .s2-phase .group-head{ display:none !important; }
+html.s2 #logSheet .s2-phase .group{ margin:0; }
+html.s2 #logSheet .s2-phase .fields{ padding:0; }
+html.s2 #logSheet .s2-phase .chip-row{ display:none; }
+.s2-ph{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin:6px 2px 10px; font:700 13px 'Barlow',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#5E574C; }
+.s2-ph .bar{ flex:1; max-width:160px; height:7px; border-radius:6px; background:#DED6C6; overflow:hidden; }
+.s2-ph .bar i{ display:block; height:100%; background:#151515; border-radius:6px; }
+.s2-sh{ padding:10px 14px 2px; font:700 12px 'Barlow',sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#5E574C; }
+html.s2 #logSheet .s2-phase .drill-list{ background:#FBF8F2; border:1.5px solid #E4DCCB; border-radius:18px; padding:4px 0 6px; overflow:hidden; }
+html.s2 #logSheet .s2-phase .drill{ all:unset; box-sizing:border-box; display:flex; align-items:center; gap:12px; width:100%; padding:11px 14px; min-height:48px; cursor:pointer; font:600 16px/1.25 'Barlow',sans-serif; color:#151515; text-transform:none; letter-spacing:0; }
+html.s2 #logSheet .s2-phase .drill::after{ display:none; }
+html.s2 #logSheet .s2-phase .drill::before{ content:''; flex:none; width:24px; height:24px; border-radius:7px; border:2px solid #CFC6B5; background:#fff; box-sizing:border-box; }
+html.s2 #logSheet .s2-phase .drill[aria-pressed="true"]::before{ background:#C8F031 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23151515' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E") center/18px no-repeat; border-color:#C8F031; }
+html.s2 #logSheet .s2-phase .drill .drill-stage{ display:none; }
+html.s2 #logSheet .s2-phase .drill .drill-text{ flex:1; display:flex; justify-content:space-between; gap:10px; text-transform:none; letter-spacing:0; font:inherit; }
+html.s2 #logSheet .s2-phase .drill .drill-dose{ font:700 15px 'Barlow',sans-serif; white-space:nowrap; color:#151515; opacity:1; text-transform:none; letter-spacing:0; }
+html.s2 #logSheet .s2-phase .drill[aria-pressed="true"] .drill-text{ text-decoration:line-through; opacity:.55; }
+html.s2 #logSheet .s2-phase .drill .drill-strike{ display:none; }
+.s2-phbtn{ all:unset; box-sizing:border-box; display:flex; align-items:center; justify-content:center; width:100%; margin-top:14px; height:54px; border-radius:16px; background:#151515; color:#fff; cursor:pointer; font:italic 800 22px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+.s2-phbtn::after{ display:none; }
+html.s2 #logSheet .s2-phase .glossary, html.s2 #logSheet .s2-phase details.glossary{ margin-top:10px; }
+html.s2 #logSheet .s2-phase .glossary summary{ cursor:pointer; font:700 15px 'Barlow',sans-serif; text-decoration:underline; text-underline-offset:3px; text-transform:none; letter-spacing:0; color:#151515; list-style:none; }
+html.s2 #logSheet .s2-phase .prep-done-btn{ display:none !important; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14387,7 +14412,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.032';
+const APP_VERSION = '2026.11.23.034';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14783,6 +14808,8 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.034': 'Marking the warm-up or cooldown done updates its tick, bar and button.',
+  '2026.11.23.033': 'Warm-up and Cooldown in the workout are tick lists with a progress bar and one Mark done button, like the design.',
   '2026.11.23.032': 'Skills is two big cards, Strength and Mobility, with your level and a bar, then Daily practice and Injuries; tap one to open it.',
   '2026.11.23.031': 'Training says what score to aim for and shows an adjustment row and a Skills row when there is one; the log shows last time and how hard to go.',
   '2026.11.23.030': 'Progress shows your goals and how far to go, plus Strength score, VO2 max, skills and the mobility test; Build rows say what is in them.',
@@ -47653,7 +47680,7 @@ loadGoalProfile().then(async ()=>{
     steps.insertAdjacentElement('afterend',pWarm); pWarm.insertAdjacentElement('afterend',pCool);
     var phase='lift', phW=null, phC=null, moved=false;
     function has(el){ return !!el && el.style.display!=='none' && el.querySelectorAll('.drill-text').length>0; }
-    function doneOf(el){ var e=el&&el.querySelector('.head-est'); var m=e&&/(\d+)\/(\d+)/.exec(e.textContent); return !!m && +m[1]>0 && m[1]===m[2]; }
+    function doneOf(el){ if(el&&el.querySelector('.prep-done-btn.is-done')) return true; var e=el&&el.querySelector('.head-est'); var m=e&&/(\d+)\/(\d+)/.exec(e.textContent); return !!m && +m[1]>0 && m[1]===m[2]; }
     function chip(p,t){ return '<button type="button" data-p="'+p+'" class="'+(phase===p?'cur':'')+'">'+t+'</button>'; }
     function chips(){
       var L=lifts(), at=Math.max(0,L.indexOf(curCard)), w=has(wuEl), c=has(cdEl);
@@ -47673,8 +47700,29 @@ loadGoalProfile().then(async ()=>{
       if(cdEl&&phC&&phC.parentNode){ phC.parentNode.insertBefore(cdEl,phC); phC.remove(); cdEl.classList.remove('s2-open'); }
       pnl.removeAttribute('data-phase');
     }
+    function decorate(host,el,label){
+      if(!host||!el) return;
+      var head=host.querySelector('.s2-ph'), btn=host.querySelector('.s2-phbtn');
+      if(!head){ head=document.createElement('div'); head.className='s2-ph'; head.innerHTML='<span></span><span class="bar"><i></i></span>'; host.insertBefore(head,host.firstChild); }
+      if(!btn){ btn=document.createElement('button'); btn.type='button'; btn.className='s2-phbtn'; btn.textContent='Mark '+label+' done'; host.appendChild(btn);
+        btn.addEventListener('click',function(){ var o=el.querySelector('.prep-done-btn'); if(o) o.click(); }); }
+      if(host.lastElementChild!==btn) host.appendChild(btn);
+      [].forEach.call(el.querySelectorAll('.drill-text'),function(x){ var n=x.firstChild; if(n&&n.nodeType===3&&/^[a-z]/.test(n.nodeValue)) n.nodeValue=n.nodeValue.charAt(0).toUpperCase()+n.nodeValue.slice(1); });
+      var est=el.querySelector('.head-est'), t=est?est.textContent.replace(/\s+/g,' ').trim():'', m=/(\d+)\s*min/i.exec(t), d=/(\d+)\s*\/\s*(\d+)/.exec(t);
+      var txt=(m?m[1]+' min · ':'')+(d?d[1]+' of '+d[2]+' done':''); if(head.firstChild.textContent!==txt) head.firstChild.textContent=txt;
+      var isDone=!!el.querySelector('.prep-done-btn.is-done'); var bt=isDone?(label.charAt(0).toUpperCase()+label.slice(1)+' done ✓'):('Mark '+label+' done'); if(btn.textContent!==bt) btn.textContent=bt;
+      var w=isDone?100:(d&&+d[2]?Math.round(100*d[1]/d[2]):0); var bi=head.querySelector('.bar i'); if(bi.style.width!==w+'%') bi.style.width=w+'%';
+      [].forEach.call(el.querySelectorAll('.drill-list'),function(list){
+        var last=null; [].forEach.call(list.querySelectorAll(':scope > .drill'),function(r){
+          var st=(r.querySelector('.drill-stage')||{}).dataset; st=st&&st.stage; if(!st) return;
+          if(st!==last){ var pv=r.previousElementSibling; if(!(pv&&pv.classList.contains('s2-sh')&&pv.textContent===st)){ var h=document.createElement('div'); h.className='s2-sh'; h.textContent=st; list.insertBefore(h,r); } last=st; } });
+      });
+    }
+    function deco(){ decorate(pWarm,wuEl,'warm-up'); decorate(pCool,cdEl,'cooldown'); }
+    if(wuEl) new MutationObserver(deco).observe(wuEl,{childList:true,subtree:true,characterData:true});
+    if(cdEl) new MutationObserver(deco).observe(cdEl,{childList:true,subtree:true,characterData:true});
     function startPhase(){
-      bring(); var tt=document.querySelector('.s2-hero .ttl'), ht=hd.querySelector('span'); if(tt&&ht&&tt.textContent.trim()&&!document.querySelector('.s2-hero[data-empty]')) setTimeout(function(){ ht.textContent=tt.textContent.trim(); },80);
+      bring(); deco(); var tt=document.querySelector('.s2-hero .ttl'), ht=hd.querySelector('span'); if(tt&&ht&&tt.textContent.trim()&&!document.querySelector('.s2-hero[data-empty]')) setTimeout(function(){ ht.textContent=tt.textContent.trim(); },80);
       var want=window.__s2phase; window.__s2phase=null;
       if(!want) want=(has(wuEl)&&!doneOf(wuEl))?'warm':'lift';
       if(want==='warm'&&!has(wuEl)) want='lift'; if(want==='cool'&&!has(cdEl)) want='lift';
