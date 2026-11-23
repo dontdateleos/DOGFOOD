@@ -7102,7 +7102,7 @@ if(!window.__pnHold)window.__curtain();
                   <summary>what the stages mean</summary>
                   <div class="gloss-item"><span class="gloss-term">RAISE</span>Get warm and get blood moving — the jog, or the opening kilometre of an easy run.</div>
                   <div class="gloss-item"><span class="gloss-term">MOVE</span>Take the joints you are about to load through their range, and wake the muscles that hold them.</div>
-                  <div class="gloss-item"><span class="gloss-term">PRIME</span>The last step before the work: strides before a hard run, ramp-up sets before a lift. The one most people skip. Called potentiation.</div>
+                  <div class="gloss-item"><span class="gloss-term">PRIME</span>The last step before the work: short fast strides before a hard run, lighter warm-up sets before a lift. Most people skip it.</div>
                   <div class="gloss-item"><span class="gloss-term">×8-10</span>Reps. <span class="gloss-term">30s</span> is a hold. <span class="gloss-term">/side</span> means that each way, not in total.</div>
                 </details>
               </div>
@@ -7123,8 +7123,8 @@ if(!window.__pnHold)window.__curtain();
                 <details class="glossary">
                   <summary>what the stages mean</summary>
                   <div class="gloss-item"><span class="gloss-term">ROLL</span>Foam roller or ball, slow, pausing where it is sore. Takes the edge off before you move.</div>
-                  <div class="gloss-item"><span class="gloss-term">MOVE</span>Through the range under your own control, no holding. Restores the range the session used up. Called dynamic stretching.</div>
-                  <div class="gloss-item"><span class="gloss-term">HOLD</span>Hold the stretch for the time given &mdash; the one that adds range, which is why it comes last. Static stretching.</div>
+                  <div class="gloss-item"><span class="gloss-term">MOVE</span>Move through the full range slowly, without holding. It wakes up the joints you’re about to use.</div>
+                  <div class="gloss-item"><span class="gloss-term">HOLD</span>Hold the stretch for the time shown. This is what builds flexibility, so it comes last.</div>
                   <!-- A stage on screen with no line here is a label you have to guess at, which is
                        what the glossary exists to stop. -->
                   <div class="gloss-item"><span class="gloss-term">PNF</span>In the stretch: push against your hand or a band for six seconds, let go, sink deeper. Three or four rounds, on one area only.</div>
@@ -7318,7 +7318,7 @@ if(!window.__pnHold)window.__curtain();
       </div>
     </div>
     <div class="note-head">How the two scores differ</div>
-        <div class="score-note" style="display:none;">Adaptive compares today against <em>your trailing 7-day average</em>. Target compares against <em>fixed goals</em> (8hr sleep, ≤1 wake event, HRV at rolling baseline). Equal-weighted v1 — <em>placeholder until backtested</em>.</div>
+        <div class="score-note" style="display:none;">Adaptive compares today with <em>your last 7 days</em>. Target compares with <em>fixed goals</em>: 8 hours of sleep, one wake-up or fewer, and your usual HRV.</div>
     <div class="score-note note-live" id="sleepDebtOut">Sleep debt: —</div>
 
     <!-- THE MORNING CHECK-IN. It used to open with eighteen fields, six of which were three
@@ -8004,7 +8004,7 @@ if(!window.__pnHold)window.__curtain();
              5cm at the toe between rungs, against about 0.5cm of drift from time of day —
              so a panel of conditions would be friction bought with nothing. The spine half
              is not measurement hygiene at all: it is the reason not to bend first thing. -->
-        <div class="score-note">Rate these at roughly the same time of day each time &mdash; and not in the first two hours after waking if you&rsquo;re rating your spine. Most of the day&rsquo;s disc-height loss happens in the first hour up, and forward bending early costs more than it gives.</div>
+        <div class="score-note">Rate these at about the same time each day. For your spine, wait two hours after waking, because it’s stiffer first thing.</div>
         <div id="mobilityAssessmentRows"></div>
         <button id="saveMobilityAssessmentBtn">Save assessment</button>
         <div id="saveMobilityAssessmentResult" class="score-note note-live"></div>
@@ -8075,7 +8075,7 @@ if(!window.__pnHold)window.__curtain();
     </div>
     <div class="score-note note-live" id="chartMetricNote" style="display:none;"></div>
     <div id="trendFlags"></div>
-    <div class="score-note">Full history, no windowing — this is the view for spotting slow multi-month drift that trailing 7-14 day windows elsewhere in the app won't show.</div>
+    <div class="score-note">Your whole history, so you can spot slow changes over months.</div>
 
     <!-- ADAPTATION TRACKING HAS GONE, AND IT IS NOT COMING BACK IN THAT SHAPE.
          It compared the last three logged instances of an exercise by WEIGHT — no time
@@ -8348,7 +8348,7 @@ if(!window.__pnHold)window.__curtain();
             <option value="bright">Bright &mdash; dark title</option>
           </select>
         </div>
-        <div class="score-note">How the tab&rsquo;s colour sits in the header. On Deep the banner is dark and the title carries the colour; on the other three the banner carries it and the title is knocked out of it. The mark keeps the same footing on the band either way, and the page under the header does not move.</div>
+        <div class="score-note">Choose how bold the header colour is. The page below doesn’t change.</div>
         <label class="week-deload" for="eyeCalmToggle" style="margin-top:8px;">
           <input type="checkbox" id="eyeCalmToggle">
           <span>Calm mode &mdash; keep the useful ones, drop the character</span>
@@ -8382,8 +8382,8 @@ if(!window.__pnHold)window.__curtain();
       <div class="fields collapsible-body" data-collapse="datagoes" style="display:none;">
         <div class="score-note" style="color:var(--bg);">Everything you log stays on this device. There’s no account and no copy online. Nobody else can see it.</div>
         <div class="score-note">Two things do leave the device, and only if you set them up:</div>
-        <div class="score-note"><b>Apple Health.</b> In the iPhone app, Dogfood reads Apple Health on the phone itself. Nothing goes through a server, and it never writes anything back.</div>
-        <div class="score-note"><b>Apple Health.</b> If you switch it on, a Shortcut you set up sends the numbers you chose to that same server, and the app collects them from it. It is off until you turn it on.</div>
+        <div class="score-note"><b>Apple Health.</b> In the iPhone app, Dogfood reads Apple Health on your phone. Nothing is sent anywhere, and it never writes to Health.</div>
+        <div class="score-note"><b>Apple Health.</b> This is off until you turn it on. Then a Shortcut you set up sends the numbers you choose to your own server, and the app picks them up.</div>
         <div class="score-note">No analytics, no ads, nothing sold. Clearing the app’s data deletes everything for good, so export a backup now and then.</div>
       </div>
     </div>
@@ -8717,7 +8717,7 @@ if(!window.__pnHold)window.__curtain();
     <div class="plan-item"><span class="plan-key">High</span><strong>swaps the movement out</strong></div>
     <div class="plan-item"><span class="plan-key">Moderate</span><strong>drops a set</strong></div>
     <div class="plan-item"><span class="plan-key">Low</span><strong>leaves the plan alone</strong></div>
-    <div class="score-note">The warm-up targets the area either way. Severity sets how long it lasts; irritability sets what changes today.</div>
+    <div class="score-note">The warm-up works on this area either way. How bad it is decides how long it lasts. How easily it flares decides what changes today.</div>
 
     <button class="primary" id="addInjuryBtn">Add injury</button>
     </div>
@@ -9747,7 +9747,7 @@ async function renderScoreSamples(){
       + ` <i>on ${changeCount[top]} of ${SCORE_SAMPLES.length - 1} step${SCORE_SAMPLES.length - 1 === 1 ? '' : 's'}</i></div>`;
   }
   el.innerHTML = lead + rows.reverse().join('')
-    + `<div class="score-note" style="margin-top:8px;">Newest first, today, kept for ${SCORE_LOG_KEEP_DAYS} days and across reloads. If the score moves and the right-hand column says <b>nothing measured changed</b>, the movement is in the render rather than the reading — which is the half of the problem this cannot see.</div>`;
+    + `<div class="score-note" style="margin-top:8px;">Newest first, kept for ${SCORE_LOG_KEEP_DAYS} days. If the score moves but the right-hand column says <b>nothing measured changed</b>, the change is in how it’s calculated, not in your data.</div>`;
 }
 
 const BLINK_CLOSED = '2px';
@@ -14783,7 +14783,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.055';
+const APP_VERSION = '2026.11.23.057';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15179,6 +15179,8 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.057': 'Suggestion cards on Training use plain words: no more cut-offs, capacity or corroborated signals.',
+  '2026.11.23.056': 'Simpler wording for the longest notes in Settings, the glossary and daily practice.',
   '2026.11.23.055': 'Plainer wording across Settings.',
   '2026.11.23.054': 'Program, Goals, Block, Weight and Sport open as full pages with the same banner; long notes in Settings fold behind Read more.',
   '2026.11.23.053': 'Every opened page in Build, Skills and Settings follows one standard: the banner names it, the title fits, and the content is plain cards on paper.',
@@ -16133,7 +16135,7 @@ async function renderAppleHealthStatus(message){
       <input type="checkbox" id="appleHealthAutoToggle" style="width:auto; flex:none;"${appleHealthSyncOn() ? ' checked' : ''}>
       <span style="font-size:var(--fs-sm);">Check automatically when the app opens</span>
     </label>
-    <div class="score-note">This install's key is <b style="font-family:var(--mono);">${installKey()}</b> — the pull sends it so the worker can tell one install's data from another's. Point your Shortcut at the same key.</div>
+    <div class="score-note">Your key is <b style="font-family:var(--mono);">${installKey()}</b>. It keeps your data separate from other people’s. Use the same key in your Shortcut.</div>
     ${message ? `<div class="score-note" style="font-family:var(--mono); font-size:var(--fs-tag);">${message}</div>` : ''}
     <button id="appleHealthSyncBtn" class="small"><svg width="12" height="12" viewBox="3.2 2.65 13 16" fill="currentColor" style="margin-right:5px;"><path d="M12.15 7.5c-1.1-.08-2.03.6-2.56.6-.53 0-1.35-.58-2.22-.56-1.14.02-2.2.66-2.78 1.68-1.2 2.08-.31 5.16.86 6.85.57.83 1.25 1.76 2.15 1.72.86-.03 1.19-.55 2.23-.55 1.04 0 1.34.55 2.24.53.93-.02 1.51-.85 2.08-1.68.65-.94.92-1.86.93-1.9-.02-.01-1.79-.69-1.81-2.73-.02-1.7 1.39-2.52 1.45-2.56-.8-1.17-2.03-1.3-2.47-1.33-1.02-.09-1.9.6-2.4.6"/><path d="M14.7 5.6c.47-.57.79-1.36.7-2.15-.68.03-1.5.45-1.99 1.02-.44.5-.82 1.31-.72 2.08.75.06 1.53-.38 2.01-.95z"/></svg>Check for new data</button>`;
   const autoToggle = document.getElementById('appleHealthAutoToggle');
@@ -18753,7 +18755,7 @@ async function renderLearnedWeights(){
   if(!L){
     const c = _learnedCache && _learnedCache.date === todayStr ? _learnedCache : null;
     const have = c && c.n != null ? c.n : 0, skipped = c && c.dropped ? c.dropped : 0;
-    el.innerHTML = `<div class="score-note">Still using the starting weights. They move once a dozen or so sessions have measured how you actually performed: a top set whose reps you entered yourself, or a run. ${have} so far${skipped ? `, and ${skipped} session${skipped === 1 ? '' : 's'} with nothing measurable in ${skipped === 1 ? 'it' : 'them'}` : ''}.</div>`;
+    el.innerHTML = `<div class="score-note">Still using the starting weights. After about a dozen sessions with your own reps or a run logged, they adjust to you. ${have} so far${skipped ? `, and ${skipped} session${skipped === 1 ? '' : 's'} with nothing to measure` : ''}.</div>`;
     return;
   }
   // Every bar is drawn against the same ceiling, so their lengths are comparable to each
@@ -29446,7 +29448,7 @@ async function renderProgressPanel(){
     const led = Object.entries(a.led || {}).filter(([, v])=> v > 0).sort((x, y)=> y[1] - x[1]);
     add('mobility', 'streak', 'Areas on target', `<b>${a.now} of ${Math.max(a.touched, a.now)}${delta(a.then != null ? a.now - a.then : null, '', true, 1, x=> Math.round(x), 'Areas on target')}</b>`,
       led.map(([ar, v])=> `<div class="tp-kv"><span>${escapeHtmlLite(BODY_AREAS[ar] || ar)}</span><b>${Math.round(v / 60)} of ${Math.round(MOBILITY_WEEKLY_TARGET_SECONDS / 60)} min</b></div>`).join('')
-      + `<small>Body areas that got ${Math.round(MOBILITY_WEEKLY_TARGET_SECONDS / 60)} minutes of stretching in the last seven days${a.then != null ? `, against ${a.then} four weeks ago` : ''}. Lifts through a full range count towards it.</small>`);
+      + `<small>Areas that got ${Math.round(MOBILITY_WEEKLY_TARGET_SECONDS / 60)} minutes of stretching in the last 7 days${a.then != null ? `, against ${a.then} four weeks ago` : ''}. Lifts through a full range count too.</small>`);
   }
   if(p.stretch && p.stretch.any) add('mobility', 'timer', 'Stretching a week', `<b>${Math.round(p.stretch.now)} min${delta(p.stretch.then != null ? p.stretch.now - p.stretch.then : null, ' min', true, 3, x=> Math.round(x), 'Stretching')}</b>`,
     `<small>Minutes of stretching sessions a week over the last four weeks${p.stretch.then != null ? `, against ${Math.round(p.stretch.then)} the four before` : ''}, each stretch counted once.</small>`);
@@ -44152,13 +44154,13 @@ async function generateRecommendations(){
     // Rank for the threshold, score for the number shown — the sentence names both, and
     // mixing them was what made "Readiness 12 — bottom fifth" read as a score of twelve.
     const rank = srResult.percentile;
-    if(rank != null && rank < goalT.rankDeep){ reduceSignals.push(`Readiness ${srResult.shown} — bottom fifth of your own days`); profileFired = true; }
-    else if(rank != null && rank < goalT.rankLow){ reduceSignals.push(`Readiness ${srResult.shown} — below your usual`); profileFired = true; }
+    if(rank != null && rank < goalT.rankDeep){ reduceSignals.push(`Charge ${srResult.shown}, one of your lowest days`); profileFired = true; }
+    else if(rank != null && rank < goalT.rankLow){ reduceSignals.push(`Charge ${srResult.shown}, below your usual`); profileFired = true; }
     if(srResult.gateReason) reduceSignals.push(srResult.gateReason);
   } else {
-    if(targetScore!=null && targetScore < goalT.scoreLow){ reduceSignals.push(`Target score ${targetScore} (below ${goalT.scoreLow})`); profileFired = true; }
-    if(adaptiveScore!=null && adaptiveScore < goalT.scoreLow){ reduceSignals.push(`Adaptive score ${adaptiveScore} (below ${goalT.scoreLow})`); profileFired = true; }
-    if(capacityLabel === 'below typical') reduceSignals.push('Predicted Capacity: below typical');
+    if(targetScore!=null && targetScore < goalT.scoreLow){ reduceSignals.push(`Your target score is ${targetScore}, low for you`); profileFired = true; }
+    if(adaptiveScore!=null && adaptiveScore < goalT.scoreLow){ reduceSignals.push(`Your adaptive score is ${adaptiveScore}, low for you`); profileFired = true; }
+    if(capacityLabel === 'below typical') reduceSignals.push('Expected to perform below your usual');
   }
   // Cross-modal: a stacked hard-running window can contribute even when strength-specific
   // load ratio looks normal in isolation — the two systems shouldn't stay fully unaware
@@ -44169,18 +44171,18 @@ async function generateRecommendations(){
     const daysAgo = (new Date(todayStr) - new Date(s.date))/(1000*60*60*24);
     return daysAgo >= 0 && daysAgo <= 2;
   });
-  if(recentHardRun) reduceSignals.push('Hard/quality run in the last 48h — contributing recovery load independent of strength-specific volume');
+  if(recentHardRun) reduceSignals.push('You ran hard in the last 2 days, which also tires your legs for lifting');
 
   const addSignals = [];
-  if(!(srResult && srResult.available) && targetScore!=null && targetScore > goalT.scoreHigh){ addSignals.push(`Target score ${targetScore} (above ${goalT.scoreHigh})`); profileFired = true; }
+  if(!(srResult && srResult.available) && targetScore!=null && targetScore > goalT.scoreHigh){ addSignals.push(`Your target score is ${targetScore}, high for you`); profileFired = true; }
   if(srResult && srResult.available){
     if(srResult.percentile != null && srResult.percentile >= goalT.rankHigh && !srResult.gateReason){
-      addSignals.push(`Readiness ${srResult.shown} — top third of your own days`); profileFired = true; }
+      addSignals.push(`Charge ${srResult.shown}, one of your best days`); profileFired = true; }
   } else {
-    if(adaptiveScore!=null && adaptiveScore > goalT.scoreHigh){ addSignals.push(`Adaptive score ${adaptiveScore} (above ${goalT.scoreHigh})`); profileFired = true; }
-    if(capacityLabel === 'above typical') addSignals.push('Predicted Capacity: above typical');
+    if(adaptiveScore!=null && adaptiveScore > goalT.scoreHigh){ addSignals.push(`Your adaptive score is ${adaptiveScore}, high for you`); profileFired = true; }
+    if(capacityLabel === 'above typical') addSignals.push('Expected to perform above your usual');
   }
-  if(['productive','maintaining'].includes(entry.trainingStatus)) addSignals.push(`Training status: ${entry.trainingStatus}`);
+  if(['productive','maintaining'].includes(entry.trainingStatus)) addSignals.push(`Your training is ${entry.trainingStatus}`);
 
   cardQueue = [];
   cardQueueIndex = 0;
@@ -44203,7 +44205,7 @@ async function generateRecommendations(){
     // one direction (which the code order below would otherwise do, since reduceSignals
     // is checked first) would hide that disagreement rather than surface it — so this is
     // deliberately its own branch, not folded into either side.
-    cardQueue.push({ type:'hold', title:'Signals genuinely disagree today — worth your own call',
+    cardQueue.push({ type:'hold', title:'Mixed signals today. Your call',
       signals:[
         `Pointing toward pulling back: ${reduceSignals.join('; ')}`,
         `Pointing toward pushing: ${addSignals.join('; ')}`,
@@ -44226,18 +44228,18 @@ async function generateRecommendations(){
       }
     }
     if(loadOnly && restInfo){
-      cardQueue.push({ type:'hold', title:'Holding steady — rest day scheduled soon',
+      cardQueue.push({ type:'hold', title:'Stick to the plan. A rest day is coming',
         signals:[...reduceSignals, `Rest day scheduled ${restInfo.date} — sleep and HRV look normal, so the load signal alone isn't enough to reduce today. Recheck if that changes.`],
         confidence:null, meta:{} });
     } else {
-      cardQueue.push({ type:'reduce', title:'Pull back — cut sets before cutting load', signals:[...reduceSignals, 'Reducing volume (sets) before intensity preserves the strength stimulus while cutting cumulative tissue stress (Bell et al., deload practice review)'],
+      cardQueue.push({ type:'reduce', title:'Take it easier: do fewer sets', signals:[...reduceSignals, 'Reducing volume (sets) before intensity preserves the strength stimulus while cutting cumulative tissue stress (Bell et al., deload practice review)'],
         confidence: reduceSignals.length>=3?'high':'medium', meta:{ signals: reduceSignals } });
     }
   } else if(addSignals.length >= 2 && !severeInjury){
-    cardQueue.push({ type:'add', title:'Window to push volume or intensity today', signals:addSignals,
+    cardQueue.push({ type:'add', title:'Good day to push a little harder', signals:addSignals,
       confidence: addSignals.length>=3?'high':'medium', meta:{ signals: addSignals } });
   } else {
-    cardQueue.push({ type:'hold', title:'Hold steady — no corroborated signal to change plan', signals:['Fewer than 2 signals agree in either direction'], confidence:null, meta:{} });
+    cardQueue.push({ type:'hold', title:'Stick to the plan', signals:['Nothing clearly says to change today’s plan'], confidence:null, meta:{} });
   }
 
   // Data-quality caveat: if today's Oura/Garmin readings genuinely disagreed on a metric
@@ -44265,7 +44267,7 @@ async function generateRecommendations(){
      buildRecCard, and this string is pushed after the join above has already happened. */
   if((profileFired || (rx && rx.profileDriven)) && cardQueue.length
      && /^(reduce|add|hold|prescription_)/.test(cardQueue[0].type)){
-    cardQueue[0].signals.push(`Those cut-offs are yours \u2014 how hard to push is set to `
+    cardQueue[0].signals.push(`These limits are yours. Your effort setting is `
       + `<b>${goalT.label}</b>. <button type="button" class="rec-profile-link">Change it</button>`);
   }
   const deloadSignal = await checkDeloadSignal();
@@ -44276,18 +44278,18 @@ async function generateRecommendations(){
 
   const completionPattern = await detectCompletionPattern();
   if(completionPattern.pattern==='under_completing'){
-    cardQueue.push({ type:'hold', title:'Recent plan looks heavier than what you\'ve actually been completing',
+    cardQueue.push({ type:'hold', title:'The plan is heavier than what you’ve been doing',
       signals:[`Completing about ${Math.round(completionPattern.avgRatio*100)}% of planned strength/run sessions over the last ${completionPattern.weeksChecked} weeks — worth trimming next week's plan to something more realistic rather than repeating the same volume and missing it again.`],
       confidence:'medium', meta:{} });
   } else if(completionPattern.pattern==='over_completing'){
-    cardQueue.push({ type:'hold', title:'You\'ve been doing meaningfully more than planned',
+    cardQueue.push({ type:'hold', title:'You’ve been doing more than planned',
       signals:[`Logged more strength/run sessions than were actually planned in ${completionPattern.weeksWithExtra} of the last ${completionPattern.weeksChecked} weeks — the current plan may be under-prescribing for your actual capacity.`],
       confidence:'medium', meta:{} });
   }
 
   const remainingDemand = await getRemainingWeekDemand();
   if(remainingDemand){
-    cardQueue.push({ type:'hold', title:'Don\'t cram it — here\'s what this week still needs',
+    cardQueue.push({ type:'hold', title:'Don’t cram it. Here’s what this week still needs',
       signals:[remainingDemand.reason], confidence:'medium', meta:{} });
   }
 
@@ -44318,12 +44320,12 @@ async function generateRecommendations(){
        'Cap sourced from Brigham & Women\'s Hospital return-to-running protocol — one clinic\'s upper bound, not a personalized threshold'],
       confidence:null, meta:{} });
   } else if(runFlag && runFlag.mode === 'weekly' && runFlag.severity === 'hard'){
-    cardQueue.push({ type:'reduce', title:'Running volume jump above the hard ceiling',
+    cardQueue.push({ type:'reduce', title:'Your running jumped too much',
       signals:[`This week: ${runFlag.thisWeek.toFixed(1)}km vs last week: ${runFlag.lastWeek.toFixed(1)}km (+${runFlag.increasePct}%)`,
        'Nielsen et al. 2014: increases above 30% week-over-week showed the clearest injury association — this is the ceiling to actively avoid, not just a soft target'],
       confidence:'high', meta:{} });
   } else if(runFlag && runFlag.mode === 'weekly' && runFlag.severity === 'soft'){
-    cardQueue.push({ type:'modify', title:'Running volume increasing quickly',
+    cardQueue.push({ type:'modify', title:'Your running is rising quickly',
       signals:[`This week: ${runFlag.thisWeek.toFixed(1)}km vs last week: ${runFlag.lastWeek.toFixed(1)}km (+${runFlag.increasePct}%)`,
        '10% functions as a soft reference rather than a hard rule (Nielsen et al.) — worth noting, not urgent on its own'],
       confidence:null, meta:{} });
@@ -44331,7 +44333,7 @@ async function generateRecommendations(){
 
   const spacingFlag = await checkHardDaySpacing();
   if(spacingFlag){
-    cardQueue.push({ type:'modify', title:'Hard runs scheduled too close together',
+    cardQueue.push({ type:'modify', title:'Hard runs too close together',
       signals:[`${spacingFlag.a.runType} on ${spacingFlag.a.date} and ${spacingFlag.b.runType} on ${spacingFlag.b.date} — ${spacingFlag.hoursApart}h apart`,
        'Recreational/intermediate runners generally need a minimum of 48h between tempo/interval sessions — moderate-confidence inference, not a dedicated dose-response study'],
       confidence:null, meta:{} });
@@ -44339,7 +44341,7 @@ async function generateRecommendations(){
 
   const crossModalFlag = await checkCrossModalSpacing();
   if(crossModalFlag){
-    cardQueue.push({ type:'modify', title:'Heavy lower-body day close to a quality run',
+    cardQueue.push({ type:'modify', title:'A heavy leg day is close to a hard run',
       signals:[`${crossModalFlag.a.kind} on ${crossModalFlag.a.date} and ${crossModalFlag.b.kind} on ${crossModalFlag.b.date} — ${crossModalFlag.hoursApart}h apart`,
        'Heavy squat/deadlift/lunge work and hard running compete for the same recovery budget (quads/hamstrings/glutes/calves) — ≥48h spacing where the schedule allows is standard practice, extrapolated from muscle-damage/glycogen recovery timelines rather than a directly-tested weekly cadence'],
       confidence:null, meta:{} });
@@ -45641,10 +45643,10 @@ const groundLine = g => `${g.name} ${g.dose}`;
    hang. Pain is the stop signal: stand up, or let go. */
 const PRACTICE = {
   squat: { name:'Resting squat', steps:[120, 300, 600], challenge:1800, adds:[30, 60, 120],
-           how:'Sit in a deep squat, heels down if you can (a book under them is fine), in short goes through the day. Stand up if your knees complain.',
+           how:'Sit in a deep squat with your heels down. A book under them is fine. Do it in short bursts through the day, and stand up if your knees complain.',
            kneeCap:300, kneeHow:'Knee flagged: squat to a low box and keep it under 5 minutes a day.' },
   hang:  { name:'Hang', steps:[60, 120, 210], challenge:420, adds:[10, 20, 30],
-           how:'From a bar, in sets of 10 to 30 seconds. Shoulders pulled down to start; relaxed hangs once that is easy. Let go if the front of the shoulder hurts.',
+           how:'Hang from a bar in sets of 10 to 30 seconds, shoulders pulled down. Relax into it once that’s easy. Let go if the front of your shoulder hurts.',
            shoulderPause:'Paused while a shoulder injury is open. Scapular pulls in the warm-up still count as prep.' }
 };
 const fmtMinSec = s => s >= 60 ? `${Math.floor(s / 60)}${s % 60 ? `:${String(s % 60).padStart(2, '0')}` : ''} min` : `${s} s`;
