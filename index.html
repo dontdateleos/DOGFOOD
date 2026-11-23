@@ -8197,7 +8197,7 @@ if(!window.__pnHold)window.__curtain();
         </div>
         <div class="score-note">Only used to size a goal target when you leave one blank.</div>
         <div class="field-row"><span class="field-label">Body fat %</span><input type="number" step="0.1" id="bodyFat" placeholder="optional"></div>
-        <div class="score-note" id="bodyFatConfidenceNote">Body fat % is low-confidence — hard to measure precisely, treat as a rough trend indicator rather than an exact number.</div>
+        <div class="score-note" id="bodyFatConfidenceNote">Body fat % is a rough guide. Watch the trend, not the exact number.</div>
         <div class="score-note note-live" id="bodyMetricsLastUpdated">No metrics yet. It only knows what it has been told.</div>
         <button id="updateBodyMetricsBtn">Update body metrics</button>
       </div>
@@ -8224,13 +8224,13 @@ if(!window.__pnHold)window.__curtain();
         <div class="field-row"><input type="checkbox" id="useSupersetsCheckbox" style="width:auto; flex:none;"><label for="useSupersetsCheckbox" style="font-size:var(--fs-md);">Allow supersets when short on time</label></div>
         <div class="field-row"><input type="checkbox" id="useDropSetsCheckbox" style="width:auto; flex:none;"><label for="useDropSetsCheckbox" style="font-size:var(--fs-md);">Allow drop sets when short on time</label></div>
         <div class="field-row"><input type="checkbox" id="finishersCheckbox" checked style="width:auto; flex:none;"><label for="finishersCheckbox" style="font-size:var(--fs-md);">End lift days with a 6–8 min finisher</label></div>
-        <div class="score-note">Same results in less time, not better results — applied only when a session won't otherwise fit. Expect sessions to feel harder.</div>
-        <div class="score-note">Bands count as bodyweight; barbells, dumbbells, cables and machines don't.</div>
+        <div class="score-note">Fits a long session into less time. Same work, so it feels harder. Only used when a session wouldn’t fit.</div>
+        <div class="score-note">Bands count as bodyweight. Barbells, dumbbells, cables and machines don’t.</div>
         <!-- WHERE THE SPARE SETS GO. A choice, not a default read off anything about you: the
              generator guarantees direct work for whatever is picked here, and turns its
              rotating block emphasis toward it. Saved on the tap, like the morning dots. -->
         <div class="field-label" style="margin-top:12px;">Muscles to prioritise</div>
-        <div class="score-note">Where the extra sets go once the main lifts are in: these get direct work every week, scaled to how long you lift. Pick up to four, or a preset. With none picked, arms and shoulders get a small minimum, because presses and rows under-train them.</div>
+        <div class="score-note">Pick up to four muscles to give extra sets each week, or choose a preset. If you pick none, arms and shoulders still get a little.</div>
         <div class="prio-pills" id="priorityPresetPills">
           <button type="button" class="type-btn" data-preset="arms">Arms &amp; shoulders</button>
           <button type="button" class="type-btn" data-preset="glutes">Glutes &amp; legs</button>
@@ -8239,7 +8239,7 @@ if(!window.__pnHold)window.__curtain();
         </div>
         <div class="prio-pills" id="priorityMusclePills"></div>
         <div class="score-note note-live" id="priorityMuscleNote"></div>
-        <div class="score-note" style="margin-top:12px;">Allocates your days by goal priority, spaces hard sessions apart, and only fills empty days.</div>
+        <div class="score-note" style="margin-top:12px;">Spreads your sessions across the week by priority, keeps hard days apart, and only fills empty days.</div>
         <div class="field-row"><input type="checkbox" id="includeStrengthCheckbox" checked style="width:auto; flex:none;"><label for="includeStrengthCheckbox" style="font-size:var(--fs-md);">Strength</label></div>
         <div class="field-row"><input type="checkbox" id="includeMobilityCheckbox" checked style="width:auto; flex:none;"><label for="includeMobilityCheckbox" style="font-size:var(--fs-md);">Mobility (standalone sessions + bulletproofing added to strength days)</label></div>
         <div class="field-row"><input type="checkbox" id="includeRunningCheckbox" checked style="width:auto; flex:none;"><label for="includeRunningCheckbox" style="font-size:var(--fs-md);">Running</label></div>
@@ -8256,7 +8256,7 @@ if(!window.__pnHold)window.__curtain();
              a report actionable — which build, how much data, what the score did today —
              and no personal detail: no entries, no sessions, no addresses, and nothing is
              sent anywhere. It goes on the clipboard and the reporter chooses where. -->
-        <div class="score-note">Copies your build number and a summary of what is stored, so a report can be acted on. Nothing is sent anywhere and none of your entries are included — it goes on the clipboard for you to paste.</div>
+        <div class="score-note">Copies your version and a summary of what’s stored, so a problem can be traced. Nothing is sent. None of your entries are included. You paste it where you like.</div>
         <button id="copyDiagnosticsBtn" class="outline">Copy diagnostics</button>
         <div id="diagnosticsResult" class="score-note note-live"></div>
       </div>
@@ -8277,9 +8277,9 @@ if(!window.__pnHold)window.__curtain();
              site data, or the browser deciding to reclaim it, takes the lot, and nothing
              else in the app ever mentions that. -->
         <div class="note-head">Where your data is</div>
-        <div class="score-note" style="color:var(--bg);">Your data <em>lives in this browser and nowhere else</em>. There is no account and no server copy — <em>if you clear site data, it is gone</em>. Export now and again.</div>
+        <div class="score-note" style="color:var(--bg);">Your data <em>lives on this device only</em>. There’s no account and no copy online. <em>If you clear the app’s data, it’s gone</em>, so export a backup now and then.</div>
         <div class="note-head">Export</div>
-        <div class="score-note"><em>Copies everything out</em>. Paste into Bulk Import on another copy to move your data.</div>
+        <div class="score-note"><em>Copies all your data</em>. Paste it into Import on another device to move it.</div>
         <div class="log-toggle-row" style="gap:6px;">
           <button id="exportAllBtn">Export all data</button>
           <button id="copyExportBtn" class="outline">Copy</button>
@@ -8288,7 +8288,7 @@ if(!window.__pnHold)window.__curtain();
         <div id="exportResult" class="score-note note-live"></div>
 
         <div class="note-head">Import</div>
-        <div class="score-note" style="margin-top:16px;">Writes exported data back in. For migrations and recovery, <em>not daily use</em>.</div>
+        <div class="score-note" style="margin-top:16px;">Puts an exported backup back in. For moving or recovering data, <em>not daily use</em>.</div>
         <textarea id="bulkImportInput" aria-label="Paste data to import" placeholder='{"entry:2026-08-14": {...}, "training:2026-08-14:1234567890": {...}}' style="min-height:100px; font-family:var(--mono); font-size:var(--fs-tag);"></textarea>
         <button id="bulkImportBtn">Import</button>
         <button id="restoreFileBtn" class="outline" hidden>Choose a backup file</button>
@@ -8333,13 +8333,13 @@ if(!window.__pnHold)window.__curtain();
       <div class="fields collapsible-body" data-collapse="appearance" style="display:none;">
         <label class="week-deload" for="boneGroundToggle">
           <input type="checkbox" id="boneGroundToggle">
-          <span>Bone &mdash; put the pages on paper, keep the header dark. On by default; turn it off for black.</span>
+          <span>Paper &mdash; light pages instead of black.</span>
         </label>
         <label class="week-deload" for="newLookToggle">
           <input type="checkbox" id="newLookToggle">
-          <span>New look &mdash; the piñata banners and three-tab bar. Turn it off for the old header and five tabs.</span>
+          <span>New look &mdash; piñata banners and three tabs. Turn off for the old header and five tabs.</span>
         </label>
-        <div class="score-note">The masthead, the blocks and the five tab colours do not move. What changes is the ground under them and the ink on it.</div>
+        <div class="score-note">Colours stay the same. Only the page and text colours change.</div>
         <div class="field-row" style="margin-top:14px;"><span class="field-label">Banner</span>
           <select id="mastheadSelect" aria-label="Masthead treatment">
             <option value="deep">Deep &mdash; the default</option>
@@ -8357,10 +8357,10 @@ if(!window.__pnHold)window.__curtain();
         <label class="week-deload" for="highContrastToggle"><input type="checkbox" id="highContrastToggle"><span>High contrast</span></label>
         <label class="week-deload native-only" for="hapticsToggle"><input type="checkbox" id="hapticsToggle"><span>Haptics &mdash; feel taps, swipes and wheel rows</span></label>
         <label class="week-deload" for="workoutRemindersToggle"><input type="checkbox" id="workoutRemindersToggle"><span>Workout reminders — asks your browser before enabling notifications</span></label>
-        <div class="score-note">The mark still blinks to say something is loading and still moves to the header when you scroll. What goes is everything that was only ever character.</div>
+        <div class="score-note">Keeps the useful animations and drops the decorative ones.</div>
         <div class="dev-only" id="eyesDevGroup" style="margin-top:14px;">
           <div class="field-row"><span class="field-label">The mark</span><span class="head-est" id="eyesSummary"></span></div>
-          <div class="score-note" style="margin-bottom:10px;">Dev only. What the eyes do, and how much of it. Tap any row to see it. Untick to switch it off; it takes effect straight away and is remembered.</div>
+          <div class="score-note" style="margin-bottom:10px;">For testing. Tap a row to preview it. Untick to turn it off.</div>
           <div id="eyeAnimList"></div>
         </div>
       </div>
@@ -8380,11 +8380,11 @@ if(!window.__pnHold)window.__curtain();
     <div class="group">
       <div class="group-head collapsible" data-collapse="datagoes" style="cursor:pointer;"><div class="group-title">Where your data goes</div><div class="group-sub">the short, true version</div><span class="collapse-chevron collapsed" data-collapse="datagoes">&#9662;</span></div>
       <div class="fields collapsible-body" data-collapse="datagoes" style="display:none;">
-        <div class="score-note" style="color:var(--bg);">Everything you log stays in this browser, on this device. There is no account, there is no copy on a server, and nobody else — including whoever gave you this app — can see your entries.</div>
+        <div class="score-note" style="color:var(--bg);">Everything you log stays on this device. There’s no account and no copy online. Nobody else can see it.</div>
         <div class="score-note">Two things do leave the device, and only if you set them up:</div>
         <div class="score-note"><b>Apple Health.</b> In the iPhone app, Dogfood reads Apple Health on the phone itself. Nothing goes through a server, and it never writes anything back.</div>
         <div class="score-note"><b>Apple Health.</b> If you switch it on, a Shortcut you set up sends the numbers you chose to that same server, and the app collects them from it. It is off until you turn it on.</div>
-        <div class="score-note">Nothing is analytics. Nothing is advertising. Nothing is sold. Clearing this browser's site data deletes the lot with no way back, so export a backup now and again.</div>
+        <div class="score-note">No analytics, no ads, nothing sold. Clearing the app’s data deletes everything for good, so export a backup now and then.</div>
       </div>
     </div>
     <div class="group">
@@ -14783,7 +14783,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.054';
+const APP_VERSION = '2026.11.23.055';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15179,6 +15179,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.055': 'Plainer wording across Settings.',
   '2026.11.23.054': 'Program, Goals, Block, Weight and Sport open as full pages with the same banner; long notes in Settings fold behind Read more.',
   '2026.11.23.053': 'Every opened page in Build, Skills and Settings follows one standard: the banner names it, the title fits, and the content is plain cards on paper.',
   '2026.11.23.052': 'Build matches the design: Block, Program, Goals, Skills and Injuries & tests, each with a big title; Block shows the week chips, focus and what is next.',
@@ -20412,7 +20413,7 @@ function renderWidgetStatus(){
   if(!WidgetBridge){
     let note = document.getElementById('widgetStatus');
     if(!note){ note = document.createElement('div'); note.id = 'widgetStatus'; note.className = 'score-note'; host.appendChild(note); }
-    note.textContent = 'This is the web version of Dogfood. The widget, haptics, the Live Activity and Apple Health only work in the Dogfood app installed from TestFlight.';
+    note.textContent = 'This is the web version. The widget, haptics, Live Activity and Apple Health need the Dogfood app from TestFlight.';
     /* What the page itself can see, so a copy of the app that thinks it is the web version
        can say why: its address, whether Capacitor's bridge script arrived, the platform it
        reports, whether the iOS message channel is there, and the plugins it lists. */
