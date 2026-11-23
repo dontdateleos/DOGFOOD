@@ -5876,14 +5876,14 @@ html.s2 body.tab-insights:not(.s2-wk) .week-panel > .group-head,
 html.s2 body.tab-insights:not(.s2-wk) #weekWheelDetailTitle,
 html.s2 body.tab-insights:not(.s2-wk) #weekWheelDetail{ display:none !important; }
 html.s2 body.s2-wk .s2-hero, html.s2 body.s2-wk #todayRichArea{ display:none !important; }
-html.s2 body.tab-insights .session-type{ display:flex; gap:8px; padding:0 16px; margin:12px 0 4px; flex-wrap:wrap; }
-html.s2 body.tab-insights .session-type .type-btn{ flex:none; display:inline-flex; align-items:center; gap:7px; padding:9px 16px; border-radius:999px; min-height:42px; box-sizing:border-box;
+html.s2 body.tab-insights .session-type{ display:flex; gap:6px; padding:0 16px; margin:12px 0 4px; flex-wrap:nowrap; }
+html.s2 body.tab-insights .session-type .type-btn{ flex:none; display:inline-flex; align-items:center; gap:6px; padding:9px 13px; white-space:nowrap; border-radius:999px; min-height:42px; box-sizing:border-box;
   border:1px solid rgba(var(--ink-rgb),.18); background:transparent; color:rgb(var(--ink-rgb)); font:700 15px var(--sans); letter-spacing:0; text-transform:none; }
 html.s2 body.tab-insights .session-type .type-btn::before{ content:''; width:18px; height:18px; background:currentColor; -webkit-mask:var(--ti) center/contain no-repeat; mask:var(--ti) center/contain no-repeat; }
 html.s2 body.tab-insights .session-type .type-btn.active{ background:#151515; border-color:#151515; color:#fff; }
-.type-btn[data-type="strength"]{ --ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 7v10M3 10v4M18 7v10M21 10v4M6 12h12'/%3E%3C/svg%3E"); }
-.type-btn[data-type="run"]{ --ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='15' cy='5' r='2'/%3E%3Cpath d='M9 21l3-6-3-3 2-5 4 2 3 3M7 13l2-3'/%3E%3C/svg%3E"); }
-.type-btn[data-type="mobility"]{ --ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='5' r='2'/%3E%3Cpath d='M5 9h14M12 9v6M9 21l3-6 3 6'/%3E%3C/svg%3E"); }
+.type-btn[data-type="strength"], .s2-hero[data-type="strength"]{ --ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 7v10M3 10v4M18 7v10M21 10v4M6 12h12'/%3E%3C/svg%3E"); }
+.type-btn[data-type="run"], .s2-hero[data-type="run"]{ --ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='15' cy='5' r='2'/%3E%3Cpath d='M9 21l3-6-3-3 2-5 4 2 3 3M7 13l2-3'/%3E%3C/svg%3E"); }
+.type-btn[data-type="mobility"], .s2-hero[data-type="mobility"]{ --ti:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='5' r='2'/%3E%3Cpath d='M5 9h14M12 9v6M9 21l3-6 3 6'/%3E%3C/svg%3E"); }
 
 /* PROGRESS: Daily / Weekly / Monthly as a switch, the six measures as rows with a sparkline and a change */
 html.s2 body.tab-data #trendPeriodPills{ display:flex; gap:0; margin:14px 16px 0 !important; padding:4px; border-radius:999px; background:rgba(var(--ink-rgb),.06); border:1px solid rgba(var(--ink-rgb),.1); }
@@ -5998,8 +5998,9 @@ html.s2 #logSheet .s2-upnext.on{ display:block; margin:6px 0 0; padding:6px 16px
 html.s2 #logSheet .lift-sheet-panel[data-phase="warm"] > .s2-phase[data-p="warm"], html.s2 #logSheet .lift-sheet-panel[data-phase="cool"] > .s2-phase[data-p="cool"]{ display:block; padding:6px 0 90px; }
 html.s2 #logSheet .lift-sheet-panel[data-phase="warm"] > :is(#logDateRow, #logSheetBody, .log-foot, .s2-upnext, .s2-logbar),
 html.s2 #logSheet .lift-sheet-panel[data-phase="cool"] > :is(#logDateRow, #logSheetBody, .log-foot, .s2-upnext, .s2-logbar){ display:none !important; }
-.s2-steps button{ all:unset; box-sizing:border-box; display:inline-flex; align-items:center; padding:9px 15px; border-radius:999px; border:1px solid rgba(12,13,11,.2); font:700 14px var(--sans); color:#151515; cursor:pointer; }
+.s2-steps button{ text-transform:capitalize; all:unset; box-sizing:border-box; display:inline-flex; align-items:center; padding:9px 15px; border-radius:999px; border:1px solid rgba(12,13,11,.2); font:700 14px var(--sans); color:#151515; cursor:pointer; }
 .s2-steps button::after{ display:none; }
+.s2-steps button{ text-transform:capitalize; }
 .s2-steps button.cur{ background:#151515; color:#fff; border-color:#151515; }
 .s2-phase .group{ margin-top:8px; }
 /* REST and START: two full-screen moments */
@@ -6071,6 +6072,11 @@ html.s2 .session-complete .ps-k small{ display:block; font:500 13px var(--sans);
 html.s2 .session-complete .ps-d{ flex:none; padding:5px 11px; border-radius:999px; background:rgba(var(--ink-rgb),.08); color:#151515; font:700 13px var(--sans); }
 html.s2 .session-complete .ps-d.up{ background:#C8F031; }
 
+html.s2 body.tab-insights:not(.s2-wk):not(.s2-resting) #todaySessionTypePills{ display:flex !important; }
+html.s2 body.tab-insights:not(.s2-wk):not(.s2-resting) #todaySessionTypePills .type-btn{ display:inline-flex !important; }
+html.s2 body.tab-insights #todaySessionTypePills{ margin:12px 0 2px; }
+.s2-hero .eyebrow::before{ content:''; display:inline-block; vertical-align:-3px; width:18px; height:18px; margin-right:7px; background:currentColor; -webkit-mask:var(--ti) center/contain no-repeat; mask:var(--ti) center/contain no-repeat; }
+html.s2 body.tab-insights:not(.s2-wk) #todayWorkoutSummary .empty-state{ display:none; }
 /* REST DAY */
 html.s2 body.tab-insights .rest-plate{ margin:16px 16px 8px !important; padding:22px 18px 18px !important; border-radius:22px; background:#C9A4FF !important; color:#151515 !important; border:0 !important; }
 html.s2 body.tab-insights .rest-plate .rest-word{ font:italic 800 48px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif !important; text-transform:uppercase; letter-spacing:0 !important; color:#151515 !important; }
@@ -14225,7 +14231,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.23.024';
+const APP_VERSION = '2026.11.23.025';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -14621,6 +14627,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.23.025': 'Strength, Run and Mobility are always there under today’s card, each with its own icon. Pick one and the card and its Start follow; if nothing is planned it says so and lets you log one.',
   '2026.11.23.024': 'The workout is one flow: Start opens Warm-up, then your lifts, then Cooldown, with the three as steps at the top. The rows on Training open the workout at that step.',
   '2026.11.23.023': 'Week has a summary card over day tiles, History opens with twelve weeks and three numbers, and today’s score is a pink card.',
   '2026.11.23.022': 'After a workout, the summary is a card — an orange header, beat-your-Charge, new best and what moved. A rest day is a purple card.',
@@ -47245,12 +47252,20 @@ loadGoalProfile().then(async ()=>{
     var t=area&&area.querySelector('.today-session .group-title');
     var fab=document.getElementById('logFab');
     var rich=document.getElementById('todayRichArea');
-    var show=!!t && rich && rich.style.display!=='none' && getComputedStyle(rich).display!=='none';
+    var rp=document.getElementById('restDayPlate'), resting=!!rp && rp.style.display!=='none' && getComputedStyle(rp).display!=='none';
+    document.body.classList.toggle('s2-resting',resting);
+    var richOn=!!rich && rich.style.display!=='none' && getComputedStyle(rich).display!=='none';
+    var empty=!t && richOn && !resting, show=(!!t||empty) && richOn;
+    var ty=(typeof todaySessionType==='string')?todaySessionType:'strength';
     if(!hero){
       hero=document.createElement('div'); hero.className='s2-hero';
       hero.innerHTML='<div class="cdeco" aria-hidden="true"></div><p class="eyebrow"></p><h2 class="ttl"></h2><span class="mins"></span><button type="button" class="go"></button>';
       var anchor=document.getElementById('todayScorePlate'); panel.insertBefore(hero,anchor||panel.firstChild);
-      hero.querySelector('.go').addEventListener('click',function(){ var f=document.getElementById('logFab'); if(f) f.click(); });
+      var pl=document.getElementById('todaySessionTypePills'); if(pl) hero.insertAdjacentElement('afterend',pl);
+      hero.querySelector('.go').addEventListener('click',function(){
+        var ety=hero.dataset.empty;
+        if(ety){ (async function(){ try{ await openBlockEditor(todayStr, await freeSlotOn(todayStr), { type:ety, details:{} }); }catch(e){ var f0=document.getElementById('logFab'); if(f0) f0.click(); } })(); return; }
+        var f=document.getElementById('logFab'); if(f) f.click(); });
       var o='', c=['#ffffff','#151515','#FFC24D','#FF3E9E']; seed=23;
       for(var i=0;i<12;i++){ var sz=6+rnd()*6, rd=i%3===0;
         o+='<i class="cf" style="left:'+(rnd()*100).toFixed(1)+'%;width:'+sz.toFixed(1)+'px;height:'+(rd?sz:sz*1.6).toFixed(1)+'px;border-radius:'+(rd?'50%':'2px')+';background:'+c[i%4]
@@ -47259,6 +47274,16 @@ loadGoalProfile().then(async ()=>{
     }
     hero.classList.toggle('on',show);
     if(!show) return;
+    hero.dataset.type=ty;
+    if(empty){
+      hero.dataset.empty=ty;
+      hero.querySelector('.eyebrow').textContent='Nothing planned';
+      hero.querySelector('.ttl').textContent=({strength:'Strength',run:'Run',mobility:'Mobility'}[ty]||'Workout');
+      hero.querySelector('.mins').textContent='';
+      hero.querySelector('.go').textContent=({strength:'Log a lift',run:'Log a run',mobility:'Log it'}[ty]||'Log it');
+      return;
+    }
+    hero.removeAttribute('data-empty');
     var pos=(document.getElementById('weekBlockPos')||{}).textContent||'';
     hero.querySelector('.eyebrow').textContent=pos?('Week '+pos.trim()):'Today';
     hero.querySelector('.ttl').textContent=t.textContent.trim();
