@@ -15075,7 +15075,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.24.096';
+const APP_VERSION = '2026.11.24.097';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15471,6 +15471,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.24.097': 'Swap a day for the best session: on any day, Swap for the best session (or Rained off? Swap for the best workout on a game day) replaces it with strength and mobility chosen for what your week still needs. No heavy legs the day before a game, and it can be undone.',
   '2026.11.24.096': 'The switches sit in the same place on every tab. Track now has a full-width bar (Trends, History, Muscles) and a row of chips (Daily, Weekly, Monthly), the same shapes and positions as Train, Fuel and Recover.',
   '2026.11.24.095': 'Track > Muscles shows strength and mobility together: each muscle group has its sets, exercise trends, mobility rating and stretch time on one page.',
   '2026.11.24.094': 'Track has a new Muscles page: for each muscle group, the sets and every exercise with its weight trend, and the time you stretched it, by day, week or month, with a mobility rating.',
@@ -24775,6 +24776,10 @@ async function openDayActions(date){
     `<button type="button" class="day-act" data-act="edit" data-slot="${slot}">${iconFor(block, 20)}<span>Edit ${sessionTitle(block)}</span></button>`));
   if(!locked && !off && blocks.length < 2) acts.push(
     `<button type="button" class="day-act" data-act="add" data-slot="${blocks.some(b=> b.slot === 'am') ? 'pm' : 'am'}"><span class="day-act-glyph" aria-hidden="true">+</span><span>${blocks.length ? 'Add a second session' : 'Add a session'}</span></button>`);
+  if(!locked){
+    const isSport = blocks.some(({block})=> sportOfBlock(block));
+    acts.push(`<button type="button" class="day-act" data-act="best"><span class="day-act-glyph" aria-hidden="true">\u21c4</span><span>${isSport ? 'Rained off? Swap for the best workout' : 'Swap for the best session'}</span></button>`);
+  }
   if(!locked && blocks.length) acts.push(
     `<button type="button" class="day-act" data-act="clear"><span class="day-act-glyph" aria-hidden="true">–</span><span>Clear the day</span></button>`);
   if(!locked) acts.push(off
@@ -24800,6 +24805,7 @@ async function openDayActions(date){
       return;
     }
     if(act === 'add'){ await openBlockEditor(date, btn.dataset.slot, null); return; }
+    if(act === 'best'){ await swapDayForBest(date); return; }
     const undo = [];
     for(const s of ['am','pm']) undo.push({ key:`weekplan:${date}:${s}`, value: await readRaw(`weekplan:${date}:${s}`), date });
     undo.push({ key:DAY_OFF_PREFIX + date, value: await readRaw(DAY_OFF_PREFIX + date) });
@@ -24820,6 +24826,91 @@ async function openDayActions(date){
     renderTodayWorkoutSummary();
   }));
   dayActionSheet.open();
+}
+
+/* SWAP A DAY FOR THE BEST SESSION. A golf round rained off, a run you cannot do, a day that changed: instead of picking a
+   session by hand, this works out what the rest of the week still needs and puts that there, with mobility.
+
+   It reads the sets each muscle has had this week (logged, and planned on the other days), then chooses between an upper, a
+   lower and a full-body day by which one covers the most of what is short. It will not choose heavy legs the day before a game,
+   and it leans away from repeating the day either side of it. On today, a low Charge swaps in mobility alone. The strength
+   session is built by the same generator as the rest of the plan, so it follows your block, split focus, session length,
+   injuries and equipment. Everything it changes can be undone. */
+async function chooseBestSessionFor(date){
+  const wk = weekDatesFrom(date);
+  const sets = {};
+  const addEx = ex=>{
+    if(!ex || !(ex.sets > 0)) return;
+    const sec = ex.secondaryArea ? VOLUME_SPLIT.secondary : 0, pri = ex.secondaryArea ? VOLUME_SPLIT.primary : 1;
+    if(ex.area) sets[ex.area] = (sets[ex.area] || 0) + ex.sets * pri;
+    if(ex.secondaryArea) sets[ex.secondaryArea] = (sets[ex.secondaryArea] || 0) + ex.sets * sec;
+  };
+  let logged = [];
+  try{ logged = await getAllTrainingSessions(); } catch(e){}
+  const loggedDates = new Set(logged.map(sn=> sn && sn.date));
+  logged.filter(sn=> sn && sn.type === 'strength' && wk.includes(sn.date)).forEach(sn=> (sn.exercises || []).forEach(addEx));
+  const norm = t=> /^(lower|legs)$/.test(t) ? 'lower' : /^(upper|push|pull)$/.test(t) ? 'upper' : t === 'full_body' ? 'full' : null;
+  const tagOn = {};
+  for(const d of wk){
+    for(const sl of ['am','pm']){
+      const b = await blockOn(d, sl);
+      if(!b || b.type !== 'strength' || !b.details) continue;
+      tagOn[d] = norm(b.details.workoutTag);
+      if(d !== date && !loggedDates.has(d)) (b.details.exercises || []).forEach(addEx);
+    }
+  }
+  const sports = await activeSports();
+  const legsOff = isGameEve(date, sports);
+  const areasOf = t=> (TAG_TO_AREAS[t === 'full' ? 'full_body' : t] || []).filter(a=> !TAG_NEUTRAL_AREAS.has(a) && VOLUME_LANDMARKS[a]);
+  const need = t=> areasOf(t).reduce((n, a)=> n + Math.max(0, VOLUME_LANDMARKS[a].mavLow - (sets[a] || 0)), 0);
+  const prev = tagOn[shiftDateStr(date, -1)], next = tagOn[shiftDateStr(date, 1)];
+  const cands = ['upper', 'lower', 'full'].filter(t=> !(legsOff && (t === 'lower' || t === 'full')));
+  const scored = cands.map(t=> ({ t, score: need(t) / (t === 'full' ? 1.6 : 1) - (prev === t ? 30 : 0) - (next === t ? 30 : 0) }));
+  scored.sort((a, b)=> b.score - a.score);
+  const best = scored[0] || { t:'upper' };
+  let lowCharge = false;
+  try{ const ch = lastSrResult && lastSrResult.available && lastSrResult.charge ? lastSrResult.charge.charge : null; lowCharge = date === todayStr && ch != null && ch < 35; } catch(e){}
+  return { tag: best.t === 'full' ? 'full_body' : best.t, label: best.t === 'full' ? 'full body' : best.t + ' body', legsOff, lowCharge };
+}
+async function swapDayForBest(date){
+  const undo = [];
+  for(const s of ['am','pm']) undo.push({ key:`weekplan:${date}:${s}`, value: await readRaw(`weekplan:${date}:${s}`), date });
+  undo.push({ key:DAY_OFF_PREFIX + date, value: await readRaw(DAY_OFF_PREFIX + date) });
+  const before = [];
+  for(const s of ['am','pm']){ const b = await blockOn(date, s); if(b) before.push(sessionTitle(b)); }
+  const pick = await chooseBestSessionFor(date);
+  for(const s of ['am','pm']) await putRaw(`weekplan:${date}:${s}`, null);
+  try{ await setDayOff(date, false); } catch(e){}
+  let placed = 0, words = '';
+  try{
+    if(!pick.lowCharge){
+      const goals = await getCurrentGoals(todayStr);
+      const deload = await isDeloadWeek(date);
+      const bt = await getBlockTypeFor(date, goals && goals.list);
+      const blockType = deload ? null : (bt && bt.type);
+      const phase = deload ? 'deload' : null;
+      const focus = await distributeSessionFocuses((goals && goals.list) || [], 1, phase, blockType);
+      const res = await generateStrengthProgram(1, 'full_body', true, [date], null, focus, new Set(), [pick.tag], phase, blockType);
+      placed = (res && res.placed) || 0;
+      words = pick.label;
+    }
+    // Mobility goes beside it, in the evening slot, unless the strength day already took it.
+    const m = await generateMobilityProgram(1, [date]);
+    if(m && m.placed){ placed += m.placed; words = words ? words + ' and mobility' : 'mobility'; }
+  } catch(e){ placed = 0; }
+  if(!placed){
+    for(const u of undo) await putRaw(u.key, u.value);
+    await syncPlannedSessionMirror(date);
+    showToast('Could not build a session for that day, so it was left as it was', true);
+    return false;
+  }
+  await syncPlannedSessionMirror(date);
+  offerWeekUndo(undo, 'swap');
+  showUndoToast(`${before.length ? before.join(' and ') : 'The day'} swapped for ${words}${pick.legsOff && !pick.lowCharge ? ' (no heavy legs before your game)' : ''}${pick.lowCharge ? ' (your Charge is low, so just mobility)' : ''}`);
+  weekDetailLastHtml = '';
+  renderWeekGrid();
+  renderTodayWorkoutSummary();
+  return true;
 }
 
 /* The day, off the board and no longer in a sheet \u2014 see renderWeekGrid, which now writes
