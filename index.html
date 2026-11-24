@@ -15063,7 +15063,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.24.094';
+const APP_VERSION = '2026.11.24.095';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15459,6 +15459,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.24.095': 'Track > Muscles shows strength and mobility together: each muscle group has its sets, exercise trends, mobility rating and stretch time on one page.',
   '2026.11.24.094': 'Track has a new Muscles page: for each muscle group, the sets and every exercise with its weight trend, and the time you stretched it, by day, week or month, with a mobility rating.',
   '2026.11.24.093': 'A stretch session you only part-do can be saved: tick the sets you did and tap Save what I did. Only the ticked sets are logged.',
   '2026.11.24.092': 'The Fuel bull builds itself layer by layer like the other animals, and sways afterwards.',
@@ -50227,7 +50228,7 @@ loadGoalProfile().then(async ()=>{
   (function(){
     var host=document.getElementById('musclesDataView'); if(!host) return;
     var ORDER=['chest','thoracic','shoulders','side_delts','rear_delts','biceps','triceps','forearms','core','lower_back','neck','quads_knees','hamstrings','glutes','hips','adductors','calves','ankles'];
-    var st={kind:'strength',range:'weekly',area:null}, cache=null, busy=false;
+    var st={range:'weekly',area:null}, cache=null, busy=false;
     function esc(t){ return String(t==null?'':t).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
     function nm(a){ return (typeof BODY_AREAS!=='undefined'&&BODY_AREAS[a])||a; }
     function mondayOf(d){ var x=localDateFrom(d), k=(x.getDay()+6)%7; return shiftDateStr(d,-k); }
@@ -50296,58 +50297,52 @@ loadGoalProfile().then(async ()=>{
       return '<svg viewBox="0 0 '+W+' '+H+'" width="140" height="34" aria-hidden="true" style="flex:none"><path d="'+d+'" fill="none" stroke="#151515" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+(W-2)+'" cy="'+(H-4-(pts[n-1][key]-mn)/rg*(H-8)).toFixed(1)+'" r="3.6" fill="#FF3E9E"/></svg>';
     }
     function ctl(){
-      return '<div class="mv-ctl"><div class="mv-seg" role="group" aria-label="What to show"><button type="button" data-k="strength" class="'+(st.kind==='strength'?'on':'')+'">Strength</button><button type="button" data-k="mobility" class="'+(st.kind==='mobility'?'on':'')+'">Mobility</button></div>'
-        +'<div class="mv-seg" role="group" aria-label="Period">'+[['daily','Daily'],['weekly','Weekly'],['monthly','Monthly']].map(function(r){ return '<button type="button" data-r="'+r[0]+'" class="'+(st.range===r[0]?'on':'')+'">'+r[1]+'</button>'; }).join('')+'</div></div>';
+      return '<div class="mv-ctl"><div class="mv-seg" role="group" aria-label="Period">'+[['daily','Daily'],['weekly','Weekly'],['monthly','Monthly']].map(function(r){ return '<button type="button" data-r="'+r[0]+'" class="'+(st.range===r[0]?'on':'')+'">'+r[1]+'</button>'; }).join('')+'</div></div>';
     }
     function cur(){ return keyOf(todayStr,st.range); }
     function listView(){
       var h=ctl(), r=st.range, ck=r+':'+cur(), any=false;
-      h+='<p class="mv-note">'+(st.kind==='strength'?'Sets and the heaviest weight, for each muscle group. Tap one to see every exercise in it.':'Time spent stretching each muscle group, from stretch sessions and cool-downs you logged. Tap one for the trend.')+'</p><div class="mv-list">';
+      h+='<p class="mv-note">For each muscle group: sets lifted and time stretched '+periodWord(r)+'. Tap one for every exercise, the weight trends and the stretch trend.</p><div class="mv-list">';
       ORDER.forEach(function(a){
-        var d=(st.kind==='strength'?cache.S:cache.M)[a];
-        if(st.kind==='strength'){
-          var sets=d?(d.sets[ck]||0):0, n=d?Object.keys(d.ex).length:0; if(n) any=true;
-          h+='<button type="button" class="mv-row'+(n?'':' dim')+'" data-a="'+a+'"><span class="rt"><b>'+esc(nm(a))+'</b><i>'+(n?n+' exercise'+(n===1?'':'s')+' logged':'Nothing logged yet')+'</i></span><span class="rv"><strong>'+(Math.round(sets*10)/10)+' sets</strong><i>'+periodWord(r)+'</i></span></button>';
-        } else {
-          var secs=d?(d.secs[ck]||0):0, rt=rating(secs,r); if(d&&Object.keys(d.secs).length) any=true;
-          h+='<button type="button" class="mv-row'+(d&&Object.keys(d.secs).length?'':' dim')+'" data-a="'+a+'"><span class="rt"><b>'+esc(nm(a))+'</b><i>'+mins(secs)+' '+periodWord(r)+' of about '+mins(targetSecs(r))+'</i></span><span class="rv"><strong>'+mins(secs)+'</strong>'+(rt[1]?'<span class="mv-chip '+rt[1]+'">'+rt[0]+'</span>':'<span class="mv-chip">'+rt[0]+'</span>')+'</span></button>';
-        }
+        var sd=cache.S[a], md=cache.M[a];
+        var sets=sd?(sd.sets[ck]||0):0, n=sd?Object.keys(sd.ex).length:0;
+        var secs=md?(md.secs[ck]||0):0, hasM=md&&Object.keys(md.secs).length, rt=rating(secs,r);
+        if(n||hasM) any=true;
+        h+='<button type="button" class="mv-row'+(n||hasM?'':' dim')+'" data-a="'+a+'"><span class="rt"><b>'+esc(nm(a))+'</b><i>'+(n?n+' exercise'+(n===1?'':'s'):'No lifts')+' · '+(hasM?mins(secs)+' stretched':'No stretching')+'</i></span>'
+          +'<span class="rv"><strong>'+(Math.round(sets*10)/10)+' sets</strong><span class="mv-chip'+(rt[1]?' '+rt[1]:'')+'">Mobility: '+rt[0]+'</span></span></button>';
       });
       h+='</div>';
-      if(!any) h+='<p class="mv-note">Nothing here yet. It fills in as you log '+(st.kind==='strength'?'lifts':'stretching')+'.</p>';
+      if(!any) h+='<p class="mv-note">Nothing here yet. It fills in as you log lifts and stretching.</p>';
       return h;
     }
     function detailView(a){
-      var r=st.range, bs=buckets(r), d=(st.kind==='strength'?cache.S:cache.M)[a]||{sets:{},ex:{},secs:{},moves:{}};
+      var r=st.range, bs=buckets(r), d=cache.S[a]||{sets:{},ex:{}}, m=cache.M[a]||{secs:{},moves:{}};
       var h='<div class="mv-hd"><button type="button" class="mv-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button><h2>'+esc(nm(a))+'</h2></div>'+ctl();
-      var ck=r+':'+cur();
-      if(st.kind==='strength'){
-        var vals=bs.map(function(b){ return d.sets[r+':'+b.k]||0; });
-        h+='<div class="mv-card"><h3>Sets</h3><p>'+({daily:'Last 14 days',weekly:'Last 12 weeks',monthly:'Last 12 months'})[r]+'. The dark bar is '+periodWord(r)+'.</p>'+bars(vals,bs.map(function(b){ return b.l; }),'#C9F23A')+'</div>';
-        var exs=Object.keys(d.ex).map(function(k){ return d.ex[k]; }); exs.forEach(function(e){ e.pts.sort(function(x,y){ return x.d<y.d?-1:x.d>y.d?1:0; }); });
-        exs.sort(function(x,y){ return (x.sec-y.sec)||(x.pts[x.pts.length-1].d<y.pts[y.pts.length-1].d?1:-1); });
-        h+='<div class="mv-card"><h3>Exercises</h3>';
-        if(!exs.length) h+='<p>No lifts logged for this group yet.</p>';
-        exs.forEach(function(e){
-          var useW=e.pts.some(function(p){ return p.top>0; }), key=useW?'top':'reps';
-          var by={}; e.pts.forEach(function(p){ var k=keyOf(p.d,r); if(!by[k]||p[key]>by[k][key]) by[k]={d:p.d,top:p.top,reps:p.reps,k:k}; });
-          var seq=bs.map(function(b){ return by[b.k]; }).filter(Boolean);
-          var last=e.pts[e.pts.length-1], first=seq.length?seq[0]:null, lastS=seq.length?seq[seq.length-1]:null;
-          var ch=(first&&lastS&&seq.length>1&&first[key]>0)?Math.round((lastS[key]-first[key])/first[key]*100):null;
-          var best=useW?kg(Math.max.apply(null,e.pts.map(function(p){ return p.top; }))):Math.max.apply(null,e.pts.map(function(p){ return p.reps; }))+' reps';
-          h+='<div class="mv-ex"><div class="mv-ext"><b>'+esc(e.name)+'</b><span>'+(useW?kg(last.top):last.reps+' reps')+'</span></div>'
-            +'<div class="mv-exm">'+(e.sec?'Secondary · ':'')+e.pts.length+' session'+(e.pts.length===1?'':'s')+' · best '+best+(ch!=null?' · <span class="'+(ch>=0?'mv-up':'mv-dn')+'">'+(ch>=0?'+':'')+ch+'% over this window</span>':'')+'</div>'
-            +'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px">'+(seq.length>1?spark(seq,key):'<span class="mv-exm">Trend appears after two '+({daily:'days',weekly:'weeks',monthly:'months'})[r]+' of data.</span>')+'<span class="mv-exm">'+(useW?'heaviest set':'most reps')+'</span></div>'
-            +'<details><summary>Every session</summary><div class="mv-log">'+e.pts.slice().reverse().slice(0,30).map(function(p){ return '<span>'+esc(p.d)+'</span><span>'+p.sets+' × '+esc(p.rps||'')+'</span><span>'+(p.top>0?kg(p.top):'bodyweight')+'</span>'; }).join('')+'</div></details></div>';
-        });
-        h+='</div>';
-      } else {
-        var vs=bs.map(function(b){ return d.secs[r+':'+b.k]||0; }), secs=d.secs[ck]||0, rt=rating(secs,r);
-        h+='<div class="mv-card"><h3>Mobility rating</h3><div class="mv-big">'+rt[0]+'</div><p>'+mins(secs)+' '+periodWord(r)+', against about '+mins(targetSecs(r))+' for a healthy dose (10 minutes a week).</p></div>';
-        h+='<div class="mv-card"><h3>Time stretched</h3><p>Minutes, '+({daily:'last 14 days',weekly:'last 12 weeks',monthly:'last 12 months'})[r]+'. The dashed line is the target.</p>'+bars(vs.map(function(v){ return v/60; }),bs.map(function(b){ return b.l; }),'#FF3E9E',targetSecs(r)/60)+'</div>';
-        var mv=Object.keys(d.moves).map(function(k){ return [k,d.moves[k]]; }).sort(function(x,y){ return y[1]-x[1]; });
-        h+='<div class="mv-card"><h3>What you did</h3>'+(mv.length?mv.slice(0,12).map(function(m){ return '<div class="mv-ex"><div class="mv-ext"><b>'+esc(m[0])+'</b><span>'+mins(m[1])+'</span></div></div>'; }).join(''):'<p>No stretching logged for this group yet.</p>')+'<p style="margin-top:10px">All-time totals for each stretch.</p></div>';
-      }
+      var win=({daily:'Last 14 days',weekly:'Last 12 weeks',monthly:'Last 12 months'})[r], labels=bs.map(function(b){ return b.l; });
+      var vals=bs.map(function(b){ return d.sets[r+':'+b.k]||0; });
+      h+='<div class="mv-card"><h3>Sets</h3><p>'+win+'. The dark bar is '+periodWord(r)+'.</p>'+bars(vals,labels,'#C9F23A')+'</div>';
+      var exs=Object.keys(d.ex).map(function(k){ return d.ex[k]; }); exs.forEach(function(e){ e.pts.sort(function(x,y){ return x.d<y.d?-1:x.d>y.d?1:0; }); });
+      exs.sort(function(x,y){ return (x.sec-y.sec)||(x.pts[x.pts.length-1].d<y.pts[y.pts.length-1].d?1:-1); });
+      h+='<div class="mv-card"><h3>Exercises</h3>';
+      if(!exs.length) h+='<p>No lifts logged for this group yet.</p>';
+      exs.forEach(function(e){
+        var useW=e.pts.some(function(p){ return p.top>0; }), key=useW?'top':'reps';
+        var by={}; e.pts.forEach(function(p){ var k=keyOf(p.d,r); if(!by[k]||p[key]>by[k][key]) by[k]={d:p.d,top:p.top,reps:p.reps,k:k}; });
+        var seq=bs.map(function(b){ return by[b.k]; }).filter(Boolean);
+        var last=e.pts[e.pts.length-1], first=seq.length?seq[0]:null, lastS=seq.length?seq[seq.length-1]:null;
+        var ch=(first&&lastS&&seq.length>1&&first[key]>0)?Math.round((lastS[key]-first[key])/first[key]*100):null;
+        var best=useW?kg(Math.max.apply(null,e.pts.map(function(p){ return p.top; }))):Math.max.apply(null,e.pts.map(function(p){ return p.reps; }))+' reps';
+        h+='<div class="mv-ex"><div class="mv-ext"><b>'+esc(e.name)+'</b><span>'+(useW?kg(last.top):last.reps+' reps')+'</span></div>'
+          +'<div class="mv-exm">'+(e.sec?'Secondary · ':'')+e.pts.length+' session'+(e.pts.length===1?'':'s')+' · best '+best+(ch!=null?' · <span class="'+(ch>=0?'mv-up':'mv-dn')+'">'+(ch>=0?'+':'')+ch+'% over this window</span>':'')+'</div>'
+          +'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px">'+(seq.length>1?spark(seq,key):'<span class="mv-exm">Trend appears after two '+({daily:'days',weekly:'weeks',monthly:'months'})[r]+' of data.</span>')+'<span class="mv-exm">'+(useW?'heaviest set':'most reps')+'</span></div>'
+          +'<details><summary>Every session</summary><div class="mv-log">'+e.pts.slice().reverse().slice(0,30).map(function(p){ return '<span>'+esc(p.d)+'</span><span>'+p.sets+' × '+esc(p.rps||'')+'</span><span>'+(p.top>0?kg(p.top):'bodyweight')+'</span>'; }).join('')+'</div></details></div>';
+      });
+      h+='</div>';
+      var secs=m.secs[r+':'+cur()]||0, rt=rating(secs,r);
+      h+='<div class="mv-card"><h3>Mobility rating</h3><div class="mv-big">'+rt[0]+'</div><p>'+mins(secs)+' stretched '+periodWord(r)+', against about '+mins(targetSecs(r))+' for a healthy dose (10 minutes a week).</p>'
+        +bars(bs.map(function(b){ return (m.secs[r+':'+b.k]||0)/60; }),labels,'#FF3E9E',targetSecs(r)/60)+'<p style="margin-top:6px">Minutes stretched, '+win.toLowerCase()+'. The dashed line is the target.</p></div>';
+      var mv=Object.keys(m.moves).map(function(k){ return [k,m.moves[k]]; }).sort(function(x,y){ return y[1]-x[1]; });
+      h+='<div class="mv-card"><h3>Stretches</h3>'+(mv.length?mv.slice(0,12).map(function(x){ return '<div class="mv-ex"><div class="mv-ext"><b>'+esc(x[0])+'</b><span>'+mins(x[1])+'</span></div></div>'; }).join('')+'<p style="margin-top:10px">All-time time for each stretch.</p>':'<p>No stretching logged for this group yet.</p>')+'</div>';
       return h;
     }
     function paint(){ if(!cache) return; host.innerHTML=st.area?detailView(st.area):listView(); }
@@ -50358,7 +50353,6 @@ loadGoalProfile().then(async ()=>{
       busy=false; paint();
     }
     host.addEventListener('click',function(e){
-      var k=e.target.closest('[data-k]'); if(k){ st.kind=k.dataset.k; paint(); return; }
       var r=e.target.closest('[data-r]'); if(r){ st.range=r.dataset.r; paint(); return; }
       if(e.target.closest('.mv-back')){ st.area=null; paint(); if(window.scrollTo) window.scrollTo(0,0); return; }
       var row=e.target.closest('.mv-row'); if(row){ st.area=row.dataset.a; paint(); if(window.scrollTo) window.scrollTo(0,0); }
