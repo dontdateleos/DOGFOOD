@@ -6895,6 +6895,46 @@ html.s2 :is(#planWeekSheet,#goalSheet,#planBlockSheet,#blockWeekSheet,#planWeigh
 html.s2 #planWeekSheet .week-actions > button:last-child:nth-child(odd){ grid-column:1 / -1; }
 html.s2 #planWeekSheet .week-setup-row > button:not(.week-setup-go){ width:auto; flex:none; min-width:72px; }
 html.s2 #planWeekSheet .week-setup-row input[type="date"]{ min-width:0; flex:1 1 auto; font-size:14px; }
+/* MUSCLES (Track): strength and stretch time by body part */
+#musclesDataView{ padding:6px 16px 120px; color:#151515; }
+#musclesDataView .mv-ctl{ display:flex; flex-direction:column; gap:10px; margin:14px 0 6px; }
+#musclesDataView .mv-seg{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; border:1.5px solid #DED6C6; background:#FBF8F2; border-radius:999px; padding:3px; }
+#musclesDataView .mv-seg button{ all:unset; box-sizing:border-box; text-align:center; cursor:pointer; padding:9px 6px; border-radius:999px; font:italic 800 18px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+#musclesDataView .mv-seg button::after{ display:none; }
+#musclesDataView .mv-seg button.on{ background:#151515; color:#fff; }
+#musclesDataView .mv-note{ margin:10px 2px; font:500 13px/1.45 'Barlow',sans-serif; color:#55554f; }
+#musclesDataView .mv-list{ border-top:1.5px solid #E4DCCB; margin-top:10px; }
+#musclesDataView .mv-row{ all:unset; box-sizing:border-box; display:flex; align-items:center; gap:12px; width:100%; padding:13px 2px; min-height:60px; cursor:pointer; border-bottom:1.5px solid #E4DCCB; }
+#musclesDataView .mv-row::after{ display:none; }
+#musclesDataView .mv-row .rt{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+#musclesDataView .mv-row b{ font:italic 800 23px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+#musclesDataView .mv-row i{ font:500 13px/1.25 'Barlow',sans-serif; font-style:normal; color:#55554f; }
+#musclesDataView .mv-row .rv{ text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:3px; }
+#musclesDataView .mv-row .rv strong{ font:italic 800 22px/1 'Barlow Condensed','Arial Narrow',sans-serif; }
+#musclesDataView .mv-row.dim b{ opacity:.45; } #musclesDataView .mv-row.dim .rv strong{ opacity:.45; }
+#musclesDataView .mv-chip{ display:inline-block; padding:3px 9px; border-radius:999px; font:700 11px 'Barlow',sans-serif; background:#EFE9DC; color:#151515; }
+#musclesDataView .mv-chip.good{ background:#C9F23A; } #musclesDataView .mv-chip.mid{ background:#FFC24D; } #musclesDataView .mv-chip.low{ background:#FFD5E8; }
+#musclesDataView .mv-hd{ display:flex; align-items:center; gap:12px; margin:12px 0 0; }
+#musclesDataView .mv-back{ all:unset; box-sizing:border-box; flex:none; width:44px; height:44px; border-radius:50%; background:#EFE9DC; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+#musclesDataView .mv-back::after{ display:none; }
+#musclesDataView .mv-back svg{ width:22px; height:22px; fill:none; stroke:#151515; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+#musclesDataView .mv-hd h2{ margin:0; font:italic 800 36px/.95 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+#musclesDataView .mv-card{ background:#FBF8F2; border:1.5px solid #E4DCCB; border-radius:18px; padding:14px 16px; margin:12px 0 0; }
+#musclesDataView .mv-card h3{ margin:0 0 4px; font:italic 800 22px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+#musclesDataView .mv-card p{ margin:0 0 8px; font:500 13px/1.4 'Barlow',sans-serif; color:#55554f; }
+#musclesDataView .mv-big{ font:italic 800 40px/1 'Barlow Condensed','Arial Narrow',sans-serif; }
+#musclesDataView svg.mv-chart{ display:block; width:100%; height:auto; overflow:visible; }
+#musclesDataView .mv-ex{ border-top:1.5px solid #E4DCCB; padding:12px 0 10px; }
+#musclesDataView .mv-ex:first-of-type{ border-top:0; }
+#musclesDataView .mv-ext{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+#musclesDataView .mv-ext b{ font:italic 800 20px/1.05 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+#musclesDataView .mv-ext span{ font:700 14px 'Barlow',sans-serif; white-space:nowrap; }
+#musclesDataView .mv-exm{ font:500 13px 'Barlow',sans-serif; color:#55554f; margin-top:2px; }
+#musclesDataView .mv-up{ color:#2d7a00; } #musclesDataView .mv-dn{ color:#c2185b; }
+#musclesDataView details{ margin-top:6px; } #musclesDataView summary{ cursor:pointer; font:700 13px 'Barlow',sans-serif; text-decoration:underline; text-underline-offset:3px; list-style:none; }
+#musclesDataView summary::-webkit-details-marker{ display:none; }
+#musclesDataView .mv-log{ margin-top:6px; display:grid; grid-template-columns:auto 1fr auto; gap:3px 12px; font:500 13px 'Barlow',sans-serif; font-variant-numeric:tabular-nums; }
+#musclesDataView .mv-log span:nth-child(3n+1){ color:#55554f; } #musclesDataView .mv-log span:nth-child(3n){ text-align:right; font-weight:700; }
 /* SHELL2:END */
 </style>
 </head>
@@ -8260,6 +8300,7 @@ if(!window.__pnHold)window.__curtain();
     <div class="session-type" id="dataViewPills">
       <div class="type-btn active" data-view="trends">Trends</div>
       <div class="type-btn" data-view="history">Workout History</div>
+      <div class="type-btn" data-view="muscles">Muscles</div>
     </div>
 
     <!-- ATHLETE LEVEL HAS GONE, AND THE REASON IS THE APP'S OWN PREMISE.
@@ -8279,6 +8320,7 @@ if(!window.__pnHold)window.__curtain();
          The one control the card owned goes to Settings, beside the bodyweight it is divided
          into: the standard is an input to that arithmetic, and it was the only setting living
          on a reading tab. -->
+    <div id="musclesDataView" style="display:none;"></div>
     <div id="trendsDataView" style="display:none;">
     <!-- The chart had no head at all: no title, no band, no number, with the metric pills
          sitting straight on the ground while the two readouts around it were banded
@@ -14053,10 +14095,12 @@ function activateTab(name, opts){
 function activateDataSubView(view){
   // Anything but history is trends now: the recovery view has left the tab, and a stored or
   // stale 'recovery' would otherwise land on a pill that is not there and show nothing.
-  if(view !== 'history') view = 'trends';
+  if(view !== 'history' && view !== 'muscles') view = 'trends';
   document.querySelectorAll('#dataViewPills .type-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
   document.getElementById('trendsDataView').style.display = view==='trends' ? 'block' : 'none';
   document.getElementById('historyDataView').style.display = view==='history' ? 'block' : 'none';
+  const mv = document.getElementById('musclesDataView');
+  if(mv){ mv.style.display = view==='muscles' ? 'block' : 'none'; if(view==='muscles' && window.__s3muscles) window.__s3muscles.render(); }
   if(view==='trends'){ renderTrendChart(); }
   if(view==='history'){
     // Rebuilt on the way in rather than cached for the session: log a workout, come back,
@@ -15019,7 +15063,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.24.093';
+const APP_VERSION = '2026.11.24.094';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15415,6 +15459,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.24.094': 'Track has a new Muscles page: for each muscle group, the sets and every exercise with its weight trend, and the time you stretched it, by day, week or month, with a mobility rating.',
   '2026.11.24.093': 'A stretch session you only part-do can be saved: tick the sets you did and tap Save what I did. Only the ticked sets are logged.',
   '2026.11.24.092': 'The Fuel bull builds itself layer by layer like the other animals, and sways afterwards.',
   '2026.11.24.091': 'The piñata builds itself about twice as fast when you change tabs, and the title and buttons pop in sooner.',
@@ -50176,6 +50221,149 @@ loadGoalProfile().then(async ()=>{
     }
     function close(){ if(!el) return; var e=el; el=null; e.classList.remove('in'); setTimeout(function(){ e.remove(); },220); }
     window.__s3guide={open:open,close:close,turnFor:turnFor,areas:function(){ return AREAS; }};
+  })();
+
+  /* ---------- Track > Muscles: strength and stretch time by body part, by day, week or month ---------- */
+  (function(){
+    var host=document.getElementById('musclesDataView'); if(!host) return;
+    var ORDER=['chest','thoracic','shoulders','side_delts','rear_delts','biceps','triceps','forearms','core','lower_back','neck','quads_knees','hamstrings','glutes','hips','adductors','calves','ankles'];
+    var st={kind:'strength',range:'weekly',area:null}, cache=null, busy=false;
+    function esc(t){ return String(t==null?'':t).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+    function nm(a){ return (typeof BODY_AREAS!=='undefined'&&BODY_AREAS[a])||a; }
+    function mondayOf(d){ var x=localDateFrom(d), k=(x.getDay()+6)%7; return shiftDateStr(d,-k); }
+    function keyOf(d,r){ return r==='daily'?d:(r==='weekly'?mondayOf(d):d.slice(0,7)); }
+    function buckets(r){
+      var out=[], i;
+      if(r==='daily'){ for(i=13;i>=0;i--){ var d=shiftDateStr(todayStr,-i); out.push({k:d,l:d.slice(8)}); } }
+      else if(r==='weekly'){ var m=mondayOf(todayStr); for(i=11;i>=0;i--){ var w=shiftDateStr(m,-7*i); out.push({k:w,l:w.slice(8)+'/'+w.slice(5,7)}); } }
+      else { var y=+todayStr.slice(0,4), mo=+todayStr.slice(5,7); for(i=11;i>=0;i--){ var t=new Date(y,mo-1-i,1); var k=t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2); out.push({k:k,l:['J','F','M','A','M','J','J','A','S','O','N','D'][t.getMonth()]}); } }
+      return out;
+    }
+    function periodWord(r){ return r==='daily'?'today':(r==='weekly'?'this week':'this month'); }
+    function targetSecs(r){ var wk=(typeof MOBILITY_WEEKLY_TARGET_SECONDS==='number')?MOBILITY_WEEKLY_TARGET_SECONDS:600; return r==='daily'?wk/7:(r==='weekly'?wk:wk*52/12); }
+    function rating(secs,r){ var f=secs/targetSecs(r); return f<=0?['None','']:(f<.5?['Low','low']:(f<1?['Building','mid']:(f<1.5?['On target','good']:['Strong','good']))); }
+    function mins(s){ var m=s/60; return (m>=10?Math.round(m):Math.round(m*10)/10)+' min'; }
+    function kg(v){ return (Math.round(v*10)/10)+' kg'; }
+    async function gather(){
+      var S={}, M={}, i;
+      function A(map,a){ return map[a]||(map[a]={sets:{},ex:{},secs:{},moves:{}}); }
+      var sessions=[]; try{ sessions=await getAllTrainingSessions(); }catch(e){}
+      var days={};
+      (sessions||[]).forEach(function(sn){
+        if(!sn||!sn.date) return;
+        if(sn.type==='strength'){
+          (sn.exercises||[]).forEach(function(ex){
+            if(!ex||!ex.name||ex.skippedForInjury||!(ex.sets>0)) return;
+            var pa=ex.area, sa=ex.secondaryArea;
+            if(!pa){ try{ var g=guessTags(ex.name); if(g){ pa=g.primary; sa=sa||g.secondary||''; } }catch(e){} }
+            [[pa,1],[sa,.5]].forEach(function(pr){
+              var a=pr[0]; if(!a) return; var rec=A(S,a);
+              ['daily','weekly','monthly'].forEach(function(r){ var k=r+':'+keyOf(sn.date,r); rec.sets[k]=(rec.sets[k]||0)+ex.sets*pr[1]; });
+              var key=exHistKey(ex.name), e=rec.ex[key]||(rec.ex[key]={name:ex.name,sec:pr[1]<1,pts:[]});
+              var wts=Array.isArray(ex.weightPerSet)&&ex.weightPerSet.length?ex.weightPerSet:(ex.weight!=null?[ex.weight]:[]);
+              var top=wts.length?Math.max.apply(null,wts.map(function(x){ return +x||0; })):0;
+              var reps=Array.isArray(ex.repsPerSet)&&ex.repsPerSet.length?Math.max.apply(null,ex.repsPerSet):(+ex.reps||0);
+              if(pr[1]===1) e.sec=false;
+              e.pts.push({d:sn.date,top:top,reps:reps,sets:ex.sets,rps:Array.isArray(ex.repsPerSet)&&ex.repsPerSet.length?ex.repsPerSet.join('/'):String(ex.reps||'')});
+            });
+          });
+        } else if(sn.type==='mobility'&&Array.isArray(sn.stretches)){
+          sn.stretches.forEach(function(sx){
+            var secs=0; try{ secs=romSecondsFor(sx); }catch(e){} if(!secs) return;
+            var areas=[]; if(sx.area) areas.push(sx.area); (MOBILITY_SKILL_TARGET_AREAS[sx.skill]||[]).forEach(function(a){ areas.push(a); });
+            areas.forEach(function(a){ var rec=A(M,a); ['daily','weekly','monthly'].forEach(function(r){ var k=r+':'+keyOf(sn.date,r); rec.secs[k]=(rec.secs[k]||0)+secs; }); rec.moves[sx.name]=(rec.moves[sx.name]||0)+secs; });
+          });
+        }
+      });
+      try{
+        var logs=await window.storage.list('postMobilityLog:');
+        for(i=0;i<(logs.keys||[]).length;i++){ var k0=logs.keys[i], d=k0.replace('postMobilityLog:',''), rec0=JSON.parse((await window.storage.get(k0)).value);
+          Object.keys(rec0.secondsByArea||{}).forEach(function(a){ var secs=rec0.secondsByArea[a]; if(!(secs>0)) return; var rec=A(M,a); ['daily','weekly','monthly'].forEach(function(r){ var k=r+':'+keyOf(d,r); rec.secs[k]=(rec.secs[k]||0)+secs; }); rec.moves['Cooldown stretches']=(rec.moves['Cooldown stretches']||0)+secs; }); }
+      }catch(e){}
+      return {S:S,M:M};
+    }
+    function bars(vals,labels,color,target){
+      var W=320,H=110,pad=18,n=vals.length,mx=Math.max.apply(null,vals.concat([target||0,1])),bw=(W-2)/n,o='<svg class="mv-chart" viewBox="0 0 '+W+' '+(H+pad)+'" role="img" aria-label="Bar chart">';
+      vals.forEach(function(v,i){ var h=Math.max(v>0?2:0,v/mx*H), x=1+i*bw+bw*.14, cur=i===n-1; o+='<rect x="'+x.toFixed(1)+'" y="'+(H-h).toFixed(1)+'" width="'+(bw*.72).toFixed(1)+'" height="'+h.toFixed(1)+'" rx="3" fill="'+(cur?'#151515':color)+'"/>';
+        if(n<=14||i%2===(n-1)%2) o+='<text x="'+(x+bw*.36).toFixed(1)+'" y="'+(H+13)+'" text-anchor="middle" font-size="9" font-family="Barlow,sans-serif" fill="#55554f">'+esc(labels[i])+'</text>'; });
+      if(target){ var y=H-target/mx*H; o+='<line x1="0" x2="'+W+'" y1="'+y.toFixed(1)+'" y2="'+y.toFixed(1)+'" stroke="#151515" stroke-width="1.2" stroke-dasharray="4 4"/>'; }
+      return o+'</svg>';
+    }
+    function spark(pts,key){
+      var W=140,H=34,v=pts.map(function(p){ return p[key]; }), mn=Math.min.apply(null,v), mx=Math.max.apply(null,v), rg=(mx-mn)||1, n=pts.length;
+      if(n<2) return '';
+      var d=pts.map(function(p,i){ return (i?'L':'M')+(2+i*(W-4)/(n-1)).toFixed(1)+' '+(H-4-(p[key]-mn)/rg*(H-8)).toFixed(1); }).join(' ');
+      return '<svg viewBox="0 0 '+W+' '+H+'" width="140" height="34" aria-hidden="true" style="flex:none"><path d="'+d+'" fill="none" stroke="#151515" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+(W-2)+'" cy="'+(H-4-(pts[n-1][key]-mn)/rg*(H-8)).toFixed(1)+'" r="3.6" fill="#FF3E9E"/></svg>';
+    }
+    function ctl(){
+      return '<div class="mv-ctl"><div class="mv-seg" role="group" aria-label="What to show"><button type="button" data-k="strength" class="'+(st.kind==='strength'?'on':'')+'">Strength</button><button type="button" data-k="mobility" class="'+(st.kind==='mobility'?'on':'')+'">Mobility</button></div>'
+        +'<div class="mv-seg" role="group" aria-label="Period">'+[['daily','Daily'],['weekly','Weekly'],['monthly','Monthly']].map(function(r){ return '<button type="button" data-r="'+r[0]+'" class="'+(st.range===r[0]?'on':'')+'">'+r[1]+'</button>'; }).join('')+'</div></div>';
+    }
+    function cur(){ return keyOf(todayStr,st.range); }
+    function listView(){
+      var h=ctl(), r=st.range, ck=r+':'+cur(), any=false;
+      h+='<p class="mv-note">'+(st.kind==='strength'?'Sets and the heaviest weight, for each muscle group. Tap one to see every exercise in it.':'Time spent stretching each muscle group, from stretch sessions and cool-downs you logged. Tap one for the trend.')+'</p><div class="mv-list">';
+      ORDER.forEach(function(a){
+        var d=(st.kind==='strength'?cache.S:cache.M)[a];
+        if(st.kind==='strength'){
+          var sets=d?(d.sets[ck]||0):0, n=d?Object.keys(d.ex).length:0; if(n) any=true;
+          h+='<button type="button" class="mv-row'+(n?'':' dim')+'" data-a="'+a+'"><span class="rt"><b>'+esc(nm(a))+'</b><i>'+(n?n+' exercise'+(n===1?'':'s')+' logged':'Nothing logged yet')+'</i></span><span class="rv"><strong>'+(Math.round(sets*10)/10)+' sets</strong><i>'+periodWord(r)+'</i></span></button>';
+        } else {
+          var secs=d?(d.secs[ck]||0):0, rt=rating(secs,r); if(d&&Object.keys(d.secs).length) any=true;
+          h+='<button type="button" class="mv-row'+(d&&Object.keys(d.secs).length?'':' dim')+'" data-a="'+a+'"><span class="rt"><b>'+esc(nm(a))+'</b><i>'+mins(secs)+' '+periodWord(r)+' of about '+mins(targetSecs(r))+'</i></span><span class="rv"><strong>'+mins(secs)+'</strong>'+(rt[1]?'<span class="mv-chip '+rt[1]+'">'+rt[0]+'</span>':'<span class="mv-chip">'+rt[0]+'</span>')+'</span></button>';
+        }
+      });
+      h+='</div>';
+      if(!any) h+='<p class="mv-note">Nothing here yet. It fills in as you log '+(st.kind==='strength'?'lifts':'stretching')+'.</p>';
+      return h;
+    }
+    function detailView(a){
+      var r=st.range, bs=buckets(r), d=(st.kind==='strength'?cache.S:cache.M)[a]||{sets:{},ex:{},secs:{},moves:{}};
+      var h='<div class="mv-hd"><button type="button" class="mv-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button><h2>'+esc(nm(a))+'</h2></div>'+ctl();
+      var ck=r+':'+cur();
+      if(st.kind==='strength'){
+        var vals=bs.map(function(b){ return d.sets[r+':'+b.k]||0; });
+        h+='<div class="mv-card"><h3>Sets</h3><p>'+({daily:'Last 14 days',weekly:'Last 12 weeks',monthly:'Last 12 months'})[r]+'. The dark bar is '+periodWord(r)+'.</p>'+bars(vals,bs.map(function(b){ return b.l; }),'#C9F23A')+'</div>';
+        var exs=Object.keys(d.ex).map(function(k){ return d.ex[k]; }); exs.forEach(function(e){ e.pts.sort(function(x,y){ return x.d<y.d?-1:x.d>y.d?1:0; }); });
+        exs.sort(function(x,y){ return (x.sec-y.sec)||(x.pts[x.pts.length-1].d<y.pts[y.pts.length-1].d?1:-1); });
+        h+='<div class="mv-card"><h3>Exercises</h3>';
+        if(!exs.length) h+='<p>No lifts logged for this group yet.</p>';
+        exs.forEach(function(e){
+          var useW=e.pts.some(function(p){ return p.top>0; }), key=useW?'top':'reps';
+          var by={}; e.pts.forEach(function(p){ var k=keyOf(p.d,r); if(!by[k]||p[key]>by[k][key]) by[k]={d:p.d,top:p.top,reps:p.reps,k:k}; });
+          var seq=bs.map(function(b){ return by[b.k]; }).filter(Boolean);
+          var last=e.pts[e.pts.length-1], first=seq.length?seq[0]:null, lastS=seq.length?seq[seq.length-1]:null;
+          var ch=(first&&lastS&&seq.length>1&&first[key]>0)?Math.round((lastS[key]-first[key])/first[key]*100):null;
+          var best=useW?kg(Math.max.apply(null,e.pts.map(function(p){ return p.top; }))):Math.max.apply(null,e.pts.map(function(p){ return p.reps; }))+' reps';
+          h+='<div class="mv-ex"><div class="mv-ext"><b>'+esc(e.name)+'</b><span>'+(useW?kg(last.top):last.reps+' reps')+'</span></div>'
+            +'<div class="mv-exm">'+(e.sec?'Secondary · ':'')+e.pts.length+' session'+(e.pts.length===1?'':'s')+' · best '+best+(ch!=null?' · <span class="'+(ch>=0?'mv-up':'mv-dn')+'">'+(ch>=0?'+':'')+ch+'% over this window</span>':'')+'</div>'
+            +'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px">'+(seq.length>1?spark(seq,key):'<span class="mv-exm">Trend appears after two '+({daily:'days',weekly:'weeks',monthly:'months'})[r]+' of data.</span>')+'<span class="mv-exm">'+(useW?'heaviest set':'most reps')+'</span></div>'
+            +'<details><summary>Every session</summary><div class="mv-log">'+e.pts.slice().reverse().slice(0,30).map(function(p){ return '<span>'+esc(p.d)+'</span><span>'+p.sets+' × '+esc(p.rps||'')+'</span><span>'+(p.top>0?kg(p.top):'bodyweight')+'</span>'; }).join('')+'</div></details></div>';
+        });
+        h+='</div>';
+      } else {
+        var vs=bs.map(function(b){ return d.secs[r+':'+b.k]||0; }), secs=d.secs[ck]||0, rt=rating(secs,r);
+        h+='<div class="mv-card"><h3>Mobility rating</h3><div class="mv-big">'+rt[0]+'</div><p>'+mins(secs)+' '+periodWord(r)+', against about '+mins(targetSecs(r))+' for a healthy dose (10 minutes a week).</p></div>';
+        h+='<div class="mv-card"><h3>Time stretched</h3><p>Minutes, '+({daily:'last 14 days',weekly:'last 12 weeks',monthly:'last 12 months'})[r]+'. The dashed line is the target.</p>'+bars(vs.map(function(v){ return v/60; }),bs.map(function(b){ return b.l; }),'#FF3E9E',targetSecs(r)/60)+'</div>';
+        var mv=Object.keys(d.moves).map(function(k){ return [k,d.moves[k]]; }).sort(function(x,y){ return y[1]-x[1]; });
+        h+='<div class="mv-card"><h3>What you did</h3>'+(mv.length?mv.slice(0,12).map(function(m){ return '<div class="mv-ex"><div class="mv-ext"><b>'+esc(m[0])+'</b><span>'+mins(m[1])+'</span></div></div>'; }).join(''):'<p>No stretching logged for this group yet.</p>')+'<p style="margin-top:10px">All-time totals for each stretch.</p></div>';
+      }
+      return h;
+    }
+    function paint(){ if(!cache) return; host.innerHTML=st.area?detailView(st.area):listView(); }
+    async function render(){
+      if(busy) return; busy=true;
+      host.innerHTML='<p class="mv-note">Reading your history…</p>';
+      try{ cache=await gather(); } catch(e){ cache={S:{},M:{}}; }
+      busy=false; paint();
+    }
+    host.addEventListener('click',function(e){
+      var k=e.target.closest('[data-k]'); if(k){ st.kind=k.dataset.k; paint(); return; }
+      var r=e.target.closest('[data-r]'); if(r){ st.range=r.dataset.r; paint(); return; }
+      if(e.target.closest('.mv-back')){ st.area=null; paint(); if(window.scrollTo) window.scrollTo(0,0); return; }
+      var row=e.target.closest('.mv-row'); if(row){ st.area=row.dataset.a; paint(); if(window.scrollTo) window.scrollTo(0,0); }
+    });
+    window.__s3muscles={render:render};
   })();
   /* ---------- this block's focus, a few moves for the piñata, and two more streaks ---------- */
   (function(){
