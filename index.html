@@ -7800,6 +7800,8 @@ if(!window.__pnHold)window.__curtain();
               <button class="small outline" id="clearAllWeekBtn">Clear everything</button>
             </div>
             <div class="week-actions"><button type="button" class="small outline" id="exportCalendarBtn">Export calendar</button><button type="button" class="small outline" id="rebalanceWeekBtn">Rebalance week</button><button type="button" class="small outline" id="topUpWeekBtn">Top up arms &amp; shoulders</button></div>
+            <button type="button" class="small outline" id="planCheckBtn" style="margin-top:8px;">Plan check</button>
+            <pre id="planCheckOut" style="display:none; white-space:pre-wrap; word-break:break-word; font:12px/1.45 ui-monospace,Menlo,monospace; margin:8px 0 0; padding:12px; border-radius:12px; background:#fff; color:#151515; border:1.5px solid #DED6C6; user-select:text; -webkit-user-select:text;"></pre>
             <button type="button" id="undoWeekChangeBtn" class="small outline" style="display:none; margin-top:8px;">Undo last change</button>
             <div id="deloadSuggestedNote" class="score-note note-live" style="display:none;"></div>
           </div>
@@ -15012,7 +15014,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.24.088';
+const APP_VERSION = '2026.11.24.089';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15408,6 +15410,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.24.089': 'Plan the week has a Plan check button: it lists, in plain lines, what the app holds about your plan (days, goals, split, block and what is planned each day), so a plan that looks wrong can be read off one screen.',
   '2026.11.24.088': 'The note under Generate on Plan the week (for example \u201cSplit: Full Body\u201d) is cleared when you clear or rebuild the plan. It used to be kept, so it kept describing a plan that no longer existed.',
   '2026.11.24.087': 'Plan, Goals and Blocks pages: the back arrow no longer covers the title on phones with a Dynamic Island, and a lone button on the last row is full width.',
   '2026.11.24.086': 'The Goals sheet is tidied up, with even margins and buttons that hold their text. Rebuilding a plan part-way through the week now keeps your split (Upper / Lower stays Upper / Lower) instead of dropping to Full body because only a few days are left.',
@@ -41456,6 +41459,40 @@ async function restorePlanSummary(){
   } catch(e){}
 }
 
+
+/* PLAN CHECK: what the app holds about the plan, in plain lines you can screenshot. */
+document.getElementById('planCheckBtn').addEventListener('click', async ()=>{
+  const out = document.getElementById('planCheckOut');
+  out.style.display = 'block'; out.textContent = 'Reading\u2026';
+  const L = [];
+  const rd = async k=>{ try{ return JSON.parse((await window.storage.get(k)).value); } catch(e){ return null; } };
+  try{
+    L.push(`version ${APP_VERSION} \u00b7 today ${todayStr}`);
+    const setup = await rd('settings:trainingSetup') || {};
+    L.push(`available days: ${(setup.availableDays || []).join(' ') || 'none'} \u00b7 session ${setup.sessionLength || '?'} min \u00b7 finishers ${setup.finishers !== false ? 'on' : 'off'} \u00b7 growth ${setup.growth ? 'on' : 'off'}`);
+    const goals = await getCurrentGoals(todayStr);
+    L.push('goals: ' + (((goals && goals.list) || []).map(g=> `${g.type}${g.role ? ' (' + g.role + ')' : ''}`).join(', ') || 'none'));
+    L.push(`split dropdown: ${document.getElementById('programSplitOverride').value} \u00b7 first option reads "${document.getElementById('programSplitOverride').options[0].textContent}"`);
+    try{ const bt = await getBlockTypeFor(todayStr); const bp = await getBlockPosition(todayStr); L.push(`block: ${bt.type}${bt.chosen ? ' (chosen)' : ' (from goal)'} \u00b7 week ${bp.weekInBlock} of ${bp.length} \u00b7 blocks done ${bp.blocksCompleted}`); } catch(e){ L.push('block: unreadable'); }
+    L.push(`today logged/started: ${(await loggingStartedAt(todayStr)) ? 'started' : 'no'}`);
+    const un = await rd('settings:unavailableDates'); if(un) L.push('unavailable: ' + JSON.stringify(un).slice(0, 120));
+    L.push('--- planned days ---');
+    let shown = 0;
+    for(let w = 0; w < 3 && shown < 14; w++){
+      for(const d of getWeekDatesForOffset(w)){
+        if(d < todayStr) continue;
+        for(const sl of ['am', 'pm']){
+          const b = await rd(`weekplan:${d}:${sl}`);
+          if(b){ L.push(`${d} ${sl}: ${b.type}${b.details && b.details.workoutTag ? ' / ' + b.details.workoutTag : ''}${b.details && b.details.exercises ? ' \u00b7 ' + b.details.exercises.length + ' ex' : ''}`); shown++; }
+        }
+      }
+    }
+    if(!shown) L.push('nothing planned from today on');
+    const mir = await rd(`planned_session:${todayStr}`); L.push(`today's planned_session: ${mir ? (mir.workoutTag || '?') : 'none'}`);
+    const hero = document.querySelector('#s2hero .ttl, .s2-hero .ttl'); L.push(`Train title now: ${hero ? hero.textContent : '(not found)'}`);
+  } catch(e){ L.push('error: ' + e.message); }
+  out.textContent = L.join('\n');
+});
 document.getElementById('generateProgramFromGoalsBtn').addEventListener('click', async ()=>{
   const result = document.getElementById('generateProgramResult');
   const numWeeks = parseInt(document.getElementById('programWeeksSelect').value, 10);
