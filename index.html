@@ -15014,7 +15014,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.24.089';
+const APP_VERSION = '2026.11.24.090';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15410,6 +15410,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.24.090': 'The Recommended split on Plan the week is worked out again every time the screen opens, so it can no longer show an old answer such as Full Body after your goals or days have changed.',
   '2026.11.24.089': 'Plan the week has a Plan check button: it lists, in plain lines, what the app holds about your plan (days, goals, split, block and what is planned each day), so a plan that looks wrong can be read off one screen.',
   '2026.11.24.088': 'The note under Generate on Plan the week (for example \u201cSplit: Full Body\u201d) is cleared when you clear or rebuild the plan. It used to be kept, so it kept describing a plan that no longer existed.',
   '2026.11.24.087': 'Plan, Goals and Blocks pages: the back arrow no longer covers the title on phones with a Dynamic Island, and a lone button on the last row is full width.',
@@ -32537,7 +32538,10 @@ async function paintSplitRecommendation(list){
     const gl = (goals && goals.list) || [];
     const plan = gl.length ? determineHybridPlan(gl, (setup.availableDays || []).length, setup.sessionLength) : null;
     if(plan && plan.strengthSessions > 0){
-      const rec = recommendedSplit(plan.strengthSessions, gl[0] && gl[0].type);
+      /* The same number Generate works from: a block that caps lifting days (in-season) caps it here too. */
+      let n = plan.strengthSessions;
+      try{ const bt = await getBlockTypeFor(todayStr, gl); const cap = bt && BLOCK_TYPES[bt.type] && BLOCK_TYPES[bt.type].maxLiftDays; if(cap && n > cap) n = cap; } catch(e){}
+      const rec = recommendedSplit(n, gl[0] && gl[0].type);
       label = (SPLIT_TEMPLATES[rec.split] || {}).label || '';
     }
   } catch(e){}
@@ -33364,6 +33368,11 @@ function wireSetWheelField(row, { title, reps, weight }){
    whatever they were last set to, and renderWeekGrid keeps the deload badge/unavailable list
    current independently of whether this sheet happens to be open. */
 const planWeekSheet = wireSheet('planWeekSheet');
+/* The "Recommended · …" line is worked out from your goals and available days, and it was only repainted when
+   goals or Training setup were saved. Anything else that moved them (clearing, a rebuild, days changed from
+   another screen) left it showing an old answer, which read as the app recommending Full body. It is repainted
+   every time the sheet opens, from whichever place opens it. */
+(function(){ const o = planWeekSheet.open; planWeekSheet.open = function(){ try{ paintSplitRecommendation(); } catch(e){} return o.apply(this, arguments); }; })();
 document.getElementById('planWeekOpenBtn')?.addEventListener('click', ()=> planWeekSheet.open());
 
 /* Goals. It does not reload on open: the rows are already in the DOM and loadCurrentGoals
