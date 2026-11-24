@@ -15014,7 +15014,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.24.090';
+const APP_VERSION = '2026.11.24.091';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15410,6 +15410,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.24.091': 'The piñata builds itself about twice as fast when you change tabs, and the title and buttons pop in sooner.',
   '2026.11.24.090': 'The Recommended split on Plan the week is worked out again every time the screen opens, so it can no longer show an old answer such as Full Body after your goals or days have changed.',
   '2026.11.24.089': 'Plan the week has a Plan check button: it lists, in plain lines, what the app holds about your plan (days, goals, split, block and what is planned each day), so a plan that looks wrong can be read off one screen.',
   '2026.11.24.088': 'The note under Generate on Plan the week (for example \u201cSplit: Full Body\u201d) is cleared when you clear or rebuild the plan. It used to be kept, so it kept describing a plan that no longer existed.',
@@ -48595,7 +48596,7 @@ loadGoalProfile().then(async ()=>{
   }
   /* built layer by layer from the bottom; each solid piece joins at its height, then it sways */
   function entrance(c,at){
-    var inn=c.querySelector('.pin-in'), E='cubic-bezier(.3,.9,.4,1)', STEP=140;
+    var inn=c.querySelector('.pin-in'), E='cubic-bezier(.3,.9,.4,1)', STEP=65;
     var layers=[].slice.call(c.querySelectorAll('.pin-strip')), pieces=[].slice.call(c.querySelectorAll('.pin-still'));
     if(!layers.length) return;
     c.__building=true;
@@ -48603,16 +48604,16 @@ loadGoalProfile().then(async ()=>{
     inn.style.animationPlayState='paused';
     layers.forEach(function(el,k){
       el.animate([{translate:'0 -26%',scale:'1 1.04',opacity:0},{translate:'0 -10%',scale:'1 1.04',opacity:1,offset:.35},{translate:'0 1.4%',scale:'1 1',offset:.7},{translate:'0 .5%',offset:.86},{translate:'0 0'}],
-        {duration:440,delay:at+k*STEP,easing:E,fill:'backwards'});
+        {duration:300,delay:at+k*STEP,easing:E,fill:'backwards'});
     });
     function when(y){ for(var k=0;k<layers.length;k++){ if(+layers[k].dataset.y<=y) return k; } return layers.length-1; }
     var last=0;
     pieces.forEach(function(el){
-      var k=when(+el.dataset.y)+1, d=at+k*STEP+120; last=Math.max(last,d);
+      var k=when(+el.dataset.y)+1, d=at+k*STEP+60; last=Math.max(last,d);
       el.animate([{translate:'0 -14%',scale:'.7',opacity:0},{translate:'0 1.5%',scale:'1.07 .93',opacity:1,offset:.6},{translate:'0 0',scale:'1',opacity:1}],
-        {duration:460,delay:d,easing:E,fill:'backwards'});
+        {duration:320,delay:d,easing:E,fill:'backwards'});
     });
-    var end=Math.max(last+460,at+layers.length*STEP+440);
+    var end=Math.max(last+320,at+layers.length*STEP+300);
     setTimeout(function(){ inn.style.animationPlayState=''; c.__building=false; },end);
   }
   /* the googly eye squashes shut over a paper lid and pops open, every few seconds */
@@ -48698,8 +48699,8 @@ loadGoalProfile().then(async ()=>{
     paintDeco(t.tone); buildPin(t.art);
     if(!animate) return;
     tear(t.dir,name);
-    if(pin) entrance(pin,420);
-    pop([backEl,titleEl,pEl,scoreEl,actions],440);
+    if(pin) entrance(pin,200);
+    pop([backEl,titleEl,pEl,scoreEl,actions],220);
   }
   (function(){ var on=false; function chk(){ var v=(window.scrollY||0)>170; if(v!==on){ on=v; document.body.classList.toggle('s2-scrolled',v); } } window.addEventListener('scroll',chk,{passive:true}); chk(); })();
   function tabFromBody(){ var m=document.body.className.match(/\btab-(\w+)/); return m?m[1]:'insights'; }
