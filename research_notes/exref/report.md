@@ -1,0 +1,173 @@
+# Exercise reference: clean-up report
+
+- Input records: 178 (11 mobility drills kept apart)  ->  exercises after merging: 148  (targets kept: 167)
+- Matched to the existing exercise library: 77   New to the library: 71
+- Grades (per target): {'Limited': 141, 'Moderate': 24, 'Strong': 2}
+- Muscle groups mapped to body areas: 58  (informational only, no auto-programming: diaphragm, pelvic floor)
+- Sub-groups with no exercise of their own: none
+
+## Merge and tidy decisions
+
+- difficulty differed for Farmer carry: ['beginner', 'intermediate'] -> kept intermediate
+- difficulty differed for Hip thrust: ['beginner', 'intermediate'] -> kept intermediate
+- difficulty differed for Romanian deadlift: ['beginner', 'intermediate'] -> kept intermediate
+- split by equipment: Lateral raise -> Lateral raise (band)
+- split by equipment: Lateral raise -> Lateral raise (dumbbell)
+- split by equipment: Overhead press -> Overhead press (barbell)
+- split by equipment: Overhead press -> Overhead press (dumbbell)
+- split by equipment: Split squat -> Split squat
+- split by equipment: Split squat -> Split squat (dumbbell)
+
+## Exercises new to the library
+
+- Cable adduction (adductors; hypertrophy)
+- Copenhagen adduction (adductors; joint_support)
+- Side-lying adduction (adductors; endurance)
+- Band ankle eversion (ankles; strength)
+- Band ankle inversion (ankles; strength)
+- Cable ankle eversion (ankles; hypertrophy)
+- Heel walk (ankles; endurance)
+- Lateral hop and stick (ankles; power)
+- Light band eversion (ankles; endurance)
+- Light band inversion (ankles; endurance)
+- Loaded dorsiflexion raise (ankles; strength)
+- Resisted ankle inversion (ankles; hypertrophy)
+- Resisted short-foot exercise (ankles; strength)
+- Seated band dorsiflexion (ankles; joint_support)
+- Short-foot exercise (ankles; joint_support)
+- Single-leg multidirectional reach (ankles; joint_support)
+- Toe spread and independent toe lifts (ankles; endurance)
+- Towel toe curl (ankles; strength)
+- Band curl (biceps; endurance)
+- Self-resisted curl (biceps; joint_support)
+- Weighted chin-up (biceps; strength)
+- Bent-knee calf raise (calves; joint_support)
+- Bodyweight calf raise (calves; endurance)
+- Elevated push-up (chest; joint_support)
+- Dead bug (core; joint_support)
+- Dumbbell side bend (core; hypertrophy)
+- Pelvic floor contraction and full release (core; strength)
+- Relaxed diaphragmatic breathing (core; joint_support)
+- Reverse crunch (core; hypertrophy)
+- Short-lever side plank (core; joint_support)
+- Sustained pelvic floor contraction (core; endurance)
+- Threshold inspiratory muscle training (core; endurance, strength)
+- Weighted crunch (core; hypertrophy)
+- Resisted pronation (forearms; strength)
+- Resisted supination (forearms; strength)
+- Lateral band walk (glutes, hips; joint_support)
+- Split squat (dumbbell) (glutes; hypertrophy)
+- Cable hip external rotation (hips; hypertrophy)
+- Cable hip flexion (hips; hypertrophy)
+- Cable hip internal rotation (hips; hypertrophy)
+- Clamshell (hips; endurance)
+- Fast resisted march (hips; power)
+- Prone active hip internal rotation (hips; endurance)
+- Seated band hip internal rotation (hips; strength)
+- Seated knee lift (hips; endurance)
+- Seated resisted hip external rotation (hips; strength)
+- Side-lying clamshell (hips; joint_support)
+- Standing resisted hip flexion (hips; strength)
+- Supine resisted march (hips; joint_support)
+- Supported 90/90 hip transitions (hips; joint_support)
+- Sorensen hold (lower_back; endurance)
+- Chin tuck (neck; joint_support)
+- Gentle lateral neck isometric (neck; strength)
+- Gentle neck extension isometric (neck; strength)
+- Gentle neck flexion isometric (neck; strength)
+- Gentle neck isometric (neck; endurance)
+- Split squat (quads_knees; joint_support)
+- Band pull-apart (rear_delts; endurance)
+- Cable reverse fly (rear_delts; hypertrophy)
+- Rear-delt row (rear_delts; strength)
+- Band internal rotation (shoulders; strength)
+- Cable external rotation (shoulders; hypertrophy)
+- Scaption raise (shoulders; joint_support)
+- Side-lying external rotation (shoulders; strength)
+- Wall slide (shoulders; joint_support)
+- Cable serratus punch (thoracic; hypertrophy)
+- Dumbbell shrug (thoracic; strength)
+- Resisted push-up plus (thoracic; strength)
+- Wall slide with reach (thoracic; joint_support)
+- Weighted pull-up (thoracic; strength)
+- Band pushdown (triceps; joint_support)
+
+## Matched to the library
+
+- Hip adduction machine -> hip_adduction_machine
+- Lateral bound -> lateral_bound
+- Single-leg balance -> single_leg_balance
+- Tibialis raise -> tibialis_raise
+- Hammer curl -> hammer_curl
+- Incline curl -> incline_db_curl
+- Preacher curl -> preacher_curl
+- Supinated curl -> bicep_curl
+- Pogo jump -> pogos
+- Seated calf raise -> seated_calf_raise
+- Single-leg calf raise -> single_leg_calf_raise
+- Standing calf raise -> calf_raise
+- Barbell bench press -> bench_press
+- Flat dumbbell press -> dumbbell_bench_press
+- Flat press -> dumbbell_bench_press
+- Incline press -> incline_press
+- Low-incline press -> incline_dumbbell_press
+- Medicine-ball chest pass -> med_ball_chest_pass
+- Push-up -> push_up
+- Cable crunch -> cable_crunch
+- Front plank -> plank
+- Pallof press -> pallof_press
+- Rotational medicine-ball throw -> med_ball_rotational_throw
+- Side plank -> side_plank
+- Suitcase carry -> suitcase_carry
+- Dead hang -> dead_hang
+- Farmer carry -> farmers_carry
+- Pronation/supination -> forearm_pronation_supination
+- Reverse curl -> reverse_curl
+- Wrist curl -> wrist_curl
+- Wrist extension -> eccentric_wrist_extension
+- Broad jump -> broad_jump
+- Glute bridge -> glute_bridge
+- Hip thrust -> hip_thrust
+- Kettlebell swing -> kettlebell_swing
+- Lying leg curl -> leg_curl
+- Nordic curl -> nordic_curl
+- Romanian deadlift -> rdl
+- Seated leg curl -> seated_leg_curl
+- Cable abduction -> hip_abduction
+- Hip abduction machine -> hip_abduction
+- Side-lying abduction -> hip_abduction
+- Side-lying hip abduction -> hip_abduction
+- Standing hip abduction -> hip_abduction
+- Bird dog -> bird_dog
+- Deadlift -> deadlift
+- Lumbar extension -> back_extension
+- Controlled neck extension -> neck_harness_extension
+- Controlled neck flexion -> neck_flexion
+- Four-direction neck isometric -> neck_isometric_4way
+- Back squat -> back_squat
+- Countermovement jump -> countermovement_jump
+- Hack squat -> hack_squat
+- Leg extension -> leg_extension
+- Step-up -> step_up
+- Face pull -> face_pull
+- Reverse pec deck -> reverse_fly
+- Band external rotation -> band_external_rotation
+- Overhead press (barbell) -> overhead_press
+- Overhead press (dumbbell) -> overhead_press
+- Push press -> push_press
+- Cable lateral raise -> cable_lateral_raise
+- Dumbbell lateral raise -> lateral_raise
+- Lateral raise (band) -> lateral_raise
+- Lateral raise (dumbbell) -> lateral_raise
+- Chest-supported row -> chest_supported_row
+- Explosive pull-up -> explosive_pull_up
+- Inverted row -> inverted_row
+- Lat pulldown -> lat_pulldown
+- Prone Y-raise -> prone_ytw_raise
+- Push-up plus -> push_up_plus
+- Seated row -> seated_cable_row
+- Cable pushdown -> tricep_pushdown
+- Chest pass -> med_ball_chest_pass
+- Close-grip bench press -> close_grip_bench_press
+- Close-grip push-up -> diamond_pushup
+- Overhead cable extension -> overhead_tricep_extension
