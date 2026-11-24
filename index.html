@@ -6882,6 +6882,14 @@ html.s2 #goalSheet #goalRoleAsk button > *{ line-height:1.1; margin:0; flex:none
 html.s2 #goalSheet #goalRoleAsk button{ flex-wrap:nowrap; }
 html.s2 #goalSheet .goal-lane .skill-lane-name{ flex:1; text-align:left; }
 html.s2 #goalSheet .goal-lane .goal-lane-role{ min-width:56px; text-align:left; color:#5E574C; }
+/* SAFE AREA: the back button already sits below the notch; the title and the pink band did not, so on a phone with a Dynamic Island the arrow covered the first letters of the title */
+html.s2 :is(#planWeekSheet,#goalSheet,#planBlockSheet,#blockWeekSheet,#planWeightSheet,#planSportSheet,#mobilityAssessmentSheet) .lift-sheet-panel > .lift-sheet-head{ height:calc(150px + env(safe-area-inset-top, 0px)); }
+html.s2 :is(#planWeekSheet,#goalSheet,#planBlockSheet,#blockWeekSheet,#planWeightSheet,#planSportSheet,#mobilityAssessmentSheet) .lift-sheet-head > span:first-child{ top:calc(62px + env(safe-area-inset-top, 0px)); left:20px; }
+html.s2 :is(#planWeekSheet,#goalSheet,#planBlockSheet,#blockWeekSheet,#planWeightSheet,#planSportSheet,#mobilityAssessmentSheet) .lift-sheet-head > .lift-sheet-x{ top:calc(12px + env(safe-area-inset-top, 0px)); }
+/* the last button of an odd row takes the full width, so a lone button is not left half-size */
+html.s2 #planWeekSheet .week-actions > button:last-child:nth-child(odd){ grid-column:1 / -1; }
+html.s2 #planWeekSheet .week-setup-row > button:not(.week-setup-go){ width:auto; flex:none; min-width:72px; }
+html.s2 #planWeekSheet .week-setup-row input[type="date"]{ min-width:0; flex:1 1 auto; font-size:14px; }
 /* SHELL2:END */
 </style>
 </head>
@@ -15004,7 +15012,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.24.086';
+const APP_VERSION = '2026.11.24.087';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15400,6 +15408,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.24.087': 'Plan, Goals and Blocks pages: the back arrow no longer covers the title on phones with a Dynamic Island, and a lone button on the last row is full width.',
   '2026.11.24.086': 'The Goals sheet is tidied up, with even margins and buttons that hold their text. Rebuilding a plan part-way through the week now keeps your split (Upper / Lower stays Upper / Lower) instead of dropping to Full body because only a few days are left.',
   '2026.11.24.085': 'A new Growth focus switch in Training setup holds every muscle at the low end of its productive range on strength weeks, not just at maintenance, as far as your session length allows. Finishers are described as optional there too.',
   '2026.11.24.084': 'Volume targets now ease about 10% for a block after one where most sets were near failure and your recovery was lower in the heavier weeks. It never goes below the minimum for each muscle, and the block review says why.',
