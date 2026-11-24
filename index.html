@@ -5772,6 +5772,8 @@ html.s2 main{ padding-top:0; padding-bottom:calc(140px + env(safe-area-inset-bot
 html.s2 #s2banner{ display:block; position:relative; z-index:10; isolation:isolate; overflow:visible; clip-path:inset(0 0 -60px 0);
   height:calc(230px + env(safe-area-inset-top, 0px)); background:var(--s2-tone,#0082FD);
   transition:background-color 320ms ease; color:#151515; --s2-top:env(safe-area-inset-top, 0px); }
+html.s2 body::before{ background:var(--s2-tone,#0082FD); transition:background-color 320ms ease; }
+html.s2 body.s2-scrolled::before{ background:rgb(var(--ground-rgb)); }
 html.s2 #s2banner[data-light="1"]{ color:#fff; }
 #s2banner [hidden]{ display:none !important; }
 #s2banner .s2-deco{ position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
@@ -13545,7 +13547,10 @@ document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) try{ sy
 function syncThemeColor(){
   try{ applySky(); }catch(e){}
   try{
-    const c = getComputedStyle(document.body).getPropertyValue('--banner').trim();
+    /* In the new look the strip at the top, and the phone's status bar behind the clock, take the
+       colour of the banner under them, not the old masthead tint. */
+    const s2 = document.documentElement.classList.contains('s2') ? (document.documentElement.style.getPropertyValue('--s2-tone') || '').trim() : '';
+    const c = s2 || getComputedStyle(document.body).getPropertyValue('--banner').trim();
     if(c) document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.setAttribute('content', c));
   }catch(e){}
 }
@@ -14910,7 +14915,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.24.076';
+const APP_VERSION = '2026.11.24.077';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15306,6 +15311,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.24.077': 'The strip at the very top now takes the banner colour, and the phone status bar follows it.',
   '2026.11.24.076': 'Connects to Apple Health for food, protein and water, and a weigh-in on the Fuel tab. Open Fuel and tap Apple Health to allow it.',
   '2026.11.24.075': 'Energy availability, body trend with a goal, training against sleep, and targets you can change.',
   '2026.11.23.074': 'Sleep, fuel and hydration scores on the Fuel and Recover tabs. Running well behind on food or water now takes a few points off Charge.',
@@ -48197,7 +48203,7 @@ loadGoalProfile().then(async ()=>{
     var sameBanner=(curKey===t.key); cur=name; curKey=t.key;
     banner.dataset.tab=name; banner.dataset.light=t.light?'1':'';
     banner.classList.toggle('has-back',!!t.back);
-    banner.style.setProperty('--s2-tone',t.tone);
+    banner.style.setProperty('--s2-tone',t.tone); root.style.setProperty('--s2-tone',t.tone); try{ if(typeof syncThemeColor==='function') syncThemeColor(); }catch(e){}
     titleEl.textContent=t.title;
     var isTrain=!!t.score;
     scoreEl.hidden=!isTrain; pEl.hidden=isTrain;
@@ -48223,6 +48229,7 @@ loadGoalProfile().then(async ()=>{
     if(pin) entrance(pin,420);
     pop([backEl,titleEl,pEl,scoreEl,actions],440);
   }
+  (function(){ var on=false; function chk(){ var v=(window.scrollY||0)>170; if(v!==on){ on=v; document.body.classList.toggle('s2-scrolled',v); } } window.addEventListener('scroll',chk,{passive:true}); chk(); })();
   function tabFromBody(){ var m=document.body.className.match(/\btab-(\w+)/); return m?m[1]:'insights'; }
   new MutationObserver(function(){ sync(tabFromBody(),false); }).observe(document.body,{attributes:true,attributeFilter:['class']});
   var out=document.getElementById('headerScoreOut'); if(out) new MutationObserver(refreshLine).observe(out,{childList:true,characterData:true,subtree:true});
