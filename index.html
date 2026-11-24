@@ -6935,6 +6935,18 @@ html.s2 #planWeekSheet .week-setup-row input[type="date"]{ min-width:0; flex:1 1
 #musclesDataView summary::-webkit-details-marker{ display:none; }
 #musclesDataView .mv-log{ margin-top:6px; display:grid; grid-template-columns:auto 1fr auto; gap:3px 12px; font:500 13px 'Barlow',sans-serif; font-variant-numeric:tabular-nums; }
 #musclesDataView .mv-log span:nth-child(3n+1){ color:#55554f; } #musclesDataView .mv-log span:nth-child(3n){ text-align:right; font-weight:700; }
+/* ONE PLACE FOR THE SWITCHES. On Train, Fuel and Recover the first control is a full-width segmented bar at the same height, and the
+   second is a row of equal chips under it. Track used loose pills first and a different bar second, at other widths. Same shapes, same spots. */
+html.s2 body.tab-data #dataViewPills{ display:flex; gap:0; margin:14px 16px 0; padding:4px; border:1.5px solid #DED6C6; border-radius:999px; background:#FBF8F2; flex-wrap:nowrap; }
+html.s2 body.tab-data #dataViewPills .type-btn{ flex:1 1 0; min-width:0; justify-content:center; text-align:center; border:0; background:transparent; border-radius:999px; min-height:0; padding:8px 0 7px; color:#151515; font:italic 800 17px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; letter-spacing:0; }
+html.s2 body.tab-data #dataViewPills .type-btn.active{ background:#151515; color:#fff; }
+html.s2 body.tab-data #trendPeriodPills, #musclesDataView .mv-seg{ display:flex; gap:8px; margin:14px 16px 0 !important; padding:0; border:0; border-radius:0; background:transparent; flex-wrap:nowrap; }
+html.s2 body.tab-data #trendPeriodPills .type-btn, #musclesDataView .mv-seg button{ all:unset; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; flex:1 1 0; min-width:0; min-height:40px; padding:8px 6px; border:1.5px solid #DED6C6; border-radius:999px; background:#FBF8F2; color:#151515; font:700 14px 'Barlow',sans-serif; text-transform:none; letter-spacing:0; cursor:pointer; }
+html.s2 body.tab-data #trendPeriodPills .type-btn.active, #musclesDataView .mv-seg button.on{ background:#151515; border-color:#151515; color:#fff; }
+html.s2 body.tab-data #trendPeriodPills .type-btn::after, #musclesDataView .mv-seg button::after{ display:none; }
+#musclesDataView{ padding:0 0 120px; }
+#musclesDataView .mv-ctl{ margin:0; }
+#musclesDataView .mv-note, #musclesDataView .mv-list, #musclesDataView .mv-card, #musclesDataView .mv-hd{ margin-left:16px; margin-right:16px; }
 /* SHELL2:END */
 </style>
 </head>
@@ -8299,7 +8311,7 @@ if(!window.__pnHold)window.__curtain();
     <div class="group score-drivers" id="scoreDriversPanel" hidden></div>
     <div class="session-type" id="dataViewPills">
       <div class="type-btn active" data-view="trends">Trends</div>
-      <div class="type-btn" data-view="history">Workout History</div>
+      <div class="type-btn" data-view="history">History</div>
       <div class="type-btn" data-view="muscles">Muscles</div>
     </div>
 
@@ -15063,7 +15075,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.24.095';
+const APP_VERSION = '2026.11.24.096';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15459,6 +15471,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.24.096': 'The switches sit in the same place on every tab. Track now has a full-width bar (Trends, History, Muscles) and a row of chips (Daily, Weekly, Monthly), the same shapes and positions as Train, Fuel and Recover.',
   '2026.11.24.095': 'Track > Muscles shows strength and mobility together: each muscle group has its sets, exercise trends, mobility rating and stretch time on one page.',
   '2026.11.24.094': 'Track has a new Muscles page: for each muscle group, the sets and every exercise with its weight trend, and the time you stretched it, by day, week or month, with a mobility rating.',
   '2026.11.24.093': 'A stretch session you only part-do can be saved: tick the sets you did and tap Save what I did. Only the ticked sets are logged.',
