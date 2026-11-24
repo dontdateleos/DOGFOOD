@@ -6860,6 +6860,15 @@ html.s2 body.tab-insights:not(.s2-wk) .s2-focus::after{ display:none; }
 .s3-use{ background:#151515; border-color:#151515; color:#fff; } .s3-pinb.on{ background:#C8F031; border-color:#151515; }
 .s3-use::after, .s3-pinb::after{ display:none; }
 .s3-use:focus-visible, .s3-pinb:focus-visible{ outline:3px solid #0082FD; outline-offset:2px; }
+.cond-bm{ display:inline-block; padding:1px 7px; margin-left:4px; border-radius:999px; background:#151515; color:#C8F031; font:700 10px var(--sans); letter-spacing:.06em; vertical-align:middle; }
+.cond-more{ margin:8px 0 0; padding:8px 12px; border:1.5px solid #E4DCCB; border-radius:14px; background:#FBF8F2; color:#151515; }
+.cond-more summary{ cursor:pointer; font:700 14px var(--sans); }
+.cond-more p{ margin:6px 0 0; font:500 13px/1.4 var(--sans); }
+.cond-log{ all:unset; box-sizing:border-box; display:block; margin:10px 0 0; padding:12px 16px; min-height:44px; border-radius:14px; background:#151515; color:#fff; text-align:center; cursor:pointer; font:italic 800 20px/1.1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+.cond-log::after{ display:none; }
+.cond-log:focus-visible{ outline:3px solid #0082FD; outline-offset:2px; }
+.cond-done{ margin:12px 16px 0; }
+.s2-condpanel{padding:4px 16px 14px;} .s2-condpanel .log-title{margin-top:6px!important;}
 /* SHELL2:END */
 </style>
 </head>
@@ -14981,7 +14990,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.24.080';
+const APP_VERSION = '2026.11.24.081';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15377,6 +15386,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.24.081': '30 finishers, 20 metcons and 5 benchmarks, with a benchmark every 4 to 6 weeks, a result you can log after each one, and a Charge cost for conditioning.',
   '2026.11.24.080': 'Sharper, cleaner donkey, bull and zebra: no colour fringes, twice the size.',
   '2026.11.24.079': 'Slower sub-muscle rotation you can set, pin and swap exercises, the reference rep ranges in the plan, gentler Charge drains, piñata moves, and training and sleep streaks.',
   '2026.11.24.078': 'New exercise reference: 69 more exercises, sub-muscle rotation in the plan, and a second evidence grade beside the existing badge.',
@@ -20427,6 +20437,17 @@ async function computeCharge(sr, opts){
     if(longPts > 0) parts.push({ label: 'long day', pts: longPts });
   }
   if(o.before == null){ try{ (await pillarDrains(day, o.at)).forEach(p=> parts.push(p)); } catch(e){} }
+  /* A finisher or metcon you logged a result for costs Charge by how hard it is on recovery:
+     low 2, medium 4, high 6. A metcon session has no tonnage, so the session drain above never
+     sees it, and a finisher is not in the exercise list at all. */
+  if(o.before == null){
+    try{
+      (await listCondResults()).filter(x=> x.date === day && COND_BY_KEY[x.key]).forEach(x=>{
+        const it = COND_BY_KEY[x.key];
+        parts.push({ label: 'conditioning', pts: COND_CHARGE_COST[it.c] || 4, at: x.at || null });
+      });
+    } catch(e){}
+  }
   const spent = parts.reduce((a, p)=> a + p.pts, 0);
   return { charge: Math.max(0, Math.min(100, start - spent)), start, spent, parts, drainFactor: k };
 }
@@ -30202,12 +30223,13 @@ function paintScoreRing(value, ch){
       if(p.label === 'long day') return 'awake more than 12 hours';
       if(p.label === 'low fuel') return 'eaten less than you need by now';
       if(p.label === 'low water') return 'drunk less than you need by now';
+      if(p.label === 'conditioning') return 'a finisher or metcon, by how hard it is on recovery';
       if(p.label === 'underfuelled') return 'yesterday you ate well under what your training used';
       const size = p.size == null ? 'priced as a typical session' : p.size > 1.15 ? 'bigger than your usual' : p.size < 0.85 ? 'lighter than your usual' : 'about your usual';
       return (p.health ? 'from Apple Health, ' : '') + size;
     };
-    const name = { lift: 'Lift', run: 'Run', day: 'Busy day', 'long day': 'Long day', 'low fuel': 'Low fuel', 'low water': 'Low water', underfuelled: 'Underfuelled' };
-    const sym = { lift: 'strength', run: 'run', day: 'steps', 'long day': 'longday', 'low fuel': 'drain', 'low water': 'drain', underfuelled: 'drain' };
+    const name = { lift: 'Lift', run: 'Run', day: 'Busy day', 'long day': 'Long day', 'low fuel': 'Low fuel', 'low water': 'Low water', underfuelled: 'Underfuelled', conditioning: 'Conditioning' };
+    const sym = { lift: 'strength', run: 'run', day: 'steps', 'long day': 'longday', 'low fuel': 'drain', 'low water': 'drain', underfuelled: 'drain', conditioning: 'drain' };
     const ic = k=> `<i class="cr-ic">${dfIcon(k, 18)}</i>`;
     const rows = [`<div class="cr-row">${ic('sleep')}<span>Woke with</span><b>${ch.start}</b></div>`]
       .concat(ch.parts.map(p=> `<div class="cr-row">${ic(sym[p.label] || 'drain')}<span>${name[p.label] || p.label}${p.at ? ' \u00b7 ' + clock(p.at) : ''}<small>${why(p)}</small></span><b>\u2212${p.pts}</b></div>`))
@@ -37785,10 +37807,30 @@ async function generateProgramFromGoals(weekDatesOverride, volumeWaveNote, block
     const metconFlags = await getInjuryMovementFlags();
     for(let k=0; k<metconDays && free.length; k++){
       const date = free.pop();
-      const block = buildMetconBlock(weekIdx + k, prefs.bodyweightAll, blockType, metconFlags);
+      const bm = k === 0 ? await benchmarkDueOn(date) : null;
+      const block = buildMetconBlock(weekIdx + k, prefs.bodyweightAll, blockType, metconFlags, bm && bm.key);
+      if(block.details.metcon.benchmark) await markBenchmarkPlanned(date, block.details.metcon.key);
       await window.storage.set(`weekplan:${date}:am`, JSON.stringify(block));
       await window.storage.set(`planned_session:${date}`, JSON.stringify({ date, exercises: block.details.exercises, workoutTag: 'metcon' }));
       result.metconPlaced = (result.metconPlaced || 0) + 1;
+    }
+  } else if(plan && plan.strengthSessions >= 2){
+    /* NO METCON DAY THIS WEEK: a benchmark that is due goes on a free day, never in place of a
+       lift. If every day is taken it waits for next week. */
+    const freeB = (await getAvailableEmptyDates(weekDatesOverride)).filter(d => !gameEve.has(d) && d >= todayStr);
+    if(freeB.length){
+      const date = freeB[freeB.length - 1];
+      const bm = await benchmarkDueOn(date);
+      if(bm){
+        const prefs = await getEquipmentPrefs();
+        const block = buildMetconBlock(0, prefs.bodyweightAll, null, await getInjuryMovementFlags(), bm.key);
+        if(block.details.metcon.key === bm.key){
+          await markBenchmarkPlanned(date, bm.key);
+          await window.storage.set(`weekplan:${date}:am`, JSON.stringify(block));
+          await window.storage.set(`planned_session:${date}`, JSON.stringify({ date, exercises: block.details.exercises, workoutTag: 'metcon' }));
+          result.benchmarkPlaced = date;
+        }
+      }
     }
   }
 
@@ -40748,7 +40790,7 @@ function isGameEve(date, sports){
 }
 function weekdayOf(date){ return WEEKDAY_NAMES[(localDateFrom(date).getDay() + 6) % 7]; }
 
-/* ---------- CONDITIONING: FINISHERS AND METCONS ----------
+/* ---------- CONDITIONING: FINISHERS, METCONS AND BENCHMARKS ----------
    What the evidence does and does not say. Nothing controlled shows a finisher adds muscle,
    so these are here for fitness and for fitting more work in, not as a growth trick. Done
    after the lifting they cost neither muscle nor maximal strength (Schumann 2022, 43
@@ -40760,84 +40802,135 @@ function weekdayOf(date){ return WEEKDAY_NAMES[(localDateFrom(date).getDay() + 6
    snatches, no deadlifts for reps against a clock.
 
    A finisher is not in the exercise list. It is time at the end of the session, reserved
-   before the lifting is trimmed to fit, so the session length you set still includes it. */
+   before the lifting is trimmed to fit, so the session length you set still includes it.
+
+   THE LIBRARY: 30 finishers (5 to 10 minutes), 20 metcons (15 to 25) and 5 benchmarks, from a
+   research pass that was then checked and cleaned (research_notes/conditioning/). The grade on
+   each is the grade of the METHOD, mostly interval training: three papers stand behind all of
+   them and none tested these exact workouts, so it says "method", never "this workout".
+
+   WHICH ONE. A finisher is picked for the day: the ones tagged for lower days leave the legs
+   alone, the ones for upper days can use them, and full-body ones fit either. Nothing rated
+   high on recovery is a finisher, and a short session only gets a short one. The pick turns
+   over every week. A metcon day takes the next metcon in the list.
+
+   BENCHMARKS. Five metcons are meant to be repeated and compared. One comes round every four
+   to six weeks: when the last one is 28 days or more behind and you have been training, the
+   week's metcon day becomes the benchmark, or, with no metcon day, it goes on a free day.
+   The same benchmark is repeated until it has three results, then the next one starts.
+   Results are written to condresult:DATE:KEY. Every result also costs Charge for the day,
+   by how hard it was on recovery: low 2, medium 4, high 6 (see computeCharge). */
 const FINISHER_MIN_SESSION = 45;  // below this the lifting needs every minute it has
 const FINISHER_NOTE = 'Hard but smooth. Stop a round early rather than let form go.';
-const FINISHERS = {
-  bike_intervals:  { format:'Intervals', minutes:6, title:'6 rounds · 20s hard, 40s easy',
-    moves:[{ name:'Bike, rower or ski erg', dose:'20s hard / 40s easy' }],
-    bw:[{ name:'High knees', dose:'20s hard / 40s easy' }] },
-  rower_intervals: { format:'Intervals', minutes:6, title:'6 rounds · 20s hard, 40s easy',
-    moves:[{ name:'Rower or ski erg', dose:'20s hard / 40s easy' }],
-    bw:[{ name:'Mountain climbers', dose:'20s hard / 40s easy' }] },
-  swing_emom:      { format:'EMOM', minutes:8, title:'Every minute for 8 minutes',
-    moves:[{ name:'Kettlebell Swing', dose:'odd minutes · 12' }, { name:'Push-up', dose:'even minutes · 10' }],
-    bw:[{ name:'Bodyweight squat', dose:'odd minutes · 15' }, { name:'Push-up', dose:'even minutes · 10' }] },
-  upper_emom:      { format:'EMOM', minutes:8, title:'Every minute for 8 minutes',
-    moves:[{ name:'Push-up', dose:'odd minutes · 10' }, { name:'Band pull-apart', dose:'even minutes · 15' }],
-    bw:[{ name:'Push-up', dose:'odd minutes · 10' }, { name:'Band pull-apart', dose:'even minutes · 15' }] },
-  carries:         { format:'Carries', minutes:6, title:'3 rounds · 60s rest between',
-    moves:[{ name:"Farmer's Carry", dose:'40m' }, { name:'Suitcase Carry', dose:'20m each side' }],
-    bw:null },
-  mixed_amrap:     { format:'AMRAP', minutes:7, title:'As many rounds as you can in 7 minutes',
-    moves:[{ name:'Goblet Squat', dose:'10' }, { name:'Push-up', dose:'10' }, { name:'Mountain climbers', dose:'20' }],
-    bw:[{ name:'Bodyweight squat', dose:'15' }, { name:'Push-up', dose:'10' }, { name:'Mountain climbers', dose:'20' }] }
-};
-/* A leg day ends on something that leaves the legs alone; an upper day can use them. */
-const FINISHERS_BY_TAG = {
-  lower: ['carries', 'upper_emom', 'rower_intervals'],
-  legs:  ['carries', 'upper_emom', 'rower_intervals'],
-  upper: ['bike_intervals', 'swing_emom', 'mixed_amrap'],
-  push:  ['bike_intervals', 'swing_emom', 'mixed_amrap'],
-  pull:  ['bike_intervals', 'swing_emom', 'mixed_amrap'],
-  full_body: ['bike_intervals', 'carries', 'mixed_amrap']
-};
-function pickFinisher(tag, idx, bodyweightOnly, movementFlags){
-  const keys = FINISHERS_BY_TAG[tag] || FINISHERS_BY_TAG.full_body;
-  for(let k=0; k<keys.length; k++){
-    const key = keys[(idx + k) % keys.length];
-    const f = FINISHERS[key];
-    // Through the injury filter like every other pick; finishers used to skip it, so a
-    // flagged knee still got goblet squats and swings at the end of the session.
-    const moves = injurySafeMoves(bodyweightOnly ? f.bw : f.moves, movementFlags);
+const CONDITIONING = {"items":[{"k":"finisher_001","n":"Afterburn","f":"Intervals","m":6,"t":"Short aerobic bursts","mv":[["Bike","6 x 20s hard / 40s easy",""]],"bw":[["High knees","6 x 20s / 40s easy march",""]],"tg":["upper"],"r":7,"c":"l","p":["cardio"],"av":["heavy legs or sprints"],"sk":0,"sd":"10:50","su":"30:30 at RPE 8","sc":"Work distance / knee lifts","bm":0,"g":"S","s":0,"kind":"f"},{"k":"finisher_002","n":"Heavy Hands","f":"Intervals","m":8,"t":"Upper-body intervals","mv":[["Battle ropes","8 x 30s waves / 30s rest","push"]],"bw":[["Shadow boxing","8 x 30s stationary / 30s rest","push"]],"tg":["lower"],"r":8,"c":"m","p":["cardio","core","push","pull"],"av":["heavy shoulders or arms"],"sk":0,"sd":"20:40","su":"35:25","sc":"Waves / controlled punches","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_003","n":"Double Engine","f":"Intervals","m":8,"t":"Distribute fatigue between regions","mv":[["Bike","30s then 30s rest",""],["Battle ropes","30s then 30s rest; repeat sequence 4 times","push"]],"bw":[["High knees","30s then 30s rest",""],["Shadow boxing","30s then 30s rest; repeat sequence 4 times","push"]],"tg":["full_body"],"r":7,"c":"m","p":["cardio","core","push","pull"],"av":["exhaustive full-body lifting"],"sk":0,"sd":"20:40 each","su":"40:20 each","sc":"Distance and waves / knee lifts and punches separately","bm":0,"g":"M","s":1,"kind":"f"},{"k":"finisher_004","n":"The Climb","f":"Ladder","m":8,"t":"Controlled ascending ladder","mv":[["Goblet squat","2,4,6,8,10,12 reps","squat"],["Reverse lunge","same total reps alternating; rest 20s after both; repeat from 2 after 12 until cap","lunge"]],"bw":[["Bodyweight squat","same ladder","squat"],["Reverse lunge","same ladder and rest; reset after 12 until cap","lunge"]],"tg":["upper"],"r":8,"c":"m","p":["squat","lunge","core"],"av":["heavy squats or lunges"],"sk":0,"sd":"repeat 4+4 with 30s rest","su":"small load increase or same cadence with less extra rest","sc":"Valid reps","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_005","n":"Iron Minute","f":"EMOM","m":8,"t":"Predictable alternating work","mv":[["Goblet squat","8 odd minutes","squat"],["Push-up","6 even minutes; rest remainder, 40s work cap","push"]],"bw":[["Bodyweight squat","12 odd minutes","squat"],["Push-up","6 even minutes; same rest and cap","push"]],"tg":["full_body"],"r":7,"c":"m","p":["squat","push","core"],"av":["high-volume squats or pressing"],"sk":0,"sd":"6 squats and 4 knee push-ups","su":"10 loaded or 15 BW squats and 8 push-ups","sc":"Completed minutes then valid reps","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_006","n":"Undertow","f":"Intervals","m":6,"t":"Local upper-body and trunk endurance","mv":[["Band pull-apart","40s then 20s rest","pull"],["Dead bug","40s then 20s rest; repeat 3 times","core"]],"bw":[["Shadow boxing","40s then 20s rest","push"],["Dead bug","40s then 20s rest; repeat 3 times","core"]],"tg":["lower"],"r":7,"c":"l","p":["pull","push","core","cardio"],"av":["exhaustive upper back or abs"],"sk":0,"sd":"30:30","su":"45:15 without rushing dead bugs","sc":"Valid work seconds and controlled reps by move","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_007","n":"Redline","f":"Tabata-style","m":6,"t":"Advanced dense cycling intervals","mv":[["Bike","60s easy, 8 x 20s hard / 10s easy, 60s easy",""]],"bw":[["High knees","60s easy march, 8 x 20s / 10s rest, 60s easy march",""]],"tg":["upper"],"r":9,"c":"h","p":["cardio"],"av":["heavy legs or sprint training"],"sk":0,"sd":"15:15 at RPE 7","su":"Improve sustainable output at same RPE","sc":"Total and minimum interval distance / knee lifts","bm":0,"g":"M","s":2,"kind":"f"},{"k":"finisher_008","n":"Freight Train","f":"Carries","m":9,"t":"Loaded walking and trunk endurance","mv":[["Farmer carry","40s","carry"],["Suitcase carry","20s each side","carry"],["Bodyweight squat","30s then 70s rest; repeat 3 times","squat"]],"bw":[["High knees","40s march",""],["Plank","20s side plank each side","core"],["Bodyweight squat","30s then 70s rest; repeat 3 times","squat"]],"tg":["full_body"],"r":7,"c":"m","p":["carry","core","squat","cardio"],"av":["heavy grip or trunk work"],"sk":0,"sd":"25s first move, 15s each side, 30s squat, 95s rest","su":"Small carry load increase or steadier BW output","sc":"Carry distance / march and squat reps and plank seconds","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_009","n":"Leg Engine","f":"Density","m":8,"t":"Controlled leg density","mv":[["Goblet squat","8","squat"],["Reverse lunge","8 total","lunge"],["Step-up","8 total on low stable step; rest 30s and repeat to cap","lunge"]],"bw":[["Bodyweight squat","8","squat"],["Reverse lunge","8 total","lunge"],["High knees","8 standing knee raises total; rest 30s and repeat",""]],"tg":["upper"],"r":8,"c":"m","p":["squat","lunge","core","cardio"],"av":["heavy legs or running"],"sk":0,"sd":"6 each, 45s rest","su":"10 each, same rest","sc":"Rounds + reps","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_010","n":"Uppercut","f":"EMOM","m":6,"t":"Upper-body conditioning","mv":[["Battle ropes","25s odd minutes","push"],["Push-up","6 even minutes, 40s cap; rest remainder","push"]],"bw":[["Shadow boxing","25s stationary odd minutes","push"],["Push-up","6 even minutes, 40s cap; rest remainder","push"]],"tg":["lower"],"r":7,"c":"l","p":["push","pull","core","cardio"],"av":["heavy pressing"],"sk":0,"sd":"15s and 4 knee push-ups","su":"30s and 8 reps","sc":"Completed minutes and reps","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_011","n":"Row Relay","f":"Intervals","m":8,"t":"Sustained aerobic strokes","mv":[["Rower","4 x 60s work / 60s easy","pull"]],"bw":[["High knees","4 x 60s brisk march / 60s easy march",""]],"tg":["upper"],"r":7,"c":"m","p":["cardio","hinge","pull","core"],"av":["heavy back, hamstrings or rowing"],"sk":0,"sd":"40:80","su":"75:45 at RPE 8","sc":"Work distance / knee lifts","bm":0,"g":"S","s":0,"kind":"f"},{"k":"finisher_012","n":"Sled Lane","f":"Intervals","m":6,"t":"Low-impact resisted walking","mv":[["Sled push","6 x 20s walking push / 40s rest","lunge"]],"bw":[["Bodyweight squat","6 x 20s controlled / 40s rest","squat"]],"tg":["upper"],"r":7,"c":"m","p":["cardio","squat","push","core"],"av":["heavy legs or shoulder pain"],"sk":0,"sd":"15:45","su":"25:35 or modest load increase","sc":"Distance at fixed load / reps","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_013","n":"Countdown","f":"Ladder","m":7,"t":"Declining leg workload","mv":[["Goblet squat","10,8,6,4,2","squat"],["Reverse lunge","same total alternating reps; 20s rest after each pair; then rest to cap","lunge"]],"bw":[["Bodyweight squat","same ladder","squat"],["Reverse lunge","same ladder and rest","lunge"]],"tg":["upper"],"r":7,"c":"m","p":["squat","lunge","core"],"av":["heavy legs"],"sk":0,"sd":"6,4,2","su":"12,10,8,6,4,2 within cap","sc":"Completion time or reps at cap","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_014","n":"Rope Switch","f":"Intervals","m":6,"t":"Short upper-body bursts","mv":[["Battle ropes","6 x 15s double waves / 45s rest","push"]],"bw":[["Shadow boxing","6 x 15s stationary combinations / 45s rest","push"]],"tg":["lower"],"r":7,"c":"l","p":["cardio","push","pull","core"],"av":["heavy shoulder or grip work"],"sk":0,"sd":"10:50","su":"20:40 at RPE 8","sc":"Waves / punches","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_015","n":"Swing Shift","f":"EMOM","m":8,"t":"Hinge-focused conditioning for trained swing users","mv":[["Kettlebell swing","8 two-handed chest-height reps odd minutes","hinge"],["High knees","25s march even minutes; rest remainder, 30s swing cap",""]],"bw":[["Bodyweight squat","10 odd minutes","squat"],["High knees","25s march even minutes; same rest",""]],"tg":["upper"],"r":7,"c":"m","p":["hinge","core","cardio"],"av":["heavy posterior chain or grip work"],"sk":1,"sd":"6 swings or squats and 15s march","su":"10 swings or 12 squats, same cap","sc":"Completed minutes and reps","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_016","n":"Quiet Core","f":"Circuit","m":8,"t":"Low-impact local endurance","mv":[["Band pull-apart","30s","pull"],["Plank","30s","core"],["Dead bug","30s; rest 30s; repeat 4 times","core"]],"bw":[["Shadow boxing","30s stationary","push"],["Plank","30s","core"],["Dead bug","30s; rest 30s; repeat 4 times","core"]],"tg":["lower"],"r":7,"c":"l","p":["core","pull","push"],"av":["exhaustive trunk or shoulders"],"sk":0,"sd":"20s each, 60s rest","su":"35s each, 15s rest","sc":"Quality work seconds, fixed cadence","bm":0,"g":"M","s":1,"kind":"f"},{"k":"finisher_017","n":"Slam Station","f":"Intervals","m":8,"t":"Short whole-body bouts","mv":[["Medicine-ball slam","8 x 20s controlled slams / 40s rest","core"]],"bw":[["Mountain climber","8 x 20s controlled / 40s rest","core"]],"tg":["full_body"],"r":8,"c":"m","p":["hinge","core","pull","cardio"],"av":["heavy trunk or shoulders"],"sk":0,"sd":"15:45","su":"25:35","sc":"Valid reps","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_018","n":"Cross Current","f":"Intervals","m":10,"t":"Alternate aerobic and pressing work","mv":[["Rower","60s; rest 30s","pull"],["Push-up","30s controlled; rest 30s; repeat 4 times","push"]],"bw":[["High knees","60s march; rest 30s",""],["Push-up","30s controlled; rest 30s; repeat 4 times","push"]],"tg":["full_body"],"r":7,"c":"m","p":["cardio","pull","hinge","push","core"],"av":["exhaustive full body or pressing"],"sk":0,"sd":"40s first move, 20s push-ups, 90s total rest","su":"65s first move, 35s push-ups, 50s total rest","sc":"Distance or knee lifts and push-ups separately","bm":0,"g":"M","s":1,"kind":"f"},{"k":"finisher_019","n":"Grip Clock","f":"Carries","m":8,"t":"Unilateral trunk and grip endurance","mv":[["Suitcase carry","20s left, 20s right, 20s rest","carry"],["Farmer carry","30s, 30s rest; repeat sequence 4 times","carry"]],"bw":[["Plank","20s side plank each side, 20s rest","core"],["High knees","30s march, 30s rest; repeat 4 times",""]],"tg":["full_body"],"r":7,"c":"m","p":["carry","core","cardio"],"av":["heavy grip or trunk work"],"sk":0,"sd":"15s each side and 20s second move, fill remainder with rest","su":"Small carry load increase or cleaner BW holds","sc":"Distance by carry / valid hold seconds and steps","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_020","n":"Step Count","f":"Intervals","m":10,"t":"Steady leg endurance","mv":[["Step-up","5 x 90s alternating low step / 30s rest","lunge"]],"bw":[["High knees","5 x 90s brisk march / 30s rest",""]],"tg":["upper"],"r":7,"c":"m","p":["lunge","squat","cardio"],"av":["heavy legs or high-impact running"],"sk":0,"sd":"60:60","su":"100:20 at same RPE","sc":"Valid step-ups / knee lifts","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_021","n":"Boxing Bell","f":"Rounds","m":9,"t":"Equipment-free upper-body rounds","mv":[["Shadow boxing","3 x 2min stationary boxing / 1min rest","push"]],"bw":[["Shadow boxing","same 3 x 2min / 1min rest","push"]],"tg":["lower"],"r":8,"c":"m","p":["cardio","push","core"],"av":["heavy pressing or shoulder work"],"sk":0,"sd":"90s work, 90s rest","su":"135s work, 45s rest","sc":"Controlled punches at consistent technique","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_022","n":"Ski Pulse","f":"Intervals","m":8,"t":"Upper-dominant erg intervals","mv":[["Ski erg","8 x 20s shallow-knee work / 40s easy","pull"]],"bw":[["Shadow boxing","8 x 20s stationary / 40s rest","push"]],"tg":["lower"],"r":7,"c":"m","p":["pull","core","cardio","hinge"],"av":["heavy lats or trunk; skip if legs exhausted","Use stationary boxing alternative if legs or spinal erectors are fatigued."],"sk":0,"sd":"15:45","su":"25:35","sc":"Distance / punches","bm":0,"g":"M","s":0,"kind":"f"},{"k":"finisher_023","n":"Reverse Gear","f":"Intervals","m":8,"t":"Controlled backward resisted movement","mv":[["Sled drag","8 x 25s backward walking / 35s rest","lunge"]],"bw":[["Reverse lunge","8 x 25s alternating / 35s rest","lunge"]],"tg":["upper"],"r":7,"c":"m","p":["lunge","cardio","carry","core"],"av":["heavy quads or knees"],"sk":0,"sd":"15:45","su":"30:30 or small sled load increase","sc":"Distance / reps","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_024","n":"Floor Circuit","f":"AMRAP","m":7,"t":"Low-volume floor-based endurance","mv":[["Push-up","5","push"],["Band pull-apart","10","pull"],["Dead bug","6 total; rest 25s after round, repeat to cap","core"]],"bw":[["Push-up","5","push"],["Shadow boxing","10 total","push"],["Dead bug","6 total; same rest","core"]],"tg":["lower"],"r":7,"c":"l","p":["push","pull","core"],"av":["heavy upper body or trunk"],"sk":0,"sd":"3 push-ups, 6 middle reps, 4 dead bugs","su":"6,12,8 with same rest","sc":"Rounds + reps","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_025","n":"Rope Rhythm","f":"Intervals","m":5,"t":"Rhythmic cyclical conditioning","mv":[["Jump rope","5 x 30s / 30s rest",""]],"bw":[["High knees","5 x 30s march / 30s rest",""]],"tg":["upper"],"r":7,"c":"m","p":["cardio"],"av":["calf training or jumping"],"sk":0,"sd":"20:40","su":"35:25","sc":"Valid skips / knee lifts","bm":0,"g":"M","s":0,"kind":"f"},{"k":"finisher_026","n":"Three Gears","f":"Intervals","m":9,"t":"Pacing through three effort levels","mv":[["Rower","3 cycles of 30s RPE 6, 30s RPE 7, 30s RPE 8, 90s easy","pull"]],"bw":[["High knees","same effort progression using low-impact march",""]],"tg":["full_body"],"r":7,"c":"m","p":["cardio","hinge","pull","core"],"av":["heavy back or legs"],"sk":0,"sd":"20s each gear, 120s easy","su":"40s each gear, 60s easy","sc":"Work distance / knee lifts by gear","bm":0,"g":"M","s":0,"kind":"f"},{"k":"finisher_027","n":"Sandbag Mile","f":"Carries","m":10,"t":"Repeatable loaded walking","mv":[["Sandbag carry","30s bear-hug walk / 30s rest x 10","carry"]],"bw":[["High knees","30s brisk march / 30s rest x 10",""]],"tg":["full_body"],"r":7,"c":"m","p":["carry","core","cardio"],"av":["heavy trunk, grip or legs"],"sk":0,"sd":"20:40","su":"35:25 or modest bag load increase","sc":"Total distance / knee lifts","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_028","n":"Press Clock","f":"Intervals","m":6,"t":"Pressing with generous recovery","mv":[["Push-up","6 every 90s","push"],["Shadow boxing","20s stationary immediately after; rest remainder; 4 rounds","push"]],"bw":[["Push-up","6 every 90s","push"],["Shadow boxing","20s stationary; rest remainder; 4 rounds","push"]],"tg":["lower"],"r":7,"c":"l","p":["push","core","cardio"],"av":["heavy chest or triceps"],"sk":0,"sd":"4 knee push-ups and 15s boxing","su":"8 reps and 25s boxing","sc":"Completed sets and punch count","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_029","n":"Short Chipper","f":"Chipper","m":8,"t":"One-pass lower-body workload","mv":[["Bike","90s",""],["Goblet squat","20 reps split into sets of 5 with 10s rest","squat"],["Reverse lunge","20 total split into sets of 5 with 10s rest","lunge"],["Bike","90s; rest to 8min cap",""]],"bw":[["High knees","90s march",""],["Bodyweight squat","20 same sets","squat"],["Reverse lunge","20 same sets","lunge"],["High knees","90s march; rest to cap",""]],"tg":["upper"],"r":8,"c":"m","p":["squat","lunge","cardio","core"],"av":["heavy legs"],"sk":0,"sd":"60s cardio and 12 reps each in sets of 4","su":"25 reps each in sets of 5 if within cap","sc":"Completion time or stage + reps at cap; cardio output separately","bm":0,"g":"L","s":1,"kind":"f"},{"k":"finisher_030","n":"Even Split","f":"EMOM","m":10,"t":"Aerobic and strength alternation","mv":[["Bike","25s minutes 1,3,5,7,9",""],["Goblet squat","6 minutes 2,4,6,8,10","squat"],["Push-up","4 minutes 2,4,6,8,10; rest remainder, 40s cap","push"]],"bw":[["High knees","25s odd minutes",""],["Bodyweight squat","6","squat"],["Push-up","4 even minutes; same rest","push"]],"tg":["full_body"],"r":7,"c":"m","p":["squat","push","core","cardio"],"av":["exhaustive full-body lifting"],"sk":0,"sd":"15s cardio, 4 squats, 3 knee push-ups","su":"30s cardio, 8 squats, 5 push-ups within cap","sc":"Completed minutes, distance or steps and reps","bm":0,"g":"L","s":1,"kind":"f"},{"k":"metcon_001","n":"Aerobic Four","f":"Intervals","m":20,"t":"Sustained aerobic intervals","mv":[["Bike","4 x 3min hard / 2min easy",""]],"bw":[["High knees","4 x 3min brisk low-impact march / 2min easy march",""]],"tg":["full_body"],"r":8,"c":"m","p":["cardio"],"av":["heavy legs or sprint work"],"sk":0,"sd":"2min work, 3min easy","su":"3.5min work, 1.5min easy","sc":"Work distance / knee lifts","bm":0,"g":"S","s":0,"kind":"m"},{"k":"metcon_002","n":"Row Builder","f":"Intervals","m":24,"t":"Long aerobic work accumulation","mv":[["Rower","6 x 3min work / 1min easy","pull"]],"bw":[["High knees","6 x 3min brisk march / 1min easy",""]],"tg":["full_body"],"r":8,"c":"h","p":["cardio","hinge","pull","core"],"av":["heavy posterior chain or rowing"],"sk":0,"sd":"2:2 minutes","su":"Increase mean pace at same RPE","sc":"Work distance / knee lifts","bm":0,"g":"S","s":0,"kind":"m"},{"k":"metcon_003","n":"Minute Waves","f":"Intervals","m":20,"t":"Upper-dominant conditioning rounds","mv":[["Battle ropes","30s then 30s rest","push"],["Shadow boxing","60s then 60s rest","push"],["Plank","30s then 30s rest; repeat 5 times","core"]],"bw":[["Shadow boxing","30s fast then 30s rest","push"],["Shadow boxing","60s steady then 60s rest","push"],["Plank","30s then 30s rest; repeat 5 times","core"]],"tg":["lower"],"r":7,"c":"m","p":["cardio","push","pull","core"],"av":["heavy shoulders or trunk"],"sk":0,"sd":"20s,40s,20s work with rest to original block lengths","su":"35s,65s,35s with rest to original lengths","sc":"Waves/punches and plank seconds","bm":0,"g":"L","s":1,"kind":"m"},{"k":"metcon_004","n":"Ski and Settle","f":"Intervals","m":20,"t":"Upper-dominant aerobic intervals","mv":[["Ski erg","10 x 60s shallow-knee work / 60s easy","pull"]],"bw":[["Shadow boxing","10 x 60s stationary / 60s rest","push"]],"tg":["lower"],"r":7,"c":"m","p":["cardio","pull","push","core","hinge"],"av":["heavy lats or trunk; skip if legs exhausted","Use stationary boxing alternative if legs or spinal erectors are fatigued."],"sk":0,"sd":"40:80","su":"75:45 at RPE 8","sc":"Work distance / controlled punches","bm":0,"g":"M","s":0,"kind":"m"},{"k":"metcon_005","n":"Bike Pyramid","f":"Intervals","m":18,"t":"Variable-length aerobic intervals","mv":[["Bike","Work 30,60,90,120,150,90s; easy for equal duration after each; total 18min.",""]],"bw":[["High knees","same timing brisk march / easy march",""]],"tg":["upper"],"r":8,"c":"m","p":["cardio"],"av":["heavy legs or sprints"],"sk":0,"sd":"Halve work times and fill each original block with easy recovery","su":"Increase sustainable pace, not work duration","sc":"Work distance / knee lifts","bm":0,"g":"S","s":0,"kind":"m"},{"k":"metcon_006","n":"Five Stations","f":"EMOM","m":20,"t":"Five different movement stations","mv":[["Goblet squat","8 minute 1","squat"],["Push-up","6 minute 2","push"],["Band pull-apart","12 minute 3","pull"],["Farmer carry","30s minute 4","carry"],["Bike","30s minute 5; repeat 4 cycles, rest remainder each minute, 40s cap",""]],"bw":[["Bodyweight squat","10 minute 1","squat"],["Push-up","6 minute 2","push"],["Shadow boxing","25s minute 3","push"],["Plank","30s minute 4","core"],["High knees","30s minute 5; same cycles and rest",""]],"tg":["full_body"],"r":7,"c":"m","p":["squat","push","pull","carry","core","cardio"],"av":["exhaustive full-body work"],"sk":0,"sd":"Reduce reps by 2 and timed work by 10s","su":"Add 2 reps or 5s within cap","sc":"Completed minutes and outputs by station","bm":0,"g":"L","s":1,"kind":"m"},{"k":"metcon_007","n":"Leg Clock","f":"EMOM","m":18,"t":"Lower-body work capacity","mv":[["Goblet squat","8 minute 1","squat"],["Step-up","10 total minute 2","lunge"],["Bike","30s minute 3; repeat 6 cycles, rest remainder, 40s cap",""]],"bw":[["Bodyweight squat","10 minute 1","squat"],["Reverse lunge","8 total minute 2","lunge"],["High knees","30s minute 3; same cycles",""]],"tg":["upper"],"r":7,"c":"m","p":["squat","lunge","cardio","core"],"av":["heavy legs"],"sk":0,"sd":"6,6,20s","su":"10,12,35s within cap","sc":"Completed minutes and station output","bm":0,"g":"L","s":1,"kind":"m"},{"k":"metcon_008","n":"Upper Clock","f":"EMOM","m":15,"t":"Upper-body endurance without dynamic leg work","mv":[["Battle ropes","25s minute 1","push"],["Push-up","5 minute 2","push"],["Band pull-apart","10 minute 3; repeat 5 cycles, rest remainder, 40s cap","pull"]],"bw":[["Shadow boxing","25s minute 1","push"],["Push-up","5 minute 2","push"],["Dead bug","6 total minute 3; same cycles and rest","core"]],"tg":["lower"],"r":7,"c":"m","p":["push","pull","core","cardio"],"av":["heavy shoulders or pressing"],"sk":0,"sd":"15s,3 knee push-ups,6 band reps or 4 dead bugs","su":"30s,6 push-ups,12 band reps or 8 dead bugs","sc":"Completed minutes and reps by move","bm":0,"g":"L","s":1,"kind":"m"},{"k":"metcon_009","n":"Workhorse","f":"AMRAP","m":20,"t":"Mixed work-capacity circuit","mv":[["Goblet squat","8","squat"],["Push-up","6","push"],["Farmer carry","30s","carry"],["Bike","45s; rest 45s, repeat to cap",""]],"bw":[["Bodyweight squat","10","squat"],["Push-up","6","push"],["Plank","30s","core"],["High knees","45s march; rest 45s, repeat",""]],"tg":["full_body"],"r":8,"c":"m","p":["squat","push","carry","core","cardio"],"av":["exhaustive full body"],"sk":0,"sd":"6 squats,4 knee push-ups,20s third,30s cardio,60s rest","su":"Add 2 squats or improve cardio output","sc":"Rounds + completed stations + partial reps/seconds","bm":0,"g":"L","s":1,"kind":"m"},{"k":"metcon_010","n":"Ground Game","f":"Density","m":15,"t":"Low-impact upper and core density","mv":[["Push-up","5","push"],["Band pull-apart","12","pull"],["Dead bug","8 total","core"],["Shadow boxing","30s; rest 30s, repeat to cap","push"]],"bw":[["Push-up","5","push"],["Shadow boxing","20s","push"],["Dead bug","8 total","core"],["Shadow boxing","30s; same rest","push"]],"tg":["lower"],"r":7,"c":"m","p":["push","pull","core","cardio"],"av":["heavy pressing or trunk work"],"sk":0,"sd":"3 knee push-ups,8 band reps or 15s boxing,6 dead bugs,20s boxing,45s rest","su":"6 push-ups and 14 band reps or 25s boxing","sc":"Rounds + completed stations + partial reps/seconds","bm":0,"g":"L","s":1,"kind":"m"},{"k":"metcon_011","n":"Hill Work","f":"Density","m":18,"t":"Lower-body density with rest","mv":[["Sled push","30s walk","lunge"],["Step-up","10 total","lunge"],["Bike","60s; rest 60s, repeat to cap",""]],"bw":[["Bodyweight squat","10","squat"],["Reverse lunge","10 total","lunge"],["High knees","60s march; rest 60s, repeat",""]],"tg":["upper"],"r":8,"c":"m","p":["squat","lunge","cardio","core"],"av":["heavy legs or running"],"sk":0,"sd":"20s sled or 6 squats,6 step-ups/lunges,40s cardio,75s rest","su":"Small sled load increase or 12 squats","sc":"Rounds + completed stations + partial reps/seconds","bm":0,"g":"L","s":1,"kind":"m"},{"k":"metcon_012","n":"Long Climb","f":"Ladder","m":20,"t":"Repeated ascending ladder","mv":[["Goblet squat","4,6,8,10,12","squat"],["Reverse lunge","same total alternating","lunge"],["Bike","45s after each pair then rest 30s; reset ladder after 12 until cap",""]],"bw":[["Bodyweight squat","same ladder","squat"],["Reverse lunge","same ladder","lunge"],["High knees","45s march then rest 30s; reset after 12",""]],"tg":["upper"],"r":8,"c":"m","p":["squat","lunge","cardio"],"av":["heavy legs"],"sk":0,"sd":"2,4,6,8 with 45s rest","su":"Small squat load increase or more consistent output","sc":"Completed rungs + partial reps/seconds","bm":0,"g":"L","s":1,"kind":"m"},{"k":"metcon_013","n":"Downhill","f":"Ladder","m":18,"t":"Declining strength volume plus aerobic work","mv":[["Goblet squat","12,10,8,6,4,2","squat"],["Push-up","6,5,4,3,2,1","push"],["Rower","60s after each pair; rest 30s; after last rung easy row to cap","pull"]],"bw":[["Bodyweight squat","same ladder","squat"],["Push-up","same ladder","push"],["High knees","60s march then 30s rest each rung; easy march to cap",""]],"tg":["full_body"],"r":7,"c":"m","p":["squat","push","core","cardio","hinge","pull"],"av":["heavy pressing or legs"],"sk":0,"sd":"8,6,4,2 squats and 4,3,2,1 push-ups","su":"Small squat load increase or stronger row/march pace","sc":"Completion time before easy remainder or stage at cap","bm":0,"g":"L","s":1,"kind":"m"},{"k":"metcon_014","n":"The Haul","f":"Chipper","m":20,"t":"One-pass mixed workload","mv":[["Bike","3min",""],["Farmer carry","4 x 30s with 30s rest each","carry"],["Goblet squat","4 x 8 with 30s rest each","squat"],["Push-up","4 x 5 with 30s rest each","push"],["Bike","3min; rest to cap",""]],"bw":[["High knees","3min march",""],["Plank","4 x 30s with 30s rest each","core"],["Bodyweight squat","4 x 8 with 30s rest each","squat"],["Push-up","4 x 5 with 30s rest each","push"],["High knees","3min march; rest to cap",""]],"tg":["full_body"],"r":8,"c":"m","p":["carry","squat","push","core","cardio"],"av":["exhaustive full body or grip"],"sk":0,"sd":"3 sets each and 2min cardio ends","su":"Improve completion time without reducing mandated rest","sc":"Completion time or station and partial reps/seconds","bm":0,"g":"L","s":1,"kind":"m"},{"k":"metcon_015","n":"Leg Ledger","f":"Chipper","m":25,"t":"High-volume leg endurance","mv":[["Bike","5min",""],["Goblet squat","5 x 8 with 30s rest each","squat"],["Reverse lunge","5 x 8 total with 30s rest each","lunge"],["Step-up","5 x 8 total with 30s rest each","lunge"],["Bike","3min; rest to cap",""]],"bw":[["High knees","5min march",""],["Bodyweight squat","5 x 8 with 30s rest each","squat"],["Reverse lunge","5 x 8 with 30s rest each","lunge"],["High knees","5 x 8 standing knee lifts with 30s rest each",""],["High knees","3min march; rest to cap",""]],"tg":["upper"],"r":8,"c":"h","p":["squat","lunge","cardio","core"],"av":["heavy legs or long running"],"sk":0,"sd":"3 sets each and 3min/2min cardio","su":"Improve output at fixed load and rest","sc":"Completion time or stage at cap","bm":0,"g":"L","s":1,"kind":"m"},{"k":"metcon_016","n":"Carry Compass","f":"Carries","m":20,"t":"Multi-position loaded walking","mv":[["Farmer carry","45s; rest 15s","carry"],["Suitcase carry","30s each side; rest 30s","carry"],["Sandbag carry","45s; rest 15s","carry"],["Bike","60s; rest 30s; repeat 4 times",""]],"bw":[["High knees","45s march; rest 15s",""],["Plank","30s side plank each side; rest 30s","core"],["Plank","45s front; rest 15s","core"],["High knees","60s march; rest 30s; repeat 4 times",""]],"tg":["full_body"],"r":7,"c":"m","p":["carry","core","cardio"],"av":["heavy grip or trunk"],"sk":0,"sd":"Reduce work by 10s per station, add to rest","su":"Small carry load increase or steadier BW output","sc":"Distance by carry and bike / steps and hold seconds","bm":0,"g":"L","s":1,"kind":"m"},{"k":"metcon_017","n":"Swing and Stride","f":"Circuit","m":20,"t":"Hinge and aerobic alternation for trained swing users","mv":[["Kettlebell swing","8 chest-height two-handed reps in first 30s; rest remainder","hinge"],["Bike","90s; rest 60s",""],["Bodyweight squat","30s; rest 30s; repeat 5 times","squat"]],"bw":[["Bodyweight squat","10 first 30s; rest remainder","squat"],["High knees","90s march; rest 60s",""],["Bodyweight squat","30s; rest 30s; repeat 5 times","squat"]],"tg":["upper"],"r":7,"c":"m","p":["hinge","squat","cardio","core"],"av":["heavy posterior chain or grip"],"sk":1,"sd":"6 swings or squats, 60s cardio and 90s rest","su":"10 swings or 12 squats, same cap","sc":"Completed cycles and station outputs","bm":0,"g":"M","s":1,"kind":"m"},{"k":"metcon_018","n":"Slam and Cruise","f":"Intervals","m":20,"t":"Brief explosive-style bouts and aerobic work","mv":[["Medicine-ball slam","20s; rest 40s","core"],["Bike","2min; easy bike 1min; repeat 5 times",""]],"bw":[["Mountain climber","20s controlled; rest 40s","core"],["High knees","2min march; easy march 1min; repeat 5 times",""]],"tg":["full_body"],"r":8,"c":"m","p":["hinge","pull","core","cardio"],"av":["heavy shoulders or trunk"],"sk":0,"sd":"10s first move,50s rest,90s cardio,90s easy","su":"25s first move,35s rest, same cardio","sc":"Slam/climber reps and cardio output separately","bm":0,"g":"M","s":1,"kind":"m"},{"k":"metcon_019","n":"Rope and Row","f":"Intervals","m":24,"t":"Aerobic intervals with rhythmic footwork","mv":[["Rower","2min; rest 1min","pull"],["Jump rope","1min; rest 2min; repeat 4 times",""]],"bw":[["High knees","2min brisk march; rest 1min",""],["High knees","1min faster march; rest 2min; repeat 4 times",""]],"tg":["full_body"],"r":8,"c":"h","p":["cardio","pull","hinge","core"],"av":["heavy calves, back or legs"],"sk":0,"sd":"90s row,90s rest,30s rope,150s rest","su":"Improve output at same impact volume","sc":"Row distance and skips / knee lifts by interval","bm":0,"g":"M","s":0,"kind":"m"},{"k":"metcon_020","n":"Fight Night","f":"Rounds","m":25,"t":"Long upper-body endurance rounds","mv":[["Shadow boxing","2min stationary","push"],["Battle ropes","30s; rest 60s","push"],["Band pull-apart","30s; rest 60s; repeat 5 times","pull"]],"bw":[["Shadow boxing","2min stationary","push"],["Shadow boxing","30s faster; rest 60s","push"],["Dead bug","30s; rest 60s; repeat 5 times","core"]],"tg":["lower"],"r":8,"c":"h","p":["push","pull","core","cardio"],"av":["heavy shoulders, grip or trunk"],"sk":0,"sd":"90s boxing,20s second move,20s third, add 50s rest","su":"Improve repeatable output at same RPE","sc":"Punches/waves and valid reps by station","bm":0,"g":"L","s":1,"kind":"m"},{"k":"metcon_021","n":"Twenty Engine","f":"Steady effort","m":20,"t":"Aerobic field benchmark","mv":[["Bike","20min continuous at even sustainable pace",""]],"bw":[["High knees","20min low-impact march at even pace",""]],"tg":["upper"],"r":8,"c":"m","p":["cardio"],"av":["hard legs within previous 48h"],"sk":0,"sd":"RPE 6 familiarisation, separate record","su":"Improve distance at same RPE","sc":"Total distance / knee lifts; compare same machine and RPE","bm":1,"g":"L","s":0,"kind":"m"},{"k":"metcon_022","n":"Repeatability","f":"Intervals","m":20,"t":"Repeated aerobic output benchmark","mv":[["Rower","10 x 60s work / 60s easy","pull"]],"bw":[["High knees","10 x 60s brisk march / 60s easy",""]],"tg":["full_body"],"r":8,"c":"m","p":["cardio","hinge","pull","core"],"av":["hard back or legs within previous 48h"],"sk":0,"sd":"RPE 6 familiarisation","su":"Improve mean and minimum output","sc":"Total and minimum work distance / knee lifts; compare interval drop-off","bm":1,"g":"L","s":0,"kind":"m"},{"k":"metcon_023","n":"Round Standard","f":"AMRAP","m":15,"t":"Mixed endurance field benchmark","mv":[["Goblet squat","8","squat"],["Push-up","6","push"],["Bike","30s; rest 30s; repeat to cap",""]],"bw":[["Bodyweight squat","8","squat"],["Push-up","6","push"],["High knees","30s march; rest 30s; repeat to cap",""]],"tg":["full_body"],"r":8,"c":"m","p":["squat","push","core","cardio"],"av":["hard full body within previous 48h"],"sk":0,"sd":"6 squats,4 knee push-ups, separate record","su":"More valid rounds at identical prescription","sc":"Rounds + completed stations + partial reps/seconds; cardio output separately","bm":1,"g":"L","s":1,"kind":"m"},{"k":"metcon_024","n":"Carry Index","f":"Intervals","m":15,"t":"Loaded walking field benchmark","mv":[["Farmer carry","10 x 45s walking / 45s rest","carry"]],"bw":[["High knees","10 x 45s brisk march / 45s rest",""]],"tg":["full_body"],"r":7,"c":"m","p":["carry","core","cardio"],"av":["hard grip or legs within previous 48h"],"sk":0,"sd":"Lighter load or slower march, separate record","su":"Increase distance at fixed load without running","sc":"Total distance / knee lifts; same course, load, cadence standard","bm":1,"g":"L","s":1,"kind":"m"},{"k":"metcon_025","n":"Upper Standard","f":"Rounds","m":18,"t":"Upper-body repeatability benchmark","mv":[["Battle ropes","60s; rest 30s","push"],["Push-up","6 within 30s then rest remainder of that 30s; rest 60s; repeat 6 times","push"]],"bw":[["Shadow boxing","60s; rest 30s","push"],["Push-up","6 within 30s then rest remainder; rest 60s; repeat 6 times","push"]],"tg":["lower"],"r":8,"c":"m","p":["push","pull","core","cardio"],"av":["hard shoulders or pressing within previous 48h"],"sk":0,"sd":"30s ropes/boxing and 4 knee push-ups, fill remainder with rest","su":"More waves or punches at fixed technique and RPE","sc":"Total waves/punches and completed push-ups; compare same version","bm":1,"g":"L","s":1,"kind":"m"}],"src":["Wen et al. (2019), Journal of Science and Medicine in Sport, https://pubmed.ncbi.nlm.nih.gov/30733142/","Ramos-Campo et al. (2021), Biology, https://pubmed.ncbi.nlm.nih.gov/33924785/","Tabata et al. (1996), Medicine & Science in Sports & Exercise, https://doi.org/10.1097/00005768-199610000-00018"]};
+const COND_BY_KEY = {};
+CONDITIONING.items.forEach(o=>{ COND_BY_KEY[o.k] = o; });
+const COND_GRADE = { L:'Limited', M:'Moderate', S:'Strong' };
+const COND_RECOVERY = { l:'low', m:'medium', h:'high' };
+const COND_CHARGE_COST = { l:2, m:4, h:6 };
+const BENCHMARK_ORDER = ['metcon_023', 'metcon_021', 'metcon_022', 'metcon_024', 'metcon_025'];
+const BENCHMARK_EVERY_DAYS = 28, BENCHMARK_RESULTS_BEFORE_NEXT = 3;
+function condDaysBetween(a, b){ return Math.round((localDateFrom(b).getTime() - localDateFrom(a).getTime()) / 86400000); }
+function condMoves(list){ return (list || []).map(m=> ({ name: m[0], dose: m[1], movement: m[2] || undefined })); }
+function condDetail(o, moves){
+  return { key: o.k, name: o.n, format: o.f, minutes: o.m, title: o.t, moves, note: FINISHER_NOTE, rpe: o.r, recovery: o.c,
+    scoring: o.sc, scaleDown: o.sd, scaleUp: o.su, benchmark: !!o.bm, grade: o.g, avoid: o.av };
+}
+function condDayTag(tag){ return /^(lower|legs)$/.test(tag) ? 'lower' : /^(upper|push|pull)$/.test(tag) ? 'upper' : 'full_body'; }
+function pickFinisher(tag, idx, bodyweightOnly, movementFlags, maxMinutes){
+  const day = condDayTag(tag);
+  const base = CONDITIONING.items.filter(o=> o.kind === 'f' && o.c !== 'h' && (day === 'full_body' || o.tg.includes(day) || o.tg.includes('full_body')));
+  // A short session gets a short one; if nothing that short suits the day, a slightly longer one beats none.
+  let pool = base.filter(o=> !maxMinutes || o.m <= maxMinutes);
+  if(!pool.length) pool = base.filter(o=> !maxMinutes || o.m <= maxMinutes + 2);
+  for(let k = 0; k < pool.length; k++){
+    const o = pool[(idx + k) % pool.length];
+    // Through the injury filter like every other pick: a flagged movement drops out, and a
+    // finisher with too little left is passed over for the next one.
+    const moves = injurySafeMoves(condMoves(bodyweightOnly ? o.bw : o.mv), movementFlags);
     if(!moves) continue;
-    return { key, format: f.format, minutes: f.minutes, title: f.title, moves: moves.map(m=>({ ...m })), note: FINISHER_NOTE };
+    return condDetail(o, moves.map(m=>({ ...m })));
   }
   return null;
 }
-/* A metcon day: one lift a week traded for 20–25 minutes of mixed conditioning, logged like
-   any lift — each movement is a row, and the rounds go in the notes. */
-const METCONS = [
-  { format:'AMRAP', minutes:20, title:'As many rounds as you can in 20 minutes',
-    moves:[{ name:'Rower or bike', dose:'250m / 12 cal' }, { name:'Kettlebell Swing', dose:'15', id:'kettlebell_swing' },
-           { name:'Walking Lunge', dose:'10 each leg', id:'walking_lunge' }, { name:'Push-up', dose:'10', id:'push_up' }],
-    bw:[{ name:'High knees', dose:'40s' }, { name:'Bodyweight squat', dose:'20' },
-        { name:'Walking Lunge', dose:'10 each leg', id:'walking_lunge' }, { name:'Push-up', dose:'10', id:'push_up' }] },
-  { format:'EMOM', minutes:24, title:'Every minute for 24 minutes, four stations in turn',
-    moves:[{ name:'Rower or bike', dose:'45s' }, { name:'Goblet Squat', dose:'12', id:'goblet_squat' },
-           { name:"Farmer's Carry", dose:'40m', id:'farmers_carry' }, { name:'Push-up', dose:'10', id:'push_up' }],
-    bw:[{ name:'Mountain climbers', dose:'40s' }, { name:'Bodyweight squat', dose:'20' },
-        { name:'Reverse lunge', dose:'8 each leg' }, { name:'Push-up', dose:'10', id:'push_up' }] }
-];
-function buildMetconBlock(idx, bodyweightOnly, blockType, movementFlags){
-  const m = METCONS[idx % METCONS.length];
-  const raw = bodyweightOnly ? m.bw : m.moves;
-  // A flagged move comes out and the conditioning piece takes its place, so the round
-  // still has four stations and nothing in it loads the injury.
-  const safe = injurySafeMoves(raw, movementFlags) || raw.filter(mv => !mv.id && !movementOfName(mv.name));
-  const moves = safe.length < raw.length
-    ? safe.concat(Array(raw.length - safe.length).fill(null).map(()=>({ name: bodyweightOnly ? 'Mountain climbers' : 'Rower or bike', dose: '40s' })))
-    : safe;
+/* A metcon day: one lift a week traded for 15 to 25 minutes of mixed conditioning, logged like
+   any lift — each movement is a row, and the rounds go in the notes. forceKey puts a given
+   metcon (a benchmark) in place of the next one in the list. */
+function buildMetconBlock(idx, bodyweightOnly, blockType, movementFlags, forceKey){
+  const regular = CONDITIONING.items.filter(o=> o.kind === 'm' && !o.bm);
+  const tries = [];
+  if(forceKey && COND_BY_KEY[forceKey]) tries.push(COND_BY_KEY[forceKey]);
+  for(let k = 0; k < regular.length; k++) tries.push(regular[(idx + k) % regular.length]);
+  let o = null, moves = null;
+  for(const cand of tries){
+    const m = injurySafeMoves(condMoves(bodyweightOnly ? cand.bw : cand.mv), movementFlags);
+    if(m){ o = cand; moves = m; break; }
+  }
+  if(!o){ o = regular[idx % regular.length]; moves = condMoves(bodyweightOnly ? o.bw : o.mv); }
   const exercises = moves.map(mv=>{
-    const lib = mv.id ? EXERCISE_LIBRARY[mv.id] : null;
+    const tags = guessTagsFromLibrary(mv.name) || {};
+    const lib = tags.exerciseId ? EXERCISE_LIBRARY[tags.exerciseId] : null;
     return { name: mv.name, area: lib ? lib.area : '', secondaryArea: lib ? lib.secondaryArea : '',
-      movement: lib ? lib.movement : '', exerciseId: mv.id || null, sets: 1, repLow: null, repHigh: null,
+      movement: mv.movement || (lib ? lib.movement : ''), exerciseId: tags.exerciseId || null, sets: 1, repLow: null, repHigh: null,
       dose: mv.dose, isConditioning: true };
   });
+  const detail = condDetail(o, moves.map(m=>({ ...m })));
+  detail.note = FINISHER_NOTE + ' Write your rounds in the notes.';
   return { type:'strength', details:{ workoutTag:'metcon', plannedFocus:'general', blockType: blockType || null,
-    metcon: { format: m.format, minutes: m.minutes, title: m.title, note: FINISHER_NOTE + ' Write your rounds in the notes.' },
-    exercises, notes: 'Metcon — ' + m.title } };
+    metcon: detail, exercises, notes: (o.bm ? 'Benchmark — ' : 'Metcon — ') + o.t } };
 }
+/* RESULTS AND BENCHMARKS. A result is one small record per day and workout. */
+async function listCondResults(){
+  const out = [];
+  try{
+    const r = await window.storage.list('condresult:');
+    for(const k of ((r && r.keys) || [])){ try{ out.push(JSON.parse((await window.storage.get(k)).value)); } catch(e){} }
+  } catch(e){}
+  return out.filter(x=> x && x.key && x.date).sort((a, b)=> a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0));
+}
+async function saveCondResult(rec){
+  const full = { ...rec, at: Date.now() };
+  await window.storage.set(`condresult:${full.date}:${full.key}`, JSON.stringify(full));
+  try{ if(typeof refreshCharge === 'function') refreshCharge(); } catch(e){}
+  return full;
+}
+async function lastCondResult(key, beforeDate){
+  const all = (await listCondResults()).filter(x=> x.key === key && (!beforeDate || x.date < beforeDate));
+  return all.length ? all[all.length - 1] : null;
+}
+async function benchmarkState(){
+  const all = (await listCondResults()).filter(x=> COND_BY_KEY[x.key] && COND_BY_KEY[x.key].bm);
+  let planned = null;
+  try{ planned = JSON.parse((await window.storage.get('settings:benchmarkPlanned')).value); } catch(e){}
+  const dates = all.map(x=> x.date).concat(planned && planned.date ? [planned.date] : []).sort();
+  return { results: all, planned, lastDate: dates.length ? dates[dates.length - 1] : null };
+}
+function nextBenchmarkKey(results){
+  if(!results.length) return BENCHMARK_ORDER[0];
+  const lastKey = results[results.length - 1].key;
+  const n = results.filter(x=> x.key === lastKey).length;
+  if(n < BENCHMARK_RESULTS_BEFORE_NEXT) return lastKey;
+  const i = BENCHMARK_ORDER.indexOf(lastKey);
+  return BENCHMARK_ORDER[(i + 1) % BENCHMARK_ORDER.length];
+}
+/* Is a benchmark due on `date`? Only for someone who has been training (six sessions in the
+   last four weeks), never on a deload week, and not when one was done or is already planned
+   within the last 28 days. */
+async function benchmarkDueOn(date){
+  try{
+    if(await isDeloadWeek(date)) return null;
+    const st = await benchmarkState();
+    if(st.lastDate && condDaysBetween(st.lastDate, date) < BENCHMARK_EVERY_DAYS) return null;
+    const from = shiftDateStr(date, -28);
+    const n = (await getAllTrainingSessions()).filter(sn=> sn && sn.date >= from && sn.date < date).length;
+    if(n < 6) return null;
+    return { key: nextBenchmarkKey(st.results) };
+  } catch(e){ return null; }
+}
+async function markBenchmarkPlanned(date, key){
+  try{ await window.storage.set('settings:benchmarkPlanned', JSON.stringify({ date, key })); } catch(e){}
+}
+
 // Round days in this run of dates, from today on.
 
 // The block type in force for the week containing `date`. An override only counts for the
@@ -42357,7 +42450,7 @@ async function generateStrengthProgram(sessionsPerWeek, splitType, includeBullet
     const finisherFits = finishersWanted && sessionLength >= FINISHER_MIN_SESSION
       && blockPhase !== 'deload' && !powerLeadIsPrimary && !exercises.some(e=>e.isPowerLead)
       && !comboDates.has(date) && !roundEve;
-    const finisher = finisherFits ? pickFinisher(tag, finisherIdx++, equipmentPrefs.bodyweightAll, injuryMovementFlags) : null;
+    const finisher = finisherFits ? pickFinisher(tag, Math.floor(localDateFrom(date).getTime() / (7*24*60*60*1000)) * 3 + (finisherIdx++), equipmentPrefs.bodyweightAll, injuryMovementFlags, sessionLength >= 75 ? 10 : sessionLength >= 60 ? 8 : 7) : null;
     const liftBudget = sessionLength - (finisher ? finisher.minutes : 0);
     let supersetPairs = 0, dropSetCount = 0;
     let preEstimate = estimateSessionDuration({ type:'strength', details:{ exercises, plannedFocus } }, null, personalSets, sessionLength);
@@ -43413,15 +43506,33 @@ function planRow(name, dose, lines, opts){
    with its own dose. No sets × reps @ kg — that notation means nothing against a clock. */
 function conditioningHtml(c, heading){
   const rows = (c.moves || []).map(m => planRow(m.name || '', m.dose || ''));
-  return `<div class="log-title gutter-inset df-title" style="margin-top:16px;">${dfIcon(heading === 'Metcon' ? 'metcon' : 'finisher', 16)}${heading} \u00b7 ${c.format} ${c.minutes} min</div>`
+  const bm = c.benchmark ? ' <span class="cond-bm">BENCHMARK</span>' : '';
+  const more = (c.scoring || c.scaleDown || c.scaleUp)
+    ? `<details class="cond-more"><summary>How hard, how to score it, how to scale it</summary>`
+      + `<p>Effort ${c.rpe || '?'} out of 10 \u00b7 recovery cost ${({ l:'low', m:'medium', h:'high' })[c.recovery] || c.recovery || 'medium'}${c.grade ? ` \u00b7 evidence for the method: ${COND_GRADE[c.grade] || c.grade}` : ''}</p>`
+      + (c.scoring ? `<p><b>Score it:</b> ${escapeHtmlLite(c.scoring)}</p>` : '')
+      + (c.scaleDown ? `<p><b>Easier:</b> ${escapeHtmlLite(c.scaleDown)}</p>` : '')
+      + (c.scaleUp ? `<p><b>Harder:</b> ${escapeHtmlLite(c.scaleUp)}</p>` : '')
+      + `</details>` : '';
+  const last = c.last ? `<div class="score-note">${c.benchmark ? 'Last time you did this one' : 'Last result'}: ${escapeHtmlLite(c.last.score || 'logged')}${c.last.rpe ? ` \u00b7 effort ${c.last.rpe}` : ''} (${c.last.date})</div>` : '';
+  const btn = c.key ? `<button type="button" class="cond-log" data-key="${c.key}" data-date="${c.date || todayStr}">${c.done ? 'Result saved \u00b7 change it' : 'Log result'}</button>` : '';
+  return `<div class="log-title gutter-inset df-title" style="margin-top:16px;">${dfIcon(heading === 'Metcon' ? 'metcon' : 'finisher', 16)}${heading}${bm} \u00b7 ${c.format} ${c.minutes} min</div>`
     + `<div class="plan-list">${planRow(c.title, '')}${rows.join('')}</div>`
-    + (c.note ? `<div class="score-note">${c.note}</div>` : '');
+    + (c.note ? `<div class="score-note">${c.note}</div>` : '') + more + last + btn;
+}
+async function withCondState(c, date){
+  if(!c || !c.key) return c;
+  const d = date || todayStr;
+  let done = false, last = null;
+  try{ done = !!(await window.storage.get(`condresult:${d}:${c.key}`)); } catch(e){}
+  try{ last = await lastCondResult(c.key, d); } catch(e){}
+  return { ...c, last, done, date: d };
 }
 async function blockSummaryHtml(block){
   const isDeload = await isDeloadWeek(todayStr);
   if(block.type==='strength' && block.details && block.details.metcon){
     const m = block.details.metcon;
-    return conditioningHtml({ ...m, moves: (block.details.exercises || []).map(e=>({ name:e.name, dose:e.dose })) }, 'Metcon');
+    return conditioningHtml(await withCondState({ ...m, moves: (block.details.exercises || []).map(e=>({ name:e.name, dose:e.dose })) }), 'Metcon');
   }
   if(block.type==='strength'){
     const exercises = block.details.exercises||[];
@@ -43597,7 +43708,7 @@ async function blockSummaryHtml(block){
         + (block.details.cooldownNote ? `<div class="score-note">${block.details.cooldownNote}</div>` : '');
     }
     // After the lifting and before the cool-down: the last hard thing, then the range work.
-    const finHtml = block.details.finisher ? conditioningHtml(block.details.finisher, 'Finisher') : '';
+    const finHtml = block.details.finisher ? conditioningHtml(await withCondState(block.details.finisher), 'Finisher') : '';
     return `<div class="plan-list">${rows.join('')}</div>` + finHtml + coolHtml;
   }
   if(block.type==='run'){
@@ -48964,6 +49075,27 @@ loadGoalProfile().then(async ()=>{
     rA.innerHTML='<span class="ri"><svg viewBox="0 0 24 24" aria-hidden="true">'+IC.bolt+'</svg></span><span class="rt"><b></b><i></i></span>';
     var rK=mk2('layers'); rK.querySelector('.ri svg').innerHTML=IC.layers;
     rK.addEventListener('click',function(){ var t=document.querySelector('.tab[data-tab="injuries"]'); if(t&&typeof activateTabViaUi==='function') activateTabViaUi(t); });
+    /* Today's finisher or metcon, as a row of its own: the old plan that carries it is hidden here. */
+    var rF=mk2('heart'); rF.hidden=true; rowsCard.insertBefore(rF,rC);
+    var cpan=document.createElement('div'); cpan.className='s2-condpanel'; cpan.hidden=true; rowsCard.insertBefore(cpan,rC);
+    rF.addEventListener('click',function(){ cpan.hidden=!cpan.hidden; rF.setAttribute('aria-expanded',cpan.hidden?'false':'true'); });
+    var condSig='';
+    async function condRow(){
+      try{
+        var found=[];
+        for(var q=0;q<2;q++){ var sl=q?'pm':'am'; var blk=null; try{ blk=JSON.parse((await window.storage.get('weekplan:'+todayStr+':'+sl)).value); }catch(e){}
+          if(blk&&blk.details){ if(blk.details.metcon&&blk.details.metcon.key) found.push({c:blk.details.metcon,h:'Metcon',ex:blk.details.exercises}); if(blk.details.finisher&&blk.details.finisher.key) found.push({c:blk.details.finisher,h:'Finisher'}); } }
+        var emptyDay=!!(window.__s2hero&&window.__s2hero.getAttribute('data-empty'));
+        if(!found.length||emptyDay){ rF.hidden=true; cpan.hidden=true; condSig=''; return; }
+        var f=found[0], c=f.c, done=false; try{ done=!!(await window.storage.get('condresult:'+todayStr+':'+c.key)); }catch(e){}
+        var sig=c.key+'|'+done+'|'+found.length; if(sig===condSig) return; condSig=sig;
+        rF.hidden=false; rF.querySelector('b').textContent=(c.benchmark?'Benchmark · ':f.h+' · ')+(c.name||c.title); rF.querySelector('i').textContent=c.format+' · '+(done?'result saved':'tap for the details and to log it'); rF.querySelector('.rm').textContent=c.minutes+' min'; rF.querySelector('.rm').style.display='';
+        var html='';
+        for(var j=0;j<found.length;j++){ var g=found[j], cc=g.c; if(g.ex) cc=Object.assign({},cc,{moves:g.ex.map(function(e){ return {name:e.name,dose:e.dose}; })}); html+=conditioningHtml(await withCondState(cc,todayStr),g.h); }
+        cpan.innerHTML=html;
+      }catch(e){}
+    }
+    setInterval(condRow,2500); setTimeout(condRow,900);
     var rO=document.createElement('button'); rO.type='button'; rO.className='s2-row'; rO.innerHTML='<span class="ri"><svg viewBox="0 0 24 24" aria-hidden="true">'+IC.sliders+'</svg></span><span class="rt"><b>Change today’s plan</b><i>Move it, skip it, swap it or plan the week</i></span><span class="rc">'+CH+'</span>'; rowsCard.appendChild(rO);
     var opts=document.createElement('div'); opts.className='s2-opts'; rowsCard.appendChild(opts);
     function buildOpts(){
@@ -49759,6 +49891,48 @@ loadGoalProfile().then(async ()=>{
         });
       });
     };
+    /* LOG A FINISHER OR METCON RESULT: a score in the words of that workout, and how hard it was. */
+    window.__s3cond=async function(key,date,btn){
+      var it=COND_BY_KEY[key]; if(!it) return; var d=date||todayStr, prev=null;
+      try{ prev=JSON.parse((await window.storage.get('condresult:'+d+':'+key)).value); }catch(e){}
+      var last=null; try{ last=await lastCondResult(key,d); }catch(e){}
+      var rpe=prev&&prev.rpe||null;
+      var h='<p class="s3-p"><b>'+esc(it.n)+'</b>'+(it.bm?' (benchmark)':'')+'. '+esc(it.t)+'.</p>'
+        +(last?'<p class="s3-p">Last time: '+esc(last.score||'logged')+(last.rpe?', effort '+last.rpe:'')+' ('+esc(last.date)+').</p>':'')
+        +'<label class="s3-f"><span>Your score</span><input id="s3cScore" type="text" maxlength="60" autocomplete="off" placeholder="'+esc(it.sc.split(';')[0])+'" value="'+esc(prev&&prev.score||'')+'"></label>'
+        +'<div class="s3-f"><span>How hard was it? (10 is everything you had)</span></div><div class="s3-picks" id="s3cRpe">'+[5,6,7,8,9,10].map(function(n){ return '<button type="button" class="s3-pick'+(n===rpe?' sel':'')+'" data-r="'+n+'">'+n+'</button>'; }).join('')+'</div>'
+        +'<button type="button" class="s3-save">Save result</button>';
+      openSheet(it.bm?'Benchmark result':'Log your result',h,function(sh){
+        sh.addEventListener('click',function(e){
+          var rb=e.target.closest('[data-r]'); if(rb){ rpe=+rb.dataset.r; [].forEach.call(sh.querySelectorAll('#s3cRpe .s3-pick'),function(x){ x.classList.toggle('sel',x===rb); }); return; }
+          if(e.target.closest('.s3-save')){
+            var sc=(sh.querySelector('#s3cScore').value||'').trim();
+            saveCondResult({date:d,key:key,kind:it.kind,bm:!!it.bm,score:sc,rpe:rpe}).then(function(){
+              closeSheet(); try{ showToast('Result saved.'); }catch(x){} if(btn) btn.textContent='Result saved \u00b7 change it';
+              [].forEach.call(document.querySelectorAll('.cond-log[data-key="'+key+'"][data-date="'+d+'"]'),function(b2){ b2.textContent='Result saved \u00b7 change it'; });
+            });
+          }
+        });
+      });
+    };
+    document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('.cond-log'); if(b) window.__s3cond(b.dataset.key,b.dataset.date,b); });
+    /* On the Session done card: a button for today's finisher or metcon, if there was one. */
+    (function(){
+      var host=document.getElementById('sessionCompleteCard'); if(!host) return; var busy=false;
+      async function addButtons(){
+        if(busy||host.querySelector('.cond-done')) return; busy=true;
+        try{
+          var found=[];
+          for(var q=0;q<2;q++){ var sl=q?'pm':'am'; var blk=null; try{ blk=JSON.parse((await window.storage.get('weekplan:'+todayStr+':'+sl)).value); }catch(e){}
+            if(blk&&blk.details){ if(blk.details.metcon&&blk.details.metcon.key) found.push(blk.details.metcon); if(blk.details.finisher&&blk.details.finisher.key) found.push(blk.details.finisher); } }
+          if(!found.length||!host.firstChild){ return; }
+          var w=document.createElement('div'); w.className='cond-done';
+          w.innerHTML=found.map(function(c){ return '<button type="button" class="cond-log" data-key="'+c.key+'" data-date="'+todayStr+'">Log result: '+esc(c.name||c.title)+'</button>'; }).join('');
+          host.appendChild(w);
+        } finally { busy=false; }
+      }
+      new MutationObserver(function(){ addButtons(); }).observe(host,{childList:true});
+    })();
     window.__s3on=function(name){ if(name==='fuel') fuelLoad(); else if(name==='recover'){ R.slept=0; recLoad(); } };
   })();
   /* ---------- the Body guide: every muscle group and sub-group, with what the research says ---------- */
