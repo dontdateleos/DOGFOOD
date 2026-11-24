@@ -14910,7 +14910,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.24.075';
+const APP_VERSION = '2026.11.24.076';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15306,6 +15306,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.24.076': 'Connects to Apple Health for food, protein and water, and a weigh-in on the Fuel tab. Open Fuel and tap Apple Health to allow it.',
   '2026.11.24.075': 'Energy availability, body trend with a goal, training against sleep, and targets you can change.',
   '2026.11.23.074': 'Sleep, fuel and hydration scores on the Fuel and Recover tabs. Running well behind on food or water now takes a few points off Charge.',
   '2026.11.23.073': 'A new, cleaner zebra on Settings, with its own build-in and blink.',
@@ -16027,7 +16028,7 @@ function tzLog(){ try{ return JSON.parse(localStorage.getItem(TZ_LOG_KEY) || '{}
 const NATIVE_HEALTH_KEY = 'settings:nativeHealth';
 const NATIVE_HEALTH_LAST_KEY = 'settings:nativeHealthLastSync';
 const NATIVE_HEALTH_AUTH_KEY = 'settings:nativeHealthAuth';
-const NATIVE_HEALTH_AUTH_V = '4';   // bump when HealthBridge reads a new type (3: weight, body fat; 4: VO2 max)
+const NATIVE_HEALTH_AUTH_V = '5';   // bump when HealthBridge reads a new type (3: weight, body fat; 4: VO2 max; 5: food, protein, water)
 function nativeHealthOn(){ try{ return localStorage.getItem(NATIVE_HEALTH_KEY) === 'on'; } catch(e){ return false; } }
 async function connectNativeHealth(){
   if(!NativeHealth) return { error: 'not-native' };
@@ -16116,6 +16117,8 @@ async function syncNativeHealthOnce(days){
       // Runs Health saw that day, kept on the day for now rather than logged as sessions:
       // auto-logging would double anything you log yourself.
       if(Array.isArray(d.runs) && d.runs.length) own('appleRuns', d.runs);
+      // Food and water a food app wrote to Health, kept on that day's Fuel record.
+      try{ await mergeHealthFuel(d); } catch(e){}
       if(Object.keys(fill).length){
         await window.storage.set(keyFor(d.date), JSON.stringify({ ...existing, ...fill, date: d.date }));
         changed.push(d.date);
@@ -16160,6 +16163,21 @@ async function syncNativeHealthOnce(days){
   } catch(e){
     return { error: (e && e.message) || 'read failed', synced: 0, dates: [] };
   }
+}
+/* FOOD AND WATER FROM APPLE HEALTH. MyFitnessPal and other food apps write calories, protein
+   and water to Health; the day's totals are kept on that day's Fuel record as `health`, next to
+   whatever was logged by hand. The two are never added: when meals were logged by hand those
+   are used, otherwise Health's totals, and for water the larger of the two. Adding them would
+   count a meal twice for anyone who logs in both places. */
+async function mergeHealthFuel(d){
+  const kcal = typeof d.dietaryKcal === 'number' ? d.dietaryKcal : 0, p = typeof d.dietaryProteinG === 'number' ? d.dietaryProteinG : 0, w = typeof d.dietaryWaterMl === 'number' ? d.dietaryWaterMl : 0;
+  if(!(kcal > 0) && !(w > 0)) return;
+  let rec = null; try{ rec = JSON.parse((await window.storage.get('fuel:' + d.date)).value); } catch(e){}
+  rec = rec || { meals: [], water: 0, energy: null };
+  const h = rec.health;
+  if(h && h.cal === kcal && h.p === p && h.waterMl === w) return;
+  rec.health = { cal: kcal, p, waterMl: w, at: Date.now() };
+  await window.storage.set('fuel:' + d.date, JSON.stringify(rec));
 }
 /* RUNS FROM APPLE HEALTH BECOME LOGGED RUNS. A Garmin run reached Health and the day's record
    (appleRuns) but never the training log, so it missed the week's board, the plan's "done",
@@ -20359,6 +20377,16 @@ async function computeCharge(sr, opts){
    to learn from. */
 const PILLAR_FUEL_MAX = 8, PILLAR_WATER_MAX = 5, PILLAR_EA_MAX = 6;
 function pillarClamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+function fuelEffective(rec){
+  rec = rec || {};
+  const meals = Array.isArray(rec.meals) ? rec.meals : [], h = rec.health || null;
+  const useHealth = meals.length === 0 && !!h && h.cal > 0;
+  const cal = useHealth ? h.cal : meals.reduce((s, m)=> s + (+m.cal || 0), 0);
+  const hasProtein = useHealth ? h.p > 0 : meals.some(m=> m.p != null && m.p !== '');
+  const protein = useHealth ? (h.p || 0) : meals.reduce((s, m)=> s + (+m.p || 0), 0);
+  const water = Math.max(+rec.water || 0, h && h.waterMl > 0 ? h.waterMl : 0);
+  return { mealCount: useHealth ? 0 : meals.length, cal, protein, hasProtein, water, source: useHealth ? 'health' : 'manual', logged: cal > 0 || water > 0 };
+}
 async function pillarFuelTargets(day){
   const t = { cal: 2450, water: 3000, protein: 130, meals: 3, weight: null };
   try{
@@ -20374,10 +20402,8 @@ async function pillarScoresFor(day, atMs){
                 calR: null, proteinR: null, waterR: null, energy: null, protScore: null, fuel: null, hydration: null, sleep: null, sleepHrs: null };
   let rec = null; try{ rec = JSON.parse((await window.storage.get('fuel:' + d)).value); } catch(e){}
   rec = rec || { meals: [], water: 0 };
-  const meals = Array.isArray(rec.meals) ? rec.meals : [];
-  out.meals = meals.length; out.cal = meals.reduce((s, m)=> s + (+m.cal || 0), 0);
-  out.hasProtein = meals.some(m=> m.p != null && m.p !== ''); out.protein = meals.reduce((s, m)=> s + (+m.p || 0), 0);
-  out.water = +rec.water || 0; out.logged = meals.length > 0 || out.water > 0;
+  const fe = fuelEffective(rec);
+  out.meals = fe.mealCount; out.cal = fe.cal; out.hasProtein = fe.hasProtein; out.protein = fe.protein; out.water = fe.water; out.logged = fe.logged; out.source = fe.source;
   if(d === todayStr){
     const now = new Date(atMs || Date.now()); const h = now.getHours() + now.getMinutes() / 60;
     out.frac = pillarClamp((h - 7) / 14, 0, 1); out.early = out.frac < 0.25;
@@ -20477,9 +20503,9 @@ async function pillarEnergyAvail(day){
   if(!w){ out.reason = 'weight'; return out; }
   if(!bf){ out.reason = 'bodyfat'; return out; }
   let rec = null; try{ rec = JSON.parse((await window.storage.get('fuel:' + day)).value); } catch(e){}
-  const meals = rec && Array.isArray(rec.meals) ? rec.meals : [];
-  out.cal = meals.reduce((s, m)=> s + (+m.cal || 0), 0);
-  if(meals.length < 2 || out.cal < 800){ out.reason = 'meals'; return out; }
+  const fe = fuelEffective(rec);
+  out.cal = fe.cal;
+  if((fe.source === 'manual' && fe.mealCount < 2) || out.cal < 800){ out.reason = 'meals'; return out; }
   let sessions = []; try{ sessions = (await getAllTrainingSessions()).filter(sn=> sn && sn.date === day); } catch(e){}
   out.eee = Math.round(sessions.reduce((s, sn)=> s + pillarSessionKcal(sn, w.w), 0));
   out.ffm = w.w * (1 - bf.bf / 100);
@@ -49289,16 +49315,16 @@ loadGoalProfile().then(async ()=>{
       }finally{ F.busy=false; }
       fuelPaint();
     }
-    function fcal(d){ return (d.meals||[]).reduce(function(s,m){ return s+(+m.cal||0); },0); }
+    function fcal(d){ return fuelEffective(d).cal; }
     var EN={low:['Low',1],ok:['Okay',2],high:['High',3]};
     function fuelPaint(){
-      if(!fp) return; var d=F.d, cal=fcal(d), meals=d.meals.length, water=d.water||0, c=fp.__st.c;
+      if(!fp) return; var d=F.d, fe=fuelEffective(d), cal=fe.cal, meals=fe.mealCount, water=fe.water, fromH=fe.source==='health', c=fp.__st.c;
       var hero, frac=Math.min(1,Math.max(0,(new Date().getHours()-7)/14));
       if(c==='hydration') hero={t:'Water',m:(F.t.water/1000).toFixed(1)+' L',art:svg(IC.drop,'big'),go:'Add water',act:function(){ waterSheet(); }};
       else if(c==='energy') hero={t:'Energy',m:d.energy?EN[d.energy][0]:'Not logged',art:svg(IC.bolt,'big'),go:'Log it',act:function(){ energySheet(); }};
       else hero={t:'Fuel target',m:'~'+num(F.t.cal)+' cal',art:'<img alt="" src="shell/card_bowl.webp">',go:'Log meal',act:function(){ mealSheet(); }};
       var status;
-      if(!meals&&!water&&!d.energy) status={t:'Nothing logged yet',p:'Log a meal or some water and this fills in.',k:'',ic:IC.fork};
+      if(!cal&&!water&&!d.energy) status={t:'Nothing logged yet',p:'Log a meal or some water and this fills in.',k:'',ic:IC.fork};
       else if(F.p&&F.p.early) status={t:'Good start',p:'Your scores fill in as the day goes on.',k:'good',ic:IC.bolt};
       else if(cal>=F.t.cal*.9&&water>=F.t.water*.9) status={t:'Target hit',p:'You have eaten and drunk what you aimed for today.',k:'good',ic:IC.bolt};
       else if(cal>=F.t.cal*frac*.8&&water>=F.t.water*frac*.6) status={t:'On track',p:'You are meeting your fuel target today.',k:'good',ic:IC.bolt};
@@ -49311,14 +49337,15 @@ loadGoalProfile().then(async ()=>{
       var btSub=(BT&&BT.pct!=null)?((BT.pct>0?'+':'')+BT.pct.toFixed(2)+'% a week · goal: '+goalWord):('Needs four weigh-ins over ten days · goal: '+goalWord);
       var scSub=sc!=null?('Calories '+Math.round(P.calR*100)+'% of what you need by now'+(P.hasProtein?' · Protein '+Math.round(P.proteinR*100)+'%':'')):(P&&P.early?'Fills in as the day goes on':'Log a meal and it shows here');
       var rows=rowHTML(IC.bolt,'Fuel score',scSub,'<span class="rm">'+(sc==null?'-':sc)+'</span>',' data-r="score"')
-        +rowHTML(IC.fork,'Meals logged',meals+' of '+F.t.meals+' meals'+(cal?' · '+num(cal)+' cal':''),'<span class="rm">'+meals+'/'+F.t.meals+'</span>',' data-r="meal"')
+        +rowHTML(IC.fork,fromH?'Food from Apple Health':'Meals logged',fromH?(num(cal)+' cal today'):(meals+' of '+F.t.meals+' meals'+(cal?' · '+num(cal)+' cal':'')),'<span class="rm">'+(fromH?'Health':meals+'/'+F.t.meals)+'</span>',' data-r="meal"')
         +rowHTML(IC.fork,'Protein',(P&&P.hasProtein)?(Math.round(P.protein)+' of '+F.t.protein+' g'):'Add grams when you log a meal','<span class="rm">'+((P&&P.hasProtein)?Math.round(P.protein/F.t.protein*100)+'%':'-')+'</span>',' data-r="meal"')
         +rowHTML(IC.drop,'Hydration',(water/1000).toFixed(1)+' of '+(F.t.water/1000).toFixed(1)+' L','<span class="rm">'+(hy!=null?hy:(water/1000).toFixed(1)+' L')+'</span>',' data-r="water"')
         +rowHTML(IC.bolt,'Energy',e?e[0]:'Tap to log',bar,' data-r="energy"')
         +rowHTML(IC.bolt,'Energy availability',eaSub,'<span class="rm">'+(EA&&EA.ea!=null?EA.ea:'-')+'</span>',' data-r="ea"')
         +rowHTML(IC.scale,'Body trend',btSub,'<span class="rm">'+(BT&&BT.score!=null?BT.score:'-')+'</span>',' data-r="body"')
+        +(HEALTH_NATIVE()?rowHTML(IC.bolt,'Apple Health',(nativeHealthOn()?'Connected. Food, water and weight come in from Health.':'Connect to bring in food, water and weight.'),'<span class="rm">'+(nativeHealthOn()?'On':'Connect')+'</span>',' data-r="health"'):'')
         +rowHTML(IC.target,'Your targets',num(F.t.cal)+' cal · '+F.t.protein+' g protein · '+(F.t.water/1000).toFixed(1)+' L water','',' data-r="targets"');
-      var days=weekDays(), labels=days.map(dayLetter), cals=F.wk.map(fcal), ws=F.wk.map(function(x){ return (x.water||0)/1000; });
+      var days=weekDays(), labels=days.map(dayLetter), cals=F.wk.map(fcal), ws=F.wk.map(function(x){ return fuelEffective(x).water/1000; });
       var logged=cals.filter(function(v){ return v>0; }), avg=logged.length?logged.reduce(function(a,b){ return a+b; },0)/logged.length:0;
       var week='<div class="wk-h"><b>Calories</b><span>'+(logged.length?'Average '+num(avg)+' cal on '+logged.length+' logged day'+(logged.length>1?'s':''):'Nothing logged this week')+'</span></div>'
         +bars(cals,labels,F.t.cal,num)+'<div class="wk-h"><b>Water</b><span>Litres per day</span></div>'+bars(ws,labels,F.t.water/1000,function(v){ return v.toFixed(1); },'w');
@@ -49334,11 +49361,36 @@ loadGoalProfile().then(async ()=>{
       }[kind];
       openSheet(T[0],T[1]);
     }
+    function HEALTH_NATIVE(){ try{ return typeof NativeHealth!=='undefined' && !!NativeHealth; }catch(e){ return false; } }
+    function healthConnect(){
+      var go=nativeHealthOn()?syncNativeHealth(30):connectNativeHealth();
+      try{ showToast('Checking Apple Health...'); }catch(x){}
+      Promise.resolve(go).then(function(r){
+        try{ showToast(r&&r.error?'Could not read Apple Health.':(nativeHealthOn()?'Apple Health is up to date.':'Apple Health is on.')); }catch(x){}
+        fuelLoad(); paintRows();
+      }).catch(function(){ try{ showToast('Could not read Apple Health.'); }catch(x){} });
+    }
+    function paintRows(){ try{ fuelPaint(); }catch(e){} }
     function bodySheet(){
       var cur=F.bt?F.bt.goal:'maintain', tr=(F.bt&&F.bt.pct!=null)?('Your weight is moving '+(F.bt.pct>0?'+':'')+F.bt.pct.toFixed(2)+'% a week ('+(F.bt.kg>0?'+':'')+F.bt.kg.toFixed(2)+' kg).'):'Log your weight at least four times over ten days and the trend shows here.';
       openSheet('Body goal','<p class="s3-p">'+tr+'</p><p class="s3-p">The score is 100 when you are moving at the right pace for your goal: losing 0.4 to 1% a week, staying within 0.25%, or gaining 0.1 to 0.5%.</p><div class="s3-picks">'
-        +['lose','maintain','gain'].map(function(g){ return '<button type="button" class="s3-pick'+(g===cur?' sel':'')+'" data-g="'+g+'">'+({lose:'Lose',maintain:'Stay',gain:'Gain'}[g])+'</button>'; }).join('')+'</div>',function(s){
-        s.addEventListener('click',function(e){ var b=e.target.closest('[data-g]'); if(!b) return; window.storage.set('settings:bodyGoal',JSON.stringify({dir:b.dataset.g})).catch(function(){}).then(function(){ fuelLoad(); closeSheet(); }); });
+        +['lose','maintain','gain'].map(function(g){ return '<button type="button" class="s3-pick'+(g===cur?' sel':'')+'" data-g="'+g+'">'+({lose:'Lose',maintain:'Stay',gain:'Gain'}[g])+'</button>'; }).join('')+'</div>'
+        +'<label class="s3-f"><span>Weigh in today, in kg</span><input id="s3wKg" type="number" inputmode="decimal" step="0.1" min="30" max="300" placeholder="80.5"></label>'
+        +'<label class="s3-f"><span>Body fat in % (optional)</span><input id="s3wBf" type="number" inputmode="decimal" step="0.1" min="3" max="60" placeholder="18"></label>'
+        +'<button type="button" class="s3-save" data-weigh="1">Save weigh-in</button>',function(s){
+        s.addEventListener('click',function(e){
+          if(e.target.closest('[data-weigh]')){
+            var kg=parseFloat(s.querySelector('#s3wKg').value), bf=parseFloat(s.querySelector('#s3wBf').value);
+            if(!(kg>=30&&kg<=300)){ s.querySelector('#s3wKg').focus(); return; }
+            (async function(){
+              var prev=null; try{ prev=await getLatestBodyMetrics(todayStr); }catch(x){}
+              var rec={date:todayStr,height:(prev&&prev.height)||null,weight:Math.round(kg*10)/10,bodyFat:(bf>=3&&bf<=60)?Math.round(bf*10)/10:((prev&&prev.bodyFat)||null),source:'manual'};
+              await window.storage.set('bodymetrics:'+todayStr,JSON.stringify(rec)); try{ invalidateBodyweightTimeline(); }catch(x){}
+              fuelLoad(); closeSheet(); try{ showToast('Weigh-in saved.'); }catch(x){}
+            })();
+            return;
+          }
+          var b=e.target.closest('[data-g]'); if(!b) return; window.storage.set('settings:bodyGoal',JSON.stringify({dir:b.dataset.g})).catch(function(){}).then(function(){ fuelLoad(); closeSheet(); }); });
       });
     }
     function targetsSheet(){
@@ -49383,7 +49435,7 @@ loadGoalProfile().then(async ()=>{
     }
     if(fp){
       fp.__st=wire(fp,function(){ fuelPaint(); }); clickHero(fp);
-      fp.querySelector('.s3-rows').addEventListener('click',function(e){ var b=e.target.closest('.s3-row'); if(!b) return; var r=b.dataset.r; if(r==='meal') mealSheet(); else if(r==='water') waterSheet(); else if(r==='score') scoreSheet('fuel'); else if(r==='ea') scoreSheet('ea'); else if(r==='body') bodySheet(); else if(r==='targets') targetsSheet(); else energySheet(); });
+      fp.querySelector('.s3-rows').addEventListener('click',function(e){ var b=e.target.closest('.s3-row'); if(!b) return; var r=b.dataset.r; if(r==='meal') mealSheet(); else if(r==='water') waterSheet(); else if(r==='score') scoreSheet('fuel'); else if(r==='ea') scoreSheet('ea'); else if(r==='body') bodySheet(); else if(r==='targets') targetsSheet(); else if(r==='health') healthConnect(); else energySheet(); });
     }
 
     /* =========================== RECOVER =========================== */

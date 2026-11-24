@@ -55,7 +55,8 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         var types = Set<HKObjectType>()
         let ids: [HKQuantityTypeIdentifier] = [
             .heartRate, .restingHeartRate, .respiratoryRate, .stepCount, .activeEnergyBurned,
-            .bodyMass, .bodyFatPercentage, .vo2Max
+            .bodyMass, .bodyFatPercentage, .vo2Max,
+            .dietaryEnergyConsumed, .dietaryProtein, .dietaryWater
         ]
         for id in ids {
             if let t = HKObjectType.quantityType(forIdentifier: id) { types.insert(t) }
@@ -159,6 +160,16 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
             }
             sum(.activeEnergyBurned, HKUnit.kilocalorie(), dayStart, dayEnd, group) { total in
                 if let total = total { set(key, "activeCalories", Int(total.rounded())) }
+            }
+            // What was eaten and drunk that day, as MyFitnessPal and other food apps write it to Health.
+            sum(.dietaryEnergyConsumed, HKUnit.kilocalorie(), dayStart, dayEnd, group) { total in
+                if let total = total, total > 0 { set(key, "dietaryKcal", Int(total.rounded())) }
+            }
+            sum(.dietaryProtein, HKUnit.gram(), dayStart, dayEnd, group) { total in
+                if let total = total, total > 0 { set(key, "dietaryProteinG", Int(total.rounded())) }
+            }
+            sum(.dietaryWater, HKUnit.literUnit(with: .milli), dayStart, dayEnd, group) { total in
+                if let total = total, total > 0 { set(key, "dietaryWaterMl", Int(total.rounded())) }
             }
             // The day's FIRST weigh-in: the morning one, before food and water move it.
             firstSample(.bodyMass, HKUnit.gramUnit(with: .kilo), dayStart, dayEnd, group) { v in
