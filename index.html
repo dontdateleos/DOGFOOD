@@ -6835,6 +6835,31 @@ html.s2 #s2nav button.on .ic img{ transform:scale(1.08); }
 #s3guide .g-exm{ margin-top:4px; font:600 13px var(--sans); color:#55554f; text-transform:capitalize; }
 #s3guide .g-exr{ margin-top:2px; font:700 13px var(--sans); }
 #s3guide .g-exn{ margin-top:3px; font:500 13px/1.4 var(--sans); color:#3d3d38; }
+#s3guide .g-rot{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin:14px 16px 0; padding:10px 14px; background:#FBF8F2; border:1.5px solid #E4DCCB; border-radius:18px; }
+#s3guide .g-rot span{ font:700 14px var(--sans); }
+#s3guide .g-rot > div{ display:flex; gap:6px; }
+#s3guide .g-rotb, #s3guide .g-pin{ all:unset; box-sizing:border-box; cursor:pointer; padding:6px 12px; min-height:34px; display:inline-flex; align-items:center; border:1.5px solid #DED6C6; border-radius:999px; background:#fff; font:700 13px var(--sans); color:#151515; }
+#s3guide .g-rotb.on, #s3guide .g-pin.on{ background:#151515; border-color:#151515; color:#fff; }
+#s3guide .g-pin{ margin-left:auto; min-height:30px; padding:4px 11px; }
+#s3guide .g-rotb::after, #s3guide .g-pin::after{ display:none; }
+#s3guide .g-rotb:focus-visible, #s3guide .g-pin:focus-visible{ outline:3px solid #0082FD; outline-offset:2px; }
+html.s2 body.tab-insights .s2-focus{ display:none; }
+html.s2 body.tab-insights:not(.s2-wk) .s2-focus{ all:unset; box-sizing:border-box; display:block; width:calc(100% - 32px); margin:12px 16px 0; padding:12px 16px; background:#FBF8F2; border:1.5px solid #E4DCCB; border-radius:18px; color:#151515; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+html.s2 body.tab-insights:not(.s2-wk) .s2-focus::after{ display:none; }
+.s2-focus b{ display:block; font:italic 800 22px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; }
+.s2-focus span{ display:block; margin-top:3px; font:700 14px/1.35 var(--sans); }
+.s2-focus i{ display:block; margin-top:3px; font:500 12px/1.3 var(--sans); font-style:normal; color:#55554f; }
+.s2-focus:focus-visible{ outline:3px solid #0082FD; outline-offset:2px; }
+.s3bit{ position:absolute; z-index:7; width:9px; height:14px; border-radius:2px; pointer-events:none; }
+.s3z{ position:absolute; z-index:7; font:italic 800 26px 'Barlow Condensed','Arial Narrow',sans-serif; color:#151515; pointer-events:none; opacity:0; }
+.s3-alts li{ align-items:flex-start; } .s3-alts li > span:first-child{ flex:1; min-width:0; } .s3-alts i{ display:block; } .s3-alts em{ display:flex; gap:4px; flex-wrap:wrap; margin-top:4px; font-style:normal; }
+.s3-alts .evidence-badge{ border-radius:999px; font:700 10px var(--sans); padding:2px 7px; }
+.s3-alts .evidence-badge.strong{ background:#151515; color:#fff; } .s3-alts .evidence-badge.moderate{ border:1.5px solid #151515; color:#151515; } .s3-alts .evidence-badge.practical{ border:1px solid #6a6a64; color:#55554f; }
+.s3-acts{ display:flex; flex-direction:column; gap:6px; flex:none; }
+.s3-use, .s3-pinb{ all:unset; box-sizing:border-box; cursor:pointer; text-align:center; min-width:72px; padding:7px 12px; border-radius:999px; font:700 13px var(--sans); border:1.5px solid #DED6C6; background:#fff; color:#151515; }
+.s3-use{ background:#151515; border-color:#151515; color:#fff; } .s3-pinb.on{ background:#C8F031; border-color:#151515; }
+.s3-use::after, .s3-pinb::after{ display:none; }
+.s3-use:focus-visible, .s3-pinb:focus-visible{ outline:3px solid #0082FD; outline-offset:2px; }
 /* SHELL2:END */
 </style>
 </head>
@@ -14956,7 +14981,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.24.078';
+const APP_VERSION = '2026.11.24.079';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15352,6 +15377,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.24.079': 'Slower sub-muscle rotation you can set, pin and swap exercises, the reference rep ranges in the plan, gentler Charge drains, piñata moves, and training and sleep streaks.',
   '2026.11.24.078': 'New exercise reference: 69 more exercises, sub-muscle rotation in the plan, and a second evidence grade beside the existing badge.',
   '2026.11.24.077': 'The strip at the very top now takes the banner colour, and the phone status bar follows it.',
   '2026.11.24.076': 'Connects to Apple Health for food, protein and water, and a weigh-in on the Fuel tab. Open Fuel and tap Apple Health to allow it.',
@@ -20418,12 +20444,12 @@ async function computeCharge(sr, opts){
      hydration  litres against 37 ml a kg, by now. 90% of that is 100.
 
    HOW THEY FEED CHARGE. Charge only ever goes down through the day, so these are drains and
-   never a boost: running well under on fuel takes up to 8 points, and well under on water up
-   to 5. Nothing is taken for a day you did not log at all (not logging is not the same as not
+   never a boost: running well under on fuel takes up to 5 points, and well under on water up
+   to 3. Nothing is taken for a day you did not log at all (not logging is not the same as not
    eating), nor before about 10:00, when "by now" is still a sliver of the day. The two caps
    are starting figures, in the same spirit as the other drains: small until the app has days
    to learn from. */
-const PILLAR_FUEL_MAX = 8, PILLAR_WATER_MAX = 5, PILLAR_EA_MAX = 6;
+const PILLAR_FUEL_MAX = 5, PILLAR_WATER_MAX = 3, PILLAR_EA_MAX = 4;
 function pillarClamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
 function fuelEffective(rec){
   rec = rec || {};
@@ -20479,13 +20505,13 @@ async function pillarDrains(day, atMs){
   const p = await pillarScoresFor(day, atMs);
   if(!p.early && p.logged){
     const fs = Math.max(0, 1 - p.calR);
-    if(fs > 0.1) parts.push({ label: 'low fuel', pts: Math.round(Math.min(PILLAR_FUEL_MAX, (fs - 0.1) * 16)) });
+    if(fs > 0.1) parts.push({ label: 'low fuel', pts: Math.round(Math.min(PILLAR_FUEL_MAX, (fs - 0.1) * 10)) });
     const ws = Math.max(0, 1 - p.waterR);
-    if(ws > 0.15) parts.push({ label: 'low water', pts: Math.round(Math.min(PILLAR_WATER_MAX, (ws - 0.15) * 10)) });
+    if(ws > 0.15) parts.push({ label: 'low water', pts: Math.round(Math.min(PILLAR_WATER_MAX, (ws - 0.15) * 6)) });
   }
   try{
     const ea = await pillarEnergyAvail(shiftDateStr(day, -1));
-    if(ea.ea != null && ea.ea < 30) parts.push({ label: 'underfuelled', pts: Math.round(Math.min(PILLAR_EA_MAX, (30 - ea.ea) / 4)) });
+    if(ea.ea != null && ea.ea < 30) parts.push({ label: 'underfuelled', pts: Math.round(Math.min(PILLAR_EA_MAX, (30 - ea.ea) / 6)) });
   } catch(e){}
   return parts.filter(x=> x.pts > 0);
 }
@@ -22126,6 +22152,27 @@ document.addEventListener('click', e=>{
   note.textContent = 'How well the research supports using this for a goal. Strong is consistent evidence from reviews, Moderate is some good trials, Limited is a sensible choice with little direct evidence for this exact exercise. It does not mean this one beats the others. ' + lines.join(' · ');
   badge.insertAdjacentElement('afterend', note);
 });
+/* HOW OFTEN THE SUB-GROUPS TURN, AND WHAT IS PINNED. Rotating every week is too fast to
+   progress anything: an exercise that returns once in five weeks cannot have load added to it.
+   So the turn changes every EXREF_ROTATION_WEEKS weeks (3 by default, 1 to 4 in the Body
+   guide), and the pick inside the turn changes at the same pace. Pinned exercises are the
+   ones you chose to keep: if an area has one among its candidates it takes the area's first
+   pick every week and the rotation pauses there. Both live in storage and are read once at
+   start; the picker reads the variables, because it is synchronous. */
+let EXREF_ROTATION_WEEKS = 3;
+let PINNED_EXERCISES = new Set();
+function rotationTurnIndex(weekIdx){ return Math.floor(weekIdx / Math.max(1, EXREF_ROTATION_WEEKS)); }
+async function loadRotationSettings(){
+  try{ const w = parseInt(JSON.parse((await window.storage.get('settings:rotationWeeks')).value), 10); if(w >= 1 && w <= 4) EXREF_ROTATION_WEEKS = w; } catch(e){}
+  try{ const p = JSON.parse((await window.storage.get('settings:pinnedExercises')).value); if(Array.isArray(p)) PINNED_EXERCISES = new Set(p.filter(id=> EXERCISE_LIBRARY[id])); } catch(e){}
+}
+async function setRotationWeeks(n){ EXREF_ROTATION_WEEKS = Math.max(1, Math.min(4, n | 0)); try{ await window.storage.set('settings:rotationWeeks', JSON.stringify(EXREF_ROTATION_WEEKS)); } catch(e){} }
+async function togglePinnedExercise(id){
+  if(PINNED_EXERCISES.has(id)) PINNED_EXERCISES.delete(id); else PINNED_EXERCISES.add(id);
+  try{ await window.storage.set('settings:pinnedExercises', JSON.stringify([...PINNED_EXERCISES])); } catch(e){}
+  return PINNED_EXERCISES.has(id);
+}
+setTimeout(()=>{ try{ loadRotationSettings(); } catch(e){} }, 0);
 /* Sub-groups of an area that have at least one exercise, for the rotation and for the guide. */
 function subGroupsOfArea(area, exIds){
   const ids = exIds || Object.keys(EXERCISE_LIBRARY);
@@ -27154,6 +27201,7 @@ async function openBlockEditor(date, slot, block){
              pass and the flinch selector all still find it — it is the same control, drawn. -->
         <span class="row-acts">
           <button type="button" class="ra" data-act="tags" aria-label="Edit tags">${RA_GLYPH.tag}</button>
+          <button type="button" class="ra" data-act="swap" aria-label="Swap this exercise"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg></button>
           <button type="button" class="ra" data-act="add" aria-label="Add a lift">${RA_GLYPH.add}</button>
           <button type="button" class="ra remove-row" aria-label="Remove this lift">${RA_GLYPH.del}</button>
         </span>
@@ -27257,6 +27305,7 @@ async function openBlockEditor(date, slot, block){
         tagBtn.setAttribute('aria-expanded', String(open));
         tagBtn.setAttribute('aria-label', open ? 'Hide tags' : 'Edit tags');
       });
+      row.querySelector('.ra[data-act="swap"]').addEventListener('click', ()=>{ if(window.__s3swap) window.__s3swap(row); });
       // One add-a-lift behaviour, not two: this presses the control at the foot of the list.
       row.querySelector('.ra[data-act="add"]').addEventListener('click', ()=>{
         document.getElementById('addWeekExerciseRow')?.click();
@@ -35109,13 +35158,17 @@ function selectVolumeGapAccessories({ tag, onlyArea, weekSetsByArea, daysRemaini
        regenerating a week gives the same answer), and later picks that week go back to plain
        ranking. A sub-group with no exercise that passes the filters above (equipment, injury,
        what is already used) is skipped, not forced. */
-    let pool = options;
+    let pool = options, slow = false;
     if(!directPicksByArea[g.area]){
-      const subs = [...new Set(options.flatMap(o=> o.ex.subGroups || []))].sort();
-      if(subs.length >= 2){
-        const turn = subs[weekRotationIndex % subs.length];
-        const inTurn = options.filter(o=> (o.ex.subGroups || []).includes(turn));
-        if(inTurn.length) pool = inTurn;
+      const pinned = options.filter(o=> PINNED_EXERCISES.has(o.id));
+      if(pinned.length){ pool = pinned; slow = true; }
+      else {
+        const subs = [...new Set(options.flatMap(o=> o.ex.subGroups || []))].sort();
+        if(subs.length >= 2){
+          const turn = subs[rotationTurnIndex(weekRotationIndex) % subs.length];
+          const inTurn = options.filter(o=> (o.ex.subGroups || []).includes(turn));
+          if(inTurn.length){ pool = inTurn; slow = true; }
+        }
       }
     }
     // usedNames only prevents repeats WITHIN a week. Ranking is otherwise deterministic,
@@ -35126,7 +35179,7 @@ function selectVolumeGapAccessories({ tag, onlyArea, weekSetsByArea, daysRemaini
     // Seeded by week (not random) so regenerating the same week is still deterministic.
     const topRank = pool[0].rank;
     const contenders = pool.filter(o=> topRank - o.rank <= 1.0);
-    const chosen = contenders[weekRotationIndex % contenders.length];
+    const chosen = contenders[(slow ? rotationTurnIndex(weekRotationIndex) : weekRotationIndex) % contenders.length];
     const candidate = {
       name: chosen.ex.name, area: chosen.ex.area, secondaryArea: chosen.ex.secondaryArea || '',
       movement: chosen.ex.movement || '', exerciseId: chosen.id
@@ -41610,9 +41663,22 @@ function assignPrescription(ex, plannedFocus, personalSets){
     : isIsolation
       ? ISOLATION_REP_RANGE
       : { repLow: focusInfo ? focusInfo.repLow : 8, repHigh: focusInfo ? focusInfo.repHigh : 12 };
+  /* EXERCISES THAT CAME FROM THE REFERENCE carry their own rep range for the goal they were
+     graded for, so a neck isometric or a tibialis raise is not handed the generic 8 to 12.
+     The session's focus picks the goal; failing that, what the exercise is for. Exercises the
+     library already had keep the prescription they were tuned with. Timed holds have no rep
+     range in the reference and keep the default, as a plank always has. */
+  let refRange = null;
+  if(libEntry && libEntry.fromReference){
+    const goalKey = ({ hypertrophy:'hypertrophy', strength:'strength', power:'power' })[plannedFocus] || (category === 'bulletproofing' ? 'joint_support' : 'hypertrophy');
+    const refs = EXREF_BY_LIB[ex.exerciseId || (guessTagsFromLibrary(ex.name) || {}).exerciseId] || [];
+    const ts = refs.flatMap(r=> r.t).filter(t=> t[6] && t[6].length === 2);
+    const t = ts.find(x=> x[3] === goalKey) || ts.find(x=> x[3] === (category === 'bulletproofing' ? 'endurance' : 'strength')) || ts[0];
+    if(t){ refRange = { repLow: t[6][0], repHigh: t[6][1] }; }
+  }
   ex.sets = sets;
-  ex.repLow = range.repLow;
-  ex.repHigh = range.repHigh;
+  ex.repLow = (refRange || range).repLow;
+  ex.repHigh = (refRange || range).repHigh;
   return ex;
 }
 
@@ -49532,9 +49598,9 @@ loadGoalProfile().then(async ()=>{
     }
     function scoreSheet(kind){
       var T={
-        fuel:['Fuel score','<p class="s3-p">Calories and protein against what you need by this time of day. Your target is about 31 calories per kg of bodyweight, and 1.6 g of protein per kg.</p><p class="s3-p">Right on track for the day so far is 100. Falling well behind drops it quickly. Going over drops it slowly.</p><p class="s3-p"><b>In Charge:</b> if you are well behind on food, Charge loses up to 8 points. Days you have not logged are never counted against you.</p>'],
-        water:['Hydration score','<p class="s3-p">Water logged against about 37 ml per kg of bodyweight, by this time of day.</p><p class="s3-p"><b>In Charge:</b> being well behind on water takes up to 5 points off. Days you have not logged are never counted against you.</p>'],
-        ea:['Energy availability','<p class="s3-p">What is left for your body to run on after training: calories eaten, minus what the day\u2019s exercise burned, per kg of lean mass. It needs your weight, your body fat and at least two meals logged.</p><p class="s3-p">Below 30 is the line sports medicine uses for being under-fuelled. Around 45 is where things work best. The research behind it is mostly in women and is debated, so treat it as a flag and not a verdict.</p><p class="s3-p"><b>In Charge:</b> if yesterday was under 30, Charge loses up to 6 points today.</p>'],
+        fuel:['Fuel score','<p class="s3-p">Calories and protein against what you need by this time of day. Your target is about 31 calories per kg of bodyweight, and 1.6 g of protein per kg.</p><p class="s3-p">Right on track for the day so far is 100. Falling well behind drops it quickly. Going over drops it slowly.</p><p class="s3-p"><b>In Charge:</b> if you are well behind on food, Charge loses up to 5 points. Days you have not logged are never counted against you.</p>'],
+        water:['Hydration score','<p class="s3-p">Water logged against about 37 ml per kg of bodyweight, by this time of day.</p><p class="s3-p"><b>In Charge:</b> being well behind on water takes up to 3 points off. Days you have not logged are never counted against you.</p>'],
+        ea:['Energy availability','<p class="s3-p">What is left for your body to run on after training: calories eaten, minus what the day\u2019s exercise burned, per kg of lean mass. It needs your weight, your body fat and at least two meals logged.</p><p class="s3-p">Below 30 is the line sports medicine uses for being under-fuelled. Around 45 is where things work best. The research behind it is mostly in women and is debated, so treat it as a flag and not a verdict.</p><p class="s3-p"><b>In Charge:</b> if yesterday was under 30, Charge loses up to 4 points today.</p>'],
         balance:['Training and sleep','<p class="s3-p">Two numbers. How big this week of training is against your usual week, and how long you have been sleeping on average over the last seven nights.</p><p class="s3-p">A full night\u2019s sleep scores 100 however hard the week. Short sleep costs more when the week is also heavier than usual. 7.5 hours is full sleep, 5.5 hours is none.</p><p class="s3-p">It is a guide, not a rule. Research on training load ratios is divided, so there is no hard line. It does not change Charge.</p>'],
         sleep:['Sleep score','<p class="s3-p">Hours slept last night. 4 hours or less scores 0 and 7.5 hours or more scores 100.</p><p class="s3-p"><b>In Charge:</b> sleep already sets where Charge starts each morning, along with sleep debt and how regular your sleep is, so it is not counted twice.</p>']
       }[kind];
@@ -49598,7 +49664,7 @@ loadGoalProfile().then(async ()=>{
             var p=e.target.closest('.s3-pick'); if(p){ s.querySelector('#s3Cal').value=p.dataset.v; return; }
             var dl=e.target.closest('.s3-del'); if(dl){ F.d.meals.splice(+dl.dataset.i,1); fsave(); ls.innerHTML=list(); fuelLoad(); return; }
             if(e.target.closest('.s3-save')){ var v=parseInt(s.querySelector('#s3Cal').value,10); if(!(v>=0)||isNaN(v)){ s.querySelector('#s3Cal').focus(); return; }
-              var pv=parseInt(s.querySelector('#s3Pro').value,10); F.d.meals.push({n:(s.querySelector('#s3Name').value||'').trim()||nm,cal:v,p:(pv>=0?pv:null),t:Date.now()}); fsave(); fuelLoad(); closeSheet(); try{ showToast('Meal saved.'); }catch(x){} }
+              var pv=parseInt(s.querySelector('#s3Pro').value,10); F.d.meals.push({n:(s.querySelector('#s3Name').value||'').trim()||nm,cal:v,p:(pv>=0?pv:null),t:Date.now()}); fsave(); fuelLoad(); closeSheet(); try{ showToast('Meal saved.'); }catch(x){} setTimeout(function(){ if(window.__s3move) window.__s3move('nod'); },500); }
           });
         });
     }
@@ -49619,7 +49685,7 @@ loadGoalProfile().then(async ()=>{
 
     /* =========================== RECOVER =========================== */
     var rp=mk('panel-recover','recover',[['charge','Charge',IC.bolt],['sleep','Sleep',IC.moon],['streak','Streak',IC.flame]]);
-    var R={charge:null,sleep:[],streak:0,todayDone:false,week:[],rhr:null,p:null,bal:null,busy:false};
+    var R={charge:null,sleep:[],streak:0,todayDone:false,week:[],rhr:null,p:null,bal:null,ts:null,ss:null,slept:0,busy:false};
     async function recLoad(){
       if(R.busy) return; R.busy=true;
       try{
@@ -49627,6 +49693,7 @@ loadGoalProfile().then(async ()=>{
         var days=weekDays(); R.sleep=[]; R.rhr=null;
         for(var i=0;i<days.length;i++){ var e=await jget('entry:'+days[i],null); R.sleep.push(e&&e.durationHrs!=null?+e.durationHrs:0); if(e&&e.restingHR!=null) R.rhr=+e.restingHR; }
         try{ R.p=await pillarScoresFor(todayStr); R.bal=await pillarBalance(); }catch(e){}
+        try{ if(window.__s3streaks){ R.ts=await window.__s3streaks.train(); R.ss=await window.__s3streaks.sleep(); } }catch(e){}
         if(window.__s2streak){ try{ var s=await window.__s2streak(); R.streak=s.n; R.todayDone=s.todayDone; R.week=s.week; }catch(e){} }
       }finally{ R.busy=false; }
       recPaint();
@@ -49650,18 +49717,48 @@ loadGoalProfile().then(async ()=>{
         +rowHTML(IC.scale,'Training and sleep',balSub,'<span class="rm">'+(B&&B.score!=null?B.score:'-')+'</span>',' data-r="balance"')
         +rowHTML(IC.drop,'Hydration score',hyS!=null?'Water '+Math.round(P.waterR*100)+'% of what you need by now':(P&&P.early?'Fills in as the day goes on':'Log water on the Fuel tab'),'<span class="rm">'+(hyS!=null?hyS:'-')+'</span>',' data-r="fuel"')
         +rowHTML(IC.flame,'Check-in streak',R.todayDone?'Done for today':'Not done yet today','<span class="rm">'+R.streak+' day'+(R.streak===1?'':'s')+'</span>',' data-r="streak"')
+        +(R.ts?rowHTML(IC.flame,'Training streak',R.ts.thisWeek+' of '+R.ts.need+' sessions so far this week','<span class="rm">'+R.ts.n+' week'+(R.ts.n===1?'':'s')+'</span>',' data-r="train"'):'')
+        +(R.ss?rowHTML(IC.moon,'Sleep streak','Nights in a row of 7 hours or more','<span class="rm">'+R.ss.n+' night'+(R.ss.n===1?'':'s')+'</span>',' data-r="sleepstreak"'):'')
         +(R.rhr!=null?rowHTML('<path d="M12 20s-7-4.500-7-10a4 4 0 0 1 7-2.500A4 4 0 0 1 19 10c0 5.500-7 10-7 10Z"/>','Resting heart rate','From your latest check-in','<span class="rm">'+R.rhr+' bpm</span>',' data-r="rhr"'):'');
       var days=weekDays(), labels=days.map(dayLetter), dots='<div class="dots">'+days.map(function(d,i){ var on=R.week.length===7&&(R.week[i]); var td=d===todayStr; return '<div class="dy"><span class="dt'+(on?' on':'')+(td&&!on?' td':'')+'">'+svg('<path d="M5 12l5 5 9-10"/>')+'</span>'+labels[i]+'</div>'; }).join('')+'</div>';
       var logged=R.sleep.filter(function(v){ return v>0; }), avg=logged.length?logged.reduce(function(a,b){ return a+b; },0)/logged.length:0;
       var week='<div class="wk-h"><b>Sleep</b><span>'+(logged.length?'Average '+avg.toFixed(1)+' h':'Nothing logged this week')+'</span></div>'+bars(R.sleep,labels,8,function(v){ return v.toFixed(1); },'w')+'<div class="wk-h"><b>Check-ins</b><span>This week</span></div>'+dots;
       paintShared(rp,rp.__st,hero,status,rows,week);
+      if(ch!=null&&ch<40&&!R.slept&&cur==='recover'){ R.slept=1; setTimeout(function(){ if(window.__s3move) window.__s3move('sleepy'); },900); }
     }
     if(rp){
       rp.__st=wire(rp,function(){ recPaint(); }); clickHero(rp);
       rp.querySelector('.s3-rows').addEventListener('click',function(e){ var b=e.target.closest('.s3-row'); if(!b) return; var r=b.dataset.r;
-        if(r==='charge'){ var sb=document.getElementById('headerScoreBtn'); if(sb) sb.click(); } else if(r==='sleep') scoreSheet('sleep'); else if(r==='balance') scoreSheet('balance'); else if(r==='streak') checkin(); else if(r==='fuel') go('fuel'); else go('data'); });
+        if(r==='charge'){ var sb=document.getElementById('headerScoreBtn'); if(sb) sb.click(); } else if(r==='sleep') scoreSheet('sleep'); else if(r==='balance') scoreSheet('balance'); else if(r==='streak') checkin(); else if(r==='train') go('insights'); else if(r==='sleepstreak') scoreSheet('sleep'); else if(r==='fuel') go('fuel'); else go('data'); });
     }
-    window.__s3on=function(name){ if(name==='fuel') fuelLoad(); else if(name==='recover') recLoad(); };
+    /* SWAP: other exercises for the same area, on the row you tapped it from. Main lifts and jumps
+       are swapped for their own kind; accessories for other accessories. Each alternative shows
+       both evidence badges and can be pinned so the plan keeps it. */
+    window.__s3swap=function(row){
+      var nameEl=row.querySelector('.week-ex-name'); if(!nameEl) return;
+      var g=guessTagsFromLibrary(nameEl.value)||{}, cur=g.exerciseId, ce=cur&&EXERCISE_LIBRARY[cur];
+      var areaSel=row.querySelector('.week-ex-area'), area=(areaSel&&areaSel.value)||(ce&&ce.area)||'';
+      var excl=['main_strength','power','running_drill'], mainLike=!!ce&&excl.indexOf(ce.category)>=0;
+      var alts=Object.keys(EXERCISE_LIBRARY).filter(function(id){ var e=EXERCISE_LIBRARY[id]; if(id===cur||e.area!==area) return false; return mainLike?e.category===ce.category:(excl.indexOf(e.category)<0&&e.category!=='calisthenics_progression'); });
+      function swapScore(id){ var e=EXERCISE_LIBRARY[id]; return (ce&&e.movement===ce.movement?2:0)+(HYPERTROPHY_TIER_RANK[e.hypertrophyTier]||0)+(PINNED_EXERCISES.has(id)?5:0); }
+      alts.sort(function(a,b){ return swapScore(b)-swapScore(a); });
+      alts=alts.slice(0,8);
+      var h=ce?'<p class="s3-p">Instead of <b>'+esc(ce.name)+'</b> ('+esc((BODY_AREAS[area]||area))+').</p>':'<p class="s3-p">Pick another exercise for this slot.</p>';
+      h+=alts.length?'<ul class="s3-list s3-alts">'+alts.map(function(id){ var e=EXERCISE_LIBRARY[id], on=PINNED_EXERCISES.has(id);
+        return '<li><span><b>'+esc(e.name)+'</b><i>'+esc((e.equipment||[]).join(', ').replace(/_/g,' '))+(e.subGroups&&e.subGroups.length?' \u00b7 '+esc(e.subGroups.join(', ')):'')+'</i><em>'+evidenceBadgeHtml(e.evidenceConfidence)+refBadgeHtml(id)+'</em></span>'
+          +'<span class="s3-acts"><button type="button" class="s3-use" data-use="'+id+'">Use</button><button type="button" class="s3-pinb'+(on?' on':'')+'" data-pin="'+id+'" aria-pressed="'+on+'">'+(on?'Pinned':'Pin')+'</button></span></li>'; }).join('')+'</ul>':'<p class="s3-p">No other exercises for this area.</p>';
+      openSheet('Swap exercise',h,function(sh){
+        sh.addEventListener('click',function(e){
+          var pb=e.target.closest('[data-pin]'); if(pb){ togglePinnedExercise(pb.dataset.pin).then(function(on){ pb.classList.toggle('on',on); pb.textContent=on?'Pinned':'Pin'; pb.setAttribute('aria-pressed',on); if(window.__s3focus) window.__s3focus(); }); return; }
+          var ub=e.target.closest('[data-use]'); if(!ub) return; var e2=EXERCISE_LIBRARY[ub.dataset.use]; if(!e2) return;
+          nameEl.value=e2.name; var a2=row.querySelector('.week-ex-area2'), mv=row.querySelector('.week-ex-movement');
+          if(areaSel) areaSel.value=e2.area||''; if(a2) a2.value=e2.secondaryArea||''; if(mv) mv.value=e2.movement||'';
+          ['input','change','blur'].forEach(function(t){ nameEl.dispatchEvent(new Event(t,{bubbles:true})); });
+          closeSheet(); try{ showToast('Swapped to '+e2.name+'.'); }catch(x){}
+        });
+      });
+    };
+    window.__s3on=function(name){ if(name==='fuel') fuelLoad(); else if(name==='recover'){ R.slept=0; recLoad(); } };
   })();
   /* ---------- the Body guide: every muscle group and sub-group, with what the research says ---------- */
   (function(){
@@ -49674,7 +49771,7 @@ loadGoalProfile().then(async ()=>{
     function turnFor(area){
       var subs=subGroupsOfArea(area); if(subs.length<2) return null;
       var wk=(typeof getWeekDates==='function')?getWeekDates()[0]:todayStr, idx=Math.floor(new Date(wk).getTime()/(7*24*60*60*1000));
-      return subs[idx%subs.length];
+      return subs[rotationTurnIndex(idx)%subs.length];
     }
     function areaGroups(area){ return Object.keys(EXREF.tax).filter(function(g){ return EXREF.tax[g][0]===area; }); }
     function areaRows(area){
@@ -49689,21 +49786,23 @@ loadGoalProfile().then(async ()=>{
       var tier=grade==='S'?'strong':grade==='M'?'moderate':'practical';
       return '<span class="evidence-badge ref-badge '+tier+'">'+REF_GRADE_NAME[grade].toUpperCase()+'</span>';
     }
+    function pinBtn(ref){ var id=libIdOf(ref); if(!id) return ''; var on=PINNED_EXERCISES.has(id); return '<button type="button" class="g-pin'+(on?' on':'')+'" data-pin="'+id+'" aria-pressed="'+on+'">'+(on?'Pinned':'Pin')+'</button>'; }
     function head(title,sub){ return '<div class="g-hd"><button type="button" class="g-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button><div><h2>'+esc(title)+'</h2>'+(sub?'<p>'+esc(sub)+'</p>':'')+'</div></div>'; }
     function listView(){
       var h=head('Body guide','Every muscle group and sub-group, and what the research says about training them.');
+      h+='<div class="g-rot"><span>Rotate sub-groups every</span><div role="group" aria-label="Weeks per rotation">'+[1,2,3,4].map(function(n){ return '<button type="button" class="g-rotb'+(n===EXREF_ROTATION_WEEKS?' on':'')+'" data-w="'+n+'">'+n+(n===1?' wk':' wks')+'</button>'; }).join('')+'</div></div>';
       h+='<div class="g-list">';
       AREAS.forEach(function(a){
         var rows=areaRows(a), subs=subGroupsOfArea(a), turn=turnFor(a), n=new Set(rows.map(function(r){ return r.ref.id; })).size;
         if(!rows.length && !subs.length) return;
-        h+='<button type="button" class="g-row" data-a="'+a+'"><span class="rt"><b>'+esc(BODY_AREAS[a])+'</b><i>'+n+' exercise'+(n===1?'':'s')+(subs.length>=2?' · '+subs.length+' sub-groups':'')+(turn?' · this week: '+esc(turn):'')+'</i></span><span class="rc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></span></button>';
+        h+='<button type="button" class="g-row" data-a="'+a+'"><span class="rt"><b>'+esc(BODY_AREAS[a])+'</b><i>'+n+' exercise'+(n===1?'':'s')+(subs.length>=2?' · '+subs.length+' sub-groups':'')+(turn?' · now: '+esc(turn):'')+'</i></span><span class="rc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></span></button>';
       });
       h+='</div><p class="g-foot">Grades say how well the research supports an exercise for a goal. Most are Limited, and a grade never means one exercise beats another. The plan rotates through each area’s sub-groups week by week.</p>';
       return h;
     }
     function areaView(a){
       var rows=areaRows(a), subs=subGroupsOfArea(a), turn=turnFor(a);
-      var h=head(BODY_AREAS[a], turn?'This week’s turn in your plan: '+turn:'');
+      var h=head(BODY_AREAS[a], turn?'In your plan right now: '+turn:'');
       h+='<p class="g-foot">Weekly sets are a shared budget for the whole muscle group, not per exercise. Unless a source says otherwise the numbers are expert starting estimates: train each group 2 to 3 days a week, progress reps first and then add small amounts of load.</p>';
       if(subs.length) h+='<div class="g-subs">'+subs.map(function(s){ return '<span class="g-sub'+(s===turn?' now':'')+'">'+esc(s)+'</span>'; }).join('')+'</div>';
       GOALS.forEach(function(goal){
@@ -49718,7 +49817,7 @@ loadGoalProfile().then(async ()=>{
         gr.sort(function(x,y){ return REF_GRADE_RANK[y.t[4]]-REF_GRADE_RANK[x.t[4]]; }).forEach(function(r){
           var t=r.t, d={b:'Beginner',i:'Intermediate',a:'Advanced'}[r.ref.d];
           var rx=[rng(t[5],' sets a week'),rng(t[6],' reps'),t[7]?rng(t[7],' reps left'):'',rng(t[8],' s rest')].filter(Boolean).join(' · ');
-          h+='<div class="g-ex"><div class="g-ext"><b>'+esc(r.ref.n)+'</b>'+oldBadge(r.ref)+newBadge(r.ref,goal,t[4])+'</div>'
+          h+='<div class="g-ex"><div class="g-ext"><b>'+esc(r.ref.n)+'</b>'+oldBadge(r.ref)+newBadge(r.ref,goal,t[4])+pinBtn(r.ref)+'</div>'
             +'<div class="g-exm">'+esc(d)+' · '+esc(r.ref.eq.join(', ').replace(/_/g,' '))+(r.subs.length?' · '+esc(r.subs.join(', ')):'')+'</div>'
             +(rx?'<div class="g-exr">'+esc(rx)+'</div>':'')
             +(t[9]||(r.ref.home&&!/^same/i.test(r.ref.home))?'<div class="g-exn">'+esc(t[9]||'')+(r.ref.home&&!/^same/i.test(r.ref.home)?' At home: '+esc(r.ref.home)+'.':'')+'</div>':'')+'</div>';
@@ -49744,13 +49843,96 @@ loadGoalProfile().then(async ()=>{
       el.innerHTML='<div class="g-body"></div>'; document.body.appendChild(el); stack=[{}]; render();
       el.addEventListener('click',function(e){
         if(e.target.closest('.g-back')){ if(stack.length>1){ stack.pop(); render(); } else close(); return; }
+        var pb=e.target.closest('.g-pin'); if(pb){ togglePinnedExercise(pb.dataset.pin).then(function(on){ pb.classList.toggle('on',on); pb.textContent=on?'Pinned':'Pin'; pb.setAttribute('aria-pressed',on); if(window.__s3focus) window.__s3focus(); }); return; }
+        var rb=e.target.closest('.g-rotb'); if(rb){ setRotationWeeks(+rb.dataset.w).then(function(){ render(); if(window.__s3focus) window.__s3focus(); }); return; }
         var r=e.target.closest('.g-row'); if(r){ stack.push({a:r.dataset.a}); render(); }
       });
       el.addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
       requestAnimationFrame(function(){ el.classList.add('in'); });
     }
     function close(){ if(!el) return; var e=el; el=null; e.classList.remove('in'); setTimeout(function(){ e.remove(); },220); }
-    window.__s3guide={open:open,close:close};
+    window.__s3guide={open:open,close:close,turnFor:turnFor,areas:function(){ return AREAS; }};
+  })();
+  /* ---------- this block's focus, a few moves for the piñata, and two more streaks ---------- */
+  (function(){
+    function esc(t){ return String(t==null?'':t).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+    /* The focus: which sub-group each area is on right now, so the rotation is something you can see. */
+    if(hero){
+      var card=document.createElement('button'); card.type='button'; card.className='s2-focus'; hero.insertAdjacentElement('afterend',card);
+      var paintFocus=function(){
+        var g=window.__s3guide; if(!g) return; var parts=[];
+        ['chest','thoracic','calves','biceps','hamstrings','hips','forearms','core'].forEach(function(a){ var t=g.turnFor(a); if(t) parts.push(t); });
+        parts=parts.slice(0,6);
+        card.innerHTML='<b>This block’s focus</b><span>'+esc(parts.join(' · ')||'Every part gets a turn')+'</span><i>Rotates every '+EXREF_ROTATION_WEEKS+' week'+(EXREF_ROTATION_WEEKS===1?'':'s')+(PINNED_EXERCISES.size?' · '+PINNED_EXERCISES.size+' pinned':'')+'. Tap for the Body guide.</i>';
+      };
+      card.addEventListener('click',function(){ if(window.__s3guide) window.__s3guide.open(); });
+      window.__s3focus=paintFocus; paintFocus(); setTimeout(paintFocus,1500);
+    }
+    /* Moves for the piñata on the banner. Only played when something happened worth marking, never on a timer. */
+    function bits(host,x,y,n){
+      var cols=['#ffffff','#C8F031','#FF3E9E','#FFC24D'];
+      for(var i=0;i<n;i++){ var b=document.createElement('i'); b.className='s3bit'; b.style.cssText='left:'+x+'px;top:'+y+'px;background:'+cols[i%4]+(i%3===0?';border-radius:50%;width:10px;height:10px':'');
+        host.appendChild(b); var an=(-90+(i/n-.5)*230)*Math.PI/180, d=70+Math.random()*70;
+        b.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:'translate('+Math.cos(an)*d+'px,'+Math.sin(an)*d+'px) rotate('+(Math.random()*400)+'deg)',opacity:1,offset:.45},{transform:'translate('+Math.cos(an)*d*1.25+'px,'+(Math.sin(an)*d+110)+'px) rotate('+(Math.random()*700)+'deg)',opacity:0}],{duration:1100,easing:'ease-out'}).onfinish=(function(el){ return function(){ el.remove(); }; })(b); }
+    }
+    function eyeOf(c){ return c.querySelector('img.pin-still[src$="_eye.webp"]'); }
+    function lidFor(c){
+      var a=c.__art, lid=c.querySelector('.s3lid'); if(lid||!a) return lid;
+      function pc(x,of){ return (x/of*100)+'%'; } var e=a.eye;
+      lid=document.createElement('span'); lid.className='s3lid';
+      lid.style.cssText='position:absolute;z-index:49;border-radius:50%;opacity:0;pointer-events:none;aspect-ratio:1;left:'+pc(e[0]-e[2],a.iw)+';top:'+pc(e[1]-e[2],a.ih)+';width:'+pc(e[2]*2,a.iw)+';background:radial-gradient(120% 90% at 50% 20%,color-mix(in srgb,'+a.lid+' 70%,#fff) 0%,'+a.lid+' 55%,color-mix(in srgb,'+a.lid+' 70%,#000) 100%)';
+      lid.innerHTML='<i style="position:absolute;left:14%;right:14%;top:50%;height:9%;margin-top:-4.5%;border-radius:50%;background:rgba(0,0,0,.55)"></i>';
+      var eye=eyeOf(c); if(eye) eye.insertAdjacentElement('beforebegin',lid); else c.appendChild(lid); return lid;
+    }
+    var MOVES={
+      wobble:function(c){ c.animate([{transform:'rotate(0)'},{transform:'rotate(-10deg)',offset:.14},{transform:'rotate(8deg)',offset:.3},{transform:'rotate(-5.5deg)',offset:.46},{transform:'rotate(3.5deg)',offset:.62},{transform:'rotate(-2deg)',offset:.78},{transform:'rotate(0)'}],{duration:1500,easing:'ease-out'}); },
+      nod:function(c){ c.animate([{transform:'rotate(0) translateY(0)'},{transform:'rotate(4deg) translateY(9px)',offset:.2},{transform:'rotate(-1deg) translateY(0)',offset:.4},{transform:'rotate(4deg) translateY(9px)',offset:.6},{transform:'rotate(-1deg) translateY(0)',offset:.8},{transform:'rotate(0) translateY(0)'}],{duration:1200,easing:'ease-in-out'}); },
+      sleepy:function(c){
+        var lid=lidFor(c), eye=eyeOf(c);
+        if(lid) lid.animate([{opacity:0},{opacity:1,offset:.2},{opacity:1,offset:.8},{opacity:0,offset:.86},{opacity:0}],{duration:4200});
+        if(eye) eye.animate([{opacity:1},{opacity:0,offset:.2},{opacity:0,offset:.8},{opacity:1,offset:.86},{opacity:1}],{duration:4200});
+        c.animate([{transform:'rotate(0) translateY(0)'},{transform:'rotate(7deg) translateY(12px)',offset:.28},{transform:'rotate(8deg) translateY(14px)',offset:.7},{transform:'rotate(-3deg) translateY(-8px)',offset:.84},{transform:'rotate(0) translateY(0)'}],{duration:4200,easing:'ease-in-out'});
+        var br=banner.getBoundingClientRect(), pr=c.getBoundingClientRect();
+        for(var i=0;i<3;i++){ var z=document.createElement('i'); z.className='s3z'; z.textContent='Z'; z.style.left=(pr.left-br.left+pr.width*.3+i*8)+'px'; z.style.top=(pr.top-br.top+10)+'px'; banner.appendChild(z);
+          z.animate([{opacity:0,transform:'translate(0,0) scale(.7)'},{opacity:1,offset:.2},{opacity:0,transform:'translate(26px,-40px) scale(1.3)'}],{duration:1800,delay:700+i*650,fill:'backwards'}).onfinish=(function(el){ return function(){ el.remove(); }; })(z); }
+      }
+    };
+    window.__s3move=function(kind){
+      if(reduced()||document.hidden) return; var c=document.querySelector('#s2banner .s2-pin'); if(!c||c.__building||!MOVES[kind]) return;
+      try{ MOVES[kind](c); }catch(e){}
+    };
+    banner.addEventListener('click',function(e){
+      if(e.target.closest('button,a,.s2-chip')) return; var r=banner.getBoundingClientRect();
+      if(e.clientX>r.left+r.width*0.45) window.__s3move('wobble');
+    });
+    /* A finished workout: the title hops and candy bursts out of it. */
+    var dn=document.getElementById('s2done');
+    if(dn) new MutationObserver(function(){
+      if(!dn.classList.contains('on')||reduced()) return; var h2=dn.querySelector('h2'), bn=dn.querySelector('.bn'); if(!h2||!bn) return;
+      var f=[]; for(var i=0;i<4;i++){ var o=i/4; f.push({transform:'translateY(0) scale(1.04,.95)',offset:o+.02}); f.push({transform:'translateY(-14px) scale(.98,1.04)',offset:o+.13}); f.push({transform:'translateY(0) scale(1)',offset:o+.24}); }
+      f.unshift({transform:'translateY(0) scale(1)',offset:0}); f.push({transform:'translateY(0) scale(1)',offset:1});
+      setTimeout(function(){ try{ h2.animate(f,{duration:1700,easing:'ease-out'}); bits(bn,bn.clientWidth/2,bn.clientHeight*0.42,18); }catch(e){} },350);
+    }).observe(dn,{attributes:true,attributeFilter:['class']});
+    /* Two more streaks. Training: consecutive weeks (Monday to Sunday) with at least two sessions, the week in progress counted once it has them and never allowed to break the run. Sleep: consecutive nights of seven hours or more, tonight's still-empty entry not counted against it. */
+    function mondayOf(d){ var x=localDateFrom(d), k=(x.getDay()+6)%7; return shiftDateStr(d,-k); }
+    window.__s3streaks={
+      train:async function(){
+        var NEED=2, sess=[]; try{ sess=await getAllTrainingSessions(); }catch(e){}
+        var cnt={}; sess.forEach(function(sn){ if(sn&&(sn.type==='strength'||sn.type==='run')&&sn.date){ var k=mondayOf(sn.date); cnt[k]=(cnt[k]||0)+1; } });
+        var w=mondayOf(todayStr), thisWeek=cnt[w]||0, n=thisWeek>=NEED?1:0;
+        for(var i=1;i<=104;i++){ var k=shiftDateStr(w,-7*i); if((cnt[k]||0)>=NEED) n++; else break; }
+        return {n:n,thisWeek:thisWeek,need:NEED};
+      },
+      sleep:async function(){
+        var n=0;
+        for(var i=0;i<400;i++){
+          var d=shiftDateStr(todayStr,-i), e=null; try{ e=JSON.parse((await window.storage.get('entry:'+d)).value); }catch(x){}
+          var h=e?parseFloat(e.durationHrs):NaN;
+          if(isFinite(h)&&h>=7) n++; else if(i===0&&!(isFinite(h)&&h>0)) continue; else break;
+        }
+        return {n:n};
+      }
+    };
   })();
   sync(tabFromBody(),true);
 })();
