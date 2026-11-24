@@ -5984,6 +5984,11 @@ html.s2 .s2-logbar .t b, html.s2 .s2-logbar .t i{ color:#fff !important; }
 .s2-logbar .t i{ font:500 13px var(--sans); font-style:normal; opacity:.7; }
 .s2-logbar .s2-logset{ all:unset; box-sizing:border-box; flex:none; cursor:pointer; padding:0 22px; height:50px; display:flex; align-items:center; border-radius:14px; background:#C8F031; color:#151515; font:italic 800 24px/1 'Barlow Condensed','Arial Narrow',var(--sans),sans-serif; text-transform:uppercase; }
 .s2-logbar .s2-logset::after{ display:none; }
+/* A stretch session you only part-did can be saved as it stands: this sits under the main button, only while some sets are ticked and some are not. */
+html.s2 #logSheet .s2-logbar.on{ flex-wrap:wrap; }
+.s2-logbar .s2-savepart{ all:unset; box-sizing:border-box; flex:1 1 100%; text-align:center; cursor:pointer; padding:6px 4px 2px; color:#fff; font:700 14px var(--sans); text-decoration:underline; text-underline-offset:3px; }
+.s2-logbar .s2-savepart[hidden]{ display:none; }
+.s2-logbar .s2-savepart::after{ display:none; }
 
 .s2-steps, .s2-upnext{ display:none; }
 html.s2 #logSheet .s2-steps.on{ display:flex; gap:8px; margin:14px 0 4px; flex-wrap:wrap; }
@@ -15014,7 +15019,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.24.092';
+const APP_VERSION = '2026.11.24.093';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15410,6 +15415,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.24.093': 'A stretch session you only part-do can be saved: tick the sets you did and tap Save what I did. Only the ticked sets are logged.',
   '2026.11.24.092': 'The Fuel bull builds itself layer by layer like the other animals, and sways afterwards.',
   '2026.11.24.091': 'The piñata builds itself about twice as fast when you change tabs, and the title and buttons pop in sooner.',
   '2026.11.24.090': 'The Recommended split on Plan the week is worked out again every time the screen opens, so it can no longer show an old answer such as Full Body after your goals or days have changed.',
@@ -27923,6 +27929,8 @@ document.getElementById('logWeekSessionBtn').addEventListener('click', async ()=
       // same logic as strength: a named-but-untouched row isn't a logged set.
       let anyPerformanceEntered = false;
       document.querySelectorAll('#weekStretchRows .mobility-row').forEach(row=>{
+        // A stretch left with no ticked sets in a part-done session is not part of what was logged.
+        if(row.dataset.s2skip === '1') return;
         let name, sets, holdSeconds, area;
         if(row.dataset.skill){
           name = row.dataset.name; sets = parseInt(row.dataset.sets,10)||0; holdSeconds = parseInt(row.dataset.holdSeconds,10)||0; area = '';
@@ -48960,7 +48968,7 @@ loadGoalProfile().then(async ()=>{
     var pnl=ls.querySelector('.lift-sheet-panel'), hd=pnl&&pnl.querySelector('.lift-sheet-head'), lbody=document.getElementById('logSheetBody');
     if(!pnl||!hd||!lbody) return;
     var timer=document.createElement('span'); timer.className='s2-timer'; timer.textContent='0:00'; hd.insertBefore(timer,hd.querySelector('.lift-sheet-x'));
-    var lbar=document.createElement('div'); lbar.className='s2-logbar'; lbar.innerHTML='<div class="t"><b></b><i></i></div><button type="button" class="s2-logset">Log set</button>'; pnl.appendChild(lbar);
+    var lbar=document.createElement('div'); lbar.className='s2-logbar'; lbar.innerHTML='<div class="t"><b></b><i></i></div><button type="button" class="s2-logset">Log set</button><button type="button" class="s2-savepart" hidden>Save what I did</button>'; pnl.appendChild(lbar);
     var t0=0, iv=null, nextBtn=null;
     function pad(n){ return (n<10?'0':'')+n; }
     function tk(){ if(window.__s2kind) window.__s2kind(); var sec=Math.floor((Date.now()-t0)/1000), h=Math.floor(sec/3600), m=Math.floor(sec/60)%60; timer.textContent=(h?h+':'+pad(m):m)+':'+pad(sec%60); }
@@ -49078,6 +49086,7 @@ loadGoalProfile().then(async ()=>{
     var TICK='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>';
     function kindRefresh(){
       var kd=pnl.getAttribute('data-kind')||'strength'; if(kd==='strength') return false;
+      if(kd!=='mobility'){ var sp0=lbar.querySelector('.s2-savepart'); if(sp0) sp0.hidden=true; }
       var phs=pnl.getAttribute('data-phase'); if(phs==='warm'||phs==='cool'){ lbar.classList.remove('on'); return true; }
       if(kd==='mobility'){
         var rows=[].slice.call(ls.querySelectorAll('.mobility-row')), total=0, done=0, nextRow=null, nextIdx=0;
@@ -49094,6 +49103,7 @@ loadGoalProfile().then(async ()=>{
         lbar.querySelector('b').textContent=nextRow?('Set '+(nextIdx+1)+' · '+(nm||'Stretch')):'All sets done';
         lbar.querySelector('i').textContent=timer.textContent+' · '+done+' of '+total+' sets';
         lbar.querySelector('.s2-logset').textContent=nextRow?'Log set':'Save';
+        var sp=lbar.querySelector('.s2-savepart'); if(sp){ var part=done>0&&done<total; sp.hidden=!part; if(part) sp.textContent='Save what I did \u00b7 '+done+' of '+total+' sets'; }
         lbar.classList.add('on'); return true;
       }
       if(kd==='run'){
@@ -49106,10 +49116,21 @@ loadGoalProfile().then(async ()=>{
     }
     window.__s2kind=kindRefresh;
     var _r0=refresh; refresh=function(){ if(kindRefresh()) return; _r0(); pickCurrent(); columns(); more(); };
+    /* The save reads each row's planned sets, not the ticks, so a part-done stretch session was logged as the whole one (or
+       could not be saved at all). Before saving, each row is set to the sets that were actually ticked. */
+    function applyTicks(){
+      [].forEach.call(ls.querySelectorAll('.mobility-row'),function(r){
+        var box=r.querySelector('.s2-mticks'); if(!box) return;
+        var d=[].filter.call(box.children,function(b){ return b.getAttribute('aria-pressed')==='true'; }).length;
+        if(r.dataset.skill){ r.dataset.sets=String(d); } else { var si=r.querySelector('.week-st-sets'); if(si) si.value=String(d); }
+        if(d===0) r.dataset.s2skip='1'; else delete r.dataset.s2skip;
+      });
+    }
+    lbar.querySelector('.s2-savepart').addEventListener('click',function(){ applyTicks(); var sv=document.getElementById('logWeekSessionBtn'); if(sv) sv.click(); });
     lbar.querySelector('.s2-logset').addEventListener('click',function(){
       var kd=pnl.getAttribute('data-kind')||'strength';
       if(kd==='run'){ var sv=document.getElementById('logWeekSessionBtn'); if(sv) sv.click(); return; }
-      if(kd==='mobility'){ var nb=ls.querySelector('.s2-mt[aria-pressed="false"]'); if(nb){ nb.click(); } else { var sv2=document.getElementById('logWeekSessionBtn'); if(sv2) sv2.click(); } return; }
+      if(kd==='mobility'){ var nb=ls.querySelector('.s2-mt[aria-pressed="false"]'); if(nb){ nb.click(); } else { applyTicks(); var sv2=document.getElementById('logWeekSessionBtn'); if(sv2) sv2.click(); } return; }
       if(nextBtn) nextBtn.click(); });
     new MutationObserver(refresh).observe(lbody,{subtree:true,attributes:true,attributeFilter:['aria-pressed'],childList:true});
     new MutationObserver(function(){
