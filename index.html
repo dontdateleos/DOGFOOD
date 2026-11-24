@@ -6947,6 +6947,13 @@ html.s2 body.tab-data #trendPeriodPills .type-btn::after, #musclesDataView .mv-s
 #musclesDataView{ padding:0 0 120px; }
 #musclesDataView .mv-ctl{ margin:0; }
 #musclesDataView .mv-note, #musclesDataView .mv-list, #musclesDataView .mv-card, #musclesDataView .mv-hd{ margin-left:16px; margin-right:16px; }
+/* DONE TODAY */
+html.s2 body.tab-insights:not(.s2-wk) .s2-donewrap:not([hidden]){ display:block; margin:18px 0 0; }
+html.s2 .s2-donewrap[hidden]{ display:none; }
+html.s2 body.tab-insights:not(.s2-wk) .s2-donehd{ margin:0 16px 8px; font:italic 800 26px/1 'Barlow Condensed','Arial Narrow',sans-serif; text-transform:uppercase; color:#151515; }
+html.s2 body.tab-insights:not(.s2-wk) .s2-done{ margin:0 16px; }
+html.s2 body.tab-insights:not(.s2-wk) .s2-done .s2-row{ cursor:default; }
+html.s2 body.tab-insights:not(.s2-wk) .s2-done .s2-row .rt i{ white-space:normal; overflow:visible; text-overflow:clip; }
 /* SHELL2:END */
 </style>
 </head>
@@ -15075,7 +15082,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.24.097';
+const APP_VERSION = '2026.11.24.098';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15471,6 +15478,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.24.098': 'Train shows everything you finished today at the bottom of the page: lifts, runs (including ones that came from Apple Health) and stretching, each with its numbers and the time you did it.',
   '2026.11.24.097': 'Swap a day for the best session: on any day, Swap for the best session (or Rained off? Swap for the best workout on a game day) replaces it with strength and mobility chosen for what your week still needs. No heavy legs the day before a game, and it can be undone.',
   '2026.11.24.096': 'The switches sit in the same place on every tab. Track now has a full-width bar (Trends, History, Muscles) and a row of chips (Daily, Weekly, Monthly), the same shapes and positions as Train, Fuel and Recover.',
   '2026.11.24.095': 'Track > Muscles shows strength and mobility together: each muscle group has its sets, exercise trends, mobility rating and stretch time on one page.',
@@ -49407,6 +49415,38 @@ loadGoalProfile().then(async ()=>{
     rowsCard.insertAdjacentElement('afterend',wk);
     wk.addEventListener('click',function(){ if(window.__s2openReview) window.__s2openReview(); });
     window.__s2weekbtn=wk;
+    /* DONE TODAY: every session logged today, at the bottom of the page, whether you logged it here or it came from Apple Health. */
+    var dn=document.createElement('div'); dn.className='s2-donewrap'; dn.hidden=true;
+    dn.innerHTML='<h3 class="s2-donehd">Done today</h3><section class="s2-rows s2-done"></section>';
+    wk.insertAdjacentElement('afterend',dn);
+    var dnRows=dn.querySelector('.s2-done'), dnSig='';
+    var DNIC={strength:IC.dumb,run:'<circle cx="15" cy="5" r="2"/><path d="M9 21l3-6-3-3 2-5 4 2 3 3M7 13l2-3"/>',mobility:IC.mob||IC.layers};
+    function dnEsc(t){ return String(t==null?'':t).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+    function dnTime(ts){ var d=new Date(ts); return isNaN(d)?'':d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}); }
+    function dnInfo(sn){
+      if(sn.type==='run'){
+        var parts=[]; if(sn.distanceKm) parts.push(sn.distanceKm.toFixed(1)+' km'); if(sn.durationMin) parts.push(Math.round(sn.durationMin)+' min'); if(sn.pace) parts.push(sn.pace); if(sn.avgHR) parts.push(Math.round(sn.avgHR)+' bpm');
+        var rt=sn.runType?(sn.runType.charAt(0).toUpperCase()+sn.runType.slice(1)+' run'):'Run';
+        return {t:rt, sub:parts.join(' · ')||'Logged', tag:sn.source==='Apple Health'?'Apple Health':''};
+      }
+      if(sn.type==='mobility'){
+        var n=(sn.stretches||[]).length, secs=sn.totalHoldSeconds||0;
+        return {t:'Stretching', sub:(n?n+' stretch'+(n===1?'':'es'):'')+(secs?(n?' · ':'')+Math.max(1,Math.round(secs/60))+' min':'')||'Logged', tag:''};
+      }
+      var ex=sn.exercises||[], sets=ex.reduce(function(a,e){ return a+(e&&e.sets||0); },0), tg=({upper:'Upper body',lower:'Lower body',full_body:'Full body',push:'Push',pull:'Pull',legs:'Legs'})[sn.workoutTag];
+      var bits=[]; if(ex.length) bits.push(ex.length+' lift'+(ex.length===1?'':'s')); if(sets) bits.push(sets+' sets'); if(sn.totalVolume) bits.push(Math.round(sn.totalVolume).toLocaleString()+' kg'); if(sn.durationMin) bits.push(Math.round(sn.durationMin)+' min');
+      return {t:tg||'Strength', sub:bits.join(' · ')||'Logged', tag:''};
+    }
+    async function paintDone(){
+      var list=[]; try{ list=(await getAllTrainingSessions()).filter(function(sn){ return sn&&sn.date===todayStr&&(sn.type==='strength'||sn.type==='run'||sn.type==='mobility'); }); }catch(e){}
+      list.sort(function(a,b){ return (a.timestamp||0)-(b.timestamp||0); });
+      var sig=list.map(function(sn){ return sn.type+':'+(sn.timestamp||0)+':'+(sn.durationMin||0)+':'+(sn.totalVolume||0); }).join('|');
+      if(sig===dnSig) return; dnSig=sig;
+      dn.hidden=!list.length;
+      dnRows.innerHTML=list.map(function(sn){ var i=dnInfo(sn);
+        return '<div class="s2-row s2-donerow"><span class="ri"><svg viewBox="0 0 24 24" aria-hidden="true">'+(DNIC[sn.type]||DNIC.strength)+'</svg></span><span class="rt"><b>'+dnEsc(i.t)+'</b><i>'+dnEsc(i.sub)+(i.tag?' · '+dnEsc(i.tag):'')+'</i></span><span class="rm">'+dnEsc(dnTime(sn.timestamp))+'</span></div>'; }).join('');
+    }
+    setInterval(paintDone,2500); setTimeout(paintDone,800);
     function names(list){ var a=[].map.call(list,function(e){ return e.textContent.replace(/\s+/g,' ').trim(); }).filter(Boolean); return a; }
     function preview(a){ if(!a.length) return ''; var p=a.slice(0,2).join(', '); return p+(a.length>2?' and '+(a.length-2)+' more':''); }
     function fill(r,title,sub,meta){ r.querySelector('b').textContent=title; r.querySelector('i').textContent=sub; r.querySelector('.rm').textContent=meta||''; r.querySelector('.rm').style.display=meta?'':'none'; }
