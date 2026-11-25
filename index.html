@@ -6954,6 +6954,11 @@ html.s2 body.tab-insights:not(.s2-wk) .s2-donehd{ margin:0 16px 8px; font:italic
 html.s2 body.tab-insights:not(.s2-wk) .s2-done{ margin:0 16px; }
 html.s2 body.tab-insights:not(.s2-wk) .s2-done .s2-row{ cursor:pointer; }
 html.s2 body.tab-insights:not(.s2-wk) .s2-done .s2-row .rt i{ white-space:normal; overflow:visible; text-overflow:clip; }
+/* MIND (Recover): the meditation timer */
+.s3-sheet .mind-clock{ margin:8px 0 12px; text-align:center; font:italic 800 76px/1 'Barlow Condensed','Arial Narrow',sans-serif; color:#151515; font-variant-numeric:tabular-nums; }
+.s3-sheet .mind-bar{ height:10px; border-radius:999px; background:#E4DCCB; overflow:hidden; margin:0 4px 14px; }
+.s3-sheet .mind-bar i{ display:block; height:100%; width:0; background:#151515; border-radius:999px; transition:width .5s linear; }
+.s3-pick.sel{ background:#151515; border-color:#151515; color:#fff; }
 /* SHELL2:END */
 </style>
 </head>
@@ -15082,7 +15087,7 @@ recoveryFieldIds.forEach(id=>{ document.getElementById(id).addEventListener('inp
    aggressively, and GitHub Pages serves index.html with its own cache headers on top.
    Neither is under this app's control, and a plain reload will often re-serve the cached
    document rather than fetching a new one. */
-const APP_VERSION = '2026.11.25.099';
+const APP_VERSION = '2026.11.25.100';
 /* What moved, in one line, for the builds worth naming. The banner has always been able to
    say a new version is available and never what is in it, which asks for a reload on faith.
    Only the current build needs an entry — anything older has already been read or missed. */
@@ -15478,6 +15483,7 @@ const APP_NOTES = {
   '2026.10.20.001': 'New tab: Plan, between Today and Body. Three rows, one line each \u2014 which block you are in and what comes next, your goals, and your sport \u2014 and a tap on any of them opens the detail. Blocks shows the ones behind you and the next few ahead, and is where This block and Block length live now; Sport is where golf is set up. Both moved out of Settings, which keeps the things about you and the app.',
   '2026.10.20.002': 'Icons. The week calendar shows each session as a shape instead of a letter \u2014 a bar for lifting, chevrons for a run, a quarter-circle for mobility, a stopwatch for a metcon, a flag for golf. Plan leads each row with one on a cut-corner tile, the block list marks each block (Muscle, Strength, Power and the rest have their own), and the Finisher, Metcon and Cool-down headings on Today carry theirs. One idea each, solid shapes, nothing drawn for its own sake.',
   '2026.10.20.003': 'Weight guidance is in, on Plan under the block. It reads your weigh-ins against what the current block wants for your goal and sport \u2014 a slow gain in a Muscle block, steady to slightly up in Strength and golf off-season, steady in Power, the running blocks, in-season and deload weeks \u2014 and says in one line whether you are on target, below or above. Judged on the last three weeks, not on any single weigh-in. Tap it to log today\u2019s weight. When you are off target, Today says so under the block line.',
+  '2026.11.25.100': 'Recover has a Mind chip for meditation: a timer, minutes you log yourself, and mindful minutes that Calm, Headspace or your Apple Watch write to Apple Health, with a weekly total and a streak. It is its own number and does not change your Charge.',
   '2026.11.25.099': 'Tap a session in Done today and it opens on Track, in History, showing that session.',
   '2026.11.24.098': 'Train shows everything you finished today at the bottom of the page: lifts, runs (including ones that came from Apple Health) and stretching, each with its numbers and the time you did it.',
   '2026.11.24.097': 'Swap a day for the best session: on any day, Swap for the best session (or Rained off? Swap for the best workout on a game day) replaces it with strength and mobility chosen for what your week still needs. No heavy legs the day before a game, and it can be undone.',
@@ -16223,7 +16229,7 @@ function tzLog(){ try{ return JSON.parse(localStorage.getItem(TZ_LOG_KEY) || '{}
 const NATIVE_HEALTH_KEY = 'settings:nativeHealth';
 const NATIVE_HEALTH_LAST_KEY = 'settings:nativeHealthLastSync';
 const NATIVE_HEALTH_AUTH_KEY = 'settings:nativeHealthAuth';
-const NATIVE_HEALTH_AUTH_V = '5';   // bump when HealthBridge reads a new type (3: weight, body fat; 4: VO2 max; 5: food, protein, water)
+const NATIVE_HEALTH_AUTH_V = '6';   // bump when HealthBridge reads a new type (3: weight, body fat; 4: VO2 max; 5: food, protein, water)
 function nativeHealthOn(){ try{ return localStorage.getItem(NATIVE_HEALTH_KEY) === 'on'; } catch(e){ return false; } }
 async function connectNativeHealth(){
   if(!NativeHealth) return { error: 'not-native' };
@@ -16312,6 +16318,8 @@ async function syncNativeHealthOnce(days){
       // Runs Health saw that day, kept on the day for now rather than logged as sessions:
       // auto-logging would double anything you log yourself.
       if(Array.isArray(d.runs) && d.runs.length) own('appleRuns', d.runs);
+      // Minutes of mindful sessions (Calm, Headspace, Apple Watch and others), shown on Recover's Mind page.
+      own('mindfulMin', num(d.mindfulMin, 0));
       // Food and water a food app wrote to Health, kept on that day's Fuel record.
       try{ await mergeHealthFuel(d); } catch(e){}
       if(Object.keys(fill).length){
@@ -50161,10 +50169,12 @@ loadGoalProfile().then(async ()=>{
     }
 
     /* =========================== RECOVER =========================== */
-    var rp=mk('panel-recover','recover',[['charge','Charge',IC.bolt],['sleep','Sleep',IC.moon],['streak','Streak',IC.flame]]);
-    var R={charge:null,sleep:[],streak:0,todayDone:false,week:[],rhr:null,p:null,bal:null,ts:null,ss:null,slept:0,busy:false};
+    var MINDP='<circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="9.5"/>';
+    var rp=mk('panel-recover','recover',[['charge','Charge',IC.bolt],['sleep','Sleep',IC.moon],['streak','Streak',IC.flame],['mind','Mind',MINDP]]);
+    var R={mind:null,charge:null,sleep:[],streak:0,todayDone:false,week:[],rhr:null,p:null,bal:null,ts:null,ss:null,slept:0,busy:false};
     async function recLoad(){
       if(R.busy) return; R.busy=true;
+      try{ await mindResume(); R.mind=await mindLoad(); }catch(e){}
       try{
         var out=document.getElementById('headerScoreOut'), n=out?parseInt(out.textContent,10):NaN; R.charge=isFinite(n)?n:null;
         var days=weekDays(); R.sleep=[]; R.rhr=null;
@@ -50176,8 +50186,95 @@ loadGoalProfile().then(async ()=>{
       recPaint();
     }
     function checkin(){ try{ maybeAskMorning(true); }catch(e){ go('insights'); } }
+    /* ---------- MIND: meditation minutes. Your own (a timer here, or minutes you log) plus what meditation apps wrote to Apple Health. ---------- */
+    var MIND_DAY=10, MIND_WEEK=70, MIND_COUNTS=3;   // a day counts from 3 minutes; 10 a day is the aim
+    async function mindDay(d){
+      var rec=await jget('mind:'+d,{sessions:[]}); if(!rec||!rec.sessions) rec={sessions:[]};
+      var e=await jget('entry:'+d,null), own=rec.sessions.reduce(function(a,x){ return a+(+x.min||0); },0), hl=(e&&e.mindfulMin>0)?+e.mindfulMin:0;
+      return {own:own,health:hl,total:own+hl,sessions:rec.sessions,date:d};
+    }
+    async function mindLoad(){
+      var days=weekDays(), wk=[], i; for(i=0;i<days.length;i++) wk.push(await mindDay(days[i]));
+      var today=wk[wk.length-1], streak=0;
+      for(i=0;i<60;i++){ var d=i===0?today:await mindDay(shiftDateStr(todayStr,-i)); if(d.total>=MIND_COUNTS) streak++; else if(i>0) break; }
+      return {today:today,week:wk.map(function(x){ return x.total; }),weekTotal:wk.reduce(function(a,x){ return a+x.total; },0),streak:streak};
+    }
+    async function logMind(min,src){
+      min=Math.round(min); if(!(min>0)) return;
+      var rec=await jget('mind:'+todayStr,{sessions:[]}); if(!rec||!rec.sessions) rec={sessions:[]};
+      rec.sessions.push({min:min,at:Date.now(),src:src||'manual'});
+      try{ await window.storage.set('mind:'+todayStr,JSON.stringify(rec)); }catch(e){}
+      try{ R.mind=await mindLoad(); }catch(e){}
+      recPaint();
+    }
+    /* A timer that ran out while the app was shut or in the background is logged the next time Recover loads. */
+    async function mindResume(){
+      var run=null; try{ run=JSON.parse(localStorage.getItem('mind:run')||'null'); }catch(e){}
+      if(run&&run.endAt&&Date.now()>=run.endAt&&!run.logged){ try{ localStorage.removeItem('mind:run'); }catch(e){} await logMind(run.dur,'timer'); try{ showToast('Logged '+run.dur+' minutes of meditation.'); }catch(x){} }
+    }
+    function mindPaint(){
+      var M=R.mind||{today:{own:0,health:0,total:0,sessions:[]},week:[0,0,0,0,0,0,0],weekTotal:0,streak:0}, t=M.today;
+      var hero={t:'Mind',m:t.total+' min',art:svg(MINDP,'big'),go:'Start',act:mindTimerSheet};
+      var status;
+      if(t.total>=MIND_DAY) status={t:'Done for today',p:'You have had your '+MIND_DAY+' minutes.',k:'good',ic:IC.moon};
+      else if(t.total>0) status={t:t.total+' of '+MIND_DAY+' minutes',p:'A little more gets you there. Even a few minutes counts.',k:'warn',ic:IC.moon};
+      else status={t:'Nothing yet today',p:'Start a timer, or log minutes from another app. Three minutes counts as a day.',k:'',ic:IC.moon};
+      var n=t.sessions.length, bits=[]; if(t.own) bits.push(t.own+' min here'+(n?' ('+n+' session'+(n===1?'':'s')+')':'')); if(t.health) bits.push(t.health+' min from Apple Health');
+      var rows=rowHTML(MINDP,'Today',bits.length?bits.join(' · '):'Nothing logged yet','<span class="rm">'+t.total+'</span>',' data-r="mindgo"')
+        +rowHTML(IC.scale,'This week','About '+MIND_WEEK+' minutes is 10 a day','<span class="rm">'+M.weekTotal+' / '+MIND_WEEK+'</span>',' data-r="mindweek"')
+        +rowHTML(IC.flame,'Mind streak','Days in a row with at least '+MIND_COUNTS+' minutes','<span class="rm">'+M.streak+' day'+(M.streak===1?'':'s')+'</span>',' data-r="mindstreak"')
+        +rowHTML('<path d="M12 5v14M5 12h14"/>','Log minutes','Add a session from another app or one you forgot','<span class="rm"></span>',' data-r="mindlog"');
+      var days=weekDays(), labels=days.map(dayLetter);
+      var week='<div class="wk-h"><b>Minutes</b><span>'+(M.weekTotal?M.weekTotal+' this week':'Nothing logged this week')+'</span></div>'+bars(M.week,labels,MIND_DAY,function(v){ return Math.round(v); },'w')
+        +'<p class="s3-p" style="margin:10px 4px 0">Apple Health minutes come from apps such as Calm, Headspace and the Apple Watch Mindfulness app. This is its own number and does not change your Charge.</p>';
+      paintShared(rp,rp.__st,hero,status,rows,week);
+    }
+    function mindLogSheet(){
+      openSheet('Log minutes','<label class="s3-f"><span>Minutes</span><input id="s3Mind" type="number" inputmode="numeric" min="1" max="240" placeholder="10" autocomplete="off"></label>'
+        +'<div class="s3-picks" role="group" aria-label="Quick minutes">'+[5,10,15,20].map(function(v){ return '<button type="button" class="s3-pick" data-v="'+v+'">'+v+' min</button>'; }).join('')+'</div>'
+        +'<button type="button" class="s3-save">Save</button>',function(sh){
+          sh.addEventListener('click',function(e){
+            var pk=e.target.closest('.s3-pick'); if(pk){ sh.querySelector('#s3Mind').value=pk.dataset.v; return; }
+            if(e.target.closest('.s3-save')){ var v=parseInt(sh.querySelector('#s3Mind').value,10); if(!(v>=1)||isNaN(v)){ sh.querySelector('#s3Mind').focus(); return; } logMind(Math.min(240,v),'manual'); closeSheet(); try{ showToast('Logged '+Math.min(240,v)+' minutes.'); }catch(x){} }
+          });
+        });
+    }
+    function mindTimerSheet(){
+      var dur=10, iv=null, endAt=0, started=0;
+      function fmt(ms){ var sec=Math.max(0,Math.ceil(ms/1000)); return Math.floor(sec/60)+':'+('0'+(sec%60)).slice(-2); }
+      openSheet('Meditate','<div class="mind-box"></div>',function(sh){
+        var box=sh.querySelector('.mind-box');
+        function pick(){
+          box.innerHTML='<p class="s3-p">How long? Sit comfortably, and let your attention rest on your breathing.</p><div class="s3-picks" role="group" aria-label="Length">'+[3,5,10,15,20].map(function(v){ return '<button type="button" class="s3-pick'+(v===dur?' sel':'')+'" data-d="'+v+'">'+v+' min</button>'; }).join('')+'</div><button type="button" class="s3-save" data-go="1">Start</button>';
+        }
+        function run(){
+          box.innerHTML='<div class="mind-clock">'+fmt(endAt-Date.now())+'</div><div class="mind-bar"><i style="width:0"></i></div><p class="s3-p">Breathe. When your mind wanders, come back to the breath.</p><div class="s3-picks"><button type="button" class="s3-pick" data-end="1">End early</button><button type="button" class="s3-pick" data-cancel="1">Cancel</button></div>';
+          iv=setInterval(tick,500); tick();
+        }
+        function stopIv(){ if(iv){ clearInterval(iv); iv=null; } }
+        function finish(min,auto){
+          stopIv(); try{ localStorage.removeItem('mind:run'); }catch(e){}
+          if(min>=1){ logMind(min,'timer'); box.innerHTML='<div class="mind-clock">Done</div><p class="s3-p">Logged '+Math.round(min)+' minute'+(Math.round(min)===1?'':'s')+'.</p><button type="button" class="s3-save" data-close="1">Close</button>'; if(auto){ try{ if(navigator.vibrate) navigator.vibrate([200,100,200]); }catch(e){} } }
+          else { closeSheet(); }
+        }
+        function tick(){
+          var left=endAt-Date.now(), pc=Math.min(100,Math.max(0,(1-left/(dur*60000))*100));
+          var c=box.querySelector('.mind-clock'), b=box.querySelector('.mind-bar i'); if(c) c.textContent=fmt(left); if(b) b.style.width=pc+'%';
+          if(left<=0) finish(dur,true);
+        }
+        pick();
+        sh.addEventListener('click',function(e){
+          var d=e.target.closest('[data-d]'); if(d){ dur=+d.dataset.d; [].forEach.call(box.querySelectorAll('[data-d]'),function(x){ x.classList.toggle('sel',x===d); }); return; }
+          if(e.target.closest('[data-go]')){ started=Date.now(); endAt=started+dur*60000; try{ localStorage.setItem('mind:run',JSON.stringify({endAt:endAt,dur:dur})); }catch(x){} run(); return; }
+          if(e.target.closest('[data-end]')){ finish(Math.floor((Date.now()-started)/60000),false); return; }
+          if(e.target.closest('[data-cancel]')){ stopIv(); try{ localStorage.removeItem('mind:run'); }catch(x){} closeSheet(); return; }
+          if(e.target.closest('[data-close]')){ closeSheet(); }
+        });
+        new MutationObserver(function(){ if(!sh.isConnected) stopIv(); }).observe(document.body,{childList:true});
+      });
+    }
     function recPaint(){
-      if(!rp) return; var c=rp.__st.c, ch=R.charge, last=R.sleep[R.sleep.length-1], hero;
+      if(!rp) return; if(rp.__st.c==='mind'){ mindPaint(); return; } var c=rp.__st.c, ch=R.charge, last=R.sleep[R.sleep.length-1], hero;
       if(c==='sleep') hero={t:'Sleep',m:last?last.toFixed(1)+' h':'Not logged',art:svg(IC.moon,'big'),go:'Check in',act:checkin};
       else if(c==='streak') hero={t:'Check-ins',m:R.streak+' day'+(R.streak===1?'':'s'),art:'<img alt="" src="shell/animals_fox.webp">',go:R.todayDone?'Done today':'Check in',act:checkin};
       else hero={t:'Charge',m:ch!=null?ch+' / 100':'Not set',art:svg(IC.bolt,'big'),go:ch!=null?'See why':'Check in',act:function(){ if(ch!=null){ var b=document.getElementById('headerScoreBtn'); if(b) b.click(); } else checkin(); }};
@@ -50206,6 +50303,7 @@ loadGoalProfile().then(async ()=>{
     if(rp){
       rp.__st=wire(rp,function(){ recPaint(); }); clickHero(rp);
       rp.querySelector('.s3-rows').addEventListener('click',function(e){ var b=e.target.closest('.s3-row'); if(!b) return; var r=b.dataset.r;
+        if(r==='mindlog'){ mindLogSheet(); return; } if(r==='mindgo'){ mindTimerSheet(); return; }
         if(r==='charge'){ var sb=document.getElementById('headerScoreBtn'); if(sb) sb.click(); } else if(r==='sleep') scoreSheet('sleep'); else if(r==='balance') scoreSheet('balance'); else if(r==='streak') checkin(); else if(r==='train') go('insights'); else if(r==='sleepstreak') scoreSheet('sleep'); else if(r==='fuel') go('fuel'); else go('data'); });
     }
     /* SWAP: other exercises for the same area, on the row you tapped it from. Main lifts and jumps

@@ -34,6 +34,7 @@ import HealthKit
    deepMin, remMin, coreMin, awakeMin   sleep stages, minutes, where that source writes them
    bedStart, wakeAt ISO timestamps of the first and last asleep moments
    sleepSource      the app that wrote that night, e.g. "Oura"
+   mindfulMin       minutes of mindful sessions that day (Calm, Headspace, Apple Watch Mindfulness and others), overlapping ones counted once
    runs             [{ start, distanceKm, durationMin, avgHR, source }] running workouts that day, with
                     the same run recorded by two apps kept once
 */
@@ -65,6 +66,7 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
             if let t = HKObjectType.quantityType(forIdentifier: .appleSleepingWristTemperature) { types.insert(t) }
         }
         if let t = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) { types.insert(t) }
+        if let t = HKObjectType.categoryType(forIdentifier: .mindfulSession) { types.insert(t) }
         types.insert(HKObjectType.workoutType())
         return types
     }
@@ -170,6 +172,10 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
             }
             sum(.dietaryWater, HKUnit.literUnit(with: .milli), dayStart, dayEnd, group) { total in
                 if let total = total, total > 0 { set(key, "dietaryWaterMl", Int(total.rounded())) }
+            }
+            // Mindful minutes: sessions meditation apps write to Health, overlapping ones counted once.
+            readMindful(dayStart, dayEnd, group) { mins in
+                if let mins = mins, mins > 0 { set(key, "mindfulMin", mins) }
             }
             // The day's FIRST weigh-in: the morning one, before food and water move it.
             firstSample(.bodyMass, HKUnit.gramUnit(with: .kilo), dayStart, dayEnd, group) { v in
@@ -319,6 +325,26 @@ public class HealthBridgePlugin: CAPPlugin, CAPBridgedPlugin {
                 if let first = first, let last = last { window(first, last) }
             }
             done(out)
+            group.leave()
+        }
+        store.execute(query)
+    }
+
+    /* MINDFUL MINUTES for one day: every mindful session that touches it, clipped to the day, overlapping
+       sessions counted once. Nil when there were none. */
+    private func readMindful(_ start: Date, _ end: Date, _ group: DispatchGroup, _ done: @escaping (Int?) -> Void) {
+        guard let type = HKObjectType.categoryType(forIdentifier: .mindfulSession) else { return }
+        group.enter()
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
+        let query = HKSampleQuery(sampleType: type, predicate: predicate, limit: HKObjectQueryNoLimit,
+                                  sortDescriptors: nil) { _, samples, _ in
+            var spans: [(Date, Date)] = []
+            for case let s as HKCategorySample in samples ?? [] {
+                let span = (max(s.startDate, start), min(s.endDate, end))
+                if span.0 < span.1 { spans.append(span) }
+            }
+            let secs = HealthBridgePlugin.unionSeconds(spans)
+            done(secs > 0 ? Int((secs / 60).rounded()) : nil)
             group.leave()
         }
         store.execute(query)
